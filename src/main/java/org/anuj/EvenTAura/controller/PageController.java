@@ -36,4 +36,8 @@ public class PageController {
         return "profile";
     }
 
+    @GetMapping("/createEvent")
+    public String createEvent(Model model){
+        return "createEvent";
+    }
 }

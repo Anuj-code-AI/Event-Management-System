@@ -672,3 +672,143 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 
     .footer-links { grid-template-columns: 1fr 1fr; }
 }
+
+
+/* ════════════════════════════════
+   FLOATING ACTION BUTTON (FAB)
+   ════════════════════════════════ */
+
+.fab-container {
+    position: fixed;
+    bottom: 36px;
+    right: 36px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 14px;
+}
+
+/* ── Main + button ── */
+.fab-main {
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ff4d6d 0%, #ff8c42 100%);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow:
+        0 6px 20px rgba(255, 77, 109, 0.5),
+        0 2px 8px rgba(0,0,0,0.15);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+                box-shadow 0.3s ease;
+    /* idle pulse */
+    animation: fabPulse 3s ease-in-out infinite;
+}
+
+.fab-main:hover {
+    transform: scale(1.12);
+    box-shadow:
+        0 10px 30px rgba(255, 77, 109, 0.6),
+        0 4px 12px rgba(0,0,0,0.2);
+    animation: none;
+}
+
+@keyframes fabPulse {
+    0%, 100% { box-shadow: 0 6px 20px rgba(255,77,109,0.5), 0 0 0 0 rgba(255,77,109,0.4); }
+    50%       { box-shadow: 0 6px 20px rgba(255,77,109,0.5), 0 0 0 10px rgba(255,77,109,0); }
+}
+
+/* ── Plus icon rotation ── */
+.fab-plus {
+    font-size: 28px;
+    color: #fff;
+    font-weight: 300;
+    line-height: 1;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    display: block;
+}
+
+.fab-container.open .fab-main {
+    animation: none;
+    transform: rotate(45deg) scale(1.08);
+    box-shadow: 0 10px 30px rgba(255,77,109,0.6);
+}
+
+/* ── Menu items ── */
+.fab-menu {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+    /* hidden by default */
+    pointer-events: none;
+}
+
+.fab-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    opacity: 0;
+    transform: translateY(16px) scale(0.85);
+    transition: opacity 0.25s ease,
+                transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+                box-shadow 0.2s ease;
+    pointer-events: none;
+}
+
+/* staggered reveal */
+.fab-item:nth-child(1) { transition-delay: 0.08s; }
+.fab-item:nth-child(2) { transition-delay: 0.05s; }
+.fab-item:nth-child(3) { transition-delay: 0.02s; }
+
+.fab-container.open .fab-menu { pointer-events: auto; }
+.fab-container.open .fab-item {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+}
+
+/* label pill */
+.fab-label {
+    background: #1a1a2e;
+    color: #fff;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 50px;
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    letter-spacing: 0.2px;
+}
+
+/* icon bubble */
+.fab-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    box-shadow: 0 4px 14px rgba(255,77,109,0.25), 0 2px 6px rgba(0,0,0,0.1);
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    flex-shrink: 0;
+}
+
+.fab-item:hover .fab-icon {
+    transform: scale(1.15) rotate(-8deg);
+}
+
+/* ── Mobile ── */
+@media (max-width: 480px) {
+    .fab-container { bottom: 22px; right: 20px; }
+    .fab-main      { width: 52px; height: 52px; }
+    .fab-label     { font-size: 12px; padding: 5px 12px; }
+}

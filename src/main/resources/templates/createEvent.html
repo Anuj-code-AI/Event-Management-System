@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Create Event — Eventaura</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/createEvent.css}">
+</head>
+
+<body>
+
+<!-- ══════════════════════════════════
+     HEADER
+     ══════════════════════════════════ -->
+<header class="header">
+    <div class="logo">
+        <span class="logo-text">Event<em>aura</em></span>
+    </div>
+    <nav class="nav-links">
+        <a href="/">Home</a>
+        <a href="/#events">Events</a>
+        <a href="#">Categories</a>
+        <a href="#">About</a>
+    </nav>
+    <div class="search-bar">
+        <span class="search-icon">🔍</span>
+        <input type="text" placeholder="Search events, cities...">
+    </div>
+    <div class="header-right">
+        <div class="time" id="clock"></div>
+        <button class="icon-btn" aria-label="Notifications">
+            <span>🔔</span>
+            <span class="badge">3</span>
+        </button>
+        <a href="/profile"><button class="icon-btn profile-btn" aria-label="Profile"><span>👤</span></button></a>
+    </div>
+</header>
+
+<!-- ══════════════════════════════════
+     PAGE HERO
+     ══════════════════════════════════ -->
+<section class="create-hero">
+    <div class="hero-orb orb-1"></div>
+    <div class="hero-orb orb-2"></div>
+    <div class="hero-orb orb-3"></div>
+    <div class="hero-dots"></div>
+    <div class="create-hero-content">
+        <div class="hero-chip">✨ New Event</div>
+        <h1>Bring Your<br><em>Event to Life</em></h1>
+        <p>Fill in the details below and share your event with thousands of attendees across India.</p>
+        <div class="hero-steps">
+            <div class="step active" id="step-ind-1">
+                <span class="step-num">1</span>
+                <span class="step-lbl">Details</span>
+            </div>
+            <div class="step-line"></div>
+            <div class="step" id="step-ind-2">
+                <span class="step-num">2</span>
+                <span class="step-lbl">Tickets</span>
+            </div>
+            <div class="step-line"></div>
+            <div class="step" id="step-ind-3">
+                <span class="step-num">3</span>
+                <span class="step-lbl">Banner</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ══════════════════════════════════
+     FORM BODY
+     ══════════════════════════════════ -->
+<div class="create-body">
+
+    <form id="createEventForm" class="create-form" novalidate enctype="multipart/form-data" action="/events/create" method="POST">
+
+        <!-- ────────────────────────────
+             SECTION 1 — Event Details
+             ──────────────────────────── -->
+        <div class="form-section" id="section-1">
+            <div class="section-label">
+                <span class="section-num">01</span>
+                <div>
+                    <h2>Event Details</h2>
+                    <p>Tell people what your event is about</p>
+                </div>
+            </div>
+
+            <div class="fields-stack">
+
+                <!-- Title -->
+                <div class="field-group full">
+                    <label for="title">
+                        Event Title <span class="required">*</span>
+                    </label>
+                    <div class="input-wrap">
+                        <span class="input-icon">🎯</span>
+                        <input
+                                type="text"
+                                id="title"
+                                name="title"
+                                placeholder="e.g. India's Biggest AI Summit 2026"
+                                maxlength="100"
+                                required>
+                        <span class="char-count" id="titleCount">0/100</span>
+                    </div>
+                    <span class="field-hint">Make it catchy — this is the first thing attendees see.</span>
+                    <span class="field-error" id="titleError"></span>
+                </div>
+
+                <!-- Description -->
+                <div class="field-group full">
+                    <label for="description">
+                        Description <span class="required">*</span>
+                    </label>
+                    <div class="textarea-wrap">
+                        <span class="textarea-icon">📝</span>
+                        <textarea
+                                id="description"
+                                name="description"
+                                rows="5"
+                                placeholder="Describe your event — agenda, speakers, what attendees can expect..."
+                                maxlength="1000"
+                                required></textarea>
+                        <span class="char-count textarea-count" id="descCount">0/1000</span>
+                    </div>
+                    <span class="field-error" id="descError"></span>
+                </div>
+
+                <!-- Location -->
+                <div class="field-group full">
+                    <label for="location">
+                        Location <span class="required">*</span>
+                    </label>
+                    <div class="input-wrap">
+                        <span class="input-icon">📍</span>
+                        <input
+                                type="text"
+                                id="location"
+                                name="location"
+                                placeholder="e.g. Pragati Maidan, Hall 5, New Delhi"
+                                required>
+                    </div>
+                    <span class="field-error" id="locationError"></span>
+                </div>
+
+                <!-- Date + Time row -->
+                <div class="field-row">
+                    <div class="field-group">
+                        <label for="eventDate">
+                            Event Date <span class="required">*</span>
+                        </label>
+                        <div class="input-wrap">
+                            <span class="input-icon">📅</span>
+                            <input
+                                    type="date"
+                                    id="eventDate"
+                                    name="eventDate"
+                                    required>
+                        </div>
+                        <span class="field-error" id="dateError"></span>
+                    </div>
+                    <div class="field-group">
+                        <label for="eventTime">
+                            Event Time <span class="required">*</span>
+                        </label>
+                        <div class="input-wrap">
+                            <span class="input-icon">🕐</span>
+                            <input
+                                    type="time"
+                                    id="eventTime"
+                                    name="eventTime"
+                                    required>
+                        </div>
+                        <span class="field-error" id="timeError"></span>
+                    </div>
+                </div>
+
+                <!-- Club (optional) -->
+                <div class="field-group full">
+                    <label for="club">
+                        Club / Organisation
+                        <span class="optional-tag">Optional</span>
+                    </label>
+                    <div class="input-wrap">
+                        <span class="input-icon">🏛️</span>
+                        <input
+                                type="text"
+                                id="club"
+                                name="club"
+                                placeholder="e.g. IEEE Student Branch, Google Developer Groups">
+                    </div>
+                    <span class="field-hint">Leave blank if this is an independent event.</span>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- divider -->
+        <div class="section-divider">
+            <span>🎟️</span>
+        </div>
+
+        <!-- ────────────────────────────
+             SECTION 2 — Tickets
+             ──────────────────────────── -->
+        <div class="form-section" id="section-2">
+            <div class="section-label">
+                <span class="section-num">02</span>
+                <div>
+                    <h2>Ticket Info</h2>
+                    <p>Set your event's capacity and availability</p>
+                </div>
+            </div>
+
+            <div class="fields-stack">
+
+                <div class="field-row">
+                    <div class="field-group">
+                        <label for="totalTickets">
+                            Total Tickets <span class="required">*</span>
+                        </label>
+                        <div class="input-wrap">
+                            <span class="input-icon">🎫</span>
+                            <input
+                                    type="number"
+                                    id="totalTickets"
+                                    name="totalTickets"
+                                    placeholder="e.g. 500"
+                                    min="1"
+                                    max="100000"
+                                    required>
+                        </div>
+                        <span class="field-hint">Total seats available for this event.</span>
+                        <span class="field-error" id="totalError"></span>
+                    </div>
+
+                    <div class="field-group">
+                        <label for="ticketsAvailable">
+                            Tickets Available <span class="required">*</span>
+                        </label>
+                        <div class="input-wrap">
+                            <span class="input-icon">✅</span>
+                            <input
+                                    type="number"
+                                    id="ticketsAvailable"
+                                    name="ticketsAvailable"
+                                    placeholder="e.g. 500"
+                                    min="0"
+                                    required>
+                        </div>
+                        <span class="field-hint">Must be ≤ total tickets.</span>
+                        <span class="field-error" id="availError"></span>
+                    </div>
+                </div>
+
+                <!-- Live capacity bar -->
+                <div class="capacity-preview" id="capacityPreview">
+                    <div class="cap-header">
+                        <span>Capacity Overview</span>
+                        <span id="capPercent">–</span>
+                    </div>
+                    <div class="cap-track">
+                        <div class="cap-fill" id="capFill"></div>
+                    </div>
+                    <div class="cap-labels">
+                        <span id="capSold">Sold: 0</span>
+                        <span id="capAvail">Available: –</span>
+                        <span id="capTotal">Total: –</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- divider -->
+        <div class="section-divider">
+            <span>🖼️</span>
+        </div>
+
+        <!-- ────────────────────────────
+             SECTION 3 — Banner Image
+             ──────────────────────────── -->
+        <div class="form-section" id="section-3">
+            <div class="section-label">
+                <span class="section-num">03</span>
+                <div>
+                    <h2>Banner Image</h2>
+                    <p>Upload a high-quality cover image for your event</p>
+                </div>
+            </div>
+
+            <div class="fields-stack">
+
+                <!-- Drop zone -->
+                <div class="upload-zone" id="uploadZone">
+                    <input
+                            type="file"
+                            id="bannerImage"
+                            name="bannerImage"
+                            accept="image/jpeg,image/png,image/webp"
+                            class="file-input">
+
+                    <div class="upload-idle" id="uploadIdle">
+                        <div class="upload-icon-wrap">
+                            <span class="upload-icon">🖼️</span>
+                        </div>
+                        <p class="upload-title">Drop your banner here</p>
+                        <p class="upload-sub">or <span class="upload-browse">click to browse</span></p>
+                        <p class="upload-spec">PNG, JPG, WEBP · Max 5MB · Recommended 1200×630px</p>
+                    </div>
+
+                    <div class="upload-preview" id="uploadPreview" style="display:none;">
+                        <img id="previewImg" src="" alt="Banner preview">
+                        <div class="preview-overlay">
+                            <button type="button" class="preview-remove" id="removeImg">✕ Remove</button>
+                        </div>
+                        <div class="preview-meta" id="previewMeta"></div>
+                    </div>
+                </div>
+
+                <span class="field-hint center-hint">
+                    💡 A great banner dramatically increases event registrations.
+                    Use bold visuals that represent the event mood.
+                </span>
+
+            </div>
+        </div>
+
+        <!-- ────────────────────────────
+             SUBMIT BAR
+             ──────────────────────────── -->
+        <div class="submit-bar">
+            <a href="/" class="cancel-btn">← Cancel</a>
+            <div class="submit-group">
+                <button type="button" class="draft-btn" id="saveDraft">💾 Save Draft</button>
+                <button type="submit" class="publish-btn" id="publishBtn">
+                    <span class="publish-text">Publish Event</span>
+                    <span class="publish-icon">🚀</span>
+                </button>
+            </div>
+        </div>
+
+    </form>
+
+    <!-- Live Preview card -->
+    <aside class="preview-aside">
+        <div class="preview-sticky">
+            <div class="preview-header">
+                <h3>Live Preview</h3>
+                <span class="preview-badge">Auto-updates</span>
+            </div>
+            <div class="event-preview-card">
+                <div class="preview-card-img" id="previewCardImg">
+                    <div class="preview-img-placeholder">
+                        <span>🖼️</span>
+                        <p>Banner will appear here</p>
+                    </div>
+                    <img id="previewCardBanner" src="" alt="" style="display:none; width:100%; height:100%; object-fit:cover;">
+                    <span class="preview-card-badge" id="previewBadge">Event</span>
+                </div>
+                <div class="preview-card-body">
+                    <h4 id="previewTitle">Your Event Title</h4>
+                    <div class="preview-card-meta">
+                        <span id="previewDate">📅 Date TBD</span>
+                        <span id="previewTime">🕐 Time TBD</span>
+                        <span id="previewLocation">📍 Location TBD</span>
+                        <span id="previewClub" style="display:none;">🏛️ <span id="previewClubName"></span></span>
+                    </div>
+                    <div class="preview-ticket-info">
+                        <span class="preview-ticket-pill" id="previewTickets">🎫 – tickets</span>
+                    </div>
+                </div>
+            </div>
+            <p class="preview-note">This is how your event card will appear to attendees.</p>
+        </div>
+    </aside>
+
+</div>
+
+<!-- ══════════════════════════════════
+     FOOTER
+     ══════════════════════════════════ -->
+<footer class="footer">
+    <div class="footer-top">
+        <div class="footer-brand">
+            <div class="logo">
+                <span class="logo-text">Event<em>aura</em></span>
+            </div>
+            <p>India's premier event discovery platform.</p>
+            <div class="social-links">
+                <a href="#" aria-label="Twitter">𝕏</a>
+                <a href="#" aria-label="Instagram">📸</a>
+                <a href="#" aria-label="LinkedIn">in</a>
+                <a href="#" aria-label="YouTube">▶</a>
+            </div>
+        </div>
+        <div class="footer-links">
+            <div class="footer-col">
+                <h4>Explore</h4>
+                <a href="#">Trending Events</a>
+                <a href="#">Upcoming Events</a>
+                <a href="#">Categories</a>
+            </div>
+            <div class="footer-col">
+                <h4>Organizers</h4>
+                <a href="#">Create Event</a>
+                <a href="#">Dashboard</a>
+                <a href="#">Analytics</a>
+            </div>
+            <div class="footer-col">
+                <h4>Support</h4>
+                <a href="#">Help Center</a>
+                <a href="#">Contact Us</a>
+                <a href="#">Privacy Policy</a>
+            </div>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>© 2026 Eventaura. All rights reserved. Made with ❤️ in India.</p>
+    </div>
+</footer>
+
+<!-- ══════════════════════════════════
+     SCRIPTS
+     ══════════════════════════════════ -->
+<script>
+
+    /* ── Clock ── */
+    function updateClock() {
+        const now = new Date();
+        const el = document.getElementById('clock');
+        if (!el) return;
+        el.textContent =
+            String(now.getHours()).padStart(2,'0') + ':' +
+            String(now.getMinutes()).padStart(2,'0') + ':' +
+            String(now.getSeconds()).padStart(2,'0');
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    /* ── Char counters ── */
+    function bindCounter(inputId, countId, max) {
+        const el  = document.getElementById(inputId);
+        const cnt = document.getElementById(countId);
+        if (!el || !cnt) return;
+        el.addEventListener('input', () => {
+            cnt.textContent = el.value.length + '/' + max;
+            cnt.classList.toggle('over', el.value.length > max * 0.9);
+        });
+    }
+    bindCounter('title', 'titleCount', 100);
+    bindCounter('description', 'descCount', 1000);
+
+    /* ── Step indicator ── */
+    function activateStep(n) {
+        for (let i = 1; i <= 3; i++) {
+            const el = document.getElementById('step-ind-' + i);
+            if (!el) continue;
+            el.classList.remove('active', 'done');
+            if (i < n)  el.classList.add('done');
+            if (i === n) el.classList.add('active');
+        }
+    }
+
+    /* ── Scroll-based step activation ── */
+    const sectionEls = [
+        document.getElementById('section-1'),
+        document.getElementById('section-2'),
+        document.getElementById('section-3'),
+    ];
+    window.addEventListener('scroll', () => {
+        const mid = window.scrollY + window.innerHeight / 2;
+        let active = 1;
+        sectionEls.forEach((s, i) => {
+            if (s && s.getBoundingClientRect().top + window.scrollY <= mid) active = i + 1;
+        });
+        activateStep(active);
+    });
+
+    /* ── Live preview ── */
+    function syncPreview() {
+        const title    = document.getElementById('title').value.trim();
+        const date     = document.getElementById('eventDate').value;
+        const time     = document.getElementById('eventTime').value;
+        const location = document.getElementById('location').value.trim();
+        const club     = document.getElementById('club').value.trim();
+        const avail    = document.getElementById('ticketsAvailable').value;
+
+        document.getElementById('previewTitle').textContent    = title    || 'Your Event Title';
+        document.getElementById('previewBadge').textContent    = title    ? title.substring(0,8) : 'Event';
+        document.getElementById('previewDate').textContent     = date     ? '📅 ' + formatDate(date) : '📅 Date TBD';
+        document.getElementById('previewTime').textContent     = time     ? '🕐 ' + formatTime(time) : '🕐 Time TBD';
+        document.getElementById('previewLocation').textContent = location ? '📍 ' + location : '📍 Location TBD';
+        document.getElementById('previewTickets').textContent  = avail    ? '🎫 ' + avail + ' tickets left' : '🎫 – tickets';
+
+        const clubSpan = document.getElementById('previewClub');
+        if (club) {
+            document.getElementById('previewClubName').textContent = club;
+            clubSpan.style.display = 'flex';
+        } else {
+            clubSpan.style.display = 'none';
+        }
+    }
+
+    function formatDate(d) {
+        if (!d) return '';
+        const dt = new Date(d + 'T00:00:00');
+        return dt.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+    }
+    function formatTime(t) {
+        if (!t) return '';
+        const [h, m] = t.split(':');
+        const hr = parseInt(h);
+        return (hr % 12 || 12) + ':' + m + ' ' + (hr >= 12 ? 'PM' : 'AM');
+    }
+
+    ['title','eventDate','eventTime','location','club','ticketsAvailable'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('input', syncPreview);
+    });
+
+    /* ── Capacity bar ── */
+    function updateCapacity() {
+        const total = parseInt(document.getElementById('totalTickets').value) || 0;
+        const avail = parseInt(document.getElementById('ticketsAvailable').value);
+        const preview = document.getElementById('capacityPreview');
+
+        if (!total) { preview.classList.remove('visible'); return; }
+
+        preview.classList.add('visible');
+        const sold  = isNaN(avail) ? 0 : Math.max(0, total - avail);
+        const pct   = total > 0 ? Math.round((sold / total) * 100) : 0;
+        const fill  = document.getElementById('capFill');
+        fill.style.width = pct + '%';
+        fill.style.background = pct > 80
+            ? 'linear-gradient(90deg, #ef4444, #dc2626)'
+            : pct > 50
+            ? 'linear-gradient(90deg, #f97316, #eab308)'
+            : 'linear-gradient(90deg, #ff4d6d, #ff8c42)';
+
+        document.getElementById('capPercent').textContent = pct + '% sold';
+        document.getElementById('capSold').textContent    = 'Sold: ' + sold;
+        document.getElementById('capAvail').textContent   = 'Available: ' + (isNaN(avail) ? '–' : avail);
+        document.getElementById('capTotal').textContent   = 'Total: ' + total;
+
+        syncPreview();
+    }
+    document.getElementById('totalTickets').addEventListener('input', updateCapacity);
+    document.getElementById('ticketsAvailable').addEventListener('input', updateCapacity);
+
+    /* ── Banner image upload ── */
+    const uploadZone   = document.getElementById('uploadZone');
+    const fileInput    = document.getElementById('bannerImage');
+    const uploadIdle   = document.getElementById('uploadIdle');
+    const uploadPrev   = document.getElementById('uploadPreview');
+    const previewImg   = document.getElementById('previewImg');
+    const previewMeta  = document.getElementById('previewMeta');
+    const removeBtn    = document.getElementById('removeImg');
+    const cardBanner   = document.getElementById('previewCardBanner');
+    const cardImgWrap  = document.getElementById('previewCardImg');
+
+    function showPreview(file) {
+        if (!file || !file.type.startsWith('image/')) return;
+        const url = URL.createObjectURL(file);
+        previewImg.src = url;
+        cardBanner.src = url;
+        cardBanner.style.display = 'block';
+        cardImgWrap.querySelector('.preview-img-placeholder').style.display = 'none';
+        uploadIdle.style.display  = 'none';
+        uploadPrev.style.display  = 'flex';
+        previewMeta.textContent   = file.name + ' · ' + (file.size / 1024 / 1024).toFixed(2) + ' MB';
+        uploadZone.classList.add('has-image');
+    }
+
+    fileInput.addEventListener('change', () => {
+        if (fileInput.files[0]) showPreview(fileInput.files[0]);
+    });
+
+    uploadZone.addEventListener('click', (e) => {
+        if (e.target === removeBtn || removeBtn.contains(e.target)) return;
+        if (!uploadZone.classList.contains('has-image')) fileInput.click();
+    });
+
+    removeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        fileInput.value = '';
+        previewImg.src  = '';
+        cardBanner.src  = '';
+        cardBanner.style.display = 'none';
+        cardImgWrap.querySelector('.preview-img-placeholder').style.display = 'flex';
+        uploadIdle.style.display  = 'flex';
+        uploadPrev.style.display  = 'none';
+        uploadZone.classList.remove('has-image', 'drag-over');
+    });
+
+    /* Drag and drop */
+    ['dragenter','dragover'].forEach(evt => {
+        uploadZone.addEventListener(evt, e => {
+            e.preventDefault();
+            uploadZone.classList.add('drag-over');
+        });
+    });
+    ['dragleave','drop'].forEach(evt => {
+        uploadZone.addEventListener(evt, e => {
+            e.preventDefault();
+            uploadZone.classList.remove('drag-over');
+        });
+    });
+    uploadZone.addEventListener('drop', e => {
+        const file = e.dataTransfer.files[0];
+        if (file) {
+            // Transfer to file input via DataTransfer
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            fileInput.files = dt.files;
+            showPreview(file);
+        }
+    });
+
+    /* ── Form validation ── */
+    function validateField(id, errorId, msg, condition) {
+        const err = document.getElementById(errorId);
+        if (!err) return condition;
+        if (!condition) {
+            err.textContent = msg;
+            err.classList.add('show');
+            document.getElementById(id)?.closest('.input-wrap, .textarea-wrap')?.classList.add('error');
+        } else {
+            err.textContent = '';
+            err.classList.remove('show');
+            document.getElementById(id)?.closest('.input-wrap, .textarea-wrap')?.classList.remove('error');
+        }
+        return condition;
+    }
+
+    document.getElementById('createEventForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        let valid = true;
+
+        const title    = document.getElementById('title').value.trim();
+        const desc     = document.getElementById('description').value.trim();
+        const loc      = document.getElementById('location').value.trim();
+        const date     = document.getElementById('eventDate').value;
+        const time     = document.getElementById('eventTime').value;
+        const total    = parseInt(document.getElementById('totalTickets').value);
+        const avail    = parseInt(document.getElementById('ticketsAvailable').value);
+
+        valid &= validateField('title',            'titleError',    'Event title is required.',               title.length > 0);
+        valid &= validateField('description',      'descError',     'Please add a description.',              desc.length > 0);
+        valid &= validateField('location',         'locationError', 'Location is required.',                  loc.length > 0);
+        valid &= validateField('eventDate',        'dateError',     'Please pick a date.',                    date !== '');
+        valid &= validateField('eventTime',        'timeError',     'Please pick a time.',                    time !== '');
+        valid &= validateField('totalTickets',     'totalError',    'Enter total number of tickets.',         !isNaN(total) && total > 0);
+        valid &= validateField('ticketsAvailable', 'availError',    'Available tickets must be ≤ total.',     !isNaN(avail) && avail >= 0 && avail <= total);
+
+        if (valid) {
+            const btn = document.getElementById('publishBtn');
+            btn.classList.add('loading');
+            btn.querySelector('.publish-text').textContent = 'Publishing…';
+            // submit after brief delay for UX feedback
+            setTimeout(() => this.submit(), 600);
+        } else {
+            // Scroll to first error
+            const firstError = document.querySelector('.field-error.show');
+            if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    });
+
+    /* Save draft feedback */
+    document.getElementById('saveDraft').addEventListener('click', function() {
+        this.textContent = '✅ Draft Saved';
+        this.classList.add('saved');
+        setTimeout(() => {
+            this.textContent = '💾 Save Draft';
+            this.classList.remove('saved');
+        }, 2000);
+    });
+
+</script>
+<script th:src="@{/js/createEvent.js}"></script>
+
+</body>
+</html>

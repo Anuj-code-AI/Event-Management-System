@@ -58,9 +58,19 @@ function renderProfile(user){
         document.getElementById("city").value = user.city;
 }
 
-function logout(){
+function showGuest(){
+    document.getElementById("guestActions").style.display = "block";
+    document.getElementById("userActions").style.display = "none";
+}
+
+function clearTokens() {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
-
-    window.location.href="/login";
 }
+
+function logout(){
+    clearTokens();
+    window.location.href="/login"
+}
+
+document.getElementById("logoutBtn").addEventListener("click", logout);

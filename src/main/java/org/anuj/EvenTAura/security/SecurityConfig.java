@@ -46,7 +46,7 @@ public class SecurityConfig {
                                 "/api/v1/event/getEvent/**",
                                 "/api/v1/event/getAllEvents",
                                 "/","/login","/register","/favicon.ico"
-                                ,"/profile","/css/**","/js/**","/images/**").permitAll()
+                                ,"/profile","/createEvent","/css/**","/js/**","/images/**").permitAll()
                     .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth -> oauth

@@ -373,6 +373,27 @@
 
 </footer>
 
+<!-- ═══════════════════ FAB ═══════════════════ -->
+<div class="fab-container">
+    <div class="fab-menu">
+        <a href="/createEvent" class="fab-item">
+            <span class="fab-icon">📅</span>
+            <span class="fab-label">Create Event</span>
+        </a>
+        <a href="/tickets" class="fab-item">
+            <span class="fab-icon">🎟️</span>
+            <span class="fab-label">My Tickets</span>
+        </a>
+        <a href="/profile" class="fab-item">
+            <span class="fab-icon">👤</span>
+            <span class="fab-label">Profile</span>
+        </a>
+    </div>
+    <button class="fab-main" id="fabBtn" aria-label="Quick actions">
+        <span class="fab-plus">＋</span>
+    </button>
+</div>
+
 <!-- ═══════════════════ SCRIPTS ═══════════════════ -->
 <script>
 
@@ -426,6 +447,18 @@
         });
     });
 
+</script>
+<script>
+    const fabBtn = document.getElementById('fabBtn');
+    const fabContainer = document.querySelector('.fab-container');
+    fabBtn.addEventListener('click', () => {
+        fabContainer.classList.toggle('open');
+    });
+    document.addEventListener('click', (e) => {
+        if (!fabContainer.contains(e.target)) {
+            fabContainer.classList.remove('open');
+        }
+    });
 </script>
 <script th:src="@{/js/basic.js}"></script>
 
