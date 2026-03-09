@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Eventaura</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body>
+
+<!-- ═══════════════════ HEADER ═══════════════════ -->
+<header class="header">
+
+    <div class="logo">
+        <span class="logo-text">Event<em>aura</em></span>
+    </div>
+
+    <nav class="nav-links">
+        <a href="#">Home</a>
+        <a href="#events">Events</a>
+        <a href="#">Categories</a>
+        <a href="#">About</a>
+    </nav>
+
+    <div class="search-bar">
+        <span class="search-icon">🔍</span>
+        <input type="text" placeholder="Search events, cities...">
+    </div>
+
+    <div class="header-right">
+        <div class="time" id="clock"></div>
+        <button class="icon-btn" aria-label="Notifications">
+            <span>🔔</span>
+            <span class="badge">3</span>
+        </button>
+        <div id="guestActions">
+            <a href="/login" class="btn primary">Login</a>
+            <a href="/register" class="btn primary">Sign Up</a>
+        </div>
+
+        <div id="userActions" style="display:none;">
+            <a href="/profile"><button class="icon-btn profile-btn" aria-label="Profile">
+                <span>👤</span>
+            </button></a>
+        </div>
+    </div>
+
+</header>
+
+<!-- ═══════════════════ BANNER SLIDESHOW ═══════════════════ -->
+<section class="banner-section" aria-label="Featured Events Banner">
+
+    <div class="banner-track" id="bannerTrack">
+        <div class="banner-slide">
+            <img th:src="@{/images/1.jpg}" alt="Event Banner 1">
+            <div class="slide-overlay">
+                <span class="slide-tag">Featured</span>
+                <h2>Discover Events<br>Near You</h2>
+                <p>Find the best tech, music & culture events</p>
+                <a href="#" class="slide-cta">Explore Now →</a>
+            </div>
+        </div>
+        <div class="banner-slide">
+            <img th:src="@{/images/2.jpg}" alt="Event Banner 2">
+            <div class="slide-overlay">
+                <span class="slide-tag">Tech</span>
+                <h2>India's Biggest<br>Tech Events</h2>
+                <p>Conferences, summits & hackathons</p>
+                <a href="#" class="slide-cta">Browse Tech →</a>
+            </div>
+        </div>
+        <div class="banner-slide">
+            <img th:src="@{/images/3.jpg}" alt="Event Banner 3">
+            <div class="slide-overlay">
+                <span class="slide-tag">Music</span>
+                <h2>Live Music &<br>Festivals</h2>
+                <p>Experience unforgettable nights</p>
+                <a href="#" class="slide-cta">Get Tickets →</a>
+            </div>
+        </div>
+        <div class="banner-slide">
+            <img th:src="@{/images/4.jpg}" alt="Event Banner 4">
+            <div class="slide-overlay">
+                <span class="slide-tag">Startup</span>
+                <h2>Connect With<br>Innovators</h2>
+                <p>Meetups, pitches & networking</p>
+                <a href="#" class="slide-cta">Join Now →</a>
+            </div>
+        </div>
+        <div class="banner-slide">
+            <img th:src="@{/images/5.jpg}" alt="Event Banner 5">
+            <div class="slide-overlay">
+                <span class="slide-tag">Design</span>
+                <h2>Creative Minds<br>Unite</h2>
+                <p>Workshops, expos & creative sessions</p>
+                <a href="#" class="slide-cta">Discover →</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dots -->
+    <div class="banner-dots" id="bannerDots">
+        <button class="dot active" data-index="0" aria-label="Slide 1"></button>
+        <button class="dot" data-index="1" aria-label="Slide 2"></button>
+        <button class="dot" data-index="2" aria-label="Slide 3"></button>
+        <button class="dot" data-index="3" aria-label="Slide 4"></button>
+        <button class="dot" data-index="4" aria-label="Slide 5"></button>
+    </div>
+
+    <!-- Arrows -->
+    <button class="banner-arrow prev" id="prevBtn" aria-label="Previous slide">&#8592;</button>
+    <button class="banner-arrow next" id="nextBtn" aria-label="Next slide">&#8594;</button>
+
+</section>
+
+<!-- ═══════════════════ CATEGORY PILLS ═══════════════════ -->
+<section class="categories-section">
+    <div class="categories-scroll">
+        <button class="cat-pill active">🌟 All</button>
+        <button class="cat-pill">💻 Tech</button>
+        <button class="cat-pill">🎵 Music</button>
+        <button class="cat-pill">🚀 Startup</button>
+        <button class="cat-pill">🎮 Gaming</button>
+        <button class="cat-pill">🎨 Design</button>
+        <button class="cat-pill">🤖 AI & ML</button>
+        <button class="cat-pill">🔬 Science</button>
+    </div>
+</section>
+
+<!-- ═══════════════════ TRENDING EVENTS ═══════════════════ -->
+<section id="events" class="events-section">
+
+    <div class="section-header">
+        <div>
+            <h2>🔥 Trending Events</h2>
+            <p>Don't miss what's hot right now</p>
+        </div>
+        <a href="#" class="view-all">View All →</a>
+    </div>
+
+    <div class="events-grid">
+
+        <div class="event-card">
+            <div class="card-img-wrap">
+                <img th:src="@{/images/6.jpg}" alt="Tech Conference">
+                <span class="event-badge">Tech</span>
+            </div>
+            <div class="event-info">
+                <h3>Tech Conference</h3>
+                <div class="event-meta">
+                    <span>📅 25 March 2026</span>
+                    <span>📍 Delhi</span>
+                </div>
+                <a href="#" class="card-cta">Register</a>
+            </div>
+        </div>
+
+        <div class="event-card">
+            <div class="card-img-wrap">
+                <img th:src="@{/images/7.jpg}" alt="Startup Meetup">
+                <span class="event-badge startup">Startup</span>
+            </div>
+            <div class="event-info">
+                <h3>Startup Meetup</h3>
+                <div class="event-meta">
+                    <span>📅 30 March 2026</span>
+                    <span>📍 Bangalore</span>
+                </div>
+                <a href="#" class="card-cta">Register</a>
+            </div>
+        </div>
+
+        <div class="event-card">
+            <div class="card-img-wrap">
+                <img th:src="@{/images/8.jpg}" alt="Music Festival">
+                <span class="event-badge music">Music</span>
+            </div>
+            <div class="event-info">
+                <h3>Music Festival</h3>
+                <div class="event-meta">
+                    <span>📅 5 April 2026</span>
+                    <span>📍 Mumbai</span>
+                </div>
+                <a href="#" class="card-cta">Register</a>
+            </div>
+        </div>
+
+        <div class="event-card">
+            <div class="card-img-wrap">
+                <img th:src="@{/images/9.jpg}" alt="AI Summit">
+                <span class="event-badge">AI</span>
+            </div>
+            <div class="event-info">
+                <h3>AI Summit</h3>
+                <div class="event-meta">
+                    <span>📅 12 April 2026</span>
+                    <span>📍 Hyderabad</span>
+                </div>
+                <a href="#" class="card-cta">Register</a>
+            </div>
+        </div>
+
+        <div class="event-card">
+            <div class="card-img-wrap">
+                <img th:src="@{/images/10.jpg}" alt="Gaming Expo">
+                <span class="event-badge gaming">Gaming</span>
+            </div>
+            <div class="event-info">
+                <h3>Gaming Expo</h3>
+                <div class="event-meta">
+                    <span>📅 15 April 2026</span>
+                    <span>📍 Pune</span>
+                </div>
+                <a href="#" class="card-cta">Register</a>
+            </div>
+        </div>
+
+        <div class="event-card">
+            <div class="card-img-wrap">
+                <img th:src="@{/images/11.jpg}" alt="Design Workshop">
+                <span class="event-badge design">Design</span>
+            </div>
+            <div class="event-info">
+                <h3>Design Workshop</h3>
+                <div class="event-meta">
+                    <span>📅 20 April 2026</span>
+                    <span>📍 Chennai</span>
+                </div>
+                <a href="#" class="card-cta">Register</a>
+            </div>
+        </div>
+
+        <div class="event-card">
+            <div class="card-img-wrap">
+                <img th:src="@{/images/12.jpg}" alt="Startup Pitch">
+                <span class="event-badge startup">Startup</span>
+            </div>
+            <div class="event-info">
+                <h3>Startup Pitch</h3>
+                <div class="event-meta">
+                    <span>📅 28 April 2026</span>
+                    <span>📍 Gurgaon</span>
+                </div>
+                <a href="#" class="card-cta">Register</a>
+            </div>
+        </div>
+
+        <div class="event-card">
+            <div class="card-img-wrap">
+                <img th:src="@{/images/13.jpg}" alt="Music Night">
+                <span class="event-badge music">Music</span>
+            </div>
+            <div class="event-info">
+                <h3>Music Night</h3>
+                <div class="event-meta">
+                    <span>📅 3 May 2026</span>
+                    <span>📍 Goa</span>
+                </div>
+                <a href="#" class="card-cta">Register</a>
+            </div>
+        </div>
+
+        <div class="event-card">
+            <div class="card-img-wrap">
+                <img th:src="@{/images/14.jpg}" alt="Robotics Expo">
+                <span class="event-badge">Tech</span>
+            </div>
+            <div class="event-info">
+                <h3>Robotics Expo</h3>
+                <div class="event-meta">
+                    <span>📅 7 May 2026</span>
+                    <span>📍 Noida</span>
+                </div>
+                <a href="#" class="card-cta">Register</a>
+            </div>
+        </div>
+
+        <div class="event-card">
+            <div class="card-img-wrap">
+                <img th:src="@{/images/15.jpg}" alt="Hackathon">
+                <span class="event-badge">Hack</span>
+            </div>
+            <div class="event-info">
+                <h3>Hackathon</h3>
+                <div class="event-meta">
+                    <span>📅 15 May 2026</span>
+                    <span>📍 Indore</span>
+                </div>
+                <a href="#" class="card-cta">Register</a>
+            </div>
+        </div>
+
+    </div>
+
+</section>
+
+<!-- ═══════════════════ NEWSLETTER ═══════════════════ -->
+<section class="newsletter-section">
+    <div class="newsletter-inner">
+        <div class="newsletter-text">
+            <h3>Never miss an event</h3>
+            <p>Get personalized recommendations straight to your inbox.</p>
+        </div>
+        <div class="newsletter-form">
+            <input type="email" placeholder="Enter your email address">
+            <button>Subscribe</button>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════ FOOTER ═══════════════════ -->
+<footer class="footer">
+
+    <div class="footer-top">
+
+        <div class="footer-brand">
+            <div class="logo">
+                <div class="logo-icon">
+                    <img th:src="@{/images/1.jpg}" alt="Eventaura Logo">
+                </div>
+                <span class="logo-text">Event<em>aura</em></span>
+            </div>
+            <p>India's premier event discovery platform. Find, book, and experience the best events near you.</p>
+            <div class="social-links">
+                <a href="#" aria-label="Twitter">𝕏</a>
+                <a href="#" aria-label="Instagram">📸</a>
+                <a href="#" aria-label="LinkedIn">in</a>
+                <a href="#" aria-label="YouTube">▶</a>
+            </div>
+        </div>
+
+        <div class="footer-links">
+            <div class="footer-col">
+                <h4>Explore</h4>
+                <a href="#">Trending Events</a>
+                <a href="#">Upcoming Events</a>
+                <a href="#">Categories</a>
+                <a href="#">Cities</a>
+            </div>
+            <div class="footer-col">
+                <h4>Organizers</h4>
+                <a href="#">Create Event</a>
+                <a href="#">Pricing</a>
+                <a href="#">Dashboard</a>
+                <a href="#">Analytics</a>
+            </div>
+            <div class="footer-col">
+                <h4>Company</h4>
+                <a href="#">About Us</a>
+                <a href="#">Blog</a>
+                <a href="#">Careers</a>
+                <a href="#">Press</a>
+            </div>
+            <div class="footer-col">
+                <h4>Support</h4>
+                <a href="#">Help Center</a>
+                <a href="#">Contact Us</a>
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="footer-bottom">
+        <p>© 2026 Eventaura. All rights reserved. Made with ❤️ in India.</p>
+        <p>Delhi · Mumbai · Bangalore · Hyderabad · Chennai · Pune · Goa</p>
+    </div>
+
+</footer>
+
+<!-- ═══════════════════ SCRIPTS ═══════════════════ -->
+<script>
+
+    /* ── CLOCK ── */
+    function updateClock() {
+        const now = new Date();
+        const h = String(now.getHours()).padStart(2, '0');
+        const m = String(now.getMinutes()).padStart(2, '0');
+        const s = String(now.getSeconds()).padStart(2, '0');
+        document.getElementById('clock').textContent = h + ':' + m + ':' + s;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    /* ── BANNER SLIDESHOW ── */
+    const track  = document.getElementById('bannerTrack');
+    const dots   = document.querySelectorAll('.dot');
+    const slides = document.querySelectorAll('.banner-slide');
+    let current  = 0;
+    let timer;
+
+    function goTo(index) {
+        current = (index + slides.length) % slides.length;
+        track.style.transform = `translateX(-${current * 100}%)`;
+        dots.forEach((d, i) => d.classList.toggle('active', i === current));
+    }
+
+    function autoPlay() {
+        timer = setInterval(() => goTo(current + 1), 4500);
+    }
+
+    function resetTimer() {
+        clearInterval(timer);
+        autoPlay();
+    }
+
+    document.getElementById('nextBtn').addEventListener('click', () => { goTo(current + 1); resetTimer(); });
+    document.getElementById('prevBtn').addEventListener('click', () => { goTo(current - 1); resetTimer(); });
+
+    dots.forEach(dot => {
+        dot.addEventListener('click', () => { goTo(+dot.dataset.index); resetTimer(); });
+    });
+
+    autoPlay();
+
+    /* ── CATEGORY PILLS ── */
+    document.querySelectorAll('.cat-pill').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.cat-pill').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        });
+    });
+
+</script>
+<script th:src="@{/js/basic.js}"></script>
+
+</body>
+</html>

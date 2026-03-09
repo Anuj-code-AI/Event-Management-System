@@ -1,0 +1,62 @@
+package org.anuj.EvenTAura.controller;
+
+import lombok.RequiredArgsConstructor;
+import org.anuj.EvenTAura.dto.EventRequest;
+import org.anuj.EvenTAura.dto.EventResponse;
+import org.anuj.EvenTAura.dto.EventUpdateRequest;
+import org.anuj.EvenTAura.service.EventService;
+import org.anuj.EvenTAura.service.FileStorageService;
+import org.springframework.data.domain.Page;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+@RestController
+@RequestMapping("/api/v1/event")
+@RequiredArgsConstructor
+public class EventController {
+    private final EventService eventService;
+    private final FileStorageService fileStorageService;
+    @PostMapping("/addEvent")
+    public ResponseEntity<?> createEvent(
+            @ModelAttribute EventRequest request,
+            @RequestParam("banner") MultipartFile banner,
+            Authentication authentication
+    ) {
+
+        String bannerUrl = fileStorageService.saveBanner(banner);
+
+        request.setBannerUrl(bannerUrl);
+
+        eventService.createEvent(request,authentication);
+
+        return ResponseEntity.ok("Event created");
+    }
+
+    @GetMapping("/getEvent/{eventId}")
+    public ResponseEntity<?> getEvent(@PathVariable Long eventId) {
+        return ResponseEntity.ok(eventService.getEvent(eventId));
+    }
+
+    @DeleteMapping("/deleteEvent/{eventId}")
+    public ResponseEntity<?> deleteEvent(@PathVariable Long eventId,Authentication auth) {
+        return ResponseEntity.ok(eventService.deleteEvent(eventId,auth));
+    }
+
+    @PatchMapping("/updateEvent/{eventId}")
+    public ResponseEntity<?> updateEvent(@PathVariable Long eventId, @RequestBody EventUpdateRequest req,Authentication auth){
+        return ResponseEntity.ok(eventService.updateEvent(eventId,req,auth));
+    }
+
+    @GetMapping("/getAllEvents")
+    public ResponseEntity<Page<EventResponse>> getAllEvents(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir
+    ){
+        return ResponseEntity.ok(eventService.getAllEvents(page,size,sortBy,sortDir));
+    }
+}
+
