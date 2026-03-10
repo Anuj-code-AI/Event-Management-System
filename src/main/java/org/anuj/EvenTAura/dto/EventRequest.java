@@ -33,6 +33,7 @@ public class EventRequest {
 
     private String club;
     private String bannerUrl;
-    private File banner;
+    private String ticketUrl;
+    private String category;
 
 }

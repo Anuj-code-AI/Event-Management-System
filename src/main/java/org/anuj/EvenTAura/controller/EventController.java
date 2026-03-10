@@ -22,12 +22,24 @@ public class EventController {
     public ResponseEntity<?> createEvent(
             @ModelAttribute EventRequest request,
             @RequestParam("banner") MultipartFile banner,
+            @RequestParam("ticket") MultipartFile ticket,
             Authentication authentication
     ) {
 
-        String bannerUrl = fileStorageService.saveBanner(banner);
+        if (banner == null || banner.isEmpty()) {
+            return ResponseEntity.badRequest().body("Banner image required");
+        }
+
+        if (ticket == null || ticket.isEmpty()) {
+            return ResponseEntity.badRequest().body("Ticket image required");
+        }
+
+
+        String bannerUrl = fileStorageService.saveImage(banner,"Banner");
+        String ticketUrl = fileStorageService.saveImage(ticket,"Ticket");
 
         request.setBannerUrl(bannerUrl);
+        request.setTicketUrl(ticketUrl);
 
         eventService.createEvent(request,authentication);
 

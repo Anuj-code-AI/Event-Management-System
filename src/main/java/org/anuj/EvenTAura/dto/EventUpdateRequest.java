@@ -18,5 +18,7 @@ public class EventUpdateRequest {
     private Integer ticketsAvailable;
     private String club;
     private String bannerUrl;
+    private String ticketUrl;
+    private String category;
     private User organizer;
 }

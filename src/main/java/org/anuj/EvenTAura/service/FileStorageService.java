@@ -1,6 +1,7 @@
 package org.anuj.EvenTAura.service;
 
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.file.Files;
@@ -13,13 +14,14 @@ public class FileStorageService {
 
     private final String UPLOAD_DIR = "uploads/images/";
 
-    public String saveBanner(MultipartFile file) {
+    public String saveImage(MultipartFile file, String imageCategory) {
 
         try {
 
-            String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+            String original = StringUtils.cleanPath(file.getOriginalFilename());
+            String fileName = System.currentTimeMillis() + "_" + original;
 
-            Path uploadPath = Paths.get(UPLOAD_DIR);
+            Path uploadPath = Paths.get(UPLOAD_DIR + imageCategory);
 
             if (!Files.exists(uploadPath)) {
                 Files.createDirectories(uploadPath);
@@ -29,7 +31,7 @@ public class FileStorageService {
 
             Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
-            return "/uploads/images/" + fileName;
+            return "/uploads/images/" + imageCategory + "/" + fileName;
 
         } catch (Exception e) {
             throw new RuntimeException("Could not store file");

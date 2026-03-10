@@ -106,6 +106,8 @@ public class EventServiceImpl implements EventService{
                         event.getTotalTickets(),
                         event.getTicketsAvailable(),
                         event.getBannerUrl(),
+                        event.getTicketUrl(),
+                        event.getCategory(),
                         event.getClub(),
                         event.getUser()
                 )

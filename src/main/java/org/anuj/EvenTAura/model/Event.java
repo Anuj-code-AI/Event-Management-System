@@ -34,6 +34,8 @@ public class Event {
     private int ticketsAvailable;
 
     private String bannerUrl;
+    private String ticketUrl;
+    private String category;
 
     private String club;
 

@@ -1,21 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <title>Create Event — Eventaura</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/css/style.css}">
-    <link rel="stylesheet" th:href="@{/css/createEvent.css}">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/createEvent.css">
 </head>
-
 <body>
 
-<!-- ══════════════════════════════════
-     HEADER
-     ══════════════════════════════════ -->
+<!-- ═══════════════════════ HEADER ═══════════════════════ -->
 <header class="header">
     <div class="logo">
         <span class="logo-text">Event<em>aura</em></span>
@@ -36,238 +32,376 @@
             <span>🔔</span>
             <span class="badge">3</span>
         </button>
-        <a href="/profile"><button class="icon-btn profile-btn" aria-label="Profile"><span>👤</span></button></a>
+        <a href="/profile">
+            <button class="icon-btn profile-btn" aria-label="Profile"><span>👤</span></button>
+        </a>
     </div>
 </header>
 
-<!-- ══════════════════════════════════
-     PAGE HERO
-     ══════════════════════════════════ -->
-<section class="create-hero">
-    <div class="hero-orb orb-1"></div>
-    <div class="hero-orb orb-2"></div>
-    <div class="hero-orb orb-3"></div>
-    <div class="hero-dots"></div>
-    <div class="create-hero-content">
-        <div class="hero-chip">✨ New Event</div>
-        <h1>Bring Your<br><em>Event to Life</em></h1>
-        <p>Fill in the details below and share your event with thousands of attendees across India.</p>
-        <div class="hero-steps">
-            <div class="step active" id="step-ind-1">
-                <span class="step-num">1</span>
-                <span class="step-lbl">Details</span>
+<!-- ═══════════════════════ HERO ═══════════════════════ -->
+<section class="ce-hero">
+    <div class="ce-hero-orb ce-orb-1"></div>
+    <div class="ce-hero-orb ce-orb-2"></div>
+    <div class="ce-hero-orb ce-orb-3"></div>
+    <div class="ce-hero-grid"></div>
+
+    <div class="ce-hero-inner">
+        <div class="ce-hero-left">
+            <span class="ce-chip">🚀 New Event</span>
+            <h1>Create Your<br><em>Next Big Event</em></h1>
+            <p>Share your event with thousands of attendees across India. Fill in the details and go live in minutes.</p>
+
+            <div class="ce-steps">
+                <div class="ce-step ce-step--active" id="si1">
+                    <div class="ce-step-dot"><span>1</span></div>
+                    <div class="ce-step-info">
+                        <strong>Details</strong>
+                        <span>Title, description, location</span>
+                    </div>
+                </div>
+                <div class="ce-step-connector"></div>
+                <div class="ce-step" id="si2">
+                    <div class="ce-step-dot"><span>2</span></div>
+                    <div class="ce-step-info">
+                        <strong>Category & Club</strong>
+                        <span>Tags, organisation</span>
+                    </div>
+                </div>
+                <div class="ce-step-connector"></div>
+                <div class="ce-step" id="si3">
+                    <div class="ce-step-dot"><span>3</span></div>
+                    <div class="ce-step-info">
+                        <strong>Tickets</strong>
+                        <span>Capacity & availability</span>
+                    </div>
+                </div>
+                <div class="ce-step-connector"></div>
+                <div class="ce-step" id="si4">
+                    <div class="ce-step-dot"><span>4</span></div>
+                    <div class="ce-step-info">
+                        <strong>Banner</strong>
+                        <span>Upload cover image</span>
+                    </div>
+                </div>
             </div>
-            <div class="step-line"></div>
-            <div class="step" id="step-ind-2">
-                <span class="step-num">2</span>
-                <span class="step-lbl">Tickets</span>
-            </div>
-            <div class="step-line"></div>
-            <div class="step" id="step-ind-3">
-                <span class="step-num">3</span>
-                <span class="step-lbl">Banner</span>
+        </div>
+
+        <div class="ce-hero-right">
+            <div class="ce-preview-float">
+                <div class="cpf-label">
+                    <span class="cpf-dot"></span> Live Preview
+                </div>
+                <div class="cpf-card">
+                    <div class="cpf-img" id="cpfImg">
+                        <div class="cpf-img-placeholder" id="cpfPlaceholder">
+                            <span>🖼️</span>
+                        </div>
+                        <img id="cpfBanner" src="" alt="" style="display:none;">
+                        <div class="cpf-badge" id="cpfBadge">Event</div>
+                        <div class="cpf-cat-chip" id="cpfCat" style="display:none;"></div>
+                    </div>
+                    <div class="cpf-body">
+                        <h4 id="cpfTitle">Your Event Title</h4>
+                        <div class="cpf-meta">
+                            <span id="cpfDate">📅 Date TBD</span>
+                            <span id="cpfTime">🕐 Time TBD</span>
+                            <span id="cpfLoc">📍 Location TBD</span>
+                            <span id="cpfClub" style="display:none;"></span>
+                        </div>
+                        <div class="cpf-footer">
+                            <span class="cpf-tickets" id="cpfTickets">🎫 – available</span>
+                            <span class="cpf-reg-btn">Register</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- ══════════════════════════════════
-     FORM BODY
-     ══════════════════════════════════ -->
-<div class="create-body">
+<!-- ═══════════════════════ FORM BODY ═══════════════════════ -->
+<div class="ce-body">
+    <form id="ceForm" action="/events/create" method="POST" enctype="multipart/form-data" novalidate>
 
-    <form id="createEventForm" class="create-form" novalidate enctype="multipart/form-data" action="/events/create" method="POST">
-
-        <!-- ────────────────────────────
-             SECTION 1 — Event Details
-             ──────────────────────────── -->
-        <div class="form-section" id="section-1">
-            <div class="section-label">
-                <span class="section-num">01</span>
+        <!-- ─────────────────── SECTION 1: Event Details ─────────────────── -->
+        <div class="ce-section" id="sec1">
+            <div class="ce-section-head">
+                <div class="ce-section-num">01</div>
                 <div>
                     <h2>Event Details</h2>
-                    <p>Tell people what your event is about</p>
+                    <p>The core information attendees need to know</p>
                 </div>
             </div>
 
-            <div class="fields-stack">
+            <div class="ce-fields">
 
                 <!-- Title -->
-                <div class="field-group full">
-                    <label for="title">
-                        Event Title <span class="required">*</span>
-                    </label>
-                    <div class="input-wrap">
-                        <span class="input-icon">🎯</span>
-                        <input
-                                type="text"
-                                id="title"
-                                name="title"
-                                placeholder="e.g. India's Biggest AI Summit 2026"
-                                maxlength="100"
-                                required>
-                        <span class="char-count" id="titleCount">0/100</span>
+                <div class="ce-field ce-field--full">
+                    <label for="title">Event Title <span class="req">*</span></label>
+                    <div class="ce-input-wrap" id="iw-title">
+                        <span class="ce-ico">🎯</span>
+                        <input type="text" id="title" name="title"
+                               placeholder="e.g. India's Biggest AI Summit 2026"
+                               maxlength="100" autocomplete="off" required>
+                        <span class="ce-counter" id="cTitle">0/100</span>
                     </div>
-                    <span class="field-hint">Make it catchy — this is the first thing attendees see.</span>
-                    <span class="field-error" id="titleError"></span>
+                    <span class="ce-hint">Make it specific and memorable — this is the first thing people see.</span>
+                    <span class="ce-err" id="eTitle"></span>
                 </div>
 
                 <!-- Description -->
-                <div class="field-group full">
-                    <label for="description">
-                        Description <span class="required">*</span>
-                    </label>
-                    <div class="textarea-wrap">
-                        <span class="textarea-icon">📝</span>
-                        <textarea
-                                id="description"
-                                name="description"
-                                rows="5"
-                                placeholder="Describe your event — agenda, speakers, what attendees can expect..."
-                                maxlength="1000"
-                                required></textarea>
-                        <span class="char-count textarea-count" id="descCount">0/1000</span>
+                <div class="ce-field ce-field--full">
+                    <label for="description">Description <span class="req">*</span></label>
+                    <div class="ce-textarea-wrap" id="iw-desc">
+                    <textarea id="description" name="description" rows="5"
+                              placeholder="Describe your event — agenda, speakers, what to expect, dress code..."
+                              maxlength="1000" required></textarea>
+                        <span class="ce-counter ce-counter--ta" id="cDesc">0/1000</span>
                     </div>
-                    <span class="field-error" id="descError"></span>
+                    <span class="ce-err" id="eDesc"></span>
                 </div>
 
                 <!-- Location -->
-                <div class="field-group full">
-                    <label for="location">
-                        Location <span class="required">*</span>
-                    </label>
-                    <div class="input-wrap">
-                        <span class="input-icon">📍</span>
-                        <input
-                                type="text"
-                                id="location"
-                                name="location"
-                                placeholder="e.g. Pragati Maidan, Hall 5, New Delhi"
-                                required>
+                <div class="ce-field ce-field--full">
+                    <label for="location">Location <span class="req">*</span></label>
+                    <div class="ce-input-wrap" id="iw-loc">
+                        <span class="ce-ico">📍</span>
+                        <input type="text" id="location" name="location"
+                               placeholder="e.g. Pragati Maidan, Hall 5, New Delhi"
+                               autocomplete="off" required>
                     </div>
-                    <span class="field-error" id="locationError"></span>
+                    <span class="ce-err" id="eLoc"></span>
                 </div>
 
-                <!-- Date + Time row -->
-                <div class="field-row">
-                    <div class="field-group">
-                        <label for="eventDate">
-                            Event Date <span class="required">*</span>
-                        </label>
-                        <div class="input-wrap">
-                            <span class="input-icon">📅</span>
-                            <input
-                                    type="date"
-                                    id="eventDate"
-                                    name="eventDate"
-                                    required>
+                <!-- Date + Time -->
+                <div class="ce-field-row">
+                    <div class="ce-field">
+                        <label for="eventDate">Event Date <span class="req">*</span></label>
+                        <div class="ce-input-wrap" id="iw-date">
+                            <span class="ce-ico">📅</span>
+                            <input type="date" id="eventDate" name="eventDate" required>
                         </div>
-                        <span class="field-error" id="dateError"></span>
+                        <span class="ce-err" id="eDate"></span>
                     </div>
-                    <div class="field-group">
-                        <label for="eventTime">
-                            Event Time <span class="required">*</span>
-                        </label>
-                        <div class="input-wrap">
-                            <span class="input-icon">🕐</span>
-                            <input
-                                    type="time"
-                                    id="eventTime"
-                                    name="eventTime"
-                                    required>
+                    <div class="ce-field">
+                        <label for="eventTime">Event Time <span class="req">*</span></label>
+                        <div class="ce-input-wrap" id="iw-time">
+                            <span class="ce-ico">🕐</span>
+                            <input type="time" id="eventTime" name="eventTime" required>
                         </div>
-                        <span class="field-error" id="timeError"></span>
+                        <span class="ce-err" id="eTime"></span>
                     </div>
-                </div>
-
-                <!-- Club (optional) -->
-                <div class="field-group full">
-                    <label for="club">
-                        Club / Organisation
-                        <span class="optional-tag">Optional</span>
-                    </label>
-                    <div class="input-wrap">
-                        <span class="input-icon">🏛️</span>
-                        <input
-                                type="text"
-                                id="club"
-                                name="club"
-                                placeholder="e.g. IEEE Student Branch, Google Developer Groups">
-                    </div>
-                    <span class="field-hint">Leave blank if this is an independent event.</span>
                 </div>
 
             </div>
         </div>
 
         <!-- divider -->
-        <div class="section-divider">
-            <span>🎟️</span>
-        </div>
+        <div class="ce-divider"><span>🏷️</span></div>
 
-        <!-- ────────────────────────────
-             SECTION 2 — Tickets
-             ──────────────────────────── -->
-        <div class="form-section" id="section-2">
-            <div class="section-label">
-                <span class="section-num">02</span>
+        <!-- ─────────────────── SECTION 2: Category & Club ─────────────────── -->
+        <div class="ce-section" id="sec2">
+            <div class="ce-section-head">
+                <div class="ce-section-num">02</div>
                 <div>
-                    <h2>Ticket Info</h2>
-                    <p>Set your event's capacity and availability</p>
+                    <h2>Category &amp; Club</h2>
+                    <p>Help attendees discover your event — both fields are optional</p>
                 </div>
             </div>
 
-            <div class="fields-stack">
+            <div class="ce-fields">
 
-                <div class="field-row">
-                    <div class="field-group">
-                        <label for="totalTickets">
-                            Total Tickets <span class="required">*</span>
-                        </label>
-                        <div class="input-wrap">
-                            <span class="input-icon">🎫</span>
-                            <input
-                                    type="number"
-                                    id="totalTickets"
-                                    name="totalTickets"
-                                    placeholder="e.g. 500"
-                                    min="1"
-                                    max="100000"
-                                    required>
-                        </div>
-                        <span class="field-hint">Total seats available for this event.</span>
-                        <span class="field-error" id="totalError"></span>
+                <!-- Category picker -->
+                <div class="ce-field ce-field--full">
+                    <label>
+                        Category
+                        <span class="ce-opt-tag">Optional</span>
+                    </label>
+                    <p class="ce-hint" style="margin-bottom:14px;">Select the category that best fits your event. Click to toggle selection.</p>
+
+                    <!-- Hidden input to carry value -->
+                    <input type="hidden" id="category" name="category" value="">
+
+                    <div class="ce-cat-grid">
+                        <button type="button" class="ce-cat-btn" data-value="tech">
+                            <span class="ce-cat-icon">💻</span>
+                            <span class="ce-cat-name">Tech</span>
+                            <span class="ce-cat-check">✓</span>
+                        </button>
+                        <button type="button" class="ce-cat-btn" data-value="ai-ml">
+                            <span class="ce-cat-icon">🤖</span>
+                            <span class="ce-cat-name">AI &amp; ML</span>
+                            <span class="ce-cat-check">✓</span>
+                        </button>
+                        <button type="button" class="ce-cat-btn" data-value="startup">
+                            <span class="ce-cat-icon">🚀</span>
+                            <span class="ce-cat-name">Startup</span>
+                            <span class="ce-cat-check">✓</span>
+                        </button>
+                        <button type="button" class="ce-cat-btn" data-value="music">
+                            <span class="ce-cat-icon">🎵</span>
+                            <span class="ce-cat-name">Music</span>
+                            <span class="ce-cat-check">✓</span>
+                        </button>
+                        <button type="button" class="ce-cat-btn" data-value="gaming">
+                            <span class="ce-cat-icon">🎮</span>
+                            <span class="ce-cat-name">Gaming</span>
+                            <span class="ce-cat-check">✓</span>
+                        </button>
+                        <button type="button" class="ce-cat-btn" data-value="design">
+                            <span class="ce-cat-icon">🎨</span>
+                            <span class="ce-cat-name">Design</span>
+                            <span class="ce-cat-check">✓</span>
+                        </button>
+                        <button type="button" class="ce-cat-btn" data-value="science">
+                            <span class="ce-cat-icon">🔬</span>
+                            <span class="ce-cat-name">Science</span>
+                            <span class="ce-cat-check">✓</span>
+                        </button>
+                        <button type="button" class="ce-cat-btn" data-value="robotics">
+                            <span class="ce-cat-icon">🦾</span>
+                            <span class="ce-cat-name">Robotics</span>
+                            <span class="ce-cat-check">✓</span>
+                        </button>
+                        <button type="button" class="ce-cat-btn" data-value="hackathon">
+                            <span class="ce-cat-icon">⚡</span>
+                            <span class="ce-cat-name">Hackathon</span>
+                            <span class="ce-cat-check">✓</span>
+                        </button>
+                        <button type="button" class="ce-cat-btn" data-value="workshop">
+                            <span class="ce-cat-icon">🛠️</span>
+                            <span class="ce-cat-name">Workshop</span>
+                            <span class="ce-cat-check">✓</span>
+                        </button>
+                        <button type="button" class="ce-cat-btn" data-value="networking">
+                            <span class="ce-cat-icon">🤝</span>
+                            <span class="ce-cat-name">Networking</span>
+                            <span class="ce-cat-check">✓</span>
+                        </button>
+                        <button type="button" class="ce-cat-btn" data-value="sports">
+                            <span class="ce-cat-icon">🏆</span>
+                            <span class="ce-cat-name">Sports</span>
+                            <span class="ce-cat-check">✓</span>
+                        </button>
+                        <button type="button" class="ce-cat-btn" data-value="culture">
+                            <span class="ce-cat-icon">🎭</span>
+                            <span class="ce-cat-name">Culture</span>
+                            <span class="ce-cat-check">✓</span>
+                        </button>
+                        <button type="button" class="ce-cat-btn" data-value="food">
+                            <span class="ce-cat-icon">🍽️</span>
+                            <span class="ce-cat-name">Food &amp; Drink</span>
+                            <span class="ce-cat-check">✓</span>
+                        </button>
+                        <button type="button" class="ce-cat-btn" data-value="other">
+                            <span class="ce-cat-icon">✨</span>
+                            <span class="ce-cat-name">Other</span>
+                            <span class="ce-cat-check">✓</span>
+                        </button>
                     </div>
 
-                    <div class="field-group">
-                        <label for="ticketsAvailable">
-                            Tickets Available <span class="required">*</span>
-                        </label>
-                        <div class="input-wrap">
-                            <span class="input-icon">✅</span>
-                            <input
-                                    type="number"
-                                    id="ticketsAvailable"
-                                    name="ticketsAvailable"
-                                    placeholder="e.g. 500"
-                                    min="0"
-                                    required>
-                        </div>
-                        <span class="field-hint">Must be ≤ total tickets.</span>
-                        <span class="field-error" id="availError"></span>
+                    <div class="ce-selected-tag" id="selectedCatWrap" style="display:none;">
+                        Selected: <strong id="selectedCatLabel"></strong>
+                        <button type="button" id="clearCat">✕ Clear</button>
                     </div>
                 </div>
 
-                <!-- Live capacity bar -->
-                <div class="capacity-preview" id="capacityPreview">
-                    <div class="cap-header">
-                        <span>Capacity Overview</span>
-                        <span id="capPercent">–</span>
+                <!-- Club -->
+                <div class="ce-field ce-field--full">
+                    <label for="club">
+                        Club / Organisation
+                        <span class="ce-opt-tag">Optional</span>
+                    </label>
+                    <div class="ce-input-wrap" id="iw-club">
+                        <span class="ce-ico">🏛️</span>
+                        <input type="text" id="club" name="club"
+                               placeholder="e.g. IEEE Student Branch, Google Developer Groups, NASSCOM">
                     </div>
-                    <div class="cap-track">
-                        <div class="cap-fill" id="capFill"></div>
+                    <span class="ce-hint">Leave blank if this is an independent event.</span>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- divider -->
+        <div class="ce-divider"><span>🎫</span></div>
+
+        <!-- ─────────────────── SECTION 3: Tickets ─────────────────── -->
+        <div class="ce-section" id="sec3">
+            <div class="ce-section-head">
+                <div class="ce-section-num">03</div>
+                <div>
+                    <h2>Ticket Info</h2>
+                    <p>Set your event's total capacity and current availability</p>
+                </div>
+            </div>
+
+            <div class="ce-fields">
+
+                <div class="ce-field-row">
+                    <div class="ce-field">
+                        <label for="totalTickets">Total Tickets <span class="req">*</span></label>
+                        <div class="ce-input-wrap" id="iw-total">
+                            <span class="ce-ico">🎫</span>
+                            <input type="number" id="totalTickets" name="totalTickets"
+                                   placeholder="e.g. 500" min="1" max="100000" required>
+                        </div>
+                        <span class="ce-hint">Maximum seats for this event.</span>
+                        <span class="ce-err" id="eTotal"></span>
                     </div>
-                    <div class="cap-labels">
+                    <div class="ce-field">
+                        <label for="ticketsAvailable">Tickets Available <span class="req">*</span></label>
+                        <div class="ce-input-wrap" id="iw-avail">
+                            <span class="ce-ico">✅</span>
+                            <input type="number" id="ticketsAvailable" name="ticketsAvailable"
+                                   placeholder="e.g. 500" min="0" required>
+                        </div>
+                        <span class="ce-hint">Currently open for booking. Must be ≤ total.</span>
+                        <span class="ce-err" id="eAvail"></span>
+                    </div>
+                </div>
+
+                <!-- ── TICKET IMAGE ── -->
+                <div class="ce-field ce-field--full">
+                    <label for="ticketImage">
+                        Ticket Image <span class="req">*</span>
+                    </label>
+                    <div class="ce-ticket-upload-zone" id="ticketUploadZone">
+                        <input type="file" id="ticketImage" name="ticketImage"
+                               accept="image/jpeg,image/png,image/webp" required
+                               style="position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer;z-index:2;">
+
+                        <!-- Idle state -->
+                        <div class="ce-ticket-idle" id="ticketIdle">
+                            <div class="ce-ticket-upload-icon">🎫</div>
+                            <p class="ce-ticket-upload-title">Upload Ticket Image</p>
+                            <p class="ce-ticket-upload-sub">or <span class="ce-ticket-browse">click to browse</span></p>
+                            <p class="ce-upload-spec">PNG · JPG · WEBP &nbsp;·&nbsp; Max 3 MB &nbsp;·&nbsp; Recommended 800 × 400 px</p>
+                        </div>
+
+                        <!-- Preview state -->
+                        <div class="ce-ticket-preview" id="ticketPreview" style="display:none;">
+                            <img id="ticketPreviewImg" src="" alt="Ticket image preview">
+                            <div class="ce-ticket-overlay">
+                                <button type="button" id="removeTicketImg" class="ce-remove-btn">✕ Remove</button>
+                                <span class="ce-file-meta" id="ticketFileMeta"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <span class="ce-err" id="eTicket"></span>
+                    <span class="ce-hint">This image appears on the ticket sent to attendees after registration.</span>
+                </div>
+
+                <!-- Capacity bar -->
+                <div class="ce-cap-bar" id="capBar">
+                    <div class="ce-cap-top">
+                        <span class="ce-cap-label">Capacity Overview</span>
+                        <span class="ce-cap-pct" id="capPct">–</span>
+                    </div>
+                    <div class="ce-cap-track">
+                        <div class="ce-cap-fill" id="capFill"></div>
+                    </div>
+                    <div class="ce-cap-bottom">
                         <span id="capSold">Sold: 0</span>
                         <span id="capAvail">Available: –</span>
                         <span id="capTotal">Total: –</span>
@@ -278,120 +412,75 @@
         </div>
 
         <!-- divider -->
-        <div class="section-divider">
-            <span>🖼️</span>
-        </div>
+        <div class="ce-divider"><span>🖼️</span></div>
 
-        <!-- ────────────────────────────
-             SECTION 3 — Banner Image
-             ──────────────────────────── -->
-        <div class="form-section" id="section-3">
-            <div class="section-label">
-                <span class="section-num">03</span>
+        <!-- ─────────────────── SECTION 4: Banner ─────────────────── -->
+        <div class="ce-section" id="sec4">
+            <div class="ce-section-head">
+                <div class="ce-section-num">04</div>
                 <div>
                     <h2>Banner Image</h2>
-                    <p>Upload a high-quality cover image for your event</p>
+                    <p>Upload a striking cover for your event</p>
                 </div>
             </div>
 
-            <div class="fields-stack">
+            <div class="ce-fields">
 
-                <!-- Drop zone -->
-                <div class="upload-zone" id="uploadZone">
-                    <input
-                            type="file"
-                            id="bannerImage"
-                            name="bannerImage"
-                            accept="image/jpeg,image/png,image/webp"
-                            class="file-input">
+                <div class="ce-upload-zone" id="uploadZone">
+                    <input type="file" id="bannerImage" name="bannerImage"
+                           accept="image/jpeg,image/png,image/webp" class="ce-file-input" required>
 
-                    <div class="upload-idle" id="uploadIdle">
-                        <div class="upload-icon-wrap">
-                            <span class="upload-icon">🖼️</span>
+                    <!-- Idle -->
+                    <div class="ce-upload-idle" id="uploadIdle">
+                        <div class="ce-upload-ring">
+                            <div class="ce-upload-icon-box">🖼️</div>
                         </div>
-                        <p class="upload-title">Drop your banner here</p>
-                        <p class="upload-sub">or <span class="upload-browse">click to browse</span></p>
-                        <p class="upload-spec">PNG, JPG, WEBP · Max 5MB · Recommended 1200×630px</p>
+                        <p class="ce-upload-title">Drop your banner here</p>
+                        <p class="ce-upload-sub">or <span class="ce-upload-browse">click to browse</span></p>
+                        <p class="ce-upload-spec">PNG · JPG · WEBP &nbsp;·&nbsp; Max 5 MB &nbsp;·&nbsp; Recommended 1200 × 630 px</p>
                     </div>
 
-                    <div class="upload-preview" id="uploadPreview" style="display:none;">
-                        <img id="previewImg" src="" alt="Banner preview">
-                        <div class="preview-overlay">
-                            <button type="button" class="preview-remove" id="removeImg">✕ Remove</button>
+                    <!-- Preview -->
+                    <div class="ce-upload-preview" id="uploadPreview" style="display:none;">
+                        <img id="uploadPreviewImg" src="" alt="Banner preview">
+                        <div class="ce-upload-overlay">
+                            <button type="button" id="removeImg" class="ce-remove-btn">✕ Remove Image</button>
+                            <span class="ce-file-meta" id="fileMeta"></span>
                         </div>
-                        <div class="preview-meta" id="previewMeta"></div>
                     </div>
                 </div>
+                <span class="ce-err" id="eBanner"></span>
 
-                <span class="field-hint center-hint">
-                    💡 A great banner dramatically increases event registrations.
-                    Use bold visuals that represent the event mood.
-                </span>
+                <p class="ce-hint ce-hint--center">
+                    💡 Events with banners get <strong>3× more</strong> registrations. Use bold, high-contrast visuals.
+                </p>
 
             </div>
         </div>
 
-        <!-- ────────────────────────────
-             SUBMIT BAR
-             ──────────────────────────── -->
-        <div class="submit-bar">
-            <a href="/" class="cancel-btn">← Cancel</a>
-            <div class="submit-group">
-                <button type="button" class="draft-btn" id="saveDraft">💾 Save Draft</button>
-                <button type="submit" class="publish-btn" id="publishBtn">
-                    <span class="publish-text">Publish Event</span>
-                    <span class="publish-icon">🚀</span>
+        <!-- ─────────────────── SUBMIT BAR ─────────────────── -->
+        <div class="ce-submit-bar">
+            <a href="/" class="ce-cancel">← Discard</a>
+            <div class="ce-submit-right">
+                <button type="button" class="ce-draft-btn" id="draftBtn">💾 Save Draft</button>
+                <button type="submit" class="ce-publish-btn" id="publishBtn">
+                    <span id="publishText">Publish Event</span>
+                    <span class="ce-pub-icon">🚀</span>
                 </button>
             </div>
         </div>
 
     </form>
-
-    <!-- Live Preview card -->
-    <aside class="preview-aside">
-        <div class="preview-sticky">
-            <div class="preview-header">
-                <h3>Live Preview</h3>
-                <span class="preview-badge">Auto-updates</span>
-            </div>
-            <div class="event-preview-card">
-                <div class="preview-card-img" id="previewCardImg">
-                    <div class="preview-img-placeholder">
-                        <span>🖼️</span>
-                        <p>Banner will appear here</p>
-                    </div>
-                    <img id="previewCardBanner" src="" alt="" style="display:none; width:100%; height:100%; object-fit:cover;">
-                    <span class="preview-card-badge" id="previewBadge">Event</span>
-                </div>
-                <div class="preview-card-body">
-                    <h4 id="previewTitle">Your Event Title</h4>
-                    <div class="preview-card-meta">
-                        <span id="previewDate">📅 Date TBD</span>
-                        <span id="previewTime">🕐 Time TBD</span>
-                        <span id="previewLocation">📍 Location TBD</span>
-                        <span id="previewClub" style="display:none;">🏛️ <span id="previewClubName"></span></span>
-                    </div>
-                    <div class="preview-ticket-info">
-                        <span class="preview-ticket-pill" id="previewTickets">🎫 – tickets</span>
-                    </div>
-                </div>
-            </div>
-            <p class="preview-note">This is how your event card will appear to attendees.</p>
-        </div>
-    </aside>
-
 </div>
 
-<!-- ══════════════════════════════════
-     FOOTER
-     ══════════════════════════════════ -->
+<!-- ═══════════════════════ FOOTER ═══════════════════════ -->
 <footer class="footer">
     <div class="footer-top">
         <div class="footer-brand">
             <div class="logo">
                 <span class="logo-text">Event<em>aura</em></span>
             </div>
-            <p>India's premier event discovery platform.</p>
+            <p>India's premier event discovery platform. Find, book, and experience the best events near you.</p>
             <div class="social-links">
                 <a href="#" aria-label="Twitter">𝕏</a>
                 <a href="#" aria-label="Instagram">📸</a>
@@ -405,118 +494,151 @@
                 <a href="#">Trending Events</a>
                 <a href="#">Upcoming Events</a>
                 <a href="#">Categories</a>
+                <a href="#">Cities</a>
             </div>
             <div class="footer-col">
                 <h4>Organizers</h4>
                 <a href="#">Create Event</a>
+                <a href="#">Pricing</a>
                 <a href="#">Dashboard</a>
                 <a href="#">Analytics</a>
+            </div>
+            <div class="footer-col">
+                <h4>Company</h4>
+                <a href="#">About Us</a>
+                <a href="#">Blog</a>
+                <a href="#">Careers</a>
+                <a href="#">Press</a>
             </div>
             <div class="footer-col">
                 <h4>Support</h4>
                 <a href="#">Help Center</a>
                 <a href="#">Contact Us</a>
                 <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
             </div>
         </div>
     </div>
     <div class="footer-bottom">
         <p>© 2026 Eventaura. All rights reserved. Made with ❤️ in India.</p>
+        <p>Delhi · Mumbai · Bangalore · Hyderabad · Chennai · Pune · Goa</p>
     </div>
 </footer>
 
-<!-- ══════════════════════════════════
-     SCRIPTS
-     ══════════════════════════════════ -->
+<!-- ═══════════════════════ SCRIPTS ═══════════════════════ -->
 <script>
 
-    /* ── Clock ── */
-    function updateClock() {
-        const now = new Date();
-        const el = document.getElementById('clock');
-        if (!el) return;
-        el.textContent =
-            String(now.getHours()).padStart(2,'0') + ':' +
-            String(now.getMinutes()).padStart(2,'0') + ':' +
-            String(now.getSeconds()).padStart(2,'0');
-    }
-    setInterval(updateClock, 1000);
-    updateClock();
-
-    /* ── Char counters ── */
-    function bindCounter(inputId, countId, max) {
-        const el  = document.getElementById(inputId);
-        const cnt = document.getElementById(countId);
-        if (!el || !cnt) return;
-        el.addEventListener('input', () => {
-            cnt.textContent = el.value.length + '/' + max;
-            cnt.classList.toggle('over', el.value.length > max * 0.9);
+    /* ─── Char counters ─── */
+    function bindCounter(inputId, counterId, max) {
+        const inp = document.getElementById(inputId);
+        const cnt = document.getElementById(counterId);
+        if (!inp || !cnt) return;
+        inp.addEventListener('input', () => {
+            const len = inp.value.length;
+            cnt.textContent = len + '/' + max;
+            cnt.style.color = len > max * 0.88 ? '#f97316' : '';
         });
     }
-    bindCounter('title', 'titleCount', 100);
-    bindCounter('description', 'descCount', 1000);
+    bindCounter('title', 'cTitle', 100);
+    bindCounter('description', 'cDesc', 1000);
 
-    /* ── Step indicator ── */
-    function activateStep(n) {
-        for (let i = 1; i <= 3; i++) {
-            const el = document.getElementById('step-ind-' + i);
-            if (!el) continue;
-            el.classList.remove('active', 'done');
-            if (i < n)  el.classList.add('done');
-            if (i === n) el.classList.add('active');
-        }
-    }
-
-    /* ── Scroll-based step activation ── */
-    const sectionEls = [
-        document.getElementById('section-1'),
-        document.getElementById('section-2'),
-        document.getElementById('section-3'),
+    /* ─── Step indicator ─── */
+    const stepEls = [
+        document.getElementById('si1'),
+        document.getElementById('si2'),
+        document.getElementById('si3'),
+        document.getElementById('si4'),
     ];
+    const sectionEls = [
+        document.getElementById('sec1'),
+        document.getElementById('sec2'),
+        document.getElementById('sec3'),
+        document.getElementById('sec4'),
+    ];
+    function setStep(n) {
+        stepEls.forEach((s, i) => {
+            if (!s) return;
+            s.classList.remove('ce-step--active', 'ce-step--done');
+            if (i + 1 < n) s.classList.add('ce-step--done');
+            if (i + 1 === n) s.classList.add('ce-step--active');
+        });
+    }
     window.addEventListener('scroll', () => {
-        const mid = window.scrollY + window.innerHeight / 2;
+        const mid = window.scrollY + window.innerHeight * 0.45;
         let active = 1;
         sectionEls.forEach((s, i) => {
             if (s && s.getBoundingClientRect().top + window.scrollY <= mid) active = i + 1;
         });
-        activateStep(active);
+        setStep(active);
     });
 
-    /* ── Live preview ── */
-    function syncPreview() {
-        const title    = document.getElementById('title').value.trim();
-        const date     = document.getElementById('eventDate').value;
-        const time     = document.getElementById('eventTime').value;
-        const location = document.getElementById('location').value.trim();
-        const club     = document.getElementById('club').value.trim();
-        const avail    = document.getElementById('ticketsAvailable').value;
+    /* ─── Category picker ─── */
+    const catBtns        = document.querySelectorAll('.ce-cat-btn');
+    const catInput       = document.getElementById('category');
+    const selectedWrap   = document.getElementById('selectedCatWrap');
+    const selectedLabel  = document.getElementById('selectedCatLabel');
+    const clearCatBtn    = document.getElementById('clearCat');
+    const cpfCat         = document.getElementById('cpfCat');
 
-        document.getElementById('previewTitle').textContent    = title    || 'Your Event Title';
-        document.getElementById('previewBadge').textContent    = title    ? title.substring(0,8) : 'Event';
-        document.getElementById('previewDate').textContent     = date     ? '📅 ' + formatDate(date) : '📅 Date TBD';
-        document.getElementById('previewTime').textContent     = time     ? '🕐 ' + formatTime(time) : '🕐 Time TBD';
-        document.getElementById('previewLocation').textContent = location ? '📍 ' + location : '📍 Location TBD';
-        document.getElementById('previewTickets').textContent  = avail    ? '🎫 ' + avail + ' tickets left' : '🎫 – tickets';
+    catBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (btn.classList.contains('ce-cat-btn--active')) {
+                btn.classList.remove('ce-cat-btn--active');
+                catInput.value = '';
+                selectedWrap.style.display = 'none';
+                cpfCat.style.display = 'none';
+                return;
+            }
+            catBtns.forEach(b => b.classList.remove('ce-cat-btn--active'));
+            btn.classList.add('ce-cat-btn--active');
+            const val   = btn.dataset.value;
+            const name  = btn.querySelector('.ce-cat-name').textContent;
+            const icon  = btn.querySelector('.ce-cat-icon').textContent;
+            catInput.value = val;
+            selectedLabel.textContent = icon + ' ' + name;
+            selectedWrap.style.display = 'flex';
+            cpfCat.textContent = icon + ' ' + name;
+            cpfCat.style.display = 'block';
+            syncPreview();
+        });
+    });
+    clearCatBtn.addEventListener('click', () => {
+        catBtns.forEach(b => b.classList.remove('ce-cat-btn--active'));
+        catInput.value = '';
+        selectedWrap.style.display = 'none';
+        cpfCat.style.display = 'none';
+    });
 
-        const clubSpan = document.getElementById('previewClub');
-        if (club) {
-            document.getElementById('previewClubName').textContent = club;
-            clubSpan.style.display = 'flex';
-        } else {
-            clubSpan.style.display = 'none';
-        }
-    }
-
-    function formatDate(d) {
+    /* ─── Live preview sync ─── */
+    function fmtDate(d) {
         if (!d) return '';
         const dt = new Date(d + 'T00:00:00');
         return dt.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
     }
-    function formatTime(t) {
+    function fmtTime(t) {
         if (!t) return '';
-        const [h, m] = t.split(':');
-        const hr = parseInt(h);
-        return (hr % 12 || 12) + ':' + m + ' ' + (hr >= 12 ? 'PM' : 'AM');
+        const [h, m] = t.split(':').map(Number);
+        return (h % 12 || 12) + ':' + String(m).padStart(2,'0') + ' ' + (h >= 12 ? 'PM' : 'AM');
+    }
+
+    function syncPreview() {
+        const title  = document.getElementById('title').value.trim();
+        const date   = document.getElementById('eventDate').value;
+        const time   = document.getElementById('eventTime').value;
+        const loc    = document.getElementById('location').value.trim();
+        const club   = document.getElementById('club').value.trim();
+        const avail  = document.getElementById('ticketsAvailable').value;
+
+        document.getElementById('cpfTitle').textContent    = title    || 'Your Event Title';
+        document.getElementById('cpfBadge').textContent    = title ? title.slice(0, 12) + (title.length > 12 ? '…' : '') : 'Event';
+        document.getElementById('cpfDate').textContent     = date     ? '📅 ' + fmtDate(date) : '📅 Date TBD';
+        document.getElementById('cpfTime').textContent     = time     ? '🕐 ' + fmtTime(time) : '🕐 Time TBD';
+        document.getElementById('cpfLoc').textContent      = loc      ? '📍 ' + loc : '📍 Location TBD';
+        document.getElementById('cpfTickets').textContent  = avail    ? '🎫 ' + avail + ' available' : '🎫 – available';
+
+        const clubEl = document.getElementById('cpfClub');
+        if (club) { clubEl.textContent = '🏛️ ' + club; clubEl.style.display = 'block'; }
+        else       { clubEl.style.display = 'none'; }
     }
 
     ['title','eventDate','eventTime','location','club','ticketsAvailable'].forEach(id => {
@@ -524,165 +646,228 @@
         if (el) el.addEventListener('input', syncPreview);
     });
 
-    /* ── Capacity bar ── */
-    function updateCapacity() {
+    /* ─── Capacity bar ─── */
+    function updateCap() {
         const total = parseInt(document.getElementById('totalTickets').value) || 0;
         const avail = parseInt(document.getElementById('ticketsAvailable').value);
-        const preview = document.getElementById('capacityPreview');
+        const bar   = document.getElementById('capBar');
 
-        if (!total) { preview.classList.remove('visible'); return; }
+        if (!total) { bar.classList.remove('ce-cap-bar--visible'); return; }
+        bar.classList.add('ce-cap-bar--visible');
 
-        preview.classList.add('visible');
-        const sold  = isNaN(avail) ? 0 : Math.max(0, total - avail);
-        const pct   = total > 0 ? Math.round((sold / total) * 100) : 0;
-        const fill  = document.getElementById('capFill');
+        const sold = isNaN(avail) ? 0 : Math.max(0, total - avail);
+        const pct  = Math.round((sold / total) * 100);
+        const fill = document.getElementById('capFill');
+
         fill.style.width = pct + '%';
         fill.style.background = pct > 80
-            ? 'linear-gradient(90deg, #ef4444, #dc2626)'
+            ? 'linear-gradient(90deg,#ef4444,#b91c1c)'
             : pct > 50
-            ? 'linear-gradient(90deg, #f97316, #eab308)'
-            : 'linear-gradient(90deg, #ff4d6d, #ff8c42)';
+            ? 'linear-gradient(90deg,#f97316,#eab308)'
+            : 'linear-gradient(90deg,#ff4d6d,#ff8c42)';
 
-        document.getElementById('capPercent').textContent = pct + '% sold';
-        document.getElementById('capSold').textContent    = 'Sold: ' + sold;
-        document.getElementById('capAvail').textContent   = 'Available: ' + (isNaN(avail) ? '–' : avail);
-        document.getElementById('capTotal').textContent   = 'Total: ' + total;
-
+        document.getElementById('capPct').textContent   = pct + '% sold';
+        document.getElementById('capSold').textContent  = 'Sold: ' + sold;
+        document.getElementById('capAvail').textContent = 'Available: ' + (isNaN(avail) ? '–' : avail);
+        document.getElementById('capTotal').textContent = 'Total: ' + total;
         syncPreview();
     }
-    document.getElementById('totalTickets').addEventListener('input', updateCapacity);
-    document.getElementById('ticketsAvailable').addEventListener('input', updateCapacity);
+    document.getElementById('totalTickets').addEventListener('input', updateCap);
+    document.getElementById('ticketsAvailable').addEventListener('input', updateCap);
 
-    /* ── Banner image upload ── */
-    const uploadZone   = document.getElementById('uploadZone');
-    const fileInput    = document.getElementById('bannerImage');
-    const uploadIdle   = document.getElementById('uploadIdle');
-    const uploadPrev   = document.getElementById('uploadPreview');
-    const previewImg   = document.getElementById('previewImg');
-    const previewMeta  = document.getElementById('previewMeta');
-    const removeBtn    = document.getElementById('removeImg');
-    const cardBanner   = document.getElementById('previewCardBanner');
-    const cardImgWrap  = document.getElementById('previewCardImg');
+    /* ─── Banner upload ─── */
+    const zone        = document.getElementById('uploadZone');
+    const fileInput   = document.getElementById('bannerImage');
+    const idle        = document.getElementById('uploadIdle');
+    const preview     = document.getElementById('uploadPreview');
+    const previewImg  = document.getElementById('uploadPreviewImg');
+    const fileMeta    = document.getElementById('fileMeta');
+    const removeBtn   = document.getElementById('removeImg');
+    const cpfBanner   = document.getElementById('cpfBanner');
+    const cpfPlaceh   = document.getElementById('cpfPlaceholder');
 
-    function showPreview(file) {
+    function showBanner(file) {
         if (!file || !file.type.startsWith('image/')) return;
         const url = URL.createObjectURL(file);
         previewImg.src = url;
-        cardBanner.src = url;
-        cardBanner.style.display = 'block';
-        cardImgWrap.querySelector('.preview-img-placeholder').style.display = 'none';
-        uploadIdle.style.display  = 'none';
-        uploadPrev.style.display  = 'flex';
-        previewMeta.textContent   = file.name + ' · ' + (file.size / 1024 / 1024).toFixed(2) + ' MB';
-        uploadZone.classList.add('has-image');
+        cpfBanner.src  = url;
+        cpfBanner.style.display  = 'block';
+        cpfPlaceh.style.display  = 'none';
+        idle.style.display       = 'none';
+        preview.style.display    = 'block';
+        fileMeta.textContent     = file.name + ' · ' + (file.size/1024/1024).toFixed(2) + ' MB';
+        zone.classList.add('ce-zone--filled');
     }
-
-    fileInput.addEventListener('change', () => {
-        if (fileInput.files[0]) showPreview(fileInput.files[0]);
-    });
-
-    uploadZone.addEventListener('click', (e) => {
-        if (e.target === removeBtn || removeBtn.contains(e.target)) return;
-        if (!uploadZone.classList.contains('has-image')) fileInput.click();
-    });
-
-    removeBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
+    function clearBanner() {
         fileInput.value = '';
         previewImg.src  = '';
-        cardBanner.src  = '';
-        cardBanner.style.display = 'none';
-        cardImgWrap.querySelector('.preview-img-placeholder').style.display = 'flex';
-        uploadIdle.style.display  = 'flex';
-        uploadPrev.style.display  = 'none';
-        uploadZone.classList.remove('has-image', 'drag-over');
-    });
-
-    /* Drag and drop */
-    ['dragenter','dragover'].forEach(evt => {
-        uploadZone.addEventListener(evt, e => {
-            e.preventDefault();
-            uploadZone.classList.add('drag-over');
-        });
-    });
-    ['dragleave','drop'].forEach(evt => {
-        uploadZone.addEventListener(evt, e => {
-            e.preventDefault();
-            uploadZone.classList.remove('drag-over');
-        });
-    });
-    uploadZone.addEventListener('drop', e => {
-        const file = e.dataTransfer.files[0];
-        if (file) {
-            // Transfer to file input via DataTransfer
-            const dt = new DataTransfer();
-            dt.items.add(file);
-            fileInput.files = dt.files;
-            showPreview(file);
-        }
-    });
-
-    /* ── Form validation ── */
-    function validateField(id, errorId, msg, condition) {
-        const err = document.getElementById(errorId);
-        if (!err) return condition;
-        if (!condition) {
-            err.textContent = msg;
-            err.classList.add('show');
-            document.getElementById(id)?.closest('.input-wrap, .textarea-wrap')?.classList.add('error');
-        } else {
-            err.textContent = '';
-            err.classList.remove('show');
-            document.getElementById(id)?.closest('.input-wrap, .textarea-wrap')?.classList.remove('error');
-        }
-        return condition;
+        cpfBanner.src   = '';
+        cpfBanner.style.display  = 'none';
+        cpfPlaceh.style.display  = 'flex';
+        idle.style.display       = 'flex';
+        preview.style.display    = 'none';
+        zone.classList.remove('ce-zone--filled','ce-zone--drag');
     }
 
-    document.getElementById('createEventForm').addEventListener('submit', function(e) {
+    fileInput.addEventListener('change', () => { if (fileInput.files[0]) showBanner(fileInput.files[0]); });
+    zone.addEventListener('click', e => {
+        if (!zone.classList.contains('ce-zone--filled') && !removeBtn.contains(e.target)) fileInput.click();
+    });
+    removeBtn.addEventListener('click', e => { e.stopPropagation(); clearBanner(); });
+    ['dragenter','dragover'].forEach(ev => zone.addEventListener(ev, e => { e.preventDefault(); zone.classList.add('ce-zone--drag'); }));
+    ['dragleave'].forEach(ev => zone.addEventListener(ev, () => zone.classList.remove('ce-zone--drag')));
+    zone.addEventListener('drop', e => {
+        e.preventDefault(); zone.classList.remove('ce-zone--drag');
+        const f = e.dataTransfer.files[0];
+        if (f) { const dt = new DataTransfer(); dt.items.add(f); fileInput.files = dt.files; showBanner(f); }
+    });
+
+    /* ─── Ticket image upload ─── */
+    const ticketZone       = document.getElementById('ticketUploadZone');
+    const ticketInput      = document.getElementById('ticketImage');
+    const ticketIdle       = document.getElementById('ticketIdle');
+    const ticketPreview    = document.getElementById('ticketPreview');
+    const ticketPreviewImg = document.getElementById('ticketPreviewImg');
+    const ticketFileMeta   = document.getElementById('ticketFileMeta');
+    const removeTicketBtn  = document.getElementById('removeTicketImg');
+
+    function showTicketPreview(file) {
+        if (!file || !file.type.startsWith('image/')) return;
+        ticketPreviewImg.src        = URL.createObjectURL(file);
+        ticketIdle.style.display    = 'none';
+        ticketPreview.style.display = 'block';
+        ticketFileMeta.textContent  = file.name + ' · ' + (file.size/1024/1024).toFixed(2) + ' MB';
+        ticketZone.classList.add('ce-zone--filled');
+    }
+    function clearTicketPreview() {
+        ticketInput.value           = '';
+        ticketPreviewImg.src        = '';
+        ticketIdle.style.display    = 'flex';
+        ticketPreview.style.display = 'none';
+        ticketZone.classList.remove('ce-zone--filled', 'ce-zone--drag');
+    }
+
+    ticketInput.addEventListener('change', () => {
+        if (ticketInput.files[0]) showTicketPreview(ticketInput.files[0]);
+    });
+    removeTicketBtn.addEventListener('click', e => {
+        e.stopPropagation();
         e.preventDefault();
-        let valid = true;
+        clearTicketPreview();
+    });
+    ['dragenter','dragover'].forEach(ev =>
+        ticketZone.addEventListener(ev, e => { e.preventDefault(); ticketZone.classList.add('ce-zone--drag'); })
+    );
+    ticketZone.addEventListener('dragleave', () => ticketZone.classList.remove('ce-zone--drag'));
+    ticketZone.addEventListener('drop', e => {
+        e.preventDefault();
+        ticketZone.classList.remove('ce-zone--drag');
+        const f = e.dataTransfer.files[0];
+        if (f) { const dt = new DataTransfer(); dt.items.add(f); ticketInput.files = dt.files; showTicketPreview(f); }
+    });
 
-        const title    = document.getElementById('title').value.trim();
-        const desc     = document.getElementById('description').value.trim();
-        const loc      = document.getElementById('location').value.trim();
-        const date     = document.getElementById('eventDate').value;
-        const time     = document.getElementById('eventTime').value;
-        const total    = parseInt(document.getElementById('totalTickets').value);
-        const avail    = parseInt(document.getElementById('ticketsAvailable').value);
+    /* ─── Validation ─── */
+    function markErr(fieldId, errId, msg, ok) {
+        const err = document.getElementById(errId);
+        const iw  = document.getElementById('iw-' + fieldId);
+        if (!err) return ok;
+        err.textContent = ok ? '' : msg;
+        err.classList.toggle('ce-err--show', !ok);
+        iw && iw.classList.toggle('ce-iw--error', !ok);
+        return ok;
+    }
 
-        valid &= validateField('title',            'titleError',    'Event title is required.',               title.length > 0);
-        valid &= validateField('description',      'descError',     'Please add a description.',              desc.length > 0);
-        valid &= validateField('location',         'locationError', 'Location is required.',                  loc.length > 0);
-        valid &= validateField('eventDate',        'dateError',     'Please pick a date.',                    date !== '');
-        valid &= validateField('eventTime',        'timeError',     'Please pick a time.',                    time !== '');
-        valid &= validateField('totalTickets',     'totalError',    'Enter total number of tickets.',         !isNaN(total) && total > 0);
-        valid &= validateField('ticketsAvailable', 'availError',    'Available tickets must be ≤ total.',     !isNaN(avail) && avail >= 0 && avail <= total);
+    document.getElementById('ceForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const title  = document.getElementById('title').value.trim();
+        const desc   = document.getElementById('description').value.trim();
+        const loc    = document.getElementById('location').value.trim();
+        const date   = document.getElementById('eventDate').value;
+        const time   = document.getElementById('eventTime').value;
+        const total  = parseInt(document.getElementById('totalTickets').value);
+        const avail  = parseInt(document.getElementById('ticketsAvailable').value);
+        const club = document.getElementById('club').value.trim();
+        let category = document.getElementById('category').value.trim();
 
-        if (valid) {
+        const bannerFile = document.getElementById('bannerImage').files[0];
+        const ticketFile = document.getElementById('ticketImage').files[0];
+
+        const checks = [
+            markErr('title', 'eTitle', 'Event title is required.',             title.length > 0),
+            markErr('desc',  'eDesc',  'Please add a description.',            desc.length  > 0),
+            markErr('loc',   'eLoc',   'Location is required.',                loc.length   > 0),
+            markErr('date',  'eDate',  'Please select a date.',                date !== ''),
+            markErr('time',  'eTime',  'Please select a time.',                time !== ''),
+            markErr('total', 'eTotal', 'Enter total number of tickets.',       !isNaN(total) && total > 0),
+            markErr('avail', 'eAvail', 'Available tickets must be ≤ total.',   !isNaN(avail) && avail >= 0 && avail <= total),
+            markErr(null, 'eBanner', 'Please upload a banner image.',       !!bannerFile),
+            markErr(null, 'eTicket', 'Please upload a ticket image.',       !!ticketFile),
+        ];
+
+        if (checks.every(Boolean)) {
+            const formData = new FormData();
+
+            formData.append("title", title);
+            formData.append("description", desc);
+            formData.append("location", loc);
+            formData.append("eventDate", date);
+            formData.append("eventTime", time);
+            formData.append("totalTickets", total);
+            formData.append("ticketsAvailable", avail);
+            if(category===null){
+                category = "Event";
+            }
+            formData.append("category", category);
+            formData.append("club", club);
+
+            formData.append("banner", bannerFile);
+            formData.append("ticket", ticketFile);
+
             const btn = document.getElementById('publishBtn');
-            btn.classList.add('loading');
-            btn.querySelector('.publish-text').textContent = 'Publishing…';
-            // submit after brief delay for UX feedback
-            setTimeout(() => this.submit(), 600);
+            btn.disabled = true;
+            document.getElementById('publishText').textContent = 'Publishing…';  // ADD
+            btn.classList.add('ce-pub--loading');
+            const token = localStorage.getItem("accessToken");
+            try {
+                if (!token) {
+                    window.location.href = "/login";
+                }
+                const response = await fetch("/api/v1/event/addEvent", {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: formData
+                });
+
+                if (response.ok) {
+                    alert("Event created successfully");
+                    window.location.reload();
+                } else {
+                    alert("Failed to create event");
+                    btn.disabled = false;                                              // ADD
+                    btn.classList.remove('ce-pub--loading');                           // ADD
+                    document.getElementById('publishText').textContent = 'Publish Event'; // ADD
+                }
+
+            } catch (error) {
+                console.error(error);
+                alert("Server error");
+            }
+
         } else {
-            // Scroll to first error
-            const firstError = document.querySelector('.field-error.show');
-            if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            const first = document.querySelector('.ce-err--show');
+            if (first) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
     });
 
-    /* Save draft feedback */
-    document.getElementById('saveDraft').addEventListener('click', function() {
-        this.textContent = '✅ Draft Saved';
-        this.classList.add('saved');
-        setTimeout(() => {
-            this.textContent = '💾 Save Draft';
-            this.classList.remove('saved');
-        }, 2000);
+    /* ─── Draft save ─── */
+    document.getElementById('draftBtn').addEventListener('click', function() {
+        this.textContent = '✅ Draft Saved!';
+        this.classList.add('ce-draft--saved');
+        setTimeout(() => { this.textContent = '💾 Save Draft'; this.classList.remove('ce-draft--saved'); }, 2200);
     });
-
 </script>
-<script th:src="@{/js/createEvent.js}"></script>
-
+<script th:src="@{/js/clock.js}"></script>
 </body>
 </html>
