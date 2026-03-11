@@ -497,10 +497,7 @@
                 <h4>⚠️ Danger Zone</h4>
                 <p>Permanently delete your account and all associated data. This action cannot be undone.</p>
             </div>
-            <form th:action="@{/profile/delete}" method="post"
-                  onsubmit="return confirm('Are you sure? This cannot be undone.')">
-                <button type="submit" class="delete-btn">Delete Account</button>
-            </form>
+            <button id="deleteAccount" type="submit" class="delete-btn">Delete Account</button>
         </div>
 
     </section>

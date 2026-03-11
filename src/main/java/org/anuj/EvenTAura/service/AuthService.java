@@ -12,4 +12,6 @@ public interface AuthService {
     Map<String,String> login(LoginRequest req);
 
     UserResponse me(Authentication auth);
+
+    String deleteAccount(Authentication authentication);
 }

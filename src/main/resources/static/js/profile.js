@@ -17,8 +17,13 @@ async function loadProfile(){
             }
         });
 
-        if(!res.ok){
+        if(res.status === 401){
             logout();
+            return;
+        }
+
+        if(!res.ok){
+            console.error("Profile load failed:", res.status);
             return;
         }
 
@@ -27,8 +32,7 @@ async function loadProfile(){
         renderProfile(user);
 
     }catch(err){
-        console.error(err);
-        logout();
+        console.error("Network error:", err);
     }
 }
 
@@ -73,4 +77,35 @@ function logout(){
     window.location.href="/login"
 }
 
+async function deleteAccount(){
+    const token = localStorage.getItem("accessToken");
+
+        if(!token){
+            window.location.href = "/login";
+            return;
+        }
+
+        try{
+
+            const res = await fetch("/api/v1/auth/deleteAccount",{
+                method: "DELETE",
+                headers:{
+                    "Authorization":"Bearer "+token
+                }
+            });
+
+            if(!res.ok){
+                alert("Can't delete account right now. Try again later")
+                return;
+            }
+            logout();
+
+        }catch(err){
+            console.error(err);
+        }
+}
+const deleteBtn = document.getElementById("deleteAccount");
+if(deleteBtn){
+    deleteBtn.addEventListener("click", deleteAccount);
+}
 document.getElementById("logoutBtn").addEventListener("click", logout);

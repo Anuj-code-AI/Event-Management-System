@@ -46,7 +46,8 @@ public class SecurityConfig {
                                 "/api/v1/event/getEvent/**",
                                 "/api/v1/event/getAllEvents",
                                 "/","/login","/register","/favicon.ico"
-                                ,"/profile","/createEvent","/css/**","/js/**","/images/**").permitAll()
+                                ,"/profile","/createEvent","/oauth",
+                                "/uploads/**","/css/**","/js/**","/images/**").permitAll()
                     .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth -> oauth
@@ -87,7 +88,7 @@ public class SecurityConfig {
         String refresh = jwtUtil.generateRefreshToken(email);
 
         res.sendRedirect(
-                "/oauth.html"
+                "/oauth"
                         + "?access=" + access
                         + "&refresh=" + refresh
         );

@@ -528,6 +528,79 @@
 <!-- ═══════════════════════ SCRIPTS ═══════════════════════ -->
 <script>
 
+    /* ─── Pre-fill form if editing existing event ─── */
+    (async function prefillIfEditing() {
+        const params  = new URLSearchParams(window.location.search);
+        const eventId = params.get('eventId');
+        if (!eventId) return;
+
+        const token = localStorage.getItem('accessToken');
+        if (!token) { window.location.href = '/login'; return; }
+
+        try {
+            const res = await fetch(`/api/v1/event/getEvent/${eventId}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!res.ok) { alert('Failed to load event.'); return; }
+            const ev = await res.json();
+
+            document.getElementById('title').value            = ev.title            || '';
+            document.getElementById('description').value      = ev.description      || '';
+            document.getElementById('location').value         = ev.location         || '';
+            document.getElementById('eventDate').value        = ev.eventDate        || '';
+            document.getElementById('eventTime').value        = ev.eventTime        || '';
+            document.getElementById('totalTickets').value     = ev.totalTickets     || '';
+            document.getElementById('ticketsAvailable').value = ev.ticketsAvailable || '';
+            document.getElementById('club').value             = ev.club             || '';
+
+            /* trigger counters + preview + capacity bar */
+            ['title','description','eventDate','eventTime','location','club','ticketsAvailable']
+                .forEach(id => document.getElementById(id).dispatchEvent(new Event('input')));
+            document.getElementById('totalTickets').dispatchEvent(new Event('input'));
+
+            /* pre-select category */
+            if (ev.category) {
+                const catBtn = document.querySelector(`.ce-cat-btn[data-value="${ev.category}"]`);
+                if (catBtn) catBtn.click();
+            }
+
+            /* show existing banner */
+            if (ev.bannerUrl) {
+                document.getElementById('uploadIdle').style.display     = 'none';
+                document.getElementById('uploadPreview').style.display  = 'block';
+                document.getElementById('uploadPreviewImg').src         = ev.bannerUrl;
+                document.getElementById('cpfBanner').src                = ev.bannerUrl;
+                document.getElementById('cpfBanner').style.display      = 'block';
+                document.getElementById('cpfPlaceholder').style.display = 'none';
+                document.getElementById('uploadZone').classList.add('ce-zone--filled');
+                document.getElementById('fileMeta').textContent         = 'Current banner image';
+            }
+
+            /* show existing ticket image */
+            if (ev.ticketUrl) {
+                document.getElementById('ticketIdle').style.display    = 'none';
+                document.getElementById('ticketPreview').style.display = 'block';
+                document.getElementById('ticketPreviewImg').src        = ev.ticketUrl;
+                document.getElementById('ticketUploadZone').classList.add('ce-zone--filled');
+                document.getElementById('ticketFileMeta').textContent  = 'Current ticket image';
+            }
+
+            /* set form to update mode */
+            document.getElementById('ceForm').dataset.eventId = eventId;
+            document.getElementById('ceForm').dataset.mode    = 'update';
+
+            /* update UI labels */
+            document.querySelector('.ce-chip').textContent       = '✏️ Editing Event';
+            document.getElementById('publishText').textContent   = 'Update Event';
+            document.querySelector('.ce-pub-icon').textContent   = '✏️';
+            document.querySelector('.ce-hero-left h1').innerHTML = 'Update Your<br><em>Event Details</em>';
+
+        } catch (err) {
+            console.error(err);
+            alert('Error loading event data.');
+        }
+    })();
+
     /* ─── Char counters ─── */
     function bindCounter(inputId, counterId, max) {
         const inp = document.getElementById(inputId);
@@ -573,12 +646,12 @@
     });
 
     /* ─── Category picker ─── */
-    const catBtns        = document.querySelectorAll('.ce-cat-btn');
-    const catInput       = document.getElementById('category');
-    const selectedWrap   = document.getElementById('selectedCatWrap');
-    const selectedLabel  = document.getElementById('selectedCatLabel');
-    const clearCatBtn    = document.getElementById('clearCat');
-    const cpfCat         = document.getElementById('cpfCat');
+    const catBtns       = document.querySelectorAll('.ce-cat-btn');
+    const catInput      = document.getElementById('category');
+    const selectedWrap  = document.getElementById('selectedCatWrap');
+    const selectedLabel = document.getElementById('selectedCatLabel');
+    const clearCatBtn   = document.getElementById('clearCat');
+    const cpfCat        = document.getElementById('cpfCat');
 
     catBtns.forEach(btn => {
         btn.addEventListener('click', () => {
@@ -591,9 +664,9 @@
             }
             catBtns.forEach(b => b.classList.remove('ce-cat-btn--active'));
             btn.classList.add('ce-cat-btn--active');
-            const val   = btn.dataset.value;
-            const name  = btn.querySelector('.ce-cat-name').textContent;
-            const icon  = btn.querySelector('.ce-cat-icon').textContent;
+            const val  = btn.dataset.value;
+            const name = btn.querySelector('.ce-cat-name').textContent;
+            const icon = btn.querySelector('.ce-cat-icon').textContent;
             catInput.value = val;
             selectedLabel.textContent = icon + ' ' + name;
             selectedWrap.style.display = 'flex';
@@ -622,19 +695,19 @@
     }
 
     function syncPreview() {
-        const title  = document.getElementById('title').value.trim();
-        const date   = document.getElementById('eventDate').value;
-        const time   = document.getElementById('eventTime').value;
-        const loc    = document.getElementById('location').value.trim();
-        const club   = document.getElementById('club').value.trim();
-        const avail  = document.getElementById('ticketsAvailable').value;
+        const title = document.getElementById('title').value.trim();
+        const date  = document.getElementById('eventDate').value;
+        const time  = document.getElementById('eventTime').value;
+        const loc   = document.getElementById('location').value.trim();
+        const club  = document.getElementById('club').value.trim();
+        const avail = document.getElementById('ticketsAvailable').value;
 
-        document.getElementById('cpfTitle').textContent    = title    || 'Your Event Title';
-        document.getElementById('cpfBadge').textContent    = title ? title.slice(0, 12) + (title.length > 12 ? '…' : '') : 'Event';
-        document.getElementById('cpfDate').textContent     = date     ? '📅 ' + fmtDate(date) : '📅 Date TBD';
-        document.getElementById('cpfTime').textContent     = time     ? '🕐 ' + fmtTime(time) : '🕐 Time TBD';
-        document.getElementById('cpfLoc').textContent      = loc      ? '📍 ' + loc : '📍 Location TBD';
-        document.getElementById('cpfTickets').textContent  = avail    ? '🎫 ' + avail + ' available' : '🎫 – available';
+        document.getElementById('cpfTitle').textContent   = title || 'Your Event Title';
+        document.getElementById('cpfBadge').textContent   = title ? title.slice(0, 12) + (title.length > 12 ? '…' : '') : 'Event';
+        document.getElementById('cpfDate').textContent    = date  ? '📅 ' + fmtDate(date) : '📅 Date TBD';
+        document.getElementById('cpfTime').textContent    = time  ? '🕐 ' + fmtTime(time) : '🕐 Time TBD';
+        document.getElementById('cpfLoc').textContent     = loc   ? '📍 ' + loc : '📍 Location TBD';
+        document.getElementById('cpfTickets').textContent = avail ? '🎫 ' + avail + ' available' : '🎫 – available';
 
         const clubEl = document.getElementById('cpfClub');
         if (club) { clubEl.textContent = '🏛️ ' + club; clubEl.style.display = 'block'; }
@@ -676,15 +749,15 @@
     document.getElementById('ticketsAvailable').addEventListener('input', updateCap);
 
     /* ─── Banner upload ─── */
-    const zone        = document.getElementById('uploadZone');
-    const fileInput   = document.getElementById('bannerImage');
-    const idle        = document.getElementById('uploadIdle');
-    const preview     = document.getElementById('uploadPreview');
-    const previewImg  = document.getElementById('uploadPreviewImg');
-    const fileMeta    = document.getElementById('fileMeta');
-    const removeBtn   = document.getElementById('removeImg');
-    const cpfBanner   = document.getElementById('cpfBanner');
-    const cpfPlaceh   = document.getElementById('cpfPlaceholder');
+    const zone       = document.getElementById('uploadZone');
+    const fileInput  = document.getElementById('bannerImage');
+    const idle       = document.getElementById('uploadIdle');
+    const preview    = document.getElementById('uploadPreview');
+    const previewImg = document.getElementById('uploadPreviewImg');
+    const fileMeta   = document.getElementById('fileMeta');
+    const removeBtn  = document.getElementById('removeImg');
+    const cpfBanner  = document.getElementById('cpfBanner');
+    const cpfPlaceh  = document.getElementById('cpfPlaceholder');
 
     function showBanner(file) {
         if (!file || !file.type.startsWith('image/')) return;
@@ -777,82 +850,228 @@
         return ok;
     }
 
+    /* ─── Event Preview / Update Mode ─── */
+    function showEventPreviewMode(event) {
+
+        document.querySelector('.ce-body').style.display = 'none';
+        document.querySelector('.ce-hero').style.display = 'none';
+
+        const container = document.createElement('div');
+        container.id = 'eventDetailView';
+        container.className = 'ev-detail-page';
+
+        container.innerHTML = `
+            <div class="ev-banner-wrap">
+                <img src="${event.bannerUrl}" alt="Event Banner" class="ev-banner-img">
+                <div class="ev-banner-overlay">
+                    <span class="ev-category-chip">${event.category || 'Event'}</span>
+                    <div class="ev-banner-info">
+                        <h1>${event.title}</h1>
+                        <div class="ev-banner-meta">
+                            <span>📅 ${event.eventDate}</span>
+                            <span>🕐 ${event.eventTime}</span>
+                            <span>📍 ${event.location}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ev-detail-body">
+
+                <div class="ev-detail-main">
+
+                    <div class="ev-detail-card">
+                        <h2>About this Event</h2>
+                        <p class="ev-description">${event.description}</p>
+                    </div>
+
+                    ${event.club ? `
+                    <div class="ev-detail-card">
+                        <h2>Organiser</h2>
+                        <div class="ev-organiser">
+                            <span class="ev-org-icon">🏛️</span>
+                            <span>${event.club}</span>
+                        </div>
+                    </div>` : ''}
+
+                    <div class="ev-detail-card">
+                        <h2>Ticket Preview</h2>
+                        <div class="ev-ticket-card">
+                            <div class="ev-ticket-left">
+                                <img src="${event.ticketUrl}" alt="Ticket" class="ev-ticket-img">
+                            </div>
+                            <div class="ev-ticket-body">
+                                <h3>${event.title}</h3>
+                                <div class="ev-ticket-meta">
+                                    <span>📅 ${event.eventDate}</span>
+                                    <span>🕐 ${event.eventTime}</span>
+                                    <span>📍 ${event.location}</span>
+                                </div>
+                                <div class="ev-ticket-footer">
+                                    <div>
+                                        <span class="ev-ticket-label">Available</span>
+                                        <strong class="ev-ticket-count">${event.ticketsAvailable}</strong>
+                                    </div>
+                                    <div>
+                                        <span class="ev-ticket-label">Total</span>
+                                        <strong class="ev-ticket-count">${event.totalTickets}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="ev-ticket-tear"></div>
+                            <div class="ev-ticket-qr">
+                                <div class="ev-qr-grid">
+                                    ${Array(9).fill('<span></span>').join('')}
+                                </div>
+                                <p>QR Code</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <aside class="ev-detail-sidebar">
+                    <div class="ev-register-card" id="evRegisterCard">
+                        <div class="ev-reg-header">
+                            <span class="ev-reg-title">Event Details</span>
+                            <span class="ev-tickets-left">${event.ticketsAvailable} spots left</span>
+                        </div>
+                        <div class="ev-reg-meta">
+                            <div class="ev-reg-row"><span>📅</span><span>${event.eventDate}</span></div>
+                            <div class="ev-reg-row"><span>🕐</span><span>${event.eventTime}</span></div>
+                            <div class="ev-reg-row"><span>📍</span><span>${event.location}</span></div>
+                            ${event.club ? `<div class="ev-reg-row"><span>🏛️</span><span>${event.club}</span></div>` : ''}
+                        </div>
+
+                        <div class="ev-cap-bar-wrap">
+                            <div class="ev-cap-track">
+                                <div class="ev-cap-fill" style="width:${Math.round(((event.totalTickets - event.ticketsAvailable) / event.totalTickets) * 100)}%"></div>
+                            </div>
+                            <div class="ev-cap-labels">
+                                <span>${event.totalTickets - event.ticketsAvailable} sold</span>
+                                <span>${event.ticketsAvailable} left</span>
+                            </div>
+                        </div>
+
+                        <button class="ev-update-btn" id="evUpdateBtn">✏️ Update Event</button>
+                        <button class="ev-delete-btn" id="evDeleteBtn">🗑️ Delete Event</button>
+                    </div>
+                </aside>
+
+            </div>
+        `;
+
+        document.querySelector('.header').insertAdjacentElement('afterend', container);
+
+        /* ── Update button → redirect with eventId in URL ── */
+        document.getElementById('evUpdateBtn').addEventListener('click', () => {
+            window.location.href = `/createEvent?eventId=${event.eventId}`;
+        });
+
+        /* ── Delete button ── */
+        document.getElementById('evDeleteBtn').addEventListener('click', async () => {
+            if (!confirm('Are you sure you want to delete this event?')) return;
+            const token = localStorage.getItem('accessToken');
+            const res = await fetch(`/api/v1/event/deleteEvent/${event.eventId}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+                alert('Event deleted.');
+                window.location.href = '/';
+            } else {
+                alert('Failed to delete event.');
+            }
+        });
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    /* ─── Form Submit ─── */
     document.getElementById('ceForm').addEventListener('submit', async function(e) {
         e.preventDefault();
-        const title  = document.getElementById('title').value.trim();
-        const desc   = document.getElementById('description').value.trim();
-        const loc    = document.getElementById('location').value.trim();
-        const date   = document.getElementById('eventDate').value;
-        const time   = document.getElementById('eventTime').value;
-        const total  = parseInt(document.getElementById('totalTickets').value);
-        const avail  = parseInt(document.getElementById('ticketsAvailable').value);
-        const club = document.getElementById('club').value.trim();
+
+        const isUpdate = this.dataset.mode === 'update';
+        const eventId  = this.dataset.eventId;
+
+        const title = document.getElementById('title').value.trim();
+        const desc  = document.getElementById('description').value.trim();
+        const loc   = document.getElementById('location').value.trim();
+        const date  = document.getElementById('eventDate').value;
+        const time  = document.getElementById('eventTime').value;
+        const total = parseInt(document.getElementById('totalTickets').value);
+        const avail = parseInt(document.getElementById('ticketsAvailable').value);
+        const club  = document.getElementById('club').value.trim();
         let category = document.getElementById('category').value.trim();
 
         const bannerFile = document.getElementById('bannerImage').files[0];
         const ticketFile = document.getElementById('ticketImage').files[0];
 
         const checks = [
-            markErr('title', 'eTitle', 'Event title is required.',             title.length > 0),
-            markErr('desc',  'eDesc',  'Please add a description.',            desc.length  > 0),
-            markErr('loc',   'eLoc',   'Location is required.',                loc.length   > 0),
-            markErr('date',  'eDate',  'Please select a date.',                date !== ''),
-            markErr('time',  'eTime',  'Please select a time.',                time !== ''),
-            markErr('total', 'eTotal', 'Enter total number of tickets.',       !isNaN(total) && total > 0),
-            markErr('avail', 'eAvail', 'Available tickets must be ≤ total.',   !isNaN(avail) && avail >= 0 && avail <= total),
-            markErr(null, 'eBanner', 'Please upload a banner image.',       !!bannerFile),
-            markErr(null, 'eTicket', 'Please upload a ticket image.',       !!ticketFile),
+            markErr('title', 'eTitle', 'Event title is required.',            title.length > 0),
+            markErr('desc',  'eDesc',  'Please add a description.',           desc.length  > 0),
+            markErr('loc',   'eLoc',   'Location is required.',               loc.length   > 0),
+            markErr('date',  'eDate',  'Please select a date.',               date !== ''),
+            markErr('time',  'eTime',  'Please select a time.',               time !== ''),
+            markErr('total', 'eTotal', 'Enter total number of tickets.',      !isNaN(total) && total > 0),
+            markErr('avail', 'eAvail', 'Available tickets must be ≤ total.',  !isNaN(avail) && avail >= 0 && avail <= total),
+            markErr(null, 'eBanner', 'Please upload a banner image.',         isUpdate || !!bannerFile),
+            markErr(null, 'eTicket', 'Please upload a ticket image.',         isUpdate || !!ticketFile),
         ];
 
         if (checks.every(Boolean)) {
             const formData = new FormData();
+            formData.append('title',            title);
+            formData.append('description',      desc);
+            formData.append('location',         loc);
+            formData.append('eventDate',        date);
+            formData.append('eventTime',        time);
+            formData.append('totalTickets',     total);
+            formData.append('ticketsAvailable', avail);
+            formData.append('category',         category || 'Event');
+            formData.append('club',             club);
 
-            formData.append("title", title);
-            formData.append("description", desc);
-            formData.append("location", loc);
-            formData.append("eventDate", date);
-            formData.append("eventTime", time);
-            formData.append("totalTickets", total);
-            formData.append("ticketsAvailable", avail);
-            if(category===null){
-                category = "Event";
-            }
-            formData.append("category", category);
-            formData.append("club", club);
-
-            formData.append("banner", bannerFile);
-            formData.append("ticket", ticketFile);
+            /* only append images if user selected new ones */
+            if (bannerFile) formData.append('banner', bannerFile);
+            if (ticketFile) formData.append('ticket', ticketFile);
 
             const btn = document.getElementById('publishBtn');
             btn.disabled = true;
-            document.getElementById('publishText').textContent = 'Publishing…';  // ADD
+            document.getElementById('publishText').textContent = isUpdate ? 'Updating…' : 'Publishing…';
             btn.classList.add('ce-pub--loading');
-            const token = localStorage.getItem("accessToken");
+
+            const token = localStorage.getItem('accessToken');
+            if (!token) { window.location.href = '/login'; return; }
+
+            const endpoint = isUpdate
+                ? `/api/v1/event/updateEvent/${eventId}`
+                : `/api/v1/event/addEvent`;
+
+            const method = isUpdate ? 'PATCH' : 'POST';
+
             try {
-                if (!token) {
-                    window.location.href = "/login";
-                }
-                const response = await fetch("/api/v1/event/addEvent", {
-                    method: "POST",
-                    headers: {
-                        "Authorization": `Bearer ${token}`
-                    },
+                const response = await fetch(endpoint, {
+                    method,
+                    headers: { 'Authorization': `Bearer ${token}` },
                     body: formData
                 });
 
                 if (response.ok) {
-                    alert("Event created successfully");
-                    window.location.reload();
+                    const data = await response.json();
+                    showEventPreviewMode(data);
                 } else {
-                    alert("Failed to create event");
-                    btn.disabled = false;                                              // ADD
-                    btn.classList.remove('ce-pub--loading');                           // ADD
-                    document.getElementById('publishText').textContent = 'Publish Event'; // ADD
+                    alert(isUpdate ? 'Failed to update event.' : 'Failed to create event.');
+                    btn.disabled = false;
+                    btn.classList.remove('ce-pub--loading');
+                    document.getElementById('publishText').textContent = isUpdate ? 'Update Event' : 'Publish Event';
                 }
 
             } catch (error) {
                 console.error(error);
-                alert("Server error");
+                alert('Server error. Please try again.');
+                btn.disabled = false;
+                btn.classList.remove('ce-pub--loading');
+                document.getElementById('publishText').textContent = isUpdate ? 'Update Event' : 'Publish Event';
             }
 
         } else {
@@ -867,6 +1086,7 @@
         this.classList.add('ce-draft--saved');
         setTimeout(() => { this.textContent = '💾 Save Draft'; this.classList.remove('ce-draft--saved'); }, 2200);
     });
+
 </script>
 <script th:src="@{/js/clock.js}"></script>
 </body>

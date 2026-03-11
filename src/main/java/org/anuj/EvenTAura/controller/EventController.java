@@ -41,9 +41,9 @@ public class EventController {
         request.setBannerUrl(bannerUrl);
         request.setTicketUrl(ticketUrl);
 
-        eventService.createEvent(request,authentication);
 
-        return ResponseEntity.ok("Event created");
+
+        return ResponseEntity.ok(eventService.createEvent(request,authentication));
     }
 
     @GetMapping("/getEvent/{eventId}")
@@ -57,8 +57,20 @@ public class EventController {
     }
 
     @PatchMapping("/updateEvent/{eventId}")
-    public ResponseEntity<?> updateEvent(@PathVariable Long eventId, @RequestBody EventUpdateRequest req,Authentication auth){
-        return ResponseEntity.ok(eventService.updateEvent(eventId,req,auth));
+    public ResponseEntity<?> updateEvent(
+            @PathVariable Long eventId,
+            @ModelAttribute EventUpdateRequest req,
+            @RequestParam(value = "banner", required = false) MultipartFile banner,
+            @RequestParam(value = "ticket", required = false) MultipartFile ticket,
+            Authentication auth
+    ) {
+        if (banner != null && !banner.isEmpty()) {
+            req.setBannerUrl(fileStorageService.saveImage(banner, "Banner"));
+        }
+        if (ticket != null && !ticket.isEmpty()) {
+            req.setTicketUrl(fileStorageService.saveImage(ticket, "Ticket"));
+        }
+        return ResponseEntity.ok(eventService.updateEvent(eventId, req, auth));
     }
 
     @GetMapping("/getAllEvents")

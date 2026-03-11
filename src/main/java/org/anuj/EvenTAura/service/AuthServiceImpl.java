@@ -1,6 +1,7 @@
 package org.anuj.EvenTAura.service;
 
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.anuj.EvenTAura.dto.LoginRequest;
 import org.anuj.EvenTAura.dto.RegisterRequest;
@@ -12,6 +13,7 @@ import org.anuj.EvenTAura.mapper.UserMapper;
 import org.anuj.EvenTAura.model.RefreshToken;
 import org.anuj.EvenTAura.model.Role;
 import org.anuj.EvenTAura.model.User;
+import org.anuj.EvenTAura.repository.EventRepository;
 import org.anuj.EvenTAura.repository.RefreshRepository;
 import org.anuj.EvenTAura.repository.UserRepository;
 import org.anuj.EvenTAura.util.JwtUtil;
@@ -29,6 +31,7 @@ public class AuthServiceImpl implements AuthService{
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EventRepository eventRepository;
     private final RefreshRepository refreshRepository;
 
 
@@ -80,6 +83,18 @@ public class AuthServiceImpl implements AuthService{
     public UserResponse me(Authentication auth) {
         return UserMapper.toResponse(userRepository.findByEmail(auth.getName())
                 .orElseThrow(()->new UserNotFoundException("User not found")));
+    }
+
+    @Override
+    @Transactional
+    public String deleteAccount(Authentication authentication) {
+        User user = userRepository.findByEmail(authentication.getName())
+                .orElseThrow(()->new UserNotFoundException("User not found"));
+        refreshRepository.deleteByUser(user);
+        eventRepository.deleteByUser(user);
+
+        userRepository.delete(user);
+        return "User deleted successfully";
     }
 
 }

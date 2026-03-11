@@ -40,4 +40,9 @@ public class PageController {
     public String createEvent(Model model){
         return "createEvent";
     }
+
+    @GetMapping("/oauth")
+    public String oauth(Model model) {
+        return "oauth";
+    }
 }
