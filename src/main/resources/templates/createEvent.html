@@ -35,8 +35,48 @@
         <a href="/profile">
             <button class="icon-btn profile-btn" aria-label="Profile"><span>👤</span></button>
         </a>
+
+        <!-- Hamburger button — visible only on mobile -->
+        <button class="hamburger" id="hamburgerBtn" aria-label="Open menu" aria-expanded="false">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
     </div>
 </header>
+
+<!-- ── Mobile nav overlay (dim background) ── -->
+<div class="mobile-nav-overlay" id="mobileNavOverlay"></div>
+
+<!-- ── Mobile slide-in drawer ── -->
+<nav class="mobile-nav" id="mobileNav" aria-label="Mobile navigation">
+
+    <div class="mobile-nav-header">
+        <span class="logo-text">Event<em>aura</em></span>
+        <button class="mobile-nav-close" id="mobileNavClose" aria-label="Close menu">✕</button>
+    </div>
+
+    <div class="mobile-search">
+        <span>🔍</span>
+        <input type="text" placeholder="Search events, cities...">
+    </div>
+
+    <div class="mobile-nav-links">
+        <a href="/"            class="mobile-nav-link"><span class="mnl-icon">🏠</span>Home</a>
+        <a href="/#events"     class="mobile-nav-link"><span class="mnl-icon">🔥</span>Events</a>
+        <a href="#"            class="mobile-nav-link"><span class="mnl-icon">🏷️</span>Categories</a>
+        <a href="#"            class="mobile-nav-link"><span class="mnl-icon">ℹ️</span>About</a>
+        <a href="/createEvent" class="mobile-nav-link"><span class="mnl-icon">📅</span>Create Event</a>
+        <a href="/tickets"     class="mobile-nav-link"><span class="mnl-icon">🎟️</span>My Tickets</a>
+        <a href="/profile"     class="mobile-nav-link"><span class="mnl-icon">👤</span>Profile</a>
+    </div>
+
+    <div class="mobile-nav-footer">
+        <a href="/login"    class="btn primary" style="text-align:center;display:block;">Login</a>
+        <a href="/register" class="btn primary" style="text-align:center;display:block;margin-top:10px;">Sign Up</a>
+    </div>
+
+</nav>
 
 <!-- ═══════════════════════ HERO ═══════════════════════ -->
 <section class="ce-hero">
@@ -1086,6 +1126,32 @@
         this.classList.add('ce-draft--saved');
         setTimeout(() => { this.textContent = '💾 Save Draft'; this.classList.remove('ce-draft--saved'); }, 2200);
     });
+
+    /* ─── Mobile nav ─── */
+    const hamburgerBtn     = document.getElementById('hamburgerBtn');
+    const mobileNav        = document.getElementById('mobileNav');
+    const mobileNavOverlay = document.getElementById('mobileNavOverlay');
+    const mobileNavClose   = document.getElementById('mobileNavClose');
+
+    function openMobileNav() {
+        mobileNav.classList.add('open');
+        mobileNavOverlay.classList.add('open');
+        hamburgerBtn.setAttribute('aria-expanded', 'true');
+        hamburgerBtn.classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeMobileNav() {
+        mobileNav.classList.remove('open');
+        mobileNavOverlay.classList.remove('open');
+        hamburgerBtn.setAttribute('aria-expanded', 'false');
+        hamburgerBtn.classList.remove('open');
+        document.body.style.overflow = '';
+    }
+
+    hamburgerBtn.addEventListener('click', openMobileNav);
+    mobileNavClose.addEventListener('click', closeMobileNav);
+    mobileNavOverlay.addEventListener('click', closeMobileNav);
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMobileNav(); });
 
 </script>
 <script th:src="@{/js/clock.js}"></script>

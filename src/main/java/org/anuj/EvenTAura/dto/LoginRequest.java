@@ -6,7 +6,10 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter @Setter
+import lombok.*;
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class LoginRequest {
 
     @Email(message = "Invalid email format")

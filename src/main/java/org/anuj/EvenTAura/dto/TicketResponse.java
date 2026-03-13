@@ -8,6 +8,9 @@ import org.anuj.EvenTAura.model.User;
 
 import java.time.LocalDateTime;
 
+import lombok.*;
+@Data
+@NoArgsConstructor
 @AllArgsConstructor
 public class TicketResponse {
     private Long ticketId;

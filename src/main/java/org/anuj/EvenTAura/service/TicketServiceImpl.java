@@ -6,10 +6,7 @@ import org.anuj.EvenTAura.dto.TicketCancelResponse;
 import org.anuj.EvenTAura.dto.TicketCheckResponse;
 import org.anuj.EvenTAura.dto.TicketRequest;
 import org.anuj.EvenTAura.dto.TicketResponse;
-import org.anuj.EvenTAura.exception.EventNotExistException;
-import org.anuj.EvenTAura.exception.NoTicketFoundException;
-import org.anuj.EvenTAura.exception.UnauthorizedException;
-import org.anuj.EvenTAura.exception.UserNotFoundException;
+import org.anuj.EvenTAura.exception.*;
 import org.anuj.EvenTAura.mapper.TicketMapper;
 import org.anuj.EvenTAura.model.Event;
 import org.anuj.EvenTAura.model.Ticket;
@@ -18,6 +15,7 @@ import org.anuj.EvenTAura.model.User;
 import org.anuj.EvenTAura.repository.EventRepository;
 import org.anuj.EvenTAura.repository.TicketRepository;
 import org.anuj.EvenTAura.repository.UserRepository;
+import org.anuj.EvenTAura.util.SseEmitterHolder;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,22 +32,43 @@ public class TicketServiceImpl implements TicketService{
     private final UserRepository userRepository;
     private final EventRepository eventRepository;
 
+    private String generateTicketCode() {
+        long timePart   = System.currentTimeMillis() % 1000;   // last 3 digits of timestamp
+        int  randomPart = new Random().nextInt(900) + 100;      // 3-digit random (100–999)
+        return String.format("%03d%03d", timePart, randomPart); // 6-digit code
+    }
+
     @Override
     public List<Ticket> buyTicket(Long eventId, TicketRequest req, Authentication auth) {
         User user = userRepository.findByEmail(auth.getName())
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
+
         Event event = eventRepository.findById(eventId)
-                .orElseThrow(()-> new EventNotExistException("No event found with this id"));
-        List<Ticket> tickets  = new ArrayList<>();
-        Random rand = new Random();
-        for(int i=0;i<req.getQuantity();i++){
-            int code = 1000+rand.nextInt(9000);
-            tickets.add(new Ticket(null,Integer.toString(code),false, LocalDateTime.now(),null, TicketStatus.ACTIVE,event,user));
+                .orElseThrow(() -> new EventNotExistException("No event found with this id"));
+
+        if (event.getTicketsAvailable() < req.getNumberOfTickets()) {
+            throw new MaxTicketReachedException("The no. of tickets you requested are not available");
         }
-        return ticketRepository.saveAll(tickets);
 
+        List<Ticket> tickets = new ArrayList<>();
+        for (int i = 0; i < req.getNumberOfTickets(); i++) {
+            String code = generateTicketCode();
+            tickets.add(new Ticket(null, code, false,
+                    LocalDateTime.now(), null, TicketStatus.ACTIVE, event, user));
+        }
+
+        // FIX: calculate updated count before broadcasting
+        int updatedTicketsAvailable = event.getTicketsAvailable() - req.getNumberOfTickets();
+        event.setTicketsAvailable(updatedTicketsAvailable);
+        eventRepository.save(event); // FIX: persist the updated ticket count
+
+        List<Ticket> saved = ticketRepository.saveAll(tickets);
+
+        // broadcast AFTER successful save
+        SseEmitterHolder.broadcast(event.getEventId(), updatedTicketsAvailable);
+
+        return saved;
     }
-
     @Override
     public List<Ticket> myTicket(Authentication auth) {
         User user = userRepository.findByEmail(auth.getName())

@@ -1,14 +1,14 @@
 package org.anuj.EvenTAura.dto;
 
 import jakarta.validation.constraints.*;
-import lombok.Getter;
-import lombok.Setter;
 
-import java.io.File;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-@Getter @Setter
+import lombok.*;
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class EventRequest {
 
     @NotBlank(message = "Event title required*")

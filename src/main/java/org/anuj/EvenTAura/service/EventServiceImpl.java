@@ -3,6 +3,7 @@ package org.anuj.EvenTAura.service;
 import lombok.RequiredArgsConstructor;
 import org.anuj.EvenTAura.dto.EventRequest;
 import org.anuj.EvenTAura.dto.EventResponse;
+import org.anuj.EvenTAura.dto.EventSummaryResponse;
 import org.anuj.EvenTAura.dto.EventUpdateRequest;
 import org.anuj.EvenTAura.exception.EventNotExistException;
 import org.anuj.EvenTAura.exception.UnauthorizedException;
@@ -12,8 +13,10 @@ import org.anuj.EvenTAura.model.Event;
 import org.anuj.EvenTAura.model.User;
 import org.anuj.EvenTAura.repository.EventRepository;
 import org.anuj.EvenTAura.repository.UserRepository;
+import org.anuj.EvenTAura.util.SseEmitterHolder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -38,8 +41,9 @@ public class EventServiceImpl implements EventService{
         Event event = EventMapper.toEntity(req, user);
 
         Event savedEvent = eventRepository.save(event);
-
-        return EventMapper.toResponse(savedEvent);
+        EventResponse response = EventMapper.toResponse(savedEvent);
+        SseEmitterHolder.broadcastNewEvent(response);
+        return response;
     }
 
     @Override
@@ -86,31 +90,18 @@ public class EventServiceImpl implements EventService{
     }
 
     @Override
-    public Page<EventResponse> getAllEvents(int page, int size, String sortBy, String sortDir) {
-        Sort sort = sortDir.equalsIgnoreCase("desc")
-                ? Sort.by(sortBy).descending()
-                : Sort.by(sortBy).ascending();
-
-        PageRequest pageRequest = PageRequest.of(page, size, sort);
-
-        Page<Event> eventPage = eventRepository.findAll(pageRequest);
-
-        return eventPage.map(event ->
-                new EventResponse(
+    public Page<EventSummaryResponse> getAllEvents(int page, int size) {
+        Sort sort = Sort.by("eventDate").ascending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return eventRepository.findAll(pageable)
+                .map(event -> new EventSummaryResponse(
                         event.getEventId(),
                         event.getTitle(),
-                        event.getDescription(),
                         event.getLocation(),
                         event.getEventDate(),
-                        event.getEventTime(),
-                        event.getTotalTickets(),
-                        event.getTicketsAvailable(),
                         event.getBannerUrl(),
-                        event.getTicketUrl(),
                         event.getCategory(),
-                        event.getClub(),
-                        event.getUser()
-                )
-        );
+                        event.getTicketsAvailable()
+                ));
     }
 }

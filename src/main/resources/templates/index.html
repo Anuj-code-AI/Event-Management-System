@@ -19,6 +19,7 @@
         <span class="logo-text">Event<em>aura</em></span>
     </div>
 
+    <!-- Desktop nav — hidden on mobile via CSS -->
     <nav class="nav-links">
         <a href="#">Home</a>
         <a href="#events">Events</a>
@@ -38,83 +39,65 @@
             <span class="badge">3</span>
         </button>
         <div id="guestActions">
-            <a href="/login" class="btn primary">Login</a>
+            <a href="/login"    class="btn primary">Login</a>
             <a href="/register" class="btn primary">Sign Up</a>
         </div>
-
         <div id="userActions" style="display:none;">
             <a href="/profile"><button class="icon-btn profile-btn" aria-label="Profile">
                 <span>👤</span>
             </button></a>
         </div>
+
+        <!-- Hamburger button — visible only on mobile -->
+        <button class="hamburger" id="hamburgerBtn" aria-label="Open menu" aria-expanded="false">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
     </div>
 
 </header>
 
+<!-- ── Mobile nav overlay (dim background) ── -->
+<div class="mobile-nav-overlay" id="mobileNavOverlay"></div>
+
+<!-- ── Mobile slide-in drawer ── -->
+<nav class="mobile-nav" id="mobileNav" aria-label="Mobile navigation">
+
+    <div class="mobile-nav-header">
+        <span class="logo-text">Event<em>aura</em></span>
+        <button class="mobile-nav-close" id="mobileNavClose" aria-label="Close menu">✕</button>
+    </div>
+
+    <!-- Search inside drawer -->
+    <div class="mobile-search">
+        <span>🔍</span>
+        <input type="text" placeholder="Search events, cities...">
+    </div>
+
+    <div class="mobile-nav-links">
+        <a href="/"           class="mobile-nav-link"><span class="mnl-icon">🏠</span>Home</a>
+        <a href="#events"     class="mobile-nav-link"><span class="mnl-icon">🔥</span>Events</a>
+        <a href="#"           class="mobile-nav-link"><span class="mnl-icon">🏷️</span>Categories</a>
+        <a href="#"           class="mobile-nav-link"><span class="mnl-icon">ℹ️</span>About</a>
+        <a href="/createEvent"class="mobile-nav-link"><span class="mnl-icon">📅</span>Create Event</a>
+        <a href="/tickets"    class="mobile-nav-link"><span class="mnl-icon">🎟️</span>My Tickets</a>
+        <a href="/profile"    class="mobile-nav-link"><span class="mnl-icon">👤</span>Profile</a>
+    </div>
+
+    <div class="mobile-nav-footer">
+        <a href="/login"    class="btn primary" style="text-align:center;display:block;">Login</a>
+        <a href="/register" class="btn primary" style="text-align:center;display:block;margin-top:10px;">Sign Up</a>
+    </div>
+
+</nav>
+
 <!-- ═══════════════════ BANNER SLIDESHOW ═══════════════════ -->
 <section class="banner-section" aria-label="Featured Events Banner">
-
-    <div class="banner-track" id="bannerTrack">
-        <div class="banner-slide">
-            <img th:src="@{/images/1.jpg}" alt="Event Banner 1">
-            <div class="slide-overlay">
-                <span class="slide-tag">Featured</span>
-                <h2>Discover Events<br>Near You</h2>
-                <p>Find the best tech, music & culture events</p>
-                <a href="#" class="slide-cta">Explore Now →</a>
-            </div>
-        </div>
-        <div class="banner-slide">
-            <img th:src="@{/images/2.jpg}" alt="Event Banner 2">
-            <div class="slide-overlay">
-                <span class="slide-tag">Tech</span>
-                <h2>India's Biggest<br>Tech Events</h2>
-                <p>Conferences, summits & hackathons</p>
-                <a href="#" class="slide-cta">Browse Tech →</a>
-            </div>
-        </div>
-        <div class="banner-slide">
-            <img th:src="@{/images/3.jpg}" alt="Event Banner 3">
-            <div class="slide-overlay">
-                <span class="slide-tag">Music</span>
-                <h2>Live Music &<br>Festivals</h2>
-                <p>Experience unforgettable nights</p>
-                <a href="#" class="slide-cta">Get Tickets →</a>
-            </div>
-        </div>
-        <div class="banner-slide">
-            <img th:src="@{/images/4.jpg}" alt="Event Banner 4">
-            <div class="slide-overlay">
-                <span class="slide-tag">Startup</span>
-                <h2>Connect With<br>Innovators</h2>
-                <p>Meetups, pitches & networking</p>
-                <a href="#" class="slide-cta">Join Now →</a>
-            </div>
-        </div>
-        <div class="banner-slide">
-            <img th:src="@{/images/5.jpg}" alt="Event Banner 5">
-            <div class="slide-overlay">
-                <span class="slide-tag">Design</span>
-                <h2>Creative Minds<br>Unite</h2>
-                <p>Workshops, expos & creative sessions</p>
-                <a href="#" class="slide-cta">Discover →</a>
-            </div>
-        </div>
-    </div>
-
-    <!-- Dots -->
-    <div class="banner-dots" id="bannerDots">
-        <button class="dot active" data-index="0" aria-label="Slide 1"></button>
-        <button class="dot" data-index="1" aria-label="Slide 2"></button>
-        <button class="dot" data-index="2" aria-label="Slide 3"></button>
-        <button class="dot" data-index="3" aria-label="Slide 4"></button>
-        <button class="dot" data-index="4" aria-label="Slide 5"></button>
-    </div>
-
-    <!-- Arrows -->
+    <div class="banner-track" id="bannerTrack"></div>
+    <div class="banner-dots"  id="bannerDots"></div>
     <button class="banner-arrow prev" id="prevBtn" aria-label="Previous slide">&#8592;</button>
     <button class="banner-arrow next" id="nextBtn" aria-label="Next slide">&#8594;</button>
-
 </section>
 
 <!-- ═══════════════════ CATEGORY PILLS ═══════════════════ -->
@@ -133,7 +116,6 @@
 
 <!-- ═══════════════════ TRENDING EVENTS ═══════════════════ -->
 <section id="events" class="events-section">
-
     <div class="section-header">
         <div>
             <h2>🔥 Trending Events</h2>
@@ -141,161 +123,10 @@
         </div>
         <a href="#" class="view-all">View All →</a>
     </div>
-
-    <div class="events-grid">
-
-        <div class="event-card">
-            <div class="card-img-wrap">
-                <img th:src="@{/images/6.jpg}" alt="Tech Conference">
-                <span class="event-badge">Tech</span>
-            </div>
-            <div class="event-info">
-                <h3>Tech Conference</h3>
-                <div class="event-meta">
-                    <span>📅 25 March 2026</span>
-                    <span>📍 Delhi</span>
-                </div>
-                <a href="#" class="card-cta">Register</a>
-            </div>
-        </div>
-
-        <div class="event-card">
-            <div class="card-img-wrap">
-                <img th:src="@{/images/7.jpg}" alt="Startup Meetup">
-                <span class="event-badge startup">Startup</span>
-            </div>
-            <div class="event-info">
-                <h3>Startup Meetup</h3>
-                <div class="event-meta">
-                    <span>📅 30 March 2026</span>
-                    <span>📍 Bangalore</span>
-                </div>
-                <a href="#" class="card-cta">Register</a>
-            </div>
-        </div>
-
-        <div class="event-card">
-            <div class="card-img-wrap">
-                <img th:src="@{/images/8.jpg}" alt="Music Festival">
-                <span class="event-badge music">Music</span>
-            </div>
-            <div class="event-info">
-                <h3>Music Festival</h3>
-                <div class="event-meta">
-                    <span>📅 5 April 2026</span>
-                    <span>📍 Mumbai</span>
-                </div>
-                <a href="#" class="card-cta">Register</a>
-            </div>
-        </div>
-
-        <div class="event-card">
-            <div class="card-img-wrap">
-                <img th:src="@{/images/9.jpg}" alt="AI Summit">
-                <span class="event-badge">AI</span>
-            </div>
-            <div class="event-info">
-                <h3>AI Summit</h3>
-                <div class="event-meta">
-                    <span>📅 12 April 2026</span>
-                    <span>📍 Hyderabad</span>
-                </div>
-                <a href="#" class="card-cta">Register</a>
-            </div>
-        </div>
-
-        <div class="event-card">
-            <div class="card-img-wrap">
-                <img th:src="@{/images/10.jpg}" alt="Gaming Expo">
-                <span class="event-badge gaming">Gaming</span>
-            </div>
-            <div class="event-info">
-                <h3>Gaming Expo</h3>
-                <div class="event-meta">
-                    <span>📅 15 April 2026</span>
-                    <span>📍 Pune</span>
-                </div>
-                <a href="#" class="card-cta">Register</a>
-            </div>
-        </div>
-
-        <div class="event-card">
-            <div class="card-img-wrap">
-                <img th:src="@{/images/11.jpg}" alt="Design Workshop">
-                <span class="event-badge design">Design</span>
-            </div>
-            <div class="event-info">
-                <h3>Design Workshop</h3>
-                <div class="event-meta">
-                    <span>📅 20 April 2026</span>
-                    <span>📍 Chennai</span>
-                </div>
-                <a href="#" class="card-cta">Register</a>
-            </div>
-        </div>
-
-        <div class="event-card">
-            <div class="card-img-wrap">
-                <img th:src="@{/images/12.jpg}" alt="Startup Pitch">
-                <span class="event-badge startup">Startup</span>
-            </div>
-            <div class="event-info">
-                <h3>Startup Pitch</h3>
-                <div class="event-meta">
-                    <span>📅 28 April 2026</span>
-                    <span>📍 Gurgaon</span>
-                </div>
-                <a href="#" class="card-cta">Register</a>
-            </div>
-        </div>
-
-        <div class="event-card">
-            <div class="card-img-wrap">
-                <img th:src="@{/images/13.jpg}" alt="Music Night">
-                <span class="event-badge music">Music</span>
-            </div>
-            <div class="event-info">
-                <h3>Music Night</h3>
-                <div class="event-meta">
-                    <span>📅 3 May 2026</span>
-                    <span>📍 Goa</span>
-                </div>
-                <a href="#" class="card-cta">Register</a>
-            </div>
-        </div>
-
-        <div class="event-card">
-            <div class="card-img-wrap">
-                <img th:src="@{/images/14.jpg}" alt="Robotics Expo">
-                <span class="event-badge">Tech</span>
-            </div>
-            <div class="event-info">
-                <h3>Robotics Expo</h3>
-                <div class="event-meta">
-                    <span>📅 7 May 2026</span>
-                    <span>📍 Noida</span>
-                </div>
-                <a href="#" class="card-cta">Register</a>
-            </div>
-        </div>
-
-        <div class="event-card">
-            <div class="card-img-wrap">
-                <img th:src="@{/images/15.jpg}" alt="Hackathon">
-                <span class="event-badge">Hack</span>
-            </div>
-            <div class="event-info">
-                <h3>Hackathon</h3>
-                <div class="event-meta">
-                    <span>📅 15 May 2026</span>
-                    <span>📍 Indore</span>
-                </div>
-                <a href="#" class="card-cta">Register</a>
-            </div>
-        </div>
-
+    <div class="events-grid" id="eventsGrid"></div>
+    <div class="load-more-wrap" id="loadMoreWrap" style="display:none;">
+        <button class="load-more-btn" id="loadMoreBtn">Load More Events</button>
     </div>
-
 </section>
 
 <!-- ═══════════════════ NEWSLETTER ═══════════════════ -->
@@ -314,9 +145,7 @@
 
 <!-- ═══════════════════ FOOTER ═══════════════════ -->
 <footer class="footer">
-
     <div class="footer-top">
-
         <div class="footer-brand">
             <div class="logo">
                 <div class="logo-icon">
@@ -332,7 +161,6 @@
                 <a href="#" aria-label="YouTube">▶</a>
             </div>
         </div>
-
         <div class="footer-links">
             <div class="footer-col">
                 <h4>Explore</h4>
@@ -363,14 +191,11 @@
                 <a href="#">Terms of Service</a>
             </div>
         </div>
-
     </div>
-
     <div class="footer-bottom">
         <p>© 2026 Eventaura. All rights reserved. Made with ❤️ in India.</p>
         <p>Delhi · Mumbai · Bangalore · Hyderabad · Chennai · Pune · Goa</p>
     </div>
-
 </footer>
 
 <!-- ═══════════════════ FAB ═══════════════════ -->
@@ -396,59 +221,237 @@
 
 <!-- ═══════════════════ SCRIPTS ═══════════════════ -->
 <script>
+    /* ════════════════════════════════════════════
+       EVENTAURA INDEX — Dynamic Events from API
+       ════════════════════════════════════════════ */
 
-    /* ── BANNER SLIDESHOW ── */
-    const track  = document.getElementById('bannerTrack');
-    const dots   = document.querySelectorAll('.dot');
-    const slides = document.querySelectorAll('.banner-slide');
-    let current  = 0;
-    let timer;
+    const API_BASE = '/api/v1/event';
+    let currentPage = 0;
+    const pageSize  = 10;
+    let allLoaded   = false;
+    let allEvents   = [];
 
+    function isUpcoming(event) {
+        const today = new Date(); today.setHours(0,0,0,0);
+        return new Date(event.eventDate + 'T00:00:00') >= today;
+    }
+    function fmtDate(d) {
+        if (!d) return '';
+        return new Date(d + 'T00:00:00').toLocaleDateString('en-IN', { day:'numeric', month:'long', year:'numeric' });
+    }
+    function badgeClass(category) {
+        const map = { tech:'', startup:'startup', music:'music', gaming:'gaming', design:'design', 'ai-ml':'', science:'', robotics:'', hackathon:'', workshop:'', networking:'', sports:'', culture:'', food:'' };
+        return map[category] || '';
+    }
+
+    function buildCard(ev) {
+        const upcoming = isUpcoming(ev);
+        const card = document.createElement('div');
+        card.className = 'event-card';
+        card.dataset.category = (ev.category || '').toLowerCase();
+        card.dataset.upcoming  = upcoming ? '1' : '0';
+        card.dataset.eventId   = ev.eventId;
+        card.innerHTML = `
+            <div class="card-img-wrap">
+                <img src="${ev.bannerUrl || '/images/placeholder.jpg'}" alt="${ev.title}" loading="lazy">
+                <span class="event-badge ${badgeClass(ev.category)}">${ev.category || 'Event'}</span>
+                ${!upcoming ? '<span style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.55);color:rgba(255,255,255,0.7);font-size:10px;padding:3px 8px;border-radius:50px;font-weight:600;">Past</span>' : ''}
+            </div>
+            <div class="event-info">
+                <h3>${ev.title}</h3>
+                <div class="event-meta">
+                    <span>📅 ${fmtDate(ev.eventDate)}</span>
+                    <span>📍 ${ev.location || '—'}</span>
+                </div>
+                <div class="event-meta" style="margin-top:4px;">
+                    <span class="ticket-meta-span">🎫 ${ev.ticketsAvailable > 0 ? ev.ticketsAvailable + ' tickets left' : '<span style="color:#ef4444;">Sold Out</span>'}</span>
+                </div>
+                <a class="card-cta">${upcoming && ev.ticketsAvailable > 0 ? 'Register' : 'View Details'}</a>
+            </div>`;
+        card.addEventListener('click', () => { window.location.href = `/eventDetail/${ev.eventId}`; });
+        return card;
+    }
+
+    function buildSlide(ev) {
+        const upcoming = isUpcoming(ev);
+        const tagLabels = { tech:'Tech', music:'Music', startup:'Startup', gaming:'Gaming', design:'Design', 'ai-ml':'AI', science:'Science', robotics:'Robotics', hackathon:'Hackathon', workshop:'Workshop' };
+        const tag = tagLabels[ev.category] || ev.category || 'Featured';
+        return `
+            <div class="banner-slide" data-event-id="${ev.eventId}" style="cursor:pointer;">
+                <img src="${ev.bannerUrl || '/images/placeholder.jpg'}" alt="${ev.title}">
+                <div class="slide-overlay">
+                    <span class="slide-tag ${!upcoming ? 'past' : ''}">${upcoming ? tag : 'Past Event'}</span>
+                    <h2>${ev.title}</h2>
+                    <p>📅 ${fmtDate(ev.eventDate)} &nbsp;·&nbsp; 📍 ${ev.location || '—'}</p>
+                    <a class="slide-cta">${upcoming ? 'Register Now →' : 'View Details →'}</a>
+                </div>
+            </div>`;
+    }
+
+    function buildDots(count) {
+        const wrap = document.getElementById('bannerDots');
+        wrap.innerHTML = '';
+        for (let i = 0; i < count; i++) {
+            const btn = document.createElement('button');
+            btn.className = 'dot' + (i === 0 ? ' active' : '');
+            btn.setAttribute('aria-label', `Slide ${i + 1}`);
+            btn.addEventListener('click', () => { goTo(i); resetTimer(); });
+            wrap.appendChild(btn);
+        }
+    }
+
+    let current = 0, timer, slideCount = 0;
     function goTo(index) {
-        current = (index + slides.length) % slides.length;
+        const track = document.getElementById('bannerTrack');
+        current = ((index % slideCount) + slideCount) % slideCount;
         track.style.transform = `translateX(-${current * 100}%)`;
-        dots.forEach((d, i) => d.classList.toggle('active', i === current));
+        document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === current));
+    }
+    function autoPlay()   { timer = setInterval(() => goTo(current + 1), 4500); }
+    function resetTimer() { clearInterval(timer); autoPlay(); }
+
+    function initSlideshow(slides) {
+        const track = document.getElementById('bannerTrack');
+        track.innerHTML = slides.map(ev => buildSlide(ev)).join('');
+        slideCount = slides.length;
+        buildDots(slideCount);
+        goTo(0); autoPlay();
+        track.querySelectorAll('.banner-slide').forEach(s => {
+            s.addEventListener('click', () => { window.location.href = `/eventDetail/${s.dataset.eventId}`; });
+        });
+        document.getElementById('nextBtn').addEventListener('click', () => { goTo(current + 1); resetTimer(); });
+        document.getElementById('prevBtn').addEventListener('click', () => { goTo(current - 1); resetTimer(); });
     }
 
-    function autoPlay() {
-        timer = setInterval(() => goTo(current + 1), 4500);
+    async function fetchEvents(page = 0) {
+        const token = localStorage.getItem('accessToken');
+        const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+        const res = await fetch(`${API_BASE}/getAllEvents?page=${page}&size=${pageSize}&sortBy=eventDate&sortDir=asc`, { headers });
+        if (!res.ok) throw new Error('Failed to fetch events');
+        return res.json();
     }
 
-    function resetTimer() {
-        clearInterval(timer);
-        autoPlay();
+    async function loadPage(page) {
+        const btn = document.getElementById('loadMoreBtn');
+        if (btn) btn.disabled = true;
+        try {
+            const data   = await fetchEvents(page);
+            const events = data.content || [];
+            if (page === 0) {
+                allEvents = events;
+                const upcoming = events.filter(isUpcoming).sort((a,b) => new Date(a.eventDate)-new Date(b.eventDate));
+                const past     = events.filter(e => !isUpcoming(e)).sort((a,b) => new Date(b.eventDate)-new Date(a.eventDate));
+                const sorted   = [...upcoming, ...past];
+                if (sorted.slice(0,5).length) initSlideshow(sorted.slice(0,5));
+                const grid = document.getElementById('eventsGrid');
+                grid.innerHTML = '';
+                sorted.forEach(ev => grid.appendChild(buildCard(ev)));
+            } else {
+                const grid = document.getElementById('eventsGrid');
+                events.forEach(ev => { allEvents.push(ev); grid.appendChild(buildCard(ev)); });
+            }
+            allLoaded = data.last;
+            const wrap = document.getElementById('loadMoreWrap');
+            if (wrap) wrap.style.display = allLoaded ? 'none' : 'block';
+            if (btn)  btn.disabled = false;
+        } catch (err) {
+            console.error('Error loading events:', err);
+            if (btn) btn.disabled = false;
+        }
     }
 
-    document.getElementById('nextBtn').addEventListener('click', () => { goTo(current + 1); resetTimer(); });
-    document.getElementById('prevBtn').addEventListener('click', () => { goTo(current - 1); resetTimer(); });
+    document.getElementById('loadMoreBtn').addEventListener('click', () => { currentPage++; loadPage(currentPage); });
 
-    dots.forEach(dot => {
-        dot.addEventListener('click', () => { goTo(+dot.dataset.index); resetTimer(); });
-    });
-
-    autoPlay();
-
-    /* ── CATEGORY PILLS ── */
     document.querySelectorAll('.cat-pill').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.cat-pill').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
+            const label = btn.textContent.trim().toLowerCase();
+            document.querySelectorAll('#eventsGrid .event-card').forEach(card => {
+                if (label.includes('all')) { card.style.display = ''; return; }
+                const cat = card.dataset.category || '';
+                card.style.display = label.includes(cat) || cat.includes(label.replace(/[^a-z]/g,'')) ? '' : 'none';
+            });
         });
     });
 
+    /* ── SSE live updates ── */
+    function updateCardTickets(eventId, available) {
+        const ev = allEvents.find(e => e.eventId == eventId);
+        if (ev) ev.ticketsAvailable = available;
+        const card = document.querySelector(`#eventsGrid .event-card[data-event-id="${eventId}"]`);
+        if (!card) return;
+        const soldOut  = available <= 0;
+        const upcoming = card.dataset.upcoming === '1';
+        const ticketSpan = card.querySelector('.ticket-meta-span');
+        if (ticketSpan) ticketSpan.innerHTML = soldOut ? '🎫 <span style="color:#ef4444;">Sold Out</span>' : `🎫 ${available} tickets left`;
+        const cta = card.querySelector('.card-cta');
+        if (cta) cta.textContent = upcoming && !soldOut ? 'Register' : 'View Details';
+        card.style.transition = 'box-shadow 0.3s ease';
+        card.style.boxShadow  = '0 0 0 3px rgba(255,77,109,0.45)';
+        setTimeout(() => { card.style.boxShadow = ''; }, 1400);
+    }
+
+    function addNewEventCard(ev) {
+        if (document.querySelector(`#eventsGrid .event-card[data-event-id="${ev.eventId}"]`)) return;
+        allEvents.unshift(ev);
+        const card = buildCard(ev);
+        const grid = document.getElementById('eventsGrid');
+        if (isUpcoming(ev)) {
+            const firstPast = grid.querySelector('.event-card[data-upcoming="0"]');
+            firstPast ? grid.insertBefore(card, firstPast) : grid.prepend(card);
+        } else { grid.append(card); }
+        card.style.opacity = '0'; card.style.transform = 'translateY(-16px)';
+        card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+        requestAnimationFrame(() => requestAnimationFrame(() => { card.style.opacity = '1'; card.style.transform = 'translateY(0)'; }));
+    }
+
+    function initLiveUpdates() {
+        const es = new EventSource('/api/v1/event/ticket-updates');
+        es.onmessage = (e) => { try { const { eventId, ticketsAvailable } = JSON.parse(e.data); updateCardTickets(eventId, ticketsAvailable); } catch(err){} };
+        es.addEventListener('new-event', (e) => { try { addNewEventCard(JSON.parse(e.data)); } catch(err){} });
+        es.onerror = () => {};
+    }
+
+    loadPage(0);
+    initLiveUpdates();
 </script>
+
 <script>
-    const fabBtn = document.getElementById('fabBtn');
+    /* ── FAB ── */
+    const fabBtn       = document.getElementById('fabBtn');
     const fabContainer = document.querySelector('.fab-container');
-    fabBtn.addEventListener('click', () => {
-        fabContainer.classList.toggle('open');
-    });
-    document.addEventListener('click', (e) => {
-        if (!fabContainer.contains(e.target)) {
-            fabContainer.classList.remove('open');
-        }
-    });
+    fabBtn.addEventListener('click', () => fabContainer.classList.toggle('open'));
+    document.addEventListener('click', (e) => { if (!fabContainer.contains(e.target)) fabContainer.classList.remove('open'); });
+
+    /* ── Hamburger / Mobile nav ── */
+    const hamburgerBtn     = document.getElementById('hamburgerBtn');
+    const mobileNav        = document.getElementById('mobileNav');
+    const mobileNavOverlay = document.getElementById('mobileNavOverlay');
+    const mobileNavClose   = document.getElementById('mobileNavClose');
+
+    function openMobileNav() {
+        mobileNav.classList.add('open');
+        mobileNavOverlay.classList.add('open');
+        document.body.style.overflow = 'hidden';
+        hamburgerBtn.setAttribute('aria-expanded', 'true');
+        hamburgerBtn.classList.add('open');
+    }
+    function closeMobileNav() {
+        mobileNav.classList.remove('open');
+        mobileNavOverlay.classList.remove('open');
+        document.body.style.overflow = '';
+        hamburgerBtn.setAttribute('aria-expanded', 'false');
+        hamburgerBtn.classList.remove('open');
+    }
+
+    hamburgerBtn.addEventListener('click', openMobileNav);
+    mobileNavClose.addEventListener('click', closeMobileNav);
+    mobileNavOverlay.addEventListener('click', closeMobileNav);
+    document.querySelectorAll('.mobile-nav-link').forEach(l => l.addEventListener('click', closeMobileNav));
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMobileNav(); });
 </script>
+
 <script th:src="@{/js/basic.js}"></script>
 <script th:src="@{/js/clock.js}"></script>
 

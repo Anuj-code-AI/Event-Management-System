@@ -12,8 +12,11 @@ import org.anuj.EvenTAura.model.User;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
+import lombok.*;
+@Data
+@NoArgsConstructor
 @AllArgsConstructor
-@Getter @Setter
+
 public class EventResponse {
     private Long eventId;
     private String title;

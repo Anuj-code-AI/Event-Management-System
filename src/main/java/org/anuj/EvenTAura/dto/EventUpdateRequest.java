@@ -7,7 +7,10 @@ import org.anuj.EvenTAura.model.User;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-@Getter @Setter
+import lombok.*;
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class EventUpdateRequest {
     private String title;
     private String description;

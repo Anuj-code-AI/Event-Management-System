@@ -3,6 +3,7 @@ package org.anuj.EvenTAura.controller;
 import lombok.RequiredArgsConstructor;
 import org.anuj.EvenTAura.dto.EventRequest;
 import org.anuj.EvenTAura.dto.EventResponse;
+import org.anuj.EvenTAura.dto.EventSummaryResponse;
 import org.anuj.EvenTAura.dto.EventUpdateRequest;
 import org.anuj.EvenTAura.service.EventService;
 import org.anuj.EvenTAura.service.FileStorageService;
@@ -47,7 +48,7 @@ public class EventController {
     }
 
     @GetMapping("/getEvent/{eventId}")
-    public ResponseEntity<?> getEvent(@PathVariable Long eventId) {
+    public ResponseEntity<EventResponse> getEvent(@PathVariable Long eventId) {
         return ResponseEntity.ok(eventService.getEvent(eventId));
     }
 
@@ -73,14 +74,13 @@ public class EventController {
         return ResponseEntity.ok(eventService.updateEvent(eventId, req, auth));
     }
 
+
     @GetMapping("/getAllEvents")
-    public ResponseEntity<Page<EventResponse>> getAllEvents(
+    public ResponseEntity<Page<EventSummaryResponse>> getAllEvents(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "id") String sortBy,
-            @RequestParam(defaultValue = "asc") String sortDir
-    ){
-        return ResponseEntity.ok(eventService.getAllEvents(page,size,sortBy,sortDir));
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return ResponseEntity.ok(eventService.getAllEvents(page, size));
     }
 }
 

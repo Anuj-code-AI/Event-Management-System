@@ -93,4 +93,17 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.NOT_FOUND)
                 .body(error);
     }
+
+    @ExceptionHandler(MaxTicketReachedException.class)
+    public ResponseEntity<ApiError> handleMaxTicketReachedException(MaxTicketReachedException ex){
+        ApiError error = new ApiError(
+                "LIMIT_REACHED",
+                ex.getMessage(),
+                LocalDateTime.now()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.TOO_MANY_REQUESTS)
+                .body(error);
+    }
 }
