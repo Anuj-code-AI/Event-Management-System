@@ -39,7 +39,7 @@ document.getElementById("registerForm").addEventListener("submit", async functio
         localStorage.setItem("refreshToken", data.refreshToken);
 
         // redirect after registration
-        window.location.href = "/login";
+        window.location.href = "/";
 
     } catch (err) {
 

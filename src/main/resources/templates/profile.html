@@ -14,7 +14,7 @@
 <body>
 
 <!-- ══════════════════════════════════
-     HEADER (same as main site)
+     HEADER
      ══════════════════════════════════ -->
 <header class="header">
     <div class="logo">
@@ -45,8 +45,48 @@
         <button class="icon-btn profile-btn" aria-label="Profile">
             <span>👤</span>
         </button>
+
+        <!-- Hamburger — visible only on mobile -->
+        <button class="hamburger" id="hamburgerBtn" aria-label="Open menu" aria-expanded="false">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
     </div>
 </header>
+
+<!-- ── Mobile nav overlay ── -->
+<div class="mobile-nav-overlay" id="mobileNavOverlay"></div>
+
+<!-- ── Mobile slide-in drawer ── -->
+<nav class="mobile-nav" id="mobileNav" aria-label="Mobile navigation">
+    <div class="mobile-nav-header">
+        <span class="logo-text">Event<em>aura</em></span>
+        <button class="mobile-nav-close" id="mobileNavClose" aria-label="Close menu">✕</button>
+    </div>
+    <div class="mobile-search">
+        <span>🔍</span>
+        <input type="text" placeholder="Search events, cities...">
+    </div>
+    <div class="mobile-nav-links">
+        <a th:href="@{/}"            class="mobile-nav-link"><span class="mnl-icon">🏠</span>Home</a>
+        <a th:href="@{/events}"      class="mobile-nav-link"><span class="mnl-icon">🔥</span>Events</a>
+        <a th:href="@{/categories}"  class="mobile-nav-link"><span class="mnl-icon">🏷️</span>Categories</a>
+        <a th:href="@{/about}"       class="mobile-nav-link"><span class="mnl-icon">ℹ️</span>About</a>
+        <a th:href="@{/createEvent}" class="mobile-nav-link"><span class="mnl-icon">📅</span>Create Event</a>
+        <a th:href="@{/tickets}"     class="mobile-nav-link"><span class="mnl-icon">🎟️</span>My Tickets</a>
+        <a th:href="@{/profile}"     class="mobile-nav-link"><span class="mnl-icon">👤</span>Profile</a>
+    </div>
+    <div class="mobile-nav-footer">
+        <div id="mobileNavGuest">
+            <a th:href="@{/login}"    class="btn primary" style="text-align:center;display:block;">Login</a>
+            <a th:href="@{/register}" class="btn primary" style="text-align:center;display:block;margin-top:10px;">Sign Up</a>
+        </div>
+        <div id="mobileNavUser" style="display:none;">
+            <a th:href="@{/logout}" class="btn primary" style="text-align:center;display:block;background:#ef4444;border-color:#ef4444;">Sign Out</a>
+        </div>
+    </div>
+</nav>
 
 <!-- ══════════════════════════════════
      PROFILE HERO BANNER
@@ -102,7 +142,6 @@
     <!-- ── LEFT: Settings panels ── -->
     <aside class="profile-sidebar">
 
-        <!-- Tab nav -->
         <nav class="tab-nav">
             <button class="tab-btn active" data-tab="info">👤 Profile Info</button>
             <button class="tab-btn" data-tab="password">🔒 Change Password</button>
@@ -118,7 +157,6 @@
                     <p>Update your name and contact details</p>
                 </div>
 
-                <!-- Success / Error alerts -->
                 <div class="alert alert-success" th:if="${successMessage}">
                     <span>✅</span> <span th:text="${successMessage}"></span>
                 </div>
@@ -127,56 +165,44 @@
                 </div>
 
                 <form th:action="@{/profile/update}" method="post" class="settings-form">
-
                     <div class="field-row">
                         <div class="field-group">
                             <label for="firstName">First Name</label>
                             <div class="input-wrap">
                                 <span class="input-icon">👤</span>
-                                <input type="text" id="firstName" name="firstName"
-                                       placeholder="First name" required>
+                                <input type="text" id="firstName" name="firstName" placeholder="First name" required>
                             </div>
                         </div>
                         <div class="field-group">
                             <label for="lastName">Last Name</label>
                             <div class="input-wrap">
                                 <span class="input-icon">👤</span>
-                                <input type="text" id="lastName" name="lastName"
-                                       placeholder="Last name">
+                                <input type="text" id="lastName" name="lastName" placeholder="Last name">
                             </div>
                         </div>
                     </div>
-
                     <div class="field-group">
                         <label for="email">Email Address</label>
                         <div class="input-wrap">
                             <span class="input-icon">✉️</span>
-                            <input type="email" id="email" name="email"
-                                   placeholder="your@email.com" required>
+                            <input type="email" id="email" name="email" placeholder="your@email.com" required>
                         </div>
                     </div>
-
                     <div class="field-group">
                         <label for="phone">Phone Number</label>
                         <div class="input-wrap">
                             <span class="input-icon">📱</span>
-                            <input type="tel" id="phone" name="phone"
-                                   placeholder="+91 98765 43210">
+                            <input type="tel" id="phone" name="phone" placeholder="+91 98765 43210">
                         </div>
                     </div>
-
                     <div class="field-group">
                         <label for="city">City</label>
                         <div class="input-wrap">
                             <span class="input-icon">📍</span>
-                            <input type="text" id="city" name="city"
-                                   placeholder="Delhi, Mumbai, Bangalore...">
+                            <input type="text" id="city" name="city" placeholder="Delhi, Mumbai, Bangalore...">
                         </div>
                     </div>
-
-                    <button type="submit" class="submit-btn">
-                        Save Changes <span class="btn-arrow">→</span>
-                    </button>
+                    <button type="submit" class="submit-btn">Save Changes <span class="btn-arrow">→</span></button>
                 </form>
             </div>
         </div>
@@ -188,32 +214,26 @@
                     <h3>Change Password</h3>
                     <p>Keep your account secure with a strong password</p>
                 </div>
-
                 <div class="alert alert-success" th:if="${pwSuccess}">
                     <span>✅</span> Password updated successfully!
                 </div>
                 <div class="alert alert-error" th:if="${pwError}">
                     <span>⚠️</span> <span th:text="${pwError}">Something went wrong.</span>
                 </div>
-
                 <form th:action="@{/profile/change-password}" method="post" class="settings-form" id="pwForm">
-
                     <div class="field-group">
                         <label for="currentPassword">Current Password</label>
                         <div class="input-wrap">
                             <span class="input-icon">🔒</span>
-                            <input type="password" id="currentPassword" name="currentPassword"
-                                   placeholder="Your current password" required>
+                            <input type="password" id="currentPassword" name="currentPassword" placeholder="Your current password" required>
                             <button type="button" class="toggle-pw">👁</button>
                         </div>
                     </div>
-
                     <div class="field-group">
                         <label for="newPassword">New Password</label>
                         <div class="input-wrap">
                             <span class="input-icon">🔑</span>
-                            <input type="password" id="newPassword" name="newPassword"
-                                   placeholder="Min. 8 characters" required>
+                            <input type="password" id="newPassword" name="newPassword" placeholder="Min. 8 characters" required>
                             <button type="button" class="toggle-pw">👁</button>
                         </div>
                         <div class="pw-strength">
@@ -221,29 +241,22 @@
                         </div>
                         <span class="pw-label" id="pwLabel"></span>
                     </div>
-
                     <div class="field-group">
                         <label for="confirmPassword">Confirm New Password</label>
                         <div class="input-wrap">
                             <span class="input-icon">🔑</span>
-                            <input type="password" id="confirmPassword" name="confirmPassword"
-                                   placeholder="Repeat new password" required>
+                            <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Repeat new password" required>
                             <button type="button" class="toggle-pw">👁</button>
                         </div>
                         <span class="field-error" id="pwMatchError" style="display:none">⚠️ Passwords do not match</span>
                     </div>
-
-                    <!-- Password rules checklist -->
                     <ul class="pw-rules">
                         <li id="rule-len">At least 8 characters</li>
                         <li id="rule-upper">One uppercase letter</li>
                         <li id="rule-num">One number</li>
                         <li id="rule-special">One special character</li>
                     </ul>
-
-                    <button type="submit" class="submit-btn danger-btn">
-                        Update Password <span class="btn-arrow">→</span>
-                    </button>
+                    <button type="submit" class="submit-btn danger-btn">Update Password <span class="btn-arrow">→</span></button>
                 </form>
             </div>
         </div>
@@ -256,7 +269,6 @@
                     <p>Choose what you want to be notified about</p>
                 </div>
                 <form th:action="@{/profile/notifications}" method="post" class="settings-form">
-
                     <div class="toggle-group">
                         <div class="toggle-item">
                             <div class="toggle-text">
@@ -299,10 +311,7 @@
                             </label>
                         </div>
                     </div>
-
-                    <button type="submit" class="submit-btn">
-                        Save Preferences <span class="btn-arrow">→</span>
-                    </button>
+                    <button type="submit" class="submit-btn">Save Preferences <span class="btn-arrow">→</span></button>
                 </form>
             </div>
         </div>
@@ -312,7 +321,6 @@
     <!-- ── RIGHT: Tickets ── -->
     <section class="profile-main">
 
-        <!-- Upcoming tickets -->
         <div class="tickets-section">
             <div class="tickets-header">
                 <h2>🎟️ My Tickets</h2>
@@ -323,10 +331,8 @@
                 </div>
             </div>
 
-            <!-- Ticket scroll strip -->
             <div class="ticket-strip" id="ticketStrip">
 
-                <!-- UPCOMING TICKETS -->
                 <div class="ticket-card upcoming" th:each="ticket : ${upcomingTickets}">
                     <div class="ticket-left">
                         <div class="ticket-event-img">
@@ -362,12 +368,10 @@
                     </div>
                 </div>
 
-                <!-- FALLBACK: Static demo tickets when no data -->
+                <!-- Fallback demo tickets -->
                 <div class="ticket-card upcoming" th:if="${#lists.isEmpty(upcomingTickets)}">
                     <div class="ticket-left">
-                        <div class="ticket-event-img">
-                            <img th:src="@{/images/9.jpg}" alt="AI Summit">
-                        </div>
+                        <div class="ticket-event-img"><img th:src="@{/images/9.jpg}" alt="AI Summit"></div>
                     </div>
                     <div class="ticket-body">
                         <span class="ticket-status upcoming-badge">Upcoming</span>
@@ -378,10 +382,7 @@
                             <span>🕐 9:00 AM</span>
                         </div>
                         <div class="ticket-footer">
-                            <div class="ticket-id">
-                                <span>Ticket ID</span>
-                                <strong>#EVT-2026-041</strong>
-                            </div>
+                            <div class="ticket-id"><span>Ticket ID</span><strong>#EVT-2026-041</strong></div>
                             <a href="#" class="ticket-action-btn">View</a>
                         </div>
                     </div>
@@ -400,9 +401,7 @@
 
                 <div class="ticket-card upcoming" th:if="${#lists.isEmpty(upcomingTickets)}">
                     <div class="ticket-left">
-                        <div class="ticket-event-img">
-                            <img th:src="@{/images/8.jpg}" alt="Music Festival">
-                        </div>
+                        <div class="ticket-event-img"><img th:src="@{/images/8.jpg}" alt="Music Festival"></div>
                     </div>
                     <div class="ticket-body">
                         <span class="ticket-status upcoming-badge">Upcoming</span>
@@ -413,10 +412,7 @@
                             <span>🕐 6:00 PM</span>
                         </div>
                         <div class="ticket-footer">
-                            <div class="ticket-id">
-                                <span>Ticket ID</span>
-                                <strong>#EVT-2026-038</strong>
-                            </div>
+                            <div class="ticket-id"><span>Ticket ID</span><strong>#EVT-2026-038</strong></div>
                             <a href="#" class="ticket-action-btn">View</a>
                         </div>
                     </div>
@@ -433,18 +429,15 @@
                     </div>
                 </div>
 
-            </div><!-- /ticket-strip -->
+            </div>
         </div>
 
-        <!-- Past events grid -->
         <div class="past-events-section">
             <div class="tickets-header">
                 <h2>🕐 Past Events</h2>
                 <a href="#" class="view-all-link">View all →</a>
             </div>
-
             <div class="past-grid">
-
                 <div class="past-card" th:each="ticket : ${pastTickets}">
                     <img th:src="@{/images/{img}(img=${ticket.image})}" th:alt="${ticket.eventName}">
                     <div class="past-info">
@@ -453,45 +446,25 @@
                         <span class="past-badge">Attended</span>
                     </div>
                 </div>
-
-                <!-- Static fallback past events -->
                 <div class="past-card" th:if="${#lists.isEmpty(pastTickets)}">
                     <img th:src="@{/images/15.jpg}" alt="Hackathon">
-                    <div class="past-info">
-                        <h5>Hackathon 2025</h5>
-                        <span>15 Jan 2026</span>
-                        <span class="past-badge">Attended</span>
-                    </div>
+                    <div class="past-info"><h5>Hackathon 2025</h5><span>15 Jan 2026</span><span class="past-badge">Attended</span></div>
                 </div>
                 <div class="past-card" th:if="${#lists.isEmpty(pastTickets)}">
                     <img th:src="@{/images/6.jpg}" alt="Tech Conference">
-                    <div class="past-info">
-                        <h5>Tech Conference</h5>
-                        <span>10 Dec 2025</span>
-                        <span class="past-badge">Attended</span>
-                    </div>
+                    <div class="past-info"><h5>Tech Conference</h5><span>10 Dec 2025</span><span class="past-badge">Attended</span></div>
                 </div>
                 <div class="past-card" th:if="${#lists.isEmpty(pastTickets)}">
                     <img th:src="@{/images/10.jpg}" alt="Gaming Expo">
-                    <div class="past-info">
-                        <h5>Gaming Expo</h5>
-                        <span>5 Nov 2025</span>
-                        <span class="past-badge">Attended</span>
-                    </div>
+                    <div class="past-info"><h5>Gaming Expo</h5><span>5 Nov 2025</span><span class="past-badge">Attended</span></div>
                 </div>
                 <div class="past-card" th:if="${#lists.isEmpty(pastTickets)}">
                     <img th:src="@{/images/11.jpg}" alt="Design Workshop">
-                    <div class="past-info">
-                        <h5>Design Workshop</h5>
-                        <span>20 Oct 2025</span>
-                        <span class="past-badge">Attended</span>
-                    </div>
+                    <div class="past-info"><h5>Design Workshop</h5><span>20 Oct 2025</span><span class="past-badge">Attended</span></div>
                 </div>
-
             </div>
         </div>
 
-        <!-- Danger zone -->
         <div class="danger-zone">
             <div class="danger-text">
                 <h4>⚠️ Danger Zone</h4>
@@ -502,7 +475,7 @@
 
     </section>
 
-</div><!-- /profile-body -->
+</div>
 
 <!-- ══════════════════════════════════
      FOOTER
@@ -551,9 +524,6 @@
     </div>
 </footer>
 
-<!-- ══════════════════════════════════
-     SCRIPTS
-     ══════════════════════════════════ -->
 <script>
     /* ── Tabs ── */
     document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -572,13 +542,9 @@
             btn.classList.add('active');
             const filter = btn.dataset.filter;
             document.querySelectorAll('.ticket-card').forEach(card => {
-                if (filter === 'all') {
-                    card.style.display = 'flex';
-                } else if (filter === 'upcoming') {
-                    card.style.display = card.classList.contains('upcoming') ? 'flex' : 'none';
-                } else {
-                    card.style.display = card.classList.contains('past') ? 'flex' : 'none';
-                }
+                if (filter === 'all') card.style.display = 'flex';
+                else if (filter === 'upcoming') card.style.display = card.classList.contains('upcoming') ? 'flex' : 'none';
+                else card.style.display = card.classList.contains('past') ? 'flex' : 'none';
             });
         });
     });
@@ -603,25 +569,20 @@
         'rule-num':     v => /[0-9]/.test(v),
         'rule-special': v => /[^A-Za-z0-9]/.test(v),
     };
-
     if (newPw) {
         newPw.addEventListener('input', function() {
             const val = this.value;
             let score = 0;
             Object.entries(rules).forEach(([id, test]) => {
                 const el = document.getElementById(id);
-                if (el) {
-                    const pass = test(val);
-                    el.classList.toggle('rule-pass', pass);
-                    if (pass) score++;
-                }
+                if (el) { const pass = test(val); el.classList.toggle('rule-pass', pass); if (pass) score++; }
             });
             const levels = [
-                { label: '',       color: 'transparent', width: '0%'  },
-                { label: 'Weak',   color: '#ef4444',     width: '25%' },
-                { label: 'Fair',   color: '#f97316',     width: '50%' },
-                { label: 'Good',   color: '#eab308',     width: '75%' },
-                { label: 'Strong', color: '#22c55e',     width: '100%'},
+                { label: '',       color: 'transparent', width: '0%'   },
+                { label: 'Weak',   color: '#ef4444',     width: '25%'  },
+                { label: 'Fair',   color: '#f97316',     width: '50%'  },
+                { label: 'Good',   color: '#eab308',     width: '75%'  },
+                { label: 'Strong', color: '#22c55e',     width: '100%' },
             ];
             const lvl = val.length === 0 ? levels[0] : (levels[score] || levels[1]);
             pwBar.style.width = lvl.width;
@@ -639,6 +600,32 @@
             const match = this.value === newPw.value;
             matchError.style.display = this.value && !match ? 'block' : 'none';
         });
+    }
+
+    /* ── Mobile nav ── */
+    const hamburgerBtn     = document.getElementById('hamburgerBtn');
+    const mobileNav        = document.getElementById('mobileNav');
+    const mobileNavOverlay = document.getElementById('mobileNavOverlay');
+    const mobileNavClose   = document.getElementById('mobileNavClose');
+    function openMobileNav() {
+        mobileNav.classList.add('open'); mobileNavOverlay.classList.add('open');
+        hamburgerBtn.setAttribute('aria-expanded', 'true'); hamburgerBtn.classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeMobileNav() {
+        mobileNav.classList.remove('open'); mobileNavOverlay.classList.remove('open');
+        hamburgerBtn.setAttribute('aria-expanded', 'false'); hamburgerBtn.classList.remove('open');
+        document.body.style.overflow = '';
+    }
+    hamburgerBtn.addEventListener('click', openMobileNav);
+    mobileNavClose.addEventListener('click', closeMobileNav);
+    mobileNavOverlay.addEventListener('click', closeMobileNav);
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMobileNav(); });
+
+    /* ── Mobile nav auth state ── */
+    if (localStorage.getItem('accessToken')) {
+        document.getElementById('mobileNavGuest').style.display = 'none';
+        document.getElementById('mobileNavUser').style.display  = 'block';
     }
 </script>
 <script th:src="@{/js/profile.js}"></script>

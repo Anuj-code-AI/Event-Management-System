@@ -72,8 +72,13 @@
     </div>
 
     <div class="mobile-nav-footer">
-        <a href="/login"    class="btn primary" style="text-align:center;display:block;">Login</a>
-        <a href="/register" class="btn primary" style="text-align:center;display:block;margin-top:10px;">Sign Up</a>
+        <div id="mobileNavGuest">
+            <a href="/login"    class="btn primary" style="text-align:center;display:block;">Login</a>
+            <a href="/register" class="btn primary" style="text-align:center;display:block;margin-top:10px;">Sign Up</a>
+        </div>
+        <div id="mobileNavUser" style="display:none;">
+            <a href="/logout" class="btn primary" style="text-align:center;display:block;background:#ef4444;border-color:#ef4444;">Sign Out</a>
+        </div>
     </div>
 
 </nav>
@@ -1152,6 +1157,12 @@
     mobileNavClose.addEventListener('click', closeMobileNav);
     mobileNavOverlay.addEventListener('click', closeMobileNav);
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMobileNav(); });
+
+    /* ── Mobile nav auth state ── */
+    if (localStorage.getItem('accessToken')) {
+        document.getElementById('mobileNavGuest').style.display = 'none';
+        document.getElementById('mobileNavUser').style.display  = 'block';
+    }
 
 </script>
 <script th:src="@{/js/clock.js}"></script>
