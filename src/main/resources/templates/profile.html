@@ -28,7 +28,7 @@
         <a th:href="@{/}">Home</a>
         <a th:href="@{/events}">Events</a>
         <a th:href="@{/categories}">Categories</a>
-        <a href="/aboutUs">About Us</a>
+        <a th:href="@{/aboutUs}">About Us</a>
     </nav>
 
     <div class="search-bar">
@@ -72,7 +72,7 @@
         <a th:href="@{/}"            class="mobile-nav-link"><span class="mnl-icon">🏠</span>Home</a>
         <a th:href="@{/events}"      class="mobile-nav-link"><span class="mnl-icon">🔥</span>Events</a>
         <a th:href="@{/categories}"  class="mobile-nav-link"><span class="mnl-icon">🏷️</span>Categories</a>
-        <a th:href="@{/about}"       class="mobile-nav-link"><span class="mnl-icon">ℹ️</span>About</a>
+        <a th:href="@{/aboutUs}"       class="mobile-nav-link"><span class="mnl-icon">ℹ️</span>About Us</a>
         <a th:href="@{/createEvent}" class="mobile-nav-link"><span class="mnl-icon">📅</span>Create Event</a>
         <a th:href="@{/tickets}"     class="mobile-nav-link"><span class="mnl-icon">🎟️</span>My Tickets</a>
         <a th:href="@{/profile}"     class="mobile-nav-link"><span class="mnl-icon">👤</span>Profile</a>
@@ -321,150 +321,124 @@
     <!-- ── RIGHT: Tickets ── -->
     <section class="profile-main">
 
+        <!-- ══════════════════════════════════
+             SECTION 1 — MY TICKETS
+             API: GET /api/v1/tickets/myTickets
+        ══════════════════════════════════ -->
         <div class="tickets-section">
             <div class="tickets-header">
                 <h2>🎟️ My Tickets</h2>
-                <div class="ticket-filters">
-                    <button class="tf-btn active" data-filter="upcoming">Upcoming</button>
-                    <button class="tf-btn" data-filter="past">Past</button>
-                    <button class="tf-btn" data-filter="all">All</button>
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                    <span class="section-count" id="ticketCount"></span>
+                    <div class="ticket-size-wrap">
+                        <span class="ticket-size-label">Show</span>
+                        <div class="ticket-size-pills" id="ticketSizePills">
+                            <button class="ts-pill" data-size="1">1</button>
+                            <button class="ts-pill" data-size="2">2</button>
+                            <button class="ts-pill" data-size="3">3</button>
+                            <button class="ts-pill" data-size="5">5</button>
+                            <button class="ts-pill active" data-size="10">10</button>
+                            <button class="ts-pill" data-size="20">20</button>
+                        </div>
+                    </div>
                 </div>
             </div>
-
-            <div class="ticket-strip" id="ticketStrip">
-
-                <div class="ticket-card upcoming" th:each="ticket : ${upcomingTickets}">
-                    <div class="ticket-left">
-                        <div class="ticket-event-img">
-                            <img th:src="@{/images/{img}(img=${ticket.image})}" th:alt="${ticket.eventName}">
-                        </div>
-                    </div>
-                    <div class="ticket-body">
-                        <span class="ticket-status upcoming-badge">Upcoming</span>
-                        <h4 th:text="${ticket.eventName}">Tech Conference</h4>
-                        <div class="ticket-meta">
-                            <span>📅 <span th:text="${ticket.date}">25 March 2026</span></span>
-                            <span>📍 <span th:text="${ticket.venue}">Pragati Maidan, Delhi</span></span>
-                            <span>🕐 <span th:text="${ticket.time}">10:00 AM</span></span>
-                        </div>
-                        <div class="ticket-footer">
-                            <div class="ticket-id">
-                                <span>Ticket ID</span>
-                                <strong th:text="${ticket.ticketId}">#EVT-2024-001</strong>
-                            </div>
-                            <a th:href="@{/tickets/{id}(id=${ticket.id})}" class="ticket-action-btn">View</a>
-                        </div>
-                    </div>
-                    <div class="ticket-tear"></div>
-                    <div class="ticket-right">
-                        <div class="qr-placeholder">
-                            <div class="qr-grid">
-                                <span></span><span></span><span></span>
-                                <span></span><span></span><span></span>
-                                <span></span><span></span><span></span>
-                            </div>
-                            <p>QR Code</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Fallback demo tickets -->
-                <div class="ticket-card upcoming" th:if="${#lists.isEmpty(upcomingTickets)}">
-                    <div class="ticket-left">
-                        <div class="ticket-event-img"><img th:src="@{/images/9.jpg}" alt="AI Summit"></div>
-                    </div>
-                    <div class="ticket-body">
-                        <span class="ticket-status upcoming-badge">Upcoming</span>
-                        <h4>AI Summit 2026</h4>
-                        <div class="ticket-meta">
-                            <span>📅 12 April 2026</span>
-                            <span>📍 HICC, Hyderabad</span>
-                            <span>🕐 9:00 AM</span>
-                        </div>
-                        <div class="ticket-footer">
-                            <div class="ticket-id"><span>Ticket ID</span><strong>#EVT-2026-041</strong></div>
-                            <a href="#" class="ticket-action-btn">View</a>
-                        </div>
-                    </div>
-                    <div class="ticket-tear"></div>
-                    <div class="ticket-right">
-                        <div class="qr-placeholder">
-                            <div class="qr-grid">
-                                <span></span><span></span><span></span>
-                                <span></span><span></span><span></span>
-                                <span></span><span></span><span></span>
-                            </div>
-                            <p>QR Code</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="ticket-card upcoming" th:if="${#lists.isEmpty(upcomingTickets)}">
-                    <div class="ticket-left">
-                        <div class="ticket-event-img"><img th:src="@{/images/8.jpg}" alt="Music Festival"></div>
-                    </div>
-                    <div class="ticket-body">
-                        <span class="ticket-status upcoming-badge">Upcoming</span>
-                        <h4>Music Festival</h4>
-                        <div class="ticket-meta">
-                            <span>📅 5 April 2026</span>
-                            <span>📍 Bandra Fort, Mumbai</span>
-                            <span>🕐 6:00 PM</span>
-                        </div>
-                        <div class="ticket-footer">
-                            <div class="ticket-id"><span>Ticket ID</span><strong>#EVT-2026-038</strong></div>
-                            <a href="#" class="ticket-action-btn">View</a>
-                        </div>
-                    </div>
-                    <div class="ticket-tear"></div>
-                    <div class="ticket-right">
-                        <div class="qr-placeholder">
-                            <div class="qr-grid">
-                                <span></span><span></span><span></span>
-                                <span></span><span></span><span></span>
-                                <span></span><span></span><span></span>
-                            </div>
-                            <p>QR Code</p>
-                        </div>
-                    </div>
-                </div>
-
+            <!-- loading skeleton -->
+            <div class="section-loading" id="ticketsLoading">
+                <div class="skel-ticket"></div>
+                <div class="skel-ticket"></div>
+            </div>
+            <!-- error state -->
+            <div class="section-empty" id="ticketsEmpty" style="display:none;">
+                <div class="empty-icon">🎟️</div>
+                <p>No tickets yet. Go register for an event!</p>
+                <a href="/#events" class="ticket-action-btn" style="margin-top:12px;display:inline-block;">Browse Events →</a>
+            </div>
+            <!-- ticket list -->
+            <div class="ticket-strip" id="ticketStrip" style="display:none;"></div>
+            <!-- load more -->
+            <div style="text-align:center;margin-top:18px;display:none;" id="ticketsMoreWrap">
+                <button class="load-more-btn" id="ticketsMoreBtn">Load More Tickets</button>
             </div>
         </div>
 
+        <!-- ══════════════════════════════════
+             SECTION 2 — EVENTS ATTENDED
+             API: GET /api/v1/event/getJoinedEvents
+        ══════════════════════════════════ -->
         <div class="past-events-section">
             <div class="tickets-header">
-                <h2>🕐 Past Events</h2>
-                <a href="#" class="view-all-link">View all →</a>
-            </div>
-            <div class="past-grid">
-                <div class="past-card" th:each="ticket : ${pastTickets}">
-                    <img th:src="@{/images/{img}(img=${ticket.image})}" th:alt="${ticket.eventName}">
-                    <div class="past-info">
-                        <h5 th:text="${ticket.eventName}">Hackathon</h5>
-                        <span th:text="${ticket.date}">15 Jan 2026</span>
-                        <span class="past-badge">Attended</span>
+                <h2>📅 Events Attended</h2>
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                    <span class="section-count" id="joinedCount"></span>
+                    <div class="ticket-size-wrap">
+                        <span class="ticket-size-label">Show</span>
+                        <div class="ticket-size-pills" id="joinedSizePills">
+                            <button class="ts-pill" data-size="4">4</button>
+                            <button class="ts-pill active" data-size="8">8</button>
+                            <button class="ts-pill" data-size="12">12</button>
+                            <button class="ts-pill" data-size="20">20</button>
+                        </div>
                     </div>
                 </div>
-                <div class="past-card" th:if="${#lists.isEmpty(pastTickets)}">
-                    <img th:src="@{/images/15.jpg}" alt="Hackathon">
-                    <div class="past-info"><h5>Hackathon 2025</h5><span>15 Jan 2026</span><span class="past-badge">Attended</span></div>
+            </div>
+            <div class="section-loading" id="joinedLoading">
+                <div class="skel-grid">
+                    <div class="skel-card"></div><div class="skel-card"></div>
+                    <div class="skel-card"></div><div class="skel-card"></div>
                 </div>
-                <div class="past-card" th:if="${#lists.isEmpty(pastTickets)}">
-                    <img th:src="@{/images/6.jpg}" alt="Tech Conference">
-                    <div class="past-info"><h5>Tech Conference</h5><span>10 Dec 2025</span><span class="past-badge">Attended</span></div>
-                </div>
-                <div class="past-card" th:if="${#lists.isEmpty(pastTickets)}">
-                    <img th:src="@{/images/10.jpg}" alt="Gaming Expo">
-                    <div class="past-info"><h5>Gaming Expo</h5><span>5 Nov 2025</span><span class="past-badge">Attended</span></div>
-                </div>
-                <div class="past-card" th:if="${#lists.isEmpty(pastTickets)}">
-                    <img th:src="@{/images/11.jpg}" alt="Design Workshop">
-                    <div class="past-info"><h5>Design Workshop</h5><span>20 Oct 2025</span><span class="past-badge">Attended</span></div>
-                </div>
+            </div>
+            <div class="section-empty" id="joinedEmpty" style="display:none;">
+                <div class="empty-icon">📅</div>
+                <p>You haven't attended any events yet.</p>
+            </div>
+            <div class="past-grid" id="joinedGrid" style="display:none;"></div>
+            <!-- load more -->
+            <div style="text-align:center;margin-top:18px;display:none;" id="joinedMoreWrap">
+                <button class="load-more-btn" id="joinedMoreBtn">Load More</button>
             </div>
         </div>
 
+        <!-- ══════════════════════════════════
+             SECTION 3 — EVENTS HOSTED
+             API: GET /api/v1/event/getHostedEvents
+        ══════════════════════════════════ -->
+        <div class="past-events-section">
+            <div class="tickets-header">
+                <h2>🚀 Events Hosted</h2>
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                    <span class="section-count" id="hostedCount"></span>
+                    <div class="ticket-size-wrap">
+                        <span class="ticket-size-label">Show</span>
+                        <div class="ticket-size-pills" id="hostedSizePills">
+                            <button class="ts-pill" data-size="4">4</button>
+                            <button class="ts-pill active" data-size="8">8</button>
+                            <button class="ts-pill" data-size="12">12</button>
+                            <button class="ts-pill" data-size="20">20</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="section-loading" id="hostedLoading">
+                <div class="skel-grid">
+                    <div class="skel-card"></div><div class="skel-card"></div>
+                    <div class="skel-card"></div><div class="skel-card"></div>
+                </div>
+            </div>
+            <div class="section-empty" id="hostedEmpty" style="display:none;">
+                <div class="empty-icon">🚀</div>
+                <p>You haven't hosted any events yet.</p>
+                <a href="/createEvent" class="ticket-action-btn" style="margin-top:12px;display:inline-block;">Create Event →</a>
+            </div>
+            <div class="past-grid" id="hostedGrid" style="display:none;"></div>
+            <div style="text-align:center;margin-top:18px;display:none;" id="hostedMoreWrap">
+                <button class="load-more-btn" id="hostedMoreBtn">Load More</button>
+            </div>
+        </div>
+
+        <!-- ══════════════════════════════════
+             DANGER ZONE
+        ══════════════════════════════════ -->
         <div class="danger-zone">
             <div class="danger-text">
                 <h4>⚠️ Danger Zone</h4>
@@ -532,20 +506,6 @@
             document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
             btn.classList.add('active');
             document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
-        });
-    });
-
-    /* ── Ticket filter ── */
-    document.querySelectorAll('.tf-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            const filter = btn.dataset.filter;
-            document.querySelectorAll('.ticket-card').forEach(card => {
-                if (filter === 'all') card.style.display = 'flex';
-                else if (filter === 'upcoming') card.style.display = card.classList.contains('upcoming') ? 'flex' : 'none';
-                else card.style.display = card.classList.contains('past') ? 'flex' : 'none';
-            });
         });
     });
 
@@ -627,6 +587,285 @@
         document.getElementById('mobileNavGuest').style.display = 'none';
         document.getElementById('mobileNavUser').style.display  = 'block';
     }
+
+    /* ════════════════════════════════════════════
+       SECTION LOADERS — Tickets / Joined / Hosted
+    ════════════════════════════════════════════ */
+
+    /* token is already declared in profile.js — read it fresh here */
+    const profileToken = localStorage.getItem('accessToken');
+
+    /* ── Helpers ── */
+    function fmtDate(d) {
+        if (!d) return '—';
+        return new Date(d + 'T00:00:00').toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' });
+    }
+    function fmtTime(t) {
+        if (!t) return '—';
+        const [h, m] = t.split(':').map(Number);
+        return (h % 12 || 12) + ':' + String(m).padStart(2,'0') + ' ' + (h >= 12 ? 'PM' : 'AM');
+    }
+    function isUpcoming(dateStr) {
+        const today = new Date(); today.setHours(0,0,0,0);
+        return new Date(dateStr + 'T00:00:00') >= today;
+    }
+
+    /* ── Build boarding-pass ticket card ── */
+    function buildTicketCard(t) {
+        const ev       = t.event || {};
+        const upcoming = ev.eventDate ? isUpcoming(ev.eventDate) : false;
+        const statusBadge = t.checkedIn
+            ? '<span class="ticket-status" style="background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;">✅ Checked In</span>'
+            : upcoming
+            ? '<span class="ticket-status upcoming-badge">Upcoming</span>'
+            : '<span class="ticket-status" style="background:#f8fafc;color:#64748b;border:1px solid #e2e8f0;">Past</span>';
+
+        return `
+        <div class="ticket-card ${upcoming ? 'upcoming' : 'past'}">
+            <div class="ticket-left">
+                <div class="ticket-event-img">
+                    <img src="${ev.bannerUrl || ''}" alt="${ev.title || 'Event'}"
+                         onerror="this.style.background='#f1f5f9';this.removeAttribute('src');">
+                </div>
+            </div>
+            <div class="ticket-body">
+                ${statusBadge}
+                <h4>${ev.title || '—'}</h4>
+                <div class="ticket-meta">
+                    <span>📅 ${fmtDate(ev.eventDate)}</span>
+                    <span>📍 ${ev.location || '—'}</span>
+                    <span>🕐 ${fmtTime(ev.eventTime)}</span>
+                </div>
+                <div class="ticket-footer">
+                    <div class="ticket-id">
+                        <span>Ticket Code</span>
+                        <strong>#${t.ticketCode || t.ticketId}</strong>
+                    </div>
+                    <a href="/eventDetail/${ev.eventId || ''}" class="ticket-action-btn">View Event</a>
+                </div>
+            </div>
+            <div class="ticket-tear"></div>
+            <div class="ticket-right">
+                <div class="qr-placeholder">
+                    <div class="qr-grid">
+                        <span></span><span></span><span></span>
+                        <span></span><span></span><span></span>
+                        <span></span><span></span><span></span>
+                    </div>
+                    <p>${t.checkedIn ? 'Scanned' : 'QR Code'}</p>
+                </div>
+            </div>
+        </div>`;
+    }
+
+    /* ── Build event grid card (joined / hosted) ── */
+    function buildEventCard(ev, badge) {
+        const upcoming = ev.eventDate ? isUpcoming(ev.eventDate) : false;
+        const soldOut  = ev.ticketsAvailable <= 0;
+        return `
+        <div class="past-card" style="cursor:pointer;" onclick="location.href='/eventDetail/${ev.eventId}'">
+            <img src="${ev.bannerUrl || ''}" alt="${ev.title}"
+                 onerror="this.style.background='#f1f5f9';this.removeAttribute('src');">
+            <div class="past-info">
+                <h5>${ev.title || '—'}</h5>
+                <span>📅 ${fmtDate(ev.eventDate)}</span>
+                <span class="past-badge" style="${upcoming ? 'background:#fff0f3;color:#ff4d6d;border-color:#fecdd3;' : ''}">${badge}</span>
+            </div>
+        </div>`;
+    }
+
+    /* ────────────────────────────────
+       1. MY TICKETS
+       Response: Page<TicketResponse>
+       → data.content is the array
+    ──────────────────────────────── */
+    let ticketPage = 0, ticketDone = false, ticketSize = 10;
+
+    /* ── Wire size pills ── */
+    document.querySelectorAll('.ts-pill').forEach(pill => {
+        pill.addEventListener('click', () => {
+            document.querySelectorAll('.ts-pill').forEach(p => p.classList.remove('active'));
+            pill.classList.add('active');
+            ticketSize = parseInt(pill.dataset.size);
+            ticketPage = 0;
+            /* clear strip and reload with new size */
+            const strip = document.getElementById('ticketStrip');
+            strip.innerHTML = '';
+            strip.style.display = 'none';
+            document.getElementById('ticketsLoading').style.display = 'flex';
+            document.getElementById('ticketsEmpty').style.display   = 'none';
+            document.getElementById('ticketsMoreWrap').style.display = 'none';
+            loadMyTickets(0);
+        });
+    });
+
+    async function loadMyTickets(page = 0) {
+        if (!profileToken) return;
+        try {
+            const res = await fetch(`/api/v1/tickets/myTickets?page=${page}&size=${ticketSize}`, {
+                headers: { 'Authorization': 'Bearer ' + profileToken }
+            });
+            if (!res.ok) throw new Error(res.status);
+
+            const data    = await res.json();
+            const tickets = data.content || [];   // ← Page wrapper
+
+            if (page === 0) document.getElementById('ticketsLoading').style.display = 'none';
+
+            if (!tickets.length && page === 0) {
+                document.getElementById('ticketsEmpty').style.display = 'block';
+                return;
+            }
+
+            const total = data.totalElements || tickets.length;
+            document.getElementById('ticketCount').textContent =
+                total + ' ticket' + (total !== 1 ? 's' : '');
+
+            const strip = document.getElementById('ticketStrip');
+            strip.style.display = 'flex';
+            strip.innerHTML += tickets.map(buildTicketCard).join('');
+
+            ticketDone = data.last;
+            const moreWrap = document.getElementById('ticketsMoreWrap');
+            if (moreWrap) moreWrap.style.display = ticketDone ? 'none' : 'block';
+
+        } catch (err) {
+            console.error('Tickets load error:', err);
+            document.getElementById('ticketsLoading').style.display = 'none';
+            document.getElementById('ticketsEmpty').style.display = 'block';
+        }
+    }
+
+    /* ────────────────────────────────
+       2. EVENTS ATTENDED (joined)
+    ──────────────────────────────── */
+    let joinedPage = 0, joinedDone = false, joinedSize = 8;
+
+    document.querySelectorAll('#joinedSizePills .ts-pill').forEach(pill => {
+        pill.addEventListener('click', () => {
+            document.querySelectorAll('#joinedSizePills .ts-pill').forEach(p => p.classList.remove('active'));
+            pill.classList.add('active');
+            joinedSize = parseInt(pill.dataset.size);
+            joinedPage = 0;
+            const grid = document.getElementById('joinedGrid');
+            grid.innerHTML = '';
+            grid.style.display = 'none';
+            document.getElementById('joinedLoading').style.display = 'flex';
+            document.getElementById('joinedEmpty').style.display   = 'none';
+            document.getElementById('joinedMoreWrap').style.display = 'none';
+            loadJoined(0);
+        });
+    });
+
+    async function loadJoined(page = 0) {
+        if (!profileToken) return;
+        try {
+            const res  = await fetch(`/api/v1/event/getJoinedEvents?page=${page}&size=${joinedSize}`, {
+                headers: { 'Authorization': 'Bearer ' + profileToken }
+            });
+            if (!res.ok) throw new Error(res.status);
+            const data   = await res.json();
+            const events = data.content || [];
+
+            if (page === 0) document.getElementById('joinedLoading').style.display = 'none';
+
+            if (!events.length && page === 0) {
+                document.getElementById('joinedEmpty').style.display = 'flex';
+                return;
+            }
+
+            const total = data.totalElements || events.length;
+            document.getElementById('joinedCount').textContent = total + ' event' + (total !== 1 ? 's' : '');
+            const grid = document.getElementById('joinedGrid');
+            grid.style.display = 'grid';
+            grid.innerHTML += events.map(ev => buildEventCard(ev, isUpcoming(ev.eventDate) ? 'Registered' : 'Attended')).join('');
+
+            joinedDone = data.last;
+            document.getElementById('joinedMoreWrap').style.display = joinedDone ? 'none' : 'block';
+        } catch (err) {
+            console.error('Joined events error:', err);
+            document.getElementById('joinedLoading').style.display = 'none';
+            document.getElementById('joinedEmpty').style.display = 'flex';
+        }
+    }
+    document.getElementById('ticketsMoreBtn').addEventListener('click', () => {
+        ticketPage++;
+        loadMyTickets(ticketPage);
+    });
+
+    document.getElementById('joinedMoreBtn').addEventListener('click', () => {
+        joinedPage++;
+        loadJoined(joinedPage);
+    });
+
+    /* ────────────────────────────────
+       3. EVENTS HOSTED
+    ──────────────────────────────── */
+    let hostedPage = 0, hostedDone = false, hostedSize = 8;
+
+    document.querySelectorAll('#hostedSizePills .ts-pill').forEach(pill => {
+        pill.addEventListener('click', () => {
+            document.querySelectorAll('#hostedSizePills .ts-pill').forEach(p => p.classList.remove('active'));
+            pill.classList.add('active');
+            hostedSize = parseInt(pill.dataset.size);
+            hostedPage = 0;
+            const grid = document.getElementById('hostedGrid');
+            grid.innerHTML = '';
+            grid.style.display = 'none';
+            document.getElementById('hostedLoading').style.display = 'flex';
+            document.getElementById('hostedEmpty').style.display   = 'none';
+            document.getElementById('hostedMoreWrap').style.display = 'none';
+            loadHosted(0);
+        });
+    });
+
+    async function loadHosted(page = 0) {
+        if (!profileToken) return;
+        try {
+            const res  = await fetch(`/api/v1/event/getHostedEvents?page=${page}&size=${hostedSize}`, {
+                headers: { 'Authorization': 'Bearer ' + profileToken }
+            });
+            if (!res.ok) throw new Error(res.status);
+            const data   = await res.json();
+            const events = data.content || [];
+
+            if (page === 0) document.getElementById('hostedLoading').style.display = 'none';
+
+            if (!events.length && page === 0) {
+                document.getElementById('hostedEmpty').style.display = 'flex';
+                return;
+            }
+
+            const total = data.totalElements || events.length;
+            document.getElementById('hostedCount').textContent = total + ' event' + (total !== 1 ? 's' : '');
+            const grid = document.getElementById('hostedGrid');
+            grid.style.display = 'grid';
+            grid.innerHTML += events.map(ev => {
+                const upcoming = isUpcoming(ev.eventDate);
+                const sold     = ev.totalTickets - ev.ticketsAvailable;
+                const badge    = upcoming
+                    ? `🟢 ${ev.ticketsAvailable} left`
+                    : `${sold}/${ev.totalTickets} attended`;
+                return buildEventCard(ev, badge);
+            }).join('');
+
+            hostedDone = data.last;
+            document.getElementById('hostedMoreWrap').style.display = hostedDone ? 'none' : 'block';
+        } catch (err) {
+            console.error('Hosted events error:', err);
+            document.getElementById('hostedLoading').style.display = 'none';
+            document.getElementById('hostedEmpty').style.display = 'flex';
+        }
+    }
+    document.getElementById('hostedMoreBtn').addEventListener('click', () => {
+        hostedPage++;
+        loadHosted(hostedPage);
+    });
+
+    /* ── Kick off all three ── */
+    loadMyTickets(0);
+    loadJoined(0);
+    loadHosted(0);
 </script>
 <script th:src="@{/js/profile.js}"></script>
 <script th:src="@{/js/clock.js}"></script>

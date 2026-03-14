@@ -76,8 +76,7 @@ public class TicketServiceImpl implements TicketService{
     }
     @Override
     public Page<TicketResponse> myTicket(int page, int size, Authentication auth) {
-        Sort sort = Sort.by("eventDate").ascending();
-        Pageable pageable = PageRequest.of(page, size, sort);
+        Pageable pageable = PageRequest.of(page, size);
 
         User user = userRepository.findByEmail(auth.getName())
                 .orElseThrow(() -> new UserNotFoundException("User not found"));

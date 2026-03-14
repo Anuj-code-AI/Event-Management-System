@@ -14,12 +14,7 @@ import java.util.Optional;
 
 public interface TicketRepository extends JpaRepository<Ticket,Long> {
     Optional<Ticket> findByTicketCode(String ticketCode);
-    @Query("""
-SELECT DISTINCT ticket
-FROM Ticket t
-WHERE t.user = :user
-""")
-    Page<Ticket> findAllByUser(User user,Pageable pageable);
+    Page<Ticket> findAllByUser(User user, Pageable pageable);
     List<Ticket> findAllByEvent(Event event);
     @Query("""
 SELECT DISTINCT t.event

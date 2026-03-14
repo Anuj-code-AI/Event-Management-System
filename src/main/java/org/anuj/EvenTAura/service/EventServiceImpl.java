@@ -131,7 +131,7 @@ public class EventServiceImpl implements EventService {
     @Override
     public Page<EventResponse> getJoinedEvents(int page, int size, Authentication auth) {
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by("eventDate").ascending());
+        Pageable pageable = PageRequest.of(page, size);
 
         User user = userRepository.findByEmail(auth.getName())
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
@@ -143,5 +143,7 @@ public class EventServiceImpl implements EventService {
         }
 
         return events.map(EventMapper::toResponse);
+
     }
+
 }
