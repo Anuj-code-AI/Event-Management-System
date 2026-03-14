@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>About Us — Eventaura</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/aboutUs.css}">
+</head>
+
+<body class="about-page">
+
+<!-- ═══════════════════ HEADER ═══════════════════ -->
+<header class="header">
+    <div class="logo">
+        <span class="logo-text">Event<em>aura</em></span>
+    </div>
+    <nav class="nav-links">
+        <a href="/">Home</a>
+        <a href="/#events">Events</a>
+        <a href="#">Categories</a>
+        <a href="/aboutUs" style="color:var(--primary);font-weight:600;">About Us</a>
+    </nav>
+    <div class="search-bar">
+        <span class="search-icon">🔍</span>
+        <input type="text" placeholder="Search events, cities...">
+    </div>
+    <div class="header-right">
+        <div class="time" id="clock"></div>
+        <button class="icon-btn" aria-label="Notifications">
+            <span>🔔</span>
+            <span class="badge">3</span>
+        </button>
+        <div id="guestActions">
+            <a href="/login"    class="btn primary">Login</a>
+            <a href="/register" class="btn primary">Sign Up</a>
+        </div>
+        <div id="userActions" style="display:none;">
+            <a href="/profile">
+                <button class="icon-btn profile-btn" aria-label="Profile"><span>👤</span></button>
+            </a>
+        </div>
+        <button class="hamburger" id="hamburgerBtn" aria-label="Open menu" aria-expanded="false">
+            <span></span><span></span><span></span>
+        </button>
+    </div>
+</header>
+
+<!-- ── Mobile nav overlay ── -->
+<div class="mobile-nav-overlay" id="mobileNavOverlay"></div>
+
+<!-- ── Mobile slide-in drawer ── -->
+<nav class="mobile-nav" id="mobileNav" aria-label="Mobile navigation">
+    <div class="mobile-nav-header">
+        <span class="logo-text">Event<em>aura</em></span>
+        <button class="mobile-nav-close" id="mobileNavClose" aria-label="Close menu">✕</button>
+    </div>
+    <div class="mobile-search">
+        <span>🔍</span>
+        <input type="text" placeholder="Search events, cities...">
+    </div>
+    <div class="mobile-nav-links">
+        <a href="/"            class="mobile-nav-link"><span class="mnl-icon">🏠</span>Home</a>
+        <a href="/#events"     class="mobile-nav-link"><span class="mnl-icon">🔥</span>Events</a>
+        <a href="#"            class="mobile-nav-link"><span class="mnl-icon">🏷️</span>Categories</a>
+        <a href="/aboutUs"     class="mobile-nav-link"><span class="mnl-icon">ℹ️</span>About Us</a>
+        <a href="/createEvent" class="mobile-nav-link"><span class="mnl-icon">📅</span>Create Event</a>
+        <a href="/tickets"     class="mobile-nav-link"><span class="mnl-icon">🎟️</span>My Tickets</a>
+        <a href="/profile"     class="mobile-nav-link"><span class="mnl-icon">👤</span>Profile</a>
+    </div>
+    <div class="mobile-nav-footer">
+        <div id="mobileNavGuest">
+            <a href="/login"    class="btn primary" style="text-align:center;display:block;">Login</a>
+            <a href="/register" class="btn primary" style="text-align:center;display:block;margin-top:10px;">Sign Up</a>
+        </div>
+        <div id="mobileNavUser" style="display:none;">
+            <a href="/logout" class="btn primary" style="text-align:center;display:block;background:#ef4444;border-color:#ef4444;">Sign Out</a>
+        </div>
+    </div>
+</nav>
+
+
+<!-- ═══════════════════ HERO ═══════════════════ -->
+<section class="about-hero">
+    <div class="about-hero-inner">
+        <div class="about-hero-eyebrow">✨ &nbsp;Our Story</div>
+        <h1>Built by students,<br>for <em>everyone.</em></h1>
+        <p class="about-hero-sub">
+            Eventaura was born in a college dorm room with one simple belief — discovering and attending events should be effortless, beautiful, and free.
+        </p>
+        <div class="about-hero-stats">
+            <div class="ah-stat"><strong>10K+</strong><span>Events Listed</span></div>
+            <div class="ah-stat"><strong>50+</strong><span>Cities</span></div>
+            <div class="ah-stat"><strong>2M+</strong><span>Attendees</span></div>
+            <div class="ah-stat"><strong>3</strong><span>Passionate Builders</span></div>
+        </div>
+    </div>
+    <div class="scroll-hint">
+        <div class="scroll-hint-arrow"></div>
+        Scroll
+    </div>
+</section>
+
+
+<!-- ═══════════════════ MISSION STRIP ═══════════════════ -->
+<div class="mission-strip">
+    <div class="mission-strip-inner">
+        <h2>"We believe every great memory starts with a great event."</h2>
+        <p>Our mission is to connect people with experiences that inspire, educate, and entertain — across every city in India.</p>
+    </div>
+</div>
+
+
+<!-- ═══════════════════ STORY SECTION ═══════════════════ -->
+<section class="story-section">
+    <div class="story-left">
+        <div class="story-label">How it started</div>
+        <h2>From a college<br>project to a <em>real platform.</em></h2>
+        <p>What started as a third-year engineering project turned into something we genuinely cared about. We were tired of missing events at our own college because nobody knew about them.</p>
+        <p>So we built Eventaura — a platform where any organiser can list an event in minutes, and any student or professional can discover what's happening around them in real time.</p>
+        <p>Today we're a tight team of three, shipping fast, learning faster, and obsessed with the product we're building.</p>
+    </div>
+
+    <div class="story-visual">
+        <div class="story-timeline">
+            <div class="st-item">
+                <div class="st-year">2024 · Q3</div>
+                <h4>💡 The Idea</h4>
+                <p>Frustrated by missed events and scattered WhatsApp forwards, we decided to build a better way.</p>
+            </div>
+            <div class="st-item">
+                <div class="st-year">2024 · Q4</div>
+                <h4>🔨 First Lines of Code</h4>
+                <p>Anuj kicked off the Spring Boot backend. Ashutosh designed the database schema. Bhanu started brand research.</p>
+            </div>
+            <div class="st-item">
+                <div class="st-year">2025 · Q1</div>
+                <h4>🎨 Design Overhaul</h4>
+                <p>The UI went through three complete rewrites until it felt truly premium. Dark mode, live SSE updates, and mobile-first.</p>
+            </div>
+            <div class="st-item">
+                <div class="st-year">2025 · Q2</div>
+                <h4>🚀 First Public Launch</h4>
+                <p>We opened to our campus first — 200 registrations in the first 48 hours. The feedback was electric.</p>
+            </div>
+            <div class="st-item">
+                <div class="st-year">2026 · Now</div>
+                <h4>🌍 Scaling Across India</h4>
+                <p>Expanding to 50+ cities, onboarding clubs and tech communities, and continuously shipping new features.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- ═══════════════════ TECH STACK MARQUEE ═══════════════════ -->
+<div class="marquee-section">
+    <div class="marquee-label">Built with</div>
+    <div style="overflow:hidden;">
+        <div class="marquee-track" id="marqueeTrack">
+            <div class="marquee-item"><span>☕</span> Spring Boot</div>
+            <div class="marquee-item"><span>🍃</span> Thymeleaf</div>
+            <div class="marquee-item"><span>🐬</span> MySQL</div>
+            <div class="marquee-item"><span>🔐</span> Spring Security</div>
+            <div class="marquee-item"><span>📡</span> SSE Live Updates</div>
+            <div class="marquee-item"><span>☁️</span> Cloudinary</div>
+            <div class="marquee-item"><span>🔑</span> JWT Auth</div>
+            <div class="marquee-item"><span>🌐</span> OAuth 2.0 Google</div>
+            <div class="marquee-item"><span>🎨</span> Vanilla CSS</div>
+            <div class="marquee-item"><span>⚡</span> Vanilla JS</div>
+            <div class="marquee-item"><span>🐙</span> GitHub</div>
+            <div class="marquee-item"><span>🏗️</span> Maven</div>
+            <div class="marquee-item"><span>☕</span> Spring Boot</div>
+            <div class="marquee-item"><span>🍃</span> Thymeleaf</div>
+            <div class="marquee-item"><span>🐬</span> MySQL</div>
+            <div class="marquee-item"><span>🔐</span> Spring Security</div>
+            <div class="marquee-item"><span>📡</span> SSE Live Updates</div>
+            <div class="marquee-item"><span>☁️</span> Cloudinary</div>
+            <div class="marquee-item"><span>🔑</span> JWT Auth</div>
+            <div class="marquee-item"><span>🌐</span> OAuth 2.0 Google</div>
+            <div class="marquee-item"><span>🎨</span> Vanilla CSS</div>
+            <div class="marquee-item"><span>⚡</span> Vanilla JS</div>
+            <div class="marquee-item"><span>🐙</span> GitHub</div>
+            <div class="marquee-item"><span>🏗️</span> Maven</div>
+        </div>
+    </div>
+</div>
+
+
+<!-- ═══════════════════ TEAM SECTION ═══════════════════ -->
+<section class="team-section">
+    <div class="team-header">
+        <div class="section-eyebrow">👥 &nbsp;The Team</div>
+        <h2>Three people.<br><em>One obsession.</em></h2>
+        <p>A developer, a marketer, and a data architect — each bringing something irreplaceable to the table.</p>
+    </div>
+
+    <div class="team-grid">
+
+        <!-- ── CARD 1: Anuj (Lead) ── -->
+        <div class="team-card lead" style="transition-delay: 0s;">
+            <div class="tc-photo">
+                <!-- To add photo: set src="/images/team-anuj.jpg" -->
+                <img src="/images/team-anuj.jpg" alt="Anuj Chourasiya"
+                     onload="this.classList.add('loaded')"
+                     onerror="this.remove();">
+                <div class="tc-photo-placeholder">
+                    <div class="tc-photo-initials">AC</div>
+                    <span class="tc-photo-hint">Photo coming soon</span>
+                </div>
+                <div class="tc-lead-badge">🚀 Lead</div>
+            </div>
+            <div class="tc-body">
+                <div class="tc-role-chip">💻 Full-Stack Developer</div>
+                <div class="tc-name">Anuj Chourasiya</div>
+                <div class="tc-title">Founder · Lead Engineer · UI Architect</div>
+                <p class="tc-bio">Anuj built Eventaura from the ground up — every API endpoint, every pixel of CSS, every animation. He leads the technical vision, makes the big calls, and ships faster than anyone on the team. When something's broken at 2am, he's the one fixing it.</p>
+                <div class="tc-skills">
+                    <span class="tc-skill">Spring Boot</span>
+                    <span class="tc-skill">Java</span>
+                    <span class="tc-skill">MySQL</span>
+                    <span class="tc-skill">Spring Security</span>
+                    <span class="tc-skill">JWT</span>
+                    <span class="tc-skill">SSE</span>
+                    <span class="tc-skill">CSS</span>
+                    <span class="tc-skill">JavaScript</span>
+                </div>
+                <div class="tc-socials">
+                    <a class="tc-social" href="#" aria-label="GitHub">🐙</a>
+                    <a class="tc-social" href="#" aria-label="LinkedIn">💼</a>
+                    <a class="tc-social" href="#" aria-label="Twitter">𝕏</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── CARD 2: Bhanu ── -->
+        <div class="team-card" style="transition-delay: 0.15s;">
+            <div class="tc-photo">
+                <!-- To add photo: set src="/images/team-bhanu.jpg" -->
+                <img src="/images/team-bhanu.jpg" alt="Bhanu Pratap Turke"
+                     onload="this.classList.add('loaded')"
+                     onerror="this.remove();">
+                <div class="tc-photo-placeholder">
+                    <div class="tc-photo-initials">BT</div>
+                    <span class="tc-photo-hint">Photo coming soon</span>
+                </div>
+            </div>
+            <div class="tc-body">
+                <div class="tc-role-chip">📣 Marketing & Assets</div>
+                <div class="tc-name">Bhanu Pratap Turke</div>
+                <div class="tc-title">Co-Founder · Brand & Growth Lead</div>
+                <p class="tc-bio">Bhanu is the voice and face of Eventaura. He handles everything from brand identity and social media to managing digital assets and partnerships. If Eventaura looks good and feels trustworthy, that's Bhanu's doing.</p>
+                <div class="tc-skills">
+                    <span class="tc-skill">Brand Strategy</span>
+                    <span class="tc-skill">Social Media</span>
+                    <span class="tc-skill">Growth Hacking</span>
+                    <span class="tc-skill">Content Creation</span>
+                    <span class="tc-skill">Figma</span>
+                    <span class="tc-skill">Canva</span>
+                    <span class="tc-skill">Analytics</span>
+                </div>
+                <div class="tc-socials">
+                    <a class="tc-social" href="#" aria-label="LinkedIn">💼</a>
+                    <a class="tc-social" href="#" aria-label="Instagram">📸</a>
+                    <a class="tc-social" href="#" aria-label="Twitter">𝕏</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── CARD 3: Ashutosh ── -->
+        <div class="team-card" style="transition-delay: 0.3s;">
+            <div class="tc-photo">
+                <!-- To add photo: set src="/images/team-ashutosh.jpg" -->
+                <img src="/images/team-ashutosh.jpg" alt="Ashutosh Tripathi"
+                     onload="this.classList.add('loaded')"
+                     onerror="this.remove();">
+                <div class="tc-photo-placeholder">
+                    <div class="tc-photo-initials">AT</div>
+                    <span class="tc-photo-hint">Photo coming soon</span>
+                </div>
+            </div>
+            <div class="tc-body">
+                <div class="tc-role-chip">🗄️ Database Architect</div>
+                <div class="tc-name">Ashutosh Tripathi</div>
+                <div class="tc-title">Co-Founder · DB Design · Backend Support</div>
+                <p class="tc-bio">Ashutosh is the reason Eventaura never loses data. He designed the entire database schema from scratch — relationships, indexes, constraints, the works. He also handles query optimisation and keeps the data layer rock-solid as we scale.</p>
+                <div class="tc-skills">
+                    <span class="tc-skill">MySQL</span>
+                    <span class="tc-skill">Schema Design</span>
+                    <span class="tc-skill">JPA / Hibernate</span>
+                    <span class="tc-skill">Query Optimisation</span>
+                    <span class="tc-skill">HikariCP</span>
+                    <span class="tc-skill">ER Diagrams</span>
+                </div>
+                <div class="tc-socials">
+                    <a class="tc-social" href="#" aria-label="GitHub">🐙</a>
+                    <a class="tc-social" href="#" aria-label="LinkedIn">💼</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+
+<!-- ═══════════════════ VALUES SECTION ═══════════════════ -->
+<section class="values-section">
+    <div class="values-header">
+        <span class="story-label">What drives us</span>
+        <h2>Our Core Values</h2>
+        <p>The principles that guide every decision we make — big or small.</p>
+    </div>
+    <div class="values-grid">
+        <div class="value-card" style="transition-delay:0s;">
+            <div class="value-icon">⚡</div>
+            <h3>Ship Fast, Learn Faster</h3>
+            <p>We believe in launching early and iterating based on real feedback. Perfect is the enemy of shipped.</p>
+        </div>
+        <div class="value-card" style="transition-delay:0.1s;">
+            <div class="value-icon">🎯</div>
+            <h3>User Obsession</h3>
+            <p>Every feature we build starts with one question: does this make the experience better for the person using it?</p>
+        </div>
+        <div class="value-card" style="transition-delay:0.2s;">
+            <div class="value-icon">🔓</div>
+            <h3>Radical Openness</h3>
+            <p>We believe events should be accessible to everyone — no paywalls, no hidden fees, no friction.</p>
+        </div>
+        <div class="value-card" style="transition-delay:0.3s;">
+            <div class="value-icon">🛠️</div>
+            <h3>Craftsmanship</h3>
+            <p>We care deeply about the details — the animation curve, the loading state, the error message. Everything is intentional.</p>
+        </div>
+        <div class="value-card" style="transition-delay:0.4s;">
+            <div class="value-icon">🤝</div>
+            <h3>Community First</h3>
+            <p>We're building this for communities — college clubs, tech groups, local organisers — not just enterprises.</p>
+        </div>
+        <div class="value-card" style="transition-delay:0.5s;">
+            <div class="value-icon">📈</div>
+            <h3>Data-Driven Growth</h3>
+            <p>Every decision is backed by data. We measure what matters, drop what doesn't, and double down on what works.</p>
+        </div>
+    </div>
+</section>
+
+
+<!-- ═══════════════════ CTA ═══════════════════ -->
+<section class="about-cta">
+    <div class="about-cta-inner">
+        <h2>Ready to experience<br><em>Eventaura?</em></h2>
+        <p>Join thousands of event-goers discovering unforgettable experiences across India every single day.</p>
+        <div class="cta-btn-row">
+            <a href="/#events" class="cta-primary">🔥 Browse Events</a>
+            <a href="/register" class="cta-secondary">🎟️ Create Account</a>
+        </div>
+    </div>
+</section>
+
+
+<!-- ═══════════════════ FOOTER ═══════════════════ -->
+<footer class="footer">
+    <div class="footer-top">
+        <div class="footer-brand">
+            <div class="logo">
+                <span class="logo-text">Event<em>aura</em></span>
+            </div>
+            <p>India's premier event discovery platform. Find, book, and experience the best events near you.</p>
+            <div class="social-links">
+                <a href="#" aria-label="Twitter">𝕏</a>
+                <a href="#" aria-label="Instagram">📸</a>
+                <a href="#" aria-label="LinkedIn">in</a>
+                <a href="#" aria-label="YouTube">▶</a>
+            </div>
+        </div>
+        <div class="footer-links">
+            <div class="footer-col">
+                <h4>Explore</h4>
+                <a href="#">Trending Events</a>
+                <a href="#">Upcoming Events</a>
+                <a href="#">Categories</a>
+                <a href="#">Cities</a>
+            </div>
+            <div class="footer-col">
+                <h4>Company</h4>
+                <a href="/aboutUs">About Us</a>
+                <a href="#">Blog</a>
+                <a href="#">Careers</a>
+                <a href="#">Press</a>
+            </div>
+            <div class="footer-col">
+                <h4>Support</h4>
+                <a href="#">Help Center</a>
+                <a href="#">Contact Us</a>
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
+            </div>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>© 2026 Eventaura. All rights reserved. Made with ❤️ in India.</p>
+        <p>Delhi · Mumbai · Bangalore · Hyderabad · Chennai · Pune · Goa</p>
+    </div>
+</footer>
+
+
+<!-- ═══════════════════ SCRIPTS ═══════════════════ -->
+<script>
+
+    /* ── Mobile nav ── */
+    const hamburgerBtn     = document.getElementById('hamburgerBtn');
+    const mobileNav        = document.getElementById('mobileNav');
+    const mobileNavOverlay = document.getElementById('mobileNavOverlay');
+    const mobileNavClose   = document.getElementById('mobileNavClose');
+
+    function openMobileNav() {
+        mobileNav.classList.add('open');
+        mobileNavOverlay.classList.add('open');
+        hamburgerBtn.setAttribute('aria-expanded', 'true');
+        hamburgerBtn.classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeMobileNav() {
+        mobileNav.classList.remove('open');
+        mobileNavOverlay.classList.remove('open');
+        hamburgerBtn.setAttribute('aria-expanded', 'false');
+        hamburgerBtn.classList.remove('open');
+        document.body.style.overflow = '';
+    }
+
+    hamburgerBtn.addEventListener('click', openMobileNav);
+    mobileNavClose.addEventListener('click', closeMobileNav);
+    mobileNavOverlay.addEventListener('click', closeMobileNav);
+    document.querySelectorAll('.mobile-nav-link').forEach(l => l.addEventListener('click', closeMobileNav));
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMobileNav(); });
+
+    /* ── Mobile nav auth state ── */
+    if (localStorage.getItem('accessToken')) {
+        document.getElementById('mobileNavGuest').style.display = 'none';
+        document.getElementById('mobileNavUser').style.display  = 'block';
+    }
+
+    /* ── Header auth state (desktop) ── */
+    if (localStorage.getItem('accessToken')) {
+        document.getElementById('guestActions').style.display = 'none';
+        document.getElementById('userActions').style.display  = 'flex';
+    }
+
+    /* ── Intersection Observer — scroll animations ── */
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.12 });
+
+    document.querySelectorAll('.team-card, .value-card, .st-item').forEach(el => observer.observe(el));
+
+</script>
+<script th:src="@{/js/clock.js}"></script>
+
+</body>
+</html>

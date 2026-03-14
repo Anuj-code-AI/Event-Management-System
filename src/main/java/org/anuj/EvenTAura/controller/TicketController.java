@@ -8,6 +8,7 @@ import org.anuj.EvenTAura.dto.TicketRequest;
 import org.anuj.EvenTAura.dto.TicketResponse;
 import org.anuj.EvenTAura.model.Ticket;
 import org.anuj.EvenTAura.service.TicketService;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -25,9 +26,12 @@ public class TicketController {
         return ResponseEntity.ok(ticketService.buyTicket(eventId,req,auth));
     }
 
-    @GetMapping("/my")
-    public ResponseEntity<List<Ticket>> myTicket(Authentication auth) {
-        return ResponseEntity.ok(ticketService.myTicket(auth));
+    @GetMapping("/myTickets")
+    public ResponseEntity<Page<TicketResponse>> myTicket(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            Authentication auth) {
+        return ResponseEntity.ok(ticketService.myTicket(page,size,auth));
     }
 
     @GetMapping("/event/{eventId}")
@@ -54,4 +58,6 @@ public class TicketController {
     public ResponseEntity<TicketResponse> getMyTicket(@PathVariable Long ticketId,Authentication auth){
         return ResponseEntity.ok(ticketService.getMyTicket(ticketId));
     }
+
+
 }

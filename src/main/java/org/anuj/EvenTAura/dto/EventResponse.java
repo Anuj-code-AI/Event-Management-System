@@ -16,7 +16,6 @@ import lombok.*;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-
 public class EventResponse {
     private Long eventId;
     private String title;

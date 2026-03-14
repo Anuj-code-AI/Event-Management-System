@@ -7,6 +7,8 @@ import org.anuj.EvenTAura.dto.EventUpdateRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.security.core.Authentication;
 
+import java.util.List;
+
 public interface EventService {
     EventResponse createEvent(EventRequest req, Authentication auth);
     EventResponse updateEvent(Long eventId, EventUpdateRequest req, Authentication auth);
@@ -14,4 +16,8 @@ public interface EventService {
     EventResponse getEvent(Long eventId);
 
     Page<EventSummaryResponse> getAllEvents(int page, int size);
+
+    Page<EventResponse> getHostedEvents(int page,int size,Authentication auth);
+
+    Page<EventResponse> getJoinedEvents(int page, int size, Authentication auth);
 }

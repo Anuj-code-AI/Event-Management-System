@@ -51,4 +51,9 @@ public class PageController {
     public String eventDetail(@PathVariable Long eventId, Model model) {
         return "eventDetail"; // resolves to eventDetail.html
     }
+
+    @GetMapping("/aboutUs")
+    public String aboutUs(Model model) {
+        return "aboutUs";
+    }
 }

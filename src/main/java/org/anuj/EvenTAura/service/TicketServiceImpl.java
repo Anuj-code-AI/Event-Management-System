@@ -7,6 +7,7 @@ import org.anuj.EvenTAura.dto.TicketCheckResponse;
 import org.anuj.EvenTAura.dto.TicketRequest;
 import org.anuj.EvenTAura.dto.TicketResponse;
 import org.anuj.EvenTAura.exception.*;
+import org.anuj.EvenTAura.mapper.EventMapper;
 import org.anuj.EvenTAura.mapper.TicketMapper;
 import org.anuj.EvenTAura.model.Event;
 import org.anuj.EvenTAura.model.Ticket;
@@ -16,6 +17,10 @@ import org.anuj.EvenTAura.repository.EventRepository;
 import org.anuj.EvenTAura.repository.TicketRepository;
 import org.anuj.EvenTAura.repository.UserRepository;
 import org.anuj.EvenTAura.util.SseEmitterHolder;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -70,11 +75,20 @@ public class TicketServiceImpl implements TicketService{
         return saved;
     }
     @Override
-    public List<Ticket> myTicket(Authentication auth) {
+    public Page<TicketResponse> myTicket(int page, int size, Authentication auth) {
+        Sort sort = Sort.by("eventDate").ascending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+
         User user = userRepository.findByEmail(auth.getName())
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
-        List<Ticket> tickets = ticketRepository.findAllByUser(user);
-        return tickets;
+
+        Page<Ticket> tickets = ticketRepository.findAllByUser(user,pageable);
+
+        if (tickets.isEmpty()) {
+            throw new NoTicketFoundException("You didn't joined any event yet!! Joined now");
+        }
+
+        return tickets.map(TicketMapper::toResponse);
     }
 
     @Override

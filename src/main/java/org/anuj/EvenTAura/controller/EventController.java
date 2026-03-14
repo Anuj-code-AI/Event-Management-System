@@ -13,6 +13,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/event")
 @RequiredArgsConstructor
@@ -81,6 +83,24 @@ public class EventController {
             @RequestParam(defaultValue = "10") int size
     ) {
         return ResponseEntity.ok(eventService.getAllEvents(page, size));
+    }
+
+    //Event hosted
+    @GetMapping("/getHostedEvents")
+    public ResponseEntity<Page<EventResponse>> getHostedEvents(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            Authentication auth){
+        return ResponseEntity.ok(eventService.getHostedEvents(page,size,auth));
+    }
+
+    //Event joined
+    @GetMapping("/getJoinedEvents")
+    public ResponseEntity<Page<EventResponse>> getJoinedEvents(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            Authentication auth){
+        return ResponseEntity.ok(eventService.getJoinedEvents(page,size,auth));
     }
 }
 

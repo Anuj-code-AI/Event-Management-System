@@ -42,14 +42,14 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/auth/**",
                                         "/api/oauth2/**",
-                                        "/oauth2/**",
+                                        "/oauth2/**","/error",
                                 "/api/v1/event/ticket-updates",
                                 "/api/v1/event/getEvent/**",
                                 "/api/v1/event/getAllEvents/**",
                                 "/api/v1/event/getAllEvents",
                                 "/eventDetail/**",
                                 "/","/login","/register","/favicon.ico","/favicon.ico/**"
-                                ,"/profile","/createEvent","/oauth",
+                                ,"/profile","/createEvent","/oauth","/aboutUs",
                                 "/uploads/**","/css/**","/js/**","/images/**").permitAll()
                     .anyRequest().authenticated()
                 )

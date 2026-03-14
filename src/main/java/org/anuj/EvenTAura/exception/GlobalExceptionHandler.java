@@ -106,4 +106,17 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.TOO_MANY_REQUESTS)
                 .body(error);
     }
+    @ExceptionHandler(NoEventFoundException.class)
+    public ResponseEntity<ApiError> handleNoEventFoundException(NoEventFoundException ex){
+        ApiError error = new ApiError(
+                "NO_EVENT_FOUND",
+                ex.getMessage(),
+                LocalDateTime.now()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(error);
+    }
+
 }

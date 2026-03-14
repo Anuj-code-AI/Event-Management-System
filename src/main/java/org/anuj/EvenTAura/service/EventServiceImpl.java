@@ -6,12 +6,14 @@ import org.anuj.EvenTAura.dto.EventResponse;
 import org.anuj.EvenTAura.dto.EventSummaryResponse;
 import org.anuj.EvenTAura.dto.EventUpdateRequest;
 import org.anuj.EvenTAura.exception.EventNotExistException;
+import org.anuj.EvenTAura.exception.NoEventFoundException;
 import org.anuj.EvenTAura.exception.UnauthorizedException;
 import org.anuj.EvenTAura.exception.UserNotFoundException;
 import org.anuj.EvenTAura.mapper.EventMapper;
 import org.anuj.EvenTAura.model.Event;
 import org.anuj.EvenTAura.model.User;
 import org.anuj.EvenTAura.repository.EventRepository;
+import org.anuj.EvenTAura.repository.TicketRepository;
 import org.anuj.EvenTAura.repository.UserRepository;
 import org.anuj.EvenTAura.util.SseEmitterHolder;
 import org.springframework.data.domain.Page;
@@ -21,11 +23,14 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
-public class EventServiceImpl implements EventService{
+public class EventServiceImpl implements EventService {
     private final UserRepository userRepository;
     private final EventRepository eventRepository;
+    private final TicketRepository ticketRepository;
 
     @Override
     public EventResponse createEvent(EventRequest req, Authentication auth) {
@@ -57,7 +62,7 @@ public class EventServiceImpl implements EventService{
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new EventNotExistException("No event found with this id"));
 
-        if(!user.getUserId().equals(event.getUser().getUserId())){
+        if (!user.getUserId().equals(event.getUser().getUserId())) {
             throw new UnauthorizedException("You cannot update this event");
         }
 
@@ -69,13 +74,13 @@ public class EventServiceImpl implements EventService{
     }
 
     @Override
-    public String deleteEvent(Long eventId,Authentication auth) {
+    public String deleteEvent(Long eventId, Authentication auth) {
         String email = auth.getName();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
         Event event = eventRepository.findById(eventId)
-                .orElseThrow(()-> new EventNotExistException("No event found with this id"));
-        if(!user.getUserId().equals(event.getUser().getUserId())){
+                .orElseThrow(() -> new EventNotExistException("No event found with this id"));
+        if (!user.getUserId().equals(event.getUser().getUserId())) {
             throw new UnauthorizedException("You cannot delete this event");
         }
         eventRepository.delete(event);
@@ -86,7 +91,7 @@ public class EventServiceImpl implements EventService{
     @Override
     public EventResponse getEvent(Long eventId) {
         return EventMapper.toResponse(eventRepository.findById(eventId)
-                .orElseThrow(()->new EventNotExistException("Event Not Found")));
+                .orElseThrow(() -> new EventNotExistException("Event Not Found")));
     }
 
     @Override
@@ -103,5 +108,40 @@ public class EventServiceImpl implements EventService{
                         event.getCategory(),
                         event.getTicketsAvailable()
                 ));
+    }
+
+    @Override
+    public Page<EventResponse> getHostedEvents(int page, int size, Authentication auth) {
+
+        Sort sort = Sort.by("eventDate").ascending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        User user = userRepository.findByEmail(auth.getName())
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        Page<Event> events = eventRepository.findByUser(user, pageable);
+
+        if (events.isEmpty()) {
+            throw new NoEventFoundException("You didn't hosted any event yet!!");
+        }
+
+        return events.map(EventMapper::toResponse);
+    }
+
+    @Override
+    public Page<EventResponse> getJoinedEvents(int page, int size, Authentication auth) {
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("eventDate").ascending());
+
+        User user = userRepository.findByEmail(auth.getName())
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        Page<Event> events = ticketRepository.findJoinedEvents(user, pageable);
+
+        if(events.isEmpty()){
+            throw new NoEventFoundException("You didn't join any event yet!");
+        }
+
+        return events.map(EventMapper::toResponse);
     }
 }
