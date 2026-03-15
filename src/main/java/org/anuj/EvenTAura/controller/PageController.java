@@ -66,4 +66,9 @@ public class PageController {
     public String customEvent(Model model) {
         return "customEvent";
     }
+
+    @GetMapping("/myEvents")
+    public String myEvent(Model model) {
+        return "myEvents";
+    }
 }

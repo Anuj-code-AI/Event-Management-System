@@ -47,7 +47,7 @@ public class SecurityConfig {
                                 "/api/v1/event/getEvent/**",
                                 "/api/v1/event/getAllEvents/**",
                                 "/api/v1/event/getAllEvents",
-                                "/eventDetail/**",
+                                "/eventDetail/**","/myEvents",
                                 "/","/login","/register","/favicon.ico","/favicon.ico/**"
                                 ,"/profile","/createEvent","/oauth","/aboutUs","/tickets","/customEvent",
                                 "/uploads/**","/css/**","/js/**","/images/**").permitAll()

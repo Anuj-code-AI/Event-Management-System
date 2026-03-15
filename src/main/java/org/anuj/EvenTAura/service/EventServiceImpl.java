@@ -11,6 +11,8 @@ import org.anuj.EvenTAura.exception.UnauthorizedException;
 import org.anuj.EvenTAura.exception.UserNotFoundException;
 import org.anuj.EvenTAura.mapper.EventMapper;
 import org.anuj.EvenTAura.model.Event;
+import org.anuj.EvenTAura.model.Role;
+import org.anuj.EvenTAura.model.Ticket;
 import org.anuj.EvenTAura.model.User;
 import org.anuj.EvenTAura.repository.EventRepository;
 import org.anuj.EvenTAura.repository.TicketRepository;
@@ -84,13 +86,21 @@ public class EventServiceImpl implements EventService {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new EventNotExistException("No event found with this id"));
 
+        // ADMIN: delete everything
+        if (Role.ROLE_ADMIN.equals(user.getRole())) {
+            ticketRepository.deleteByEvent(event);
+            eventRepository.delete(event);
+            return "Event successfully deleted";
+        }
+
+        // OWNER CHECK
         if (!user.getUserId().equals(event.getUser().getUserId())) {
             throw new UnauthorizedException("You cannot delete this event");
         }
 
         long ticketCount = ticketRepository.countByEventEventId(eventId);
 
-        if(ticketCount > 0){
+        if (ticketCount > 0) {
             throw new RuntimeException("Cannot delete event because tickets are already booked");
         }
 
