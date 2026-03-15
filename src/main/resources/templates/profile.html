@@ -72,7 +72,7 @@
         <a th:href="@{/}"            class="mobile-nav-link"><span class="mnl-icon">🏠</span>Home</a>
         <a th:href="@{/events}"      class="mobile-nav-link"><span class="mnl-icon">🔥</span>Events</a>
         <a th:href="@{/categories}"  class="mobile-nav-link"><span class="mnl-icon">🏷️</span>Categories</a>
-        <a th:href="@{/aboutUs}"       class="mobile-nav-link"><span class="mnl-icon">ℹ️</span>About Us</a>
+        <a th:href="@{/about}"       class="mobile-nav-link"><span class="mnl-icon">ℹ️</span>About</a>
         <a th:href="@{/createEvent}" class="mobile-nav-link"><span class="mnl-icon">📅</span>Create Event</a>
         <a th:href="@{/tickets}"     class="mobile-nav-link"><span class="mnl-icon">🎟️</span>My Tickets</a>
         <a th:href="@{/profile}"     class="mobile-nav-link"><span class="mnl-icon">👤</span>Profile</a>
@@ -108,26 +108,26 @@
                 <span class="email-pill">✉️ <span id="userEmail"></span></span>
             </p>
             <div class="hero-badges">
-                <span class="hbadge">🎟️ 12 Tickets</span>
-                <span class="hbadge">📅 Member since 2024</span>
+                <span class="hbadge">🎟️ <span id="statTotalTickets">—</span> Tickets</span>
+                <span class="hbadge">📅 Member since <span id="statMemberYear">—</span></span>
                 <span class="hbadge verified">✅ Verified</span>
             </div>
         </div>
 
         <div class="hero-stats">
             <div class="hstat">
-                <strong>12</strong>
+                <strong id="statJoined">—</strong>
                 <span>Events Attended</span>
             </div>
             <div class="hstat-divider"></div>
             <div class="hstat">
-                <strong>3</strong>
+                <strong id="statUpcoming">—</strong>
                 <span>Upcoming</span>
             </div>
             <div class="hstat-divider"></div>
             <div class="hstat">
-                <strong>5</strong>
-                <span>Cities Explored</span>
+                <strong id="statHosted">—</strong>
+                <span>Events Hosted</span>
             </div>
         </div>
 
@@ -458,7 +458,6 @@
     <div class="footer-top">
         <div class="footer-brand">
             <div class="logo">
-                <div class="logo-icon"><img th:src="@{/images/1.jpg}" alt="Eventaura"></div>
                 <span class="logo-text">Event<em>aura</em></span>
             </div>
             <p>India's premier event discovery platform.</p>
@@ -721,6 +720,16 @@
             document.getElementById('ticketCount').textContent =
                 total + ' ticket' + (total !== 1 ? 's' : '');
 
+            /* ── hero badge: total tickets ── */
+            document.getElementById('statTotalTickets').textContent = total;
+
+            /* ── hero badge: member year from first ticket's user.createdAt ── */
+            const firstUser = tickets[0]?.user;
+            if (firstUser?.createdAt) {
+                document.getElementById('statMemberYear').textContent =
+                    new Date(firstUser.createdAt).getFullYear();
+            }
+
             const strip = document.getElementById('ticketStrip');
             strip.style.display = 'flex';
             strip.innerHTML += tickets.map(buildTicketCard).join('');
@@ -776,6 +785,13 @@
 
             const total = data.totalElements || events.length;
             document.getElementById('joinedCount').textContent = total + ' event' + (total !== 1 ? 's' : '');
+
+            /* ── hero stats: total joined + upcoming count ── */
+            document.getElementById('statJoined').textContent = total;
+            /* count upcoming from this page; refine as more pages load */
+            const upcomingCount = events.filter(ev => isUpcoming(ev.eventDate)).length;
+            const prevUpcoming  = parseInt(document.getElementById('statUpcoming').textContent) || 0;
+            document.getElementById('statUpcoming').textContent = prevUpcoming + upcomingCount;
             const grid = document.getElementById('joinedGrid');
             grid.style.display = 'grid';
             grid.innerHTML += events.map(ev => buildEventCard(ev, isUpcoming(ev.eventDate) ? 'Registered' : 'Attended')).join('');
@@ -838,6 +854,9 @@
 
             const total = data.totalElements || events.length;
             document.getElementById('hostedCount').textContent = total + ' event' + (total !== 1 ? 's' : '');
+
+            /* ── hero stat: events hosted ── */
+            document.getElementById('statHosted').textContent = total;
             const grid = document.getElementById('hostedGrid');
             grid.style.display = 'grid';
             grid.innerHTML += events.map(ev => {

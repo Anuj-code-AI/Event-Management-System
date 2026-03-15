@@ -56,4 +56,9 @@ public class PageController {
     public String aboutUs(Model model) {
         return "aboutUs";
     }
+
+    @GetMapping("/tickets")
+    public String tickets(Model model) {
+        return "tickets";
+    }
 }

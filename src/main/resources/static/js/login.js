@@ -59,3 +59,11 @@ document.addEventListener("DOMContentLoaded", async () => {
             console.log("Token validation failed");
         }
 });
+
+function redirectOAuth(provider) {
+    if (provider === "google") {
+        window.location.href = "http://localhost:8080/oauth2/authorization/google";
+    } else if (provider === "github") {
+        window.location.href = "/oauth2/authorization/github";
+    }
+}

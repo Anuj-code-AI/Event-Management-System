@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>My Tickets — Eventaura</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/tickets.css}">
+
+</head>
+
+<body>
+
+<!-- ═══════════════════ HEADER ═══════════════════ -->
+<header class="header">
+    <div class="logo">
+        <div class="logo-icon">
+            <img th:src="@{/images/1.jpg}" alt="Eventaura Logo">
+        </div>
+        <span class="logo-text">Event<em>aura</em></span>
+    </div>
+    <nav class="nav-links">
+        <a th:href="@{/}">Home</a>
+        <a th:href="@{/events}">Events</a>
+        <a th:href="@{/categories}">Categories</a>
+        <a th:href="@{/aboutUs}">About Us</a>
+    </nav>
+    <div class="search-bar">
+        <span class="search-icon">🔍</span>
+        <input type="text" placeholder="Search events, cities...">
+    </div>
+    <div class="header-right">
+        <div class="time" id="clock"></div>
+        <button class="icon-btn" aria-label="Notifications">
+            <span>🔔</span><span class="badge">3</span>
+        </button>
+        <div id="guestActions">
+            <a href="/login"    class="btn primary">Login</a>
+            <a href="/register" class="btn primary">Sign Up</a>
+        </div>
+        <div id="userActions" style="display:none;">
+            <a href="/profile">
+                <button class="icon-btn profile-btn" aria-label="Profile"><span>👤</span></button>
+            </a>
+        </div>
+        <button class="hamburger" id="hamburgerBtn" aria-label="Open menu" aria-expanded="false">
+            <span></span><span></span><span></span>
+        </button>
+    </div>
+</header>
+
+<!-- Mobile nav overlay -->
+<div class="mobile-nav-overlay" id="mobileNavOverlay"></div>
+<nav class="mobile-nav" id="mobileNav" aria-label="Mobile navigation">
+    <div class="mobile-nav-header">
+        <span class="logo-text">Event<em>aura</em></span>
+        <button class="mobile-nav-close" id="mobileNavClose" aria-label="Close menu">✕</button>
+    </div>
+    <div class="mobile-search">
+        <span>🔍</span>
+        <input type="text" placeholder="Search events, cities...">
+    </div>
+    <div class="mobile-nav-links">
+        <a th:href="@{/}"            class="mobile-nav-link"><span class="mnl-icon">🏠</span>Home</a>
+        <a th:href="@{/events}"      class="mobile-nav-link"><span class="mnl-icon">🔥</span>Events</a>
+        <a th:href="@{/categories}"  class="mobile-nav-link"><span class="mnl-icon">🏷️</span>Categories</a>
+        <a th:href="@{/aboutUs}"     class="mobile-nav-link"><span class="mnl-icon">ℹ️</span>About Us</a>
+        <a th:href="@{/createEvent}" class="mobile-nav-link"><span class="mnl-icon">📅</span>Create Event</a>
+        <a th:href="@{/tickets}"     class="mobile-nav-link"><span class="mnl-icon">🎟️</span>My Tickets</a>
+        <a th:href="@{/profile}"     class="mobile-nav-link"><span class="mnl-icon">👤</span>Profile</a>
+    </div>
+    <div class="mobile-nav-footer">
+        <div id="mobileNavGuest">
+            <a href="/login"    class="btn primary" style="text-align:center;display:block;">Login</a>
+            <a href="/register" class="btn primary" style="text-align:center;display:block;margin-top:10px;">Sign Up</a>
+        </div>
+        <div id="mobileNavUser" style="display:none;">
+            <a href="/logout" class="btn primary" style="text-align:center;display:block;background:#ef4444;border-color:#ef4444;">Sign Out</a>
+        </div>
+    </div>
+</nav>
+
+
+<!-- ═══════════════════ MAIN PAGE ═══════════════════ -->
+<div class="tix-page">
+
+    <!-- Header -->
+    <div class="tix-page-header">
+        <div>
+            <h1>My <em>Tickets</em></h1>
+            <div class="tix-total-badge" id="totalBadge" style="display:none;">
+                🎟️ <span id="totalCount">0</span> tickets total
+            </div>
+        </div>
+        <a href="/#events" style="display:inline-flex;align-items:center;gap:6px;padding:10px 22px;border-radius:12px;background:rgba(255,77,109,0.12);border:1px solid rgba(255,77,109,0.25);color:#ff4d6d;font-size:13px;font-weight:700;font-family:'Syne',sans-serif;text-decoration:none;transition:background 0.2s;"
+           onmouseover="this.style.background='rgba(255,77,109,0.2)'" onmouseout="this.style.background='rgba(255,77,109,0.12)'">
+            🔥 Browse Events
+        </a>
+    </div>
+
+    <!-- Controls -->
+    <div class="tix-controls">
+        <!-- Filter -->
+        <div class="tix-filter-group">
+            <button class="tix-filter-btn active" data-filter="all">All</button>
+            <button class="tix-filter-btn upcoming" data-filter="upcoming">Upcoming</button>
+            <button class="tix-filter-btn past" data-filter="past">Past</button>
+            <button class="tix-filter-btn checked" data-filter="checked">Checked In</button>
+        </div>
+        <!-- Per-page -->
+        <div class="tix-size-wrap">
+            <span class="tix-size-label">Per page</span>
+            <div class="tix-size-pills">
+                <button class="tix-sz" data-size="5">5</button>
+                <button class="tix-sz active" data-size="10">10</button>
+                <button class="tix-sz" data-size="20">20</button>
+                <button class="tix-sz" data-size="50">50</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading skeleton -->
+    <div class="tix-skeleton-grid" id="tixLoading">
+        <div class="tix-skel"></div>
+        <div class="tix-skel"></div>
+        <div class="tix-skel"></div>
+        <div class="tix-skel"></div>
+    </div>
+
+    <!-- Empty state -->
+    <div class="tix-empty" id="tixEmpty" style="display:none;">
+        <div class="tix-empty-icon">🎟️</div>
+        <h3>No tickets found</h3>
+        <p id="tixEmptyMsg">You haven't registered for any events yet. Explore what's happening near you!</p>
+        <a href="/#events" class="tix-empty-cta">🔥 Browse Events →</a>
+    </div>
+
+    <!-- Ticket grid -->
+    <div class="tix-grid" id="tixGrid" style="display:none;"></div>
+
+    <!-- Load more -->
+    <div class="tix-more-wrap" id="tixMoreWrap">
+        <button class="tix-more-btn" id="tixMoreBtn">Load More Tickets</button>
+    </div>
+
+</div>
+
+
+<!-- ═══════════════════ FOOTER ═══════════════════ -->
+<footer class="footer">
+    <div class="footer-top">
+        <div class="footer-brand">
+            <div class="logo">
+                <span class="logo-text">Event<em>aura</em></span>
+            </div>
+            <p>India's premier event discovery platform.</p>
+            <div class="social-links">
+                <a href="#" aria-label="Twitter">𝕏</a>
+                <a href="#" aria-label="Instagram">📸</a>
+                <a href="#" aria-label="LinkedIn">in</a>
+                <a href="#" aria-label="YouTube">▶</a>
+            </div>
+        </div>
+        <div class="footer-links">
+            <div class="footer-col">
+                <h4>Explore</h4>
+                <a href="#">Trending Events</a>
+                <a href="#">Upcoming Events</a>
+                <a href="#">Categories</a>
+            </div>
+            <div class="footer-col">
+                <h4>Account</h4>
+                <a th:href="@{/profile}">My Profile</a>
+                <a th:href="@{/tickets}">My Tickets</a>
+                <a th:href="@{/logout}">Sign Out</a>
+            </div>
+            <div class="footer-col">
+                <h4>Support</h4>
+                <a href="#">Help Center</a>
+                <a href="#">Contact Us</a>
+                <a href="#">Privacy Policy</a>
+            </div>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>© 2026 Eventaura. All rights reserved. Made with ❤️ in India.</p>
+    </div>
+</footer>
+
+
+<!-- ═══════════════════ SCRIPTS ═══════════════════ -->
+<script>
+
+    /* ── Auth guard ── */
+    const token = localStorage.getItem('accessToken');
+    if (!token) { window.location.href = '/login'; }
+
+    /* ── Header auth state ── */
+    if (token) {
+        document.getElementById('guestActions').style.display = 'none';
+        document.getElementById('userActions').style.display  = 'flex';
+        document.getElementById('mobileNavGuest').style.display = 'none';
+        document.getElementById('mobileNavUser').style.display  = 'block';
+    }
+
+    /* ── State ── */
+    let currentPage   = 0;
+    let pageSize      = 10;
+    let currentFilter = 'all';
+    let isDone        = false;
+    let allTickets    = []; // cache for client-side filtering
+
+    /* ── Helpers ── */
+    function fmtDate(d) {
+        if (!d) return '—';
+        return new Date(d + 'T00:00:00').toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' });
+    }
+    function fmtTime(t) {
+        if (!t) return '—';
+        const [h, m] = t.split(':').map(Number);
+        return (h % 12 || 12) + ':' + String(m).padStart(2,'0') + ' ' + (h >= 12 ? 'PM' : 'AM');
+    }
+    function fmtIssued(iso) {
+        if (!iso) return '—';
+        return new Date(iso).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' });
+    }
+    function isUpcoming(dateStr) {
+        if (!dateStr) return false;
+        const today = new Date(); today.setHours(0,0,0,0);
+        return new Date(dateStr + 'T00:00:00') >= today;
+    }
+    function getStatus(t) {
+        if (t.checkedIn) return 'checked';
+        return isUpcoming(t.event?.eventDate) ? 'upcoming' : 'past';
+    }
+
+    /* ── QR cell pattern — deterministic from ticketCode ── */
+    function buildQR(code) {
+        // 7×7 = 49 cells. Finder squares at corners, rest pseudo-random from code.
+        const seed = (code || '0').split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+        let cells = '';
+        for (let r = 0; r < 7; r++) {
+            for (let c = 0; c < 7; c++) {
+                // Corner finder squares (top-left, top-right, bottom-left)
+                const inFinder =
+                    (r < 3 && c < 3) ||
+                    (r < 3 && c > 3) ||
+                    (r > 3 && c < 3);
+                if (inFinder) {
+                    cells += '<div class="tix-qr-cell f"></div>';
+                } else {
+                    const bit = ((seed * (r * 7 + c + 1)) % 3) !== 0;
+                    cells += `<div class="tix-qr-cell ${bit ? 'd' : ''}"></div>`;
+                }
+            }
+        }
+        return cells;
+    }
+
+    /* ── Build ticket card HTML ── */
+    function buildCard(t) {
+        const ev     = t.event || {};
+        const status = getStatus(t);
+        const statusLabel = status === 'checked' ? '✅ Checked In' : status === 'upcoming' ? 'Upcoming' : 'Past';
+
+        return `
+        <div class="tix-card ${status}">
+            <div class="tix-banner">
+                <img src="${ev.bannerUrl || ''}" alt="${ev.title || 'Event'}"
+                     onerror="this.style.display='none'">
+                <div class="tix-banner-overlay"></div>
+                <span class="tix-banner-status ${status}">${statusLabel}</span>
+                ${ev.category ? `<span class="tix-banner-cat">${ev.category}</span>` : ''}
+            </div>
+            <div class="tix-tear"></div>
+            <div class="tix-body">
+                <div class="tix-info">
+                    <div class="tix-event-name">${ev.title || '—'}</div>
+                    <div class="tix-meta-grid">
+                        <div class="tix-meta-item"><span>📅</span><span>${fmtDate(ev.eventDate)}</span></div>
+                        <div class="tix-meta-item"><span>🕐</span><span>${fmtTime(ev.eventTime)}</span></div>
+                        <div class="tix-meta-item"><span>📍</span><span>${ev.location || '—'}</span></div>
+                        <div class="tix-meta-item"><span>🗓️</span><span>Issued ${fmtIssued(t.issuedAt)}</span></div>
+                        ${ev.club ? `<div class="tix-meta-item"><span>🏛️</span><span>${ev.club}</span></div>` : ''}
+                        <div class="tix-meta-item"><span>📊</span><span>${t.status || 'ACTIVE'}</span></div>
+                    </div>
+                    <div class="tix-code-row">
+                        <div>
+                            <div class="tix-code-label">Ticket Code</div>
+                            <div class="tix-code-val">#&thinsp;${t.ticketCode || t.ticketId}</div>
+                        </div>
+                        <a href="/eventDetail/${ev.eventId || ''}" class="tix-view-btn">View Event →</a>
+                    </div>
+                </div>
+                <div class="tix-qr-col">
+                    <div class="tix-qr-grid">${buildQR(t.ticketCode)}</div>
+                    <div class="tix-qr-label">${t.checkedIn ? '✓ Scanned' : 'Scan at entry'}</div>
+                </div>
+            </div>
+        </div>`;
+    }
+
+    /* ── Filter tickets client-side ── */
+    function filterAndRender() {
+        const filtered = currentFilter === 'all'
+            ? allTickets
+            : allTickets.filter(t => getStatus(t) === currentFilter);
+
+        const grid = document.getElementById('tixGrid');
+
+        if (!filtered.length) {
+            grid.style.display = 'none';
+            document.getElementById('tixEmpty').style.display = 'flex';
+            const msgs = {
+                upcoming: "You don't have any upcoming event tickets.",
+                past:     "No past event tickets yet.",
+                checked:  "No checked-in tickets found."
+            };
+            document.getElementById('tixEmptyMsg').textContent =
+                msgs[currentFilter] || "You haven't registered for any events yet.";
+            return;
+        }
+
+        document.getElementById('tixEmpty').style.display = 'none';
+        grid.style.display = 'grid';
+        grid.innerHTML = filtered.map(buildCard).join('');
+    }
+
+    /* ── Fetch from API ── */
+    async function loadTickets(page = 0) {
+        if (!token) return;
+
+        if (page === 0) {
+            document.getElementById('tixLoading').style.display = 'grid';
+            document.getElementById('tixGrid').style.display    = 'none';
+            document.getElementById('tixEmpty').style.display   = 'none';
+            document.getElementById('tixMoreWrap').style.display = 'none';
+            if (page === 0) allTickets = [];
+        }
+
+        try {
+            const res = await fetch(`/api/v1/tickets/myTickets?page=${page}&size=${pageSize}`, {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+
+            if (res.status === 401) { window.location.href = '/login'; return; }
+            if (!res.ok) throw new Error(res.status);
+
+            const data    = await res.json();
+            const tickets = data.content || [];
+
+            document.getElementById('tixLoading').style.display = 'none';
+
+            allTickets = allTickets.concat(tickets);
+
+            const total = data.totalElements || allTickets.length;
+            document.getElementById('totalCount').textContent = total;
+            document.getElementById('totalBadge').style.display = 'inline-flex';
+
+            isDone = data.last;
+            document.getElementById('tixMoreWrap').style.display = isDone ? 'none' : 'block';
+
+            filterAndRender();
+
+        } catch (err) {
+            console.error('Ticket load error:', err);
+            document.getElementById('tixLoading').style.display = 'none';
+            document.getElementById('tixEmpty').style.display   = 'flex';
+            document.getElementById('tixEmptyMsg').textContent  = 'Failed to load tickets. Please try again.';
+        }
+    }
+
+    /* ── Filter buttons ── */
+    document.querySelectorAll('.tix-filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.tix-filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentFilter = btn.dataset.filter;
+            filterAndRender();
+        });
+    });
+
+    /* ── Size pills ── */
+    document.querySelectorAll('.tix-sz').forEach(pill => {
+        pill.addEventListener('click', () => {
+            document.querySelectorAll('.tix-sz').forEach(p => p.classList.remove('active'));
+            pill.classList.add('active');
+            pageSize    = parseInt(pill.dataset.size);
+            currentPage = 0;
+            allTickets  = [];
+            loadTickets(0);
+        });
+    });
+
+    /* ── Load more ── */
+    document.getElementById('tixMoreBtn').addEventListener('click', () => {
+        currentPage++;
+        loadTickets(currentPage);
+    });
+
+    /* ── Mobile nav ── */
+    const hamburgerBtn     = document.getElementById('hamburgerBtn');
+    const mobileNav        = document.getElementById('mobileNav');
+    const mobileNavOverlay = document.getElementById('mobileNavOverlay');
+    const mobileNavClose   = document.getElementById('mobileNavClose');
+    function openMobileNav() {
+        mobileNav.classList.add('open'); mobileNavOverlay.classList.add('open');
+        hamburgerBtn.setAttribute('aria-expanded', 'true'); hamburgerBtn.classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeMobileNav() {
+        mobileNav.classList.remove('open'); mobileNavOverlay.classList.remove('open');
+        hamburgerBtn.setAttribute('aria-expanded', 'false'); hamburgerBtn.classList.remove('open');
+        document.body.style.overflow = '';
+    }
+    hamburgerBtn.addEventListener('click', openMobileNav);
+    mobileNavClose.addEventListener('click', closeMobileNav);
+    mobileNavOverlay.addEventListener('click', closeMobileNav);
+    document.querySelectorAll('.mobile-nav-link').forEach(l => l.addEventListener('click', closeMobileNav));
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMobileNav(); });
+
+    /* ── Boot ── */
+    loadTickets(0);
+
+</script>
+<script th:src="@{/js/basic.js}"></script>
+<script th:src="@{/js/clock.js}"></script>
+
+</body>
+</html>
