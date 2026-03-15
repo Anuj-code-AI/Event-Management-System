@@ -49,7 +49,7 @@ public class SecurityConfig {
                                 "/api/v1/event/getAllEvents",
                                 "/eventDetail/**",
                                 "/","/login","/register","/favicon.ico","/favicon.ico/**"
-                                ,"/profile","/createEvent","/oauth","/aboutUs","/tickets",
+                                ,"/profile","/createEvent","/oauth","/aboutUs","/tickets","/customEvent",
                                 "/uploads/**","/css/**","/js/**","/images/**").permitAll()
                     .anyRequest().authenticated()
                 )

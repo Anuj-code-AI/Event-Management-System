@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Custom Form Event — Eventaura</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+
+        body { background: #08080f; overflow-x: hidden; }
+
+        /* ── Header override for dark bg ── */
+        .header { background: rgba(8,8,15,0.9); border-bottom-color: rgba(255,255,255,0.08); backdrop-filter: blur(12px); }
+        .logo-text { color: #fff; }
+        .nav-links a { color: rgba(255,255,255,0.5); }
+        .nav-links a:hover { color: #fff; }
+        .search-bar { background: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.1); }
+        .search-bar input { background: transparent; color: #fff; }
+        .search-bar input::placeholder { color: rgba(255,255,255,0.3); }
+        .search-icon { color: rgba(255,255,255,0.4); }
+        .time { color: rgba(255,165,0,0.8); }
+        .icon-btn { background: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.12); }
+        .icon-btn span { filter: brightness(2); }
+        .hamburger span { background: rgba(255,255,255,0.8); }
+
+        /* ── Page wrapper ── */
+        .cs-page {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 120px 24px 80px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Animated background orbs */
+        .cs-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            pointer-events: none;
+            animation: orbFloat 8s ease-in-out infinite alternate;
+        }
+        .cs-orb-1 { width: 500px; height: 500px; background: rgba(124,58,237,0.15); top: -100px; left: -150px; animation-delay: 0s; }
+        .cs-orb-2 { width: 400px; height: 400px; background: rgba(167,139,250,0.1); bottom: -80px; right: -100px; animation-delay: 2s; }
+        .cs-orb-3 { width: 300px; height: 300px; background: rgba(255,77,109,0.08); top: 40%; left: 50%; transform: translate(-50%,-50%); animation-delay: 4s; }
+        @keyframes orbFloat {
+            0%   { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(30px, 20px) scale(1.06); }
+        }
+        .cs-orb-3 { animation: orbFloat3 10s ease-in-out infinite alternate; }
+        @keyframes orbFloat3 {
+            0%   { transform: translate(-50%,-50%) scale(1); }
+            100% { transform: translate(-48%,-52%) scale(1.08); }
+        }
+
+        /* Grid overlay */
+        .cs-grid {
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+            background-size: 56px 56px;
+            pointer-events: none;
+        }
+
+        /* ── Centre card ── */
+        .cs-card {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            max-width: 680px;
+            animation: csCardIn 0.8s cubic-bezier(0.16,1,0.3,1) both;
+        }
+        @keyframes csCardIn {
+            from { opacity: 0; transform: translateY(40px) scale(0.96); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* Coming soon badge */
+        .cs-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, rgba(124,58,237,0.2), rgba(167,139,250,0.15));
+            border: 1px solid rgba(167,139,250,0.35);
+            border-radius: 50px;
+            padding: 8px 20px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #c4b5fd;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 32px;
+            animation: pulse 2.5s ease-in-out infinite;
+        }
+        .cs-badge-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #a78bfa;
+            animation: dotPulse 1.5s ease-in-out infinite;
+        }
+        @keyframes dotPulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50%       { transform: scale(1.4); opacity: 0.6; }
+        }
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(167,139,250,0); }
+            50%       { box-shadow: 0 0 0 6px rgba(167,139,250,0.08); }
+        }
+
+        /* Big icon */
+        .cs-big-icon {
+            font-size: 80px;
+            line-height: 1;
+            margin-bottom: 28px;
+            display: block;
+            animation: iconFloat 3s ease-in-out infinite alternate;
+        }
+        @keyframes iconFloat {
+            from { transform: translateY(0); }
+            to   { transform: translateY(-10px); }
+        }
+
+        /* Heading */
+        .cs-card h1 {
+            font-family: 'Syne', sans-serif;
+            font-size: clamp(2.2rem, 6vw, 4rem);
+            font-weight: 800;
+            color: #fff;
+            line-height: 1.1;
+            letter-spacing: -1.5px;
+            margin-bottom: 20px;
+        }
+        .cs-card h1 em {
+            font-style: normal;
+            background: linear-gradient(135deg, #a78bfa, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .cs-card p {
+            font-size: 17px;
+            color: rgba(255,255,255,0.5);
+            line-height: 1.7;
+            max-width: 520px;
+            margin: 0 auto 48px;
+            font-weight: 300;
+        }
+
+        /* Feature highlights */
+        .cs-features {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            margin-bottom: 48px;
+            text-align: left;
+        }
+        @media (max-width: 600px) { .cs-features { grid-template-columns: 1fr; } }
+
+        .cs-feat {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            padding: 20px 18px;
+            transition: border-color 0.3s, transform 0.3s;
+            animation: csCardIn 0.8s cubic-bezier(0.16,1,0.3,1) both;
+        }
+        .cs-feat:nth-child(1) { animation-delay: 0.1s; }
+        .cs-feat:nth-child(2) { animation-delay: 0.2s; }
+        .cs-feat:nth-child(3) { animation-delay: 0.3s; }
+        .cs-feat:nth-child(4) { animation-delay: 0.4s; }
+        .cs-feat:nth-child(5) { animation-delay: 0.5s; }
+        .cs-feat:nth-child(6) { animation-delay: 0.6s; }
+        .cs-feat:hover { border-color: rgba(167,139,250,0.3); transform: translateY(-3px); }
+        .cs-feat-icon { font-size: 22px; margin-bottom: 10px; display: block; }
+        .cs-feat h4 {
+            font-family: 'Syne', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 5px;
+        }
+        .cs-feat p { font-size: 12px; color: rgba(255,255,255,0.4); line-height: 1.5; margin: 0; }
+
+        /* CTA row */
+        .cs-cta-row {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .cs-btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 13px 28px;
+            border-radius: 13px;
+            background: linear-gradient(135deg, #ff4d6d, #d63651);
+            color: #fff;
+            font-family: 'Syne', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 6px 20px rgba(255,77,109,0.3);
+        }
+        .cs-btn-back:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(255,77,109,0.4); }
+        .cs-btn-notify {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 13px 28px;
+            border-radius: 13px;
+            background: rgba(167,139,250,0.1);
+            border: 1px solid rgba(167,139,250,0.25);
+            color: #c4b5fd;
+            font-family: 'Syne', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background 0.2s, transform 0.2s;
+            cursor: pointer;
+        }
+        .cs-btn-notify:hover { background: rgba(167,139,250,0.18); transform: translateY(-2px); }
+        .cs-btn-notify.notified { background: rgba(34,197,94,0.12); border-color: rgba(34,197,94,0.25); color: #4ade80; }
+
+        /* Notify toast */
+        .cs-toast {
+            position: fixed;
+            bottom: 32px;
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: #1a1a2e;
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 50px;
+            padding: 12px 24px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #4ade80;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+            transition: transform 0.4s cubic-bezier(0.16,1,0.3,1);
+            z-index: 999;
+            white-space: nowrap;
+        }
+        .cs-toast.show { transform: translateX(-50%) translateY(0); }
+
+    </style>
+</head>
+<body>
+
+<!-- ═══════════════════ HEADER ═══════════════════ -->
+<header class="header">
+    <div class="logo">
+        <span class="logo-text">Event<em>aura</em></span>
+    </div>
+    <nav class="nav-links">
+        <a href="/">Home</a>
+        <a href="/#events">Events</a>
+        <a href="#">Categories</a>
+        <a href="/aboutUs">About Us</a>
+    </nav>
+    <div class="search-bar">
+        <span class="search-icon">🔍</span>
+        <input type="text" placeholder="Search events, cities...">
+    </div>
+    <div class="header-right">
+        <div class="time" id="clock"></div>
+        <button class="icon-btn" aria-label="Notifications">
+            <span>🔔</span><span class="badge">3</span>
+        </button>
+        <div id="guestActions">
+            <a href="/login"    class="btn primary">Login</a>
+            <a href="/register" class="btn primary">Sign Up</a>
+        </div>
+        <div id="userActions" style="display:none;">
+            <a href="/profile">
+                <button class="icon-btn profile-btn" aria-label="Profile"><span>👤</span></button>
+            </a>
+        </div>
+        <button class="hamburger" id="hamburgerBtn" aria-label="Open menu" aria-expanded="false">
+            <span></span><span></span><span></span>
+        </button>
+    </div>
+</header>
+
+<!-- Mobile nav -->
+<div class="mobile-nav-overlay" id="mobileNavOverlay"></div>
+<nav class="mobile-nav" id="mobileNav" aria-label="Mobile navigation">
+    <div class="mobile-nav-header">
+        <span class="logo-text">Event<em>aura</em></span>
+        <button class="mobile-nav-close" id="mobileNavClose" aria-label="Close menu">✕</button>
+    </div>
+    <div class="mobile-search"><span>🔍</span><input type="text" placeholder="Search events, cities..."></div>
+    <div class="mobile-nav-links">
+        <a href="/"            class="mobile-nav-link"><span class="mnl-icon">🏠</span>Home</a>
+        <a href="/#events"     class="mobile-nav-link"><span class="mnl-icon">🔥</span>Events</a>
+        <a href="#"            class="mobile-nav-link"><span class="mnl-icon">🏷️</span>Categories</a>
+        <a href="/aboutUs"     class="mobile-nav-link"><span class="mnl-icon">ℹ️</span>About Us</a>
+        <a href="/createEvent" class="mobile-nav-link"><span class="mnl-icon">📅</span>Create Event</a>
+        <a href="/tickets"     class="mobile-nav-link"><span class="mnl-icon">🎟️</span>My Tickets</a>
+        <a href="/profile"     class="mobile-nav-link"><span class="mnl-icon">👤</span>Profile</a>
+    </div>
+    <div class="mobile-nav-footer">
+        <div id="mobileNavGuest">
+            <a href="/login"    class="btn primary" style="text-align:center;display:block;">Login</a>
+            <a href="/register" class="btn primary" style="text-align:center;display:block;margin-top:10px;">Sign Up</a>
+        </div>
+        <div id="mobileNavUser" style="display:none;">
+            <a href="/logout" class="btn primary" style="text-align:center;display:block;background:#ef4444;border-color:#ef4444;">Sign Out</a>
+        </div>
+    </div>
+</nav>
+
+
+<!-- ═══════════════════ COMING SOON PAGE ═══════════════════ -->
+<div class="cs-page">
+
+    <div class="cs-orb cs-orb-1"></div>
+    <div class="cs-orb cs-orb-2"></div>
+    <div class="cs-orb cs-orb-3"></div>
+    <div class="cs-grid"></div>
+
+    <div class="cs-card">
+
+        <div class="cs-badge">
+            <span class="cs-badge-dot"></span>
+            Coming Soon
+        </div>
+
+        <span class="cs-big-icon">📋</span>
+
+        <h1>Custom Form<br><em>Events</em></h1>
+
+        <p>
+            Build Google-Forms-style registration experiences for your events — custom fields, team sign-ups, multi-step forms, file uploads, and a full responses dashboard.
+        </p>
+
+        <!-- Feature highlights -->
+        <div class="cs-features">
+            <div class="cs-feat">
+                <span class="cs-feat-icon">🧩</span>
+                <h4>Drag & Drop Builder</h4>
+                <p>Add text, dropdowns, radio buttons, file uploads and more</p>
+            </div>
+            <div class="cs-feat">
+                <span class="cs-feat-icon">👥</span>
+                <h4>Team Registration</h4>
+                <p>Collect team name, members, roles — perfect for hackathons</p>
+            </div>
+            <div class="cs-feat">
+                <span class="cs-feat-icon">📊</span>
+                <h4>Responses Dashboard</h4>
+                <p>View, filter and export all responses as CSV</p>
+            </div>
+            <div class="cs-feat">
+                <span class="cs-feat-icon">🔗</span>
+                <h4>Shareable Link</h4>
+                <p>Anyone with the link can fill your form — no account needed</p>
+            </div>
+            <div class="cs-feat">
+                <span class="cs-feat-icon">🔒</span>
+                <h4>Response Limits</h4>
+                <p>Set max submissions and auto-close when capacity is reached</p>
+            </div>
+            <div class="cs-feat">
+                <span class="cs-feat-icon">📱</span>
+                <h4>Mobile Friendly</h4>
+                <p>Forms look and work great on any device</p>
+            </div>
+        </div>
+
+        <!-- CTAs -->
+        <div class="cs-cta-row">
+            <a href="/createEvent" class="cs-btn-back">← Back to Standard Event</a>
+            <button class="cs-btn-notify" id="notifyBtn">🔔 Notify me when ready</button>
+        </div>
+
+    </div>
+</div>
+
+<!-- Toast -->
+<div class="cs-toast" id="csToast">✅ You'll be notified when this feature launches!</div>
+
+
+<!-- ═══════════════════ SCRIPTS ═══════════════════ -->
+<script>
+    /* ── Auth state ── */
+    if (localStorage.getItem('accessToken')) {
+        document.getElementById('guestActions').style.display = 'none';
+        document.getElementById('userActions').style.display  = 'flex';
+        document.getElementById('mobileNavGuest').style.display = 'none';
+        document.getElementById('mobileNavUser').style.display  = 'block';
+    }
+
+    /* ── Notify button ── */
+    const notifyBtn = document.getElementById('notifyBtn');
+    const toast     = document.getElementById('csToast');
+    notifyBtn.addEventListener('click', () => {
+        notifyBtn.classList.add('notified');
+        notifyBtn.textContent = '✅ You\'re on the list!';
+        notifyBtn.disabled = true;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3500);
+    });
+
+    /* ── Mobile nav ── */
+    const hamburgerBtn     = document.getElementById('hamburgerBtn');
+    const mobileNav        = document.getElementById('mobileNav');
+    const mobileNavOverlay = document.getElementById('mobileNavOverlay');
+    const mobileNavClose   = document.getElementById('mobileNavClose');
+    function openMobileNav() {
+        mobileNav.classList.add('open'); mobileNavOverlay.classList.add('open');
+        hamburgerBtn.setAttribute('aria-expanded','true'); hamburgerBtn.classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeMobileNav() {
+        mobileNav.classList.remove('open'); mobileNavOverlay.classList.remove('open');
+        hamburgerBtn.setAttribute('aria-expanded','false'); hamburgerBtn.classList.remove('open');
+        document.body.style.overflow = '';
+    }
+    hamburgerBtn.addEventListener('click', openMobileNav);
+    mobileNavClose.addEventListener('click', closeMobileNav);
+    mobileNavOverlay.addEventListener('click', closeMobileNav);
+    document.querySelectorAll('.mobile-nav-link').forEach(l => l.addEventListener('click', closeMobileNav));
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMobileNav(); });
+</script>
+<script th:src="@{/js/clock.js}"></script>
+
+</body>
+</html>

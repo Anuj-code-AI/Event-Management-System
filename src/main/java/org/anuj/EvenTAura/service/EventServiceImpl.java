@@ -75,17 +75,28 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public String deleteEvent(Long eventId, Authentication auth) {
+
         String email = auth.getName();
+
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
+
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new EventNotExistException("No event found with this id"));
+
         if (!user.getUserId().equals(event.getUser().getUserId())) {
             throw new UnauthorizedException("You cannot delete this event");
         }
-        eventRepository.delete(event);
-        return "Event successfully deleted";
 
+        long ticketCount = ticketRepository.countByEventEventId(eventId);
+
+        if(ticketCount > 0){
+            throw new RuntimeException("Cannot delete event because tickets are already booked");
+        }
+
+        eventRepository.delete(event);
+
+        return "Event successfully deleted";
     }
 
     @Override

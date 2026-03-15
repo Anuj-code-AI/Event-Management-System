@@ -22,4 +22,5 @@ FROM Ticket t
 WHERE t.user = :user
 """)
     Page<Event> findJoinedEvents(User user, Pageable pageable);
+    long countByEventEventId(Long eventId);
 }
