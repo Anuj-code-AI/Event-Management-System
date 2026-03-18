@@ -271,8 +271,7 @@ button { cursor:pointer; border:none; background:none; font-family:inherit; }
 .banner-section { position:relative; width:100%; overflow:hidden; border-radius:0 0 24px 24px; margin-bottom:4px; }
 .banner-track { display:flex; transition:transform 0.8s cubic-bezier(0.77,0,0.175,1); will-change:transform; }
 .banner-slide { min-width:100%; position:relative; height:clamp(280px,45vw,480px); overflow:hidden; }
-.banner-slide img { width:100%; height:100%; object-fit:cover; transform:scale(1.03); transition:transform 1s ease; }
-
+.banner-slide img { width:100%; height:100%; object-fit:cover; object-position:center top; transform:scale(1.03); transition:transform 1s ease; }
 .slide-overlay {
     position:absolute; inset:0;
     background:linear-gradient(90deg,rgba(10,10,30,0.72) 0%,rgba(10,10,30,0.35) 55%,transparent 100%);
@@ -325,13 +324,13 @@ button { cursor:pointer; border:none; background:none; font-family:inherit; }
 .view-all { font-size:14px; font-weight:600; color:var(--primary); white-space:nowrap; }
 .view-all:hover { text-decoration:underline; }
 
-.events-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:22px; }
+.events-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:22px; }
 
 .event-card { background:var(--surface); border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow); transition:transform 0.25s, box-shadow 0.25s; cursor:pointer; }
 .event-card:hover { transform:translateY(-6px); box-shadow:var(--shadow-md); }
 
 .card-img-wrap { position:relative; }
-.card-img-wrap img { width:100%; height:170px; object-fit:cover; }
+.card-img-wrap img { width:100%; height:200px; object-fit:cover; object-position:center top; }
 
 .event-badge { position:absolute; top:10px; left:10px; padding:3px 11px; background:var(--primary); color:#fff; border-radius:50px; font-size:11px; font-weight:700; letter-spacing:0.5px; }
 .event-badge.startup { background:#7c3aed; }
@@ -475,7 +474,7 @@ button { cursor:pointer; border:none; background:none; font-family:inherit; }
     .logo-text { font-size:18px; }
 
     .events-grid        { grid-template-columns:1fr 1fr; gap:10px; }
-    .card-img-wrap img  { height:120px; }
+    .card-img-wrap img  { height:160px; }
     .event-info h3      { font-size:13px; }
 
     .slide-overlay h2   { font-size:20px; }

@@ -32,21 +32,27 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 ════════════════════════════════════════ */
 .ed-hero {
     position: relative;
-    height: 520px;
+    min-height: 300px;
+    height: auto;
     overflow: hidden;
     background: var(--dark);
 }
 .ed-hero-skeleton {
     position: absolute; inset: 0; border-radius: 0;
+    min-height: 300px;
 }
+
 .ed-hero-img {
-    width: 100%; height: 100%;
-    object-fit: cover;
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    object-position: center top;
     opacity: 0;
     transition: opacity 0.8s ease;
     display: block;
+    max-height: none;
 }
-.ed-hero-img.visible { opacity: 0.5; }
+.ed-hero-img.visible { opacity: 1; }
 
 /* layered gradient for text legibility */
 .ed-hero-gradient {

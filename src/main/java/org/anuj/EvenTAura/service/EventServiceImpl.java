@@ -34,6 +34,7 @@ public class EventServiceImpl implements EventService {
     private final EventRepository eventRepository;
     private final TicketRepository ticketRepository;
 
+
     @Override
     public EventResponse createEvent(EventRequest req, Authentication auth) {
 
