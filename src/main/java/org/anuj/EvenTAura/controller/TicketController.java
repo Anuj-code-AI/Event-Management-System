@@ -7,7 +7,9 @@ import org.anuj.EvenTAura.dto.TicketCheckResponse;
 import org.anuj.EvenTAura.dto.TicketRequest;
 import org.anuj.EvenTAura.dto.TicketResponse;
 import org.anuj.EvenTAura.model.Ticket;
+import org.anuj.EvenTAura.repository.TicketRepository;
 import org.anuj.EvenTAura.service.TicketService;
+import org.anuj.EvenTAura.util.QRCodeGenerator;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -20,9 +22,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TicketController {
     private final TicketService ticketService;
+    private final TicketRepository ticketRepository;
 
     @PostMapping("/buy/{eventId}")
-    public ResponseEntity<List<Ticket>> buyTicket(@PathVariable Long eventId, @Valid @RequestBody TicketRequest req, Authentication auth) {
+    public ResponseEntity<List<TicketResponse>> buyTicket(@PathVariable Long eventId, @Valid @RequestBody TicketRequest req, Authentication auth) {
         return ResponseEntity.ok(ticketService.buyTicket(eventId,req,auth));
     }
 
@@ -59,5 +62,17 @@ public class TicketController {
         return ResponseEntity.ok(ticketService.getMyTicket(ticketId));
     }
 
+    @GetMapping("/{id}/qr")
+    public ResponseEntity<byte[]> getQR(@PathVariable Long id) {
+        Ticket ticket = ticketRepository.findById(id)
+                .orElseThrow();
+
+        byte[] qrImage = QRCodeGenerator.generateQRCodeImage(
+                "https://eventaura.com/verify/" + ticket.getTicketCode()
+        );
+        return ResponseEntity.ok()
+                .header("Content-Type", "image/png")
+                .body(qrImage);
+    }
 
 }

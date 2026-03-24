@@ -17,9 +17,6 @@
 <!-- ═══════════════════ HEADER ═══════════════════ -->
 <header class="header">
     <div class="logo">
-        <div class="logo-icon">
-            <img th:src="@{/images/1.jpg}" alt="Eventaura Logo">
-        </div>
         <span class="logo-text">Event<em>aura</em></span>
     </div>
     <nav class="nav-links">
@@ -296,7 +293,17 @@
                     </div>
                 </div>
                 <div class="tix-qr-col">
-                    <div class="tix-qr-grid">${buildQR(t.ticketCode)}</div>
+                    <img
+                        src="${t.qrUrl}"
+                        alt="QR Code"
+                        style="
+                            width: 120px;
+                            height: 120px;
+                            background: #fff;
+                            padding: 6px;
+                            border-radius: 10px;
+                        "
+                    />
                     <div class="tix-qr-label">${t.checkedIn ? '✓ Scanned' : 'Scan at entry'}</div>
                 </div>
             </div>

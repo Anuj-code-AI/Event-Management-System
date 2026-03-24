@@ -50,9 +50,11 @@ public class SecurityConfig {
                                 "/eventDetail/**","/myEvents",
                                 "/","/login","/register","/favicon.ico","/favicon.ico/**"
                                 ,"/profile","/createEvent","/oauth","/aboutUs","/tickets","/customEvent",
-                                "/uploads/**","/css/**","/js/**","/images/**").permitAll()
+                                "/uploads/**","/css/**","/js/**","/images/**", "/api/v1/tickets/*/qr").permitAll()
                     .anyRequest().authenticated()
+
                 )
+
                 .oauth2Login(oauth -> oauth
                                 .successHandler(this::oauthSuccess)
                 )

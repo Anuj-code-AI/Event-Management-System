@@ -217,14 +217,34 @@
                         <img id="ticketImg" src="" alt="Ticket"
                              style="width:100%;border-radius:12px;display:block;opacity:0.9;">
                     </div>
+
+                    <!-- ══ QR SECTION ══
+                         #qrPlaceholder  → decorative grid shown before booking
+                         #qrGenerated    → real <img> tags injected after booking  -->
                     <div class="ed-ticket-qr-section">
                         <div class="ed-ticket-qr-label">Scan at Entry</div>
-                        <div class="ed-ticket-qr-box" id="qrBox"></div>
-                        <div class="ed-ticket-qr-note">
-                            QR code will be generated upon registration<br>
-                            Present this at the venue entrance
+
+                        <!-- Placeholder: decorative fake QR grid -->
+                        <div id="qrPlaceholder">
+                            <div class="ed-ticket-qr-box">
+                                <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+                                <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+                                <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+                                <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+                                <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+                                <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+                                <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+                            </div>
+                            <div class="ed-ticket-qr-note">
+                                QR code will be generated upon registration<br>
+                                Present this at the venue entrance
+                            </div>
                         </div>
+
+                        <!-- Real QR images injected by renderQRCodes() — hidden until booking -->
+                        <div id="qrGenerated" style="display:none;width:100%;"></div>
                     </div>
+
                 </div>
             </div>
         </div>
@@ -457,7 +477,6 @@
         else if (pctSold > 50) capFill.classList.add('warn');
         document.getElementById('ticketCapSold').textContent = (ev.totalTickets - ev.ticketsAvailable) + ' sold';
         document.getElementById('ticketCapLeft').textContent = ev.ticketsAvailable + ' left';
-        document.getElementById('qrBox').innerHTML = Array(49).fill('<span></span>').join('');
         document.getElementById('regTitle').textContent = ev.title;
         document.getElementById('regDate').textContent  = fmtDate(ev.eventDate);
         document.getElementById('regTime').textContent  = fmtTime(ev.eventTime);
@@ -501,6 +520,62 @@
         document.title = ev.title + ' — Eventaura';
     }
 
+    /* ══════════════════════════════════════
+       renderQRCodes(tickets)
+       Called after a successful booking.
+       tickets = List<TicketResponse> from backend.
+       Each ticket.qrCode is the URL:
+         /api/v1/tickets/{id}/qr  → returns image/png
+    ══════════════════════════════════════ */
+    function renderQRCodes(tickets) {
+        // Hide decorative placeholder, show real QR container
+        document.getElementById('qrPlaceholder').style.display = 'none';
+        const container = document.getElementById('qrGenerated');
+
+        container.innerHTML = tickets.map((ticket, idx) => `
+            <div style="
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 12px;
+                ${idx > 0 ? 'margin-top:22px; padding-top:22px; border-top:1px dashed rgba(255,255,255,0.12);' : ''}
+            ">
+                ${tickets.length > 1 ? `
+                    <div style="
+                        font-size: 10px;
+                        font-weight: 700;
+                        text-transform: uppercase;
+                        letter-spacing: 1.5px;
+                        color: rgba(255,255,255,0.35);
+                    ">Ticket ${idx + 1} of ${tickets.length}</div>
+                ` : ''}
+                <img
+                    src="${ticket.qrUrl}"
+                    alt="QR code for ticket ${ticket.ticketCode}"
+                    style="
+                        width: 160px;
+                        height: 160px;
+                        border-radius: 14px;
+                        display: block;
+                        background: #ffffff;
+                        padding: 8px;
+                    "
+                >
+                <div style="
+                    font-family: monospace;
+                    font-size: 11px;
+                    letter-spacing: 0.08em;
+                    color: rgba(255,255,255,0.3);
+                ">${ticket.ticketCode}</div>
+                <div class="ed-ticket-qr-note">Present this QR at the venue entrance</div>
+            </div>
+        `).join('');
+
+        container.style.display = 'block';
+        // Gently scroll QR into view
+        container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
     async function handleRegister() {
         if (!token) { window.location.href = '/login'; return; }
         const btn     = document.getElementById('regBtn');
@@ -517,10 +592,17 @@
                 body: JSON.stringify({ numberOfTickets: qty })
             });
             if (res.ok) {
+                // Backend returns List<TicketResponse>; each has .qrCode = URL string
+                const tickets = await res.json();
+
+                // Show success state in sidebar
                 document.getElementById('regFormWrap').style.display = 'none';
                 document.getElementById('regSuccess').style.display  = 'block';
                 const bookedCount = document.getElementById('bookedCount');
                 if (bookedCount) bookedCount.textContent = qty;
+
+                // Swap placeholder QR grid → real QR image(s) in the ticket card
+                renderQRCodes(tickets);
             } else {
                 const msg = await res.text();
                 alert(msg || 'Booking failed. Please try again.');

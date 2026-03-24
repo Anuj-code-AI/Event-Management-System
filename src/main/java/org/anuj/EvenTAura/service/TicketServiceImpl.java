@@ -16,6 +16,7 @@ import org.anuj.EvenTAura.model.User;
 import org.anuj.EvenTAura.repository.EventRepository;
 import org.anuj.EvenTAura.repository.TicketRepository;
 import org.anuj.EvenTAura.repository.UserRepository;
+import org.anuj.EvenTAura.util.QRCodeGenerator;
 import org.anuj.EvenTAura.util.SseEmitterHolder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -29,6 +30,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -38,13 +40,11 @@ public class TicketServiceImpl implements TicketService{
     private final EventRepository eventRepository;
 
     private String generateTicketCode() {
-        long timePart   = System.currentTimeMillis() % 1000;   // last 3 digits of timestamp
-        int  randomPart = new Random().nextInt(900) + 100;      // 3-digit random (100–999)
-        return String.format("%03d%03d", timePart, randomPart); // 6-digit code
+        return UUID.randomUUID().toString().substring(0, 8);
     }
 
     @Override
-    public List<Ticket> buyTicket(Long eventId, TicketRequest req, Authentication auth) {
+    public List<TicketResponse> buyTicket(Long eventId, TicketRequest req, Authentication auth) {
         User user = userRepository.findByEmail(auth.getName())
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
@@ -56,10 +56,22 @@ public class TicketServiceImpl implements TicketService{
         }
 
         List<Ticket> tickets = new ArrayList<>();
+
         for (int i = 0; i < req.getNumberOfTickets(); i++) {
             String code = generateTicketCode();
-            tickets.add(new Ticket(null, code, false,
-                    LocalDateTime.now(), null, TicketStatus.ACTIVE, event, user));
+
+            String qrData = "TICKET:" + code;
+
+            tickets.add(new Ticket(
+                    null,
+                    code,
+                    false,
+                    LocalDateTime.now(),
+                    null,
+                    TicketStatus.ACTIVE,
+                    event,
+                    user  // NEW FIELD
+            ));
         }
 
         // FIX: calculate updated count before broadcasting
@@ -68,12 +80,25 @@ public class TicketServiceImpl implements TicketService{
         eventRepository.save(event); // FIX: persist the updated ticket count
 
         List<Ticket> saved = ticketRepository.saveAll(tickets);
-
+        List<TicketResponse> response = saved.stream()
+                .map(ticket -> new TicketResponse(
+                        ticket.getTicketId(),
+                        ticket.getTicketCode(),
+                        ticket.isCheckedIn(),
+                        ticket.getIssuedAt(),
+                        ticket.getCheckedInAt(),
+                        ticket.getStatus(),
+                        ticket.getEvent(),
+                        ticket.getUser(),
+                        "http://localhost:8080/api/v1/tickets/" + ticket.getTicketId() + "/qr"
+                ))
+                .toList();
         // broadcast AFTER successful save
         SseEmitterHolder.broadcast(event.getEventId(), updatedTicketsAvailable);
 
-        return saved;
+        return response;
     }
+
     @Override
     public Page<TicketResponse> myTicket(int page, int size, Authentication auth) {
         Pageable pageable = PageRequest.of(page, size);
@@ -86,6 +111,7 @@ public class TicketServiceImpl implements TicketService{
         if (tickets.isEmpty()) {
             throw new NoTicketFoundException("You didn't joined any event yet!! Joined now");
         }
+
 
         return tickets.map(TicketMapper::toResponse);
     }

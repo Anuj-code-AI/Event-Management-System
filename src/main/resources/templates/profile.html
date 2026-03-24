@@ -642,14 +642,17 @@
             </div>
             <div class="ticket-tear"></div>
             <div class="ticket-right">
-                <div class="qr-placeholder">
-                    <div class="qr-grid">
-                        <span></span><span></span><span></span>
-                        <span></span><span></span><span></span>
-                        <span></span><span></span><span></span>
-                    </div>
-                    <p>${t.checkedIn ? 'Scanned' : 'QR Code'}</p>
-                </div>
+                <img
+                    src="${t.qrUrl}"
+                    alt="QR Code"
+                    style="
+                        width: 120px;
+                        height: 120px;
+                        background: white;
+                        padding: 6px;
+                        border-radius: 10px;
+                    "
+                />
             </div>
         </div>`;
     }

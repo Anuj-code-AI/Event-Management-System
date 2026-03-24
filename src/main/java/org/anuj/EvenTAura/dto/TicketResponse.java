@@ -21,4 +21,5 @@ public class TicketResponse {
     private TicketStatus status;
     private Event event;
     private User user;
+    private String qrUrl;
 }

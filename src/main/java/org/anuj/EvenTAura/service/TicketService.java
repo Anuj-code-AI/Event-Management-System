@@ -12,7 +12,7 @@ import org.springframework.security.core.Authentication;
 import java.util.List;
 
 public interface TicketService {
-    List<Ticket> buyTicket(Long eventId, TicketRequest req, Authentication auth);
+    List<TicketResponse> buyTicket(Long eventId, TicketRequest req, Authentication auth);
 
     Page<TicketResponse> myTicket(int page, int size, Authentication auth);
 
