@@ -2,6 +2,7 @@ package org.anuj.EvenTAura.service;
 
 import org.anuj.EvenTAura.dto.LoginRequest;
 import org.anuj.EvenTAura.dto.RegisterRequest;
+import org.anuj.EvenTAura.dto.UserRequest;
 import org.anuj.EvenTAura.dto.UserResponse;
 import org.springframework.security.core.Authentication;
 
@@ -14,4 +15,6 @@ public interface AuthService {
     UserResponse me(Authentication auth);
 
     String deleteAccount(Authentication authentication);
+
+    UserResponse updateProfile(UserRequest request, Authentication authentication);
 }

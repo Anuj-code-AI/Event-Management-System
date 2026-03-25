@@ -5,6 +5,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.anuj.EvenTAura.dto.LoginRequest;
 import org.anuj.EvenTAura.dto.RegisterRequest;
+import org.anuj.EvenTAura.dto.UserRequest;
 import org.anuj.EvenTAura.dto.UserResponse;
 import org.anuj.EvenTAura.exception.InvalidPasswordException;
 import org.anuj.EvenTAura.exception.UserAlreadyExistException;
@@ -29,10 +30,12 @@ import java.util.Map;
 public class AuthServiceImpl implements AuthService{
 
     private final JwtUtil jwtUtil;
+    private final UserMapper userMapper;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final EventRepository eventRepository;
     private final RefreshRepository refreshRepository;
+
 
 
     @Override
@@ -81,7 +84,7 @@ public class AuthServiceImpl implements AuthService{
 
     @Override
     public UserResponse me(Authentication auth) {
-        return UserMapper.toResponse(userRepository.findByEmail(auth.getName())
+        return userMapper.toResponse(userRepository.findByEmail(auth.getName())
                 .orElseThrow(()->new UserNotFoundException("User not found")));
     }
 
@@ -95,6 +98,18 @@ public class AuthServiceImpl implements AuthService{
 
         userRepository.delete(user);
         return "User deleted successfully";
+    }
+
+
+    @Override
+    public UserResponse updateProfile(UserRequest request, Authentication authentication) {
+        User user = userRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        userMapper.updateUserfromRequest(request, user);
+
+        User saved = userRepository.save(user);
+        return userMapper.toResponse(saved);
     }
 
 }

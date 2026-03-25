@@ -23,7 +23,7 @@
 
     <nav class="nav-links">
         <a th:href="@{/}">Home</a>
-        <a th:href="@{/events}">Events</a>
+        <a th:href="@{/myEvents}">Events</a>
         <a th:href="@{/categories}">Categories</a>
         <a th:href="@{/aboutUs}">About Us</a>
     </nav>
@@ -80,7 +80,7 @@
             <a th:href="@{/register}" class="btn primary" style="text-align:center;display:block;margin-top:10px;">Sign Up</a>
         </div>
         <div id="mobileNavUser" style="display:none;">
-            <a th:href="@{/logout}" class="btn primary" style="text-align:center;display:block;background:#ef4444;border-color:#ef4444;">Sign Out</a>
+            <a onclick="logout()" class="btn primary" style="text-align:center;display:block;background:#ef4444;border-color:#ef4444;">Sign Out</a>
         </div>
     </div>
 </nav>
@@ -161,7 +161,7 @@
                     <span>⚠️</span> <span th:text="${errorMessage}"></span>
                 </div>
 
-                <form th:action="@{/profile/update}" method="post" class="settings-form">
+                <form id="changeName-form">
                     <div class="field-row">
                         <div class="field-group">
                             <label for="firstName">First Name</label>
@@ -178,28 +178,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="field-group">
-                        <label for="email">Email Address</label>
-                        <div class="input-wrap">
-                            <span class="input-icon">✉️</span>
-                            <input type="email" id="email" name="email" placeholder="your@email.com" required>
-                        </div>
-                    </div>
-                    <div class="field-group">
-                        <label for="phone">Phone Number</label>
-                        <div class="input-wrap">
-                            <span class="input-icon">📱</span>
-                            <input type="tel" id="phone" name="phone" placeholder="+91 98765 43210">
-                        </div>
-                    </div>
-                    <div class="field-group">
-                        <label for="city">City</label>
-                        <div class="input-wrap">
-                            <span class="input-icon">📍</span>
-                            <input type="text" id="city" name="city" placeholder="Delhi, Mumbai, Bangalore...">
-                        </div>
-                    </div>
-                    <button type="submit" class="submit-btn">Save Changes <span class="btn-arrow">→</span></button>
+                    <button type="submit" id="changeName-btn" class="submit-btn">Save Changes <span class="btn-arrow">→</span></button>
                 </form>
             </div>
         </div>
@@ -217,7 +196,7 @@
                 <div class="alert alert-error" th:if="${pwError}">
                     <span>⚠️</span> <span th:text="${pwError}">Something went wrong.</span>
                 </div>
-                <form th:action="@{/profile/change-password}" method="post" class="settings-form" id="pwForm">
+                <form id="pwForm">
                     <div class="field-group">
                         <label for="currentPassword">Current Password</label>
                         <div class="input-wrap">
@@ -230,7 +209,7 @@
                         <label for="newPassword">New Password</label>
                         <div class="input-wrap">
                             <span class="input-icon">🔑</span>
-                            <input type="password" id="newPassword" name="newPassword" placeholder="Min. 8 characters" required>
+                            <input type="password" id="newPassword" name="newPassword" placeholder="Min. 4 characters" required>
                             <button type="button" class="toggle-pw">👁</button>
                         </div>
                         <div class="pw-strength">
@@ -248,7 +227,7 @@
                         <span class="field-error" id="pwMatchError" style="display:none">⚠️ Passwords do not match</span>
                     </div>
                     <ul class="pw-rules">
-                        <li id="rule-len">At least 8 characters</li>
+                        <li id="rule-len">At least 4 characters</li>
                         <li id="rule-upper">One uppercase letter</li>
                         <li id="rule-num">One number</li>
                         <li id="rule-special">One special character</li>
@@ -265,7 +244,7 @@
                     <h3>Notification Preferences</h3>
                     <p>Choose what you want to be notified about</p>
                 </div>
-                <form th:action="@{/profile/notifications}" method="post" class="settings-form">
+                <form class="settings-form">
                     <div class="toggle-group">
                         <div class="toggle-item">
                             <div class="toggle-text">
@@ -477,7 +456,7 @@
                 <h4>Account</h4>
                 <a th:href="@{/profile}">My Profile</a>
                 <a th:href="@{/tickets}">My Tickets</a>
-                <a th:href="@{/logout}">Sign Out</a>
+                <a onclick="logout()">Sign Out</a>
             </div>
             <div class="footer-col">
                 <h4>Support</h4>
@@ -520,7 +499,7 @@
     const pwBar = document.getElementById('pwBar');
     const pwLabel = document.getElementById('pwLabel');
     const rules = {
-        'rule-len':     v => v.length >= 8,
+        'rule-len':     v => v.length >= 4,
         'rule-upper':   v => /[A-Z]/.test(v),
         'rule-num':     v => /[0-9]/.test(v),
         'rule-special': v => /[^A-Za-z0-9]/.test(v),

@@ -5,6 +5,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.anuj.EvenTAura.dto.LoginRequest;
 import org.anuj.EvenTAura.dto.RegisterRequest;
+import org.anuj.EvenTAura.dto.UserRequest;
+import org.anuj.EvenTAura.dto.UserResponse;
 import org.anuj.EvenTAura.service.AuthService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -32,12 +34,17 @@ public class AuthController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<?> me(Authentication auth){
+    public ResponseEntity<UserResponse> me(Authentication auth){
         return ResponseEntity.ok(authService.me(auth));
     }
 
     @DeleteMapping("/deleteAccount")
     public ResponseEntity<?> deleteAccount(Authentication authentication){
         return ResponseEntity.ok(authService.deleteAccount(authentication));
+    }
+
+    @PatchMapping("/update/me")
+    public ResponseEntity<UserResponse> updateProfile(@RequestBody UserRequest request, Authentication authentication){
+        return ResponseEntity.ok(authService.updateProfile(request,authentication));
     }
 }

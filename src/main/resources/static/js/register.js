@@ -2,11 +2,12 @@ document.getElementById("registerForm").addEventListener("submit", async functio
 
     e.preventDefault();
 
-    const name = document.getElementById("name").value;
+    const firstName = document.getElementById("firstName").value;
+    const lastName = document.getElementById("lastName").value;
     const email = document.getElementById("email").value;
     const password = document.getElementById("password").value;
     const confirmPassword = document.getElementById("confirmPassword").value;
-
+    const name = firstName.concat(" ",lastName);
     // client side validation
     if (password !== confirmPassword) {
         alert("Passwords do not match");
