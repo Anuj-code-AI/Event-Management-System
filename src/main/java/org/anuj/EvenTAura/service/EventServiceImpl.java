@@ -186,7 +186,8 @@ public class EventServiceImpl implements EventService {
 
         User user = userRepository.findByEmail(auth.getName())
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
-        if(user.getRole().equals(Role.ROLE_ADMIN)){
+        System.out.println(user.getRole());
+        if(!user.getRole().equals(Role.ROLE_ADMIN)){
             throw new UnauthorizedException("You can't axis events. You are not admin");
         }
         Page<Event> events = eventRepository.findAll(pageable);
