@@ -9,9 +9,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="stylesheet" th:href="@{/css/aboutUs.css}">
+    <link rel="stylesheet" th:href="@{/css/profileSidebar.css}">
 </head>
 
 <body class="about-page">
+
 
 <!-- ═══════════════════ HEADER ═══════════════════ -->
 <header class="header">
@@ -19,10 +21,10 @@
         <span class="logo-text">Event<em>aura</em></span>
     </div>
     <nav class="nav-links">
-        <a href="/">Home</a>
-        <a href="/myEvents">Events</a>
-        <a href="#browse-events">Categories</a>
-        <a href="/aboutUs" style="color:var(--primary);font-weight:600;">About Us</a>
+        <a href="#">Home</a>
+        <a href="/moments">Moments</a>
+        <a href="/tickets">Tickets</a>
+        <a href="/aboutUs">About Us</a>
     </nav>
     <div class="search-bar">
         <span class="search-icon">🔍</span>
@@ -31,17 +33,16 @@
     <div class="header-right">
         <div class="time" id="clock"></div>
         <button class="icon-btn" aria-label="Notifications">
-            <span>🔔</span>
-            <span class="badge">3</span>
+            <span>🔔</span><span class="badge">3</span>
         </button>
         <div id="guestActions">
             <a href="/login"    class="btn primary">Login</a>
             <a href="/register" class="btn primary">Sign Up</a>
         </div>
         <div id="userActions" style="display:none;">
-            <a href="/profile">
-                <button class="icon-btn profile-btn" aria-label="Profile"><span>👤</span></button>
-            </a>
+            <button class="icon-btn profile-btn" id="profileSidebarBtn" aria-label="Open profile menu" aria-expanded="false">
+                <span>👤</span>
+            </button>
         </div>
         <button class="hamburger" id="hamburgerBtn" aria-label="Open menu" aria-expanded="false">
             <span></span><span></span><span></span>
@@ -52,36 +53,212 @@
 <!-- ── Mobile nav overlay ── -->
 <div class="mobile-nav-overlay" id="mobileNavOverlay"></div>
 
-<!-- ── Mobile slide-in drawer ── -->
+<!-- ═══════════════════════════════════════════════════════
+     MOBILE DRAWER
+     Sections shown per resolved role:
+       GUEST     → guest card · guest nav · login/signup footer
+       USER      → user card · My Account · logout footer
+       ORGANIZER → user card · My Account · Navigation · Host · logout footer
+       ADMIN     → user card · My Account · Admin · Navigation · Host · logout footer
+     ═══════════════════════════════════════════════════════ -->
 <nav class="mobile-nav" id="mobileNav" aria-label="Mobile navigation">
+
     <div class="mobile-nav-header">
         <span class="logo-text">Event<em>aura</em></span>
         <button class="mobile-nav-close" id="mobileNavClose" aria-label="Close menu">✕</button>
     </div>
+
     <div class="mobile-search">
         <span>🔍</span>
         <input type="text" placeholder="Search events, cities...">
     </div>
-    <div class="mobile-nav-links">
-        <a href="/"            class="mobile-nav-link"><span class="mnl-icon">🏠</span>Home</a>
-        <a href="/myEvents"     class="mobile-nav-link"><span class="mnl-icon">🔥</span>Events</a>
-        <a href="#browse-events"            class="mobile-nav-link"><span class="mnl-icon">🏷️</span>Categories</a>
-        <a href="/aboutUs"     class="mobile-nav-link"><span class="mnl-icon">ℹ️</span>About Us</a>
-        <a href="/createEvent" class="mobile-nav-link"><span class="mnl-icon">📅</span>Create Event</a>
-        <a href="/tickets"     class="mobile-nav-link"><span class="mnl-icon">🎟️</span>My Tickets</a>
-        <a href="/profile"     class="mobile-nav-link"><span class="mnl-icon">👤</span>Profile</a>
+
+    <!-- skeleton shown while API call is in-flight -->
+    <div id="mnSkeleton" style="display:none; margin:8px 10px 0;">
+        <div class="psb-skeleton">
+            <div class="psb-skeleton-avatar"></div>
+            <div class="psb-skeleton-lines">
+                <div class="psb-skeleton-line"></div>
+                <div class="psb-skeleton-line short"></div>
+            </div>
+        </div>
     </div>
+
+    <!-- user card (all logged-in roles) -->
+    <div id="mnUserCard" style="display:none; margin:8px 10px 0;">
+        <div class="psb-user-card">
+            <div class="psb-avatar">👤</div>
+            <div class="psb-user-info">
+                <div class="psb-user-name" id="mnUserName">User</div>
+                <div class="psb-user-role" id="mnUserRole">Member</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- guest card -->
+    <div id="mnGuestCard" style="margin:8px 10px 0;">
+        <div class="psb-guest-card">
+            <p>Sign in to access your events, tickets and profile.</p>
+            <div class="psb-guest-btns">
+                <a href="/login"    class="psb-btn-login">Login</a>
+                <a href="/register" class="psb-btn-signup">Sign Up</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- MY ACCOUNT — USER · ORGANIZER · ADMIN -->
+    <div id="mn-my-account" style="display:none;">
+        <div class="psb-section-label">My Account</div>
+        <div class="mobile-nav-links" style="padding-top:0;">
+            <a href="/profile"  class="mobile-nav-link"><span class="mnl-icon">👤</span>Profile</a>
+            <a href="/"  class="mobile-nav-link"><span class="mnl-icon">🏠</span>Home</a>
+            <a href="/moments" class="mobile-nav-link"><span class="mnl-icon">📸</span>Moments</a>
+            <a href="/tickets"  class="mobile-nav-link"><span class="mnl-icon">🎟️</span>My Tickets</a>
+            <a href="/aboutUs"  class="mobile-nav-link"><span class="mnl-icon">ℹ️</span>About Us</a>
+        </div>
+    </div>
+
+    <!-- ADMIN — ADMIN only -->
+    <div id="mn-admin" style="display:none;">
+        <div class="psb-divider" style="margin:4px 16px;"></div>
+        <div class="psb-section-label">Admin</div>
+        <div class="mobile-nav-links" style="padding-top:0;">
+            <a href="/adminPage"          class="mobile-nav-link"><span class="mnl-icon">🛡️</span>Admin Page<span class="psb-admin-badge">Admin</span></a>
+            <a href="/campusEvents" class="mobile-nav-link"><span class="mnl-icon">📋</span>Campus Events<span class="psb-admin-badge">Admin</span></a>
+        </div>
+    </div>
+
+    <!-- HOST — ORGANIZER · ADMIN -->
+    <div id="mn-host" style="display:none;">
+        <div class="psb-divider" style="margin:4px 16px;"></div>
+        <div class="psb-section-label">Host</div>
+        <div class="mobile-nav-links" style="padding-top:0;">
+            <a href="/createEvent"  class="mobile-nav-link"><span class="mnl-icon">📅</span>Create Event</a>
+            <a href="/hostedEvents" class="mobile-nav-link"><span class="mnl-icon">🎪</span>Hosted Events</a>
+        </div>
+    </div>
+
+    <!-- GUEST NAV — not logged in -->
+    <div id="mn-guest-nav">
+        <div class="mobile-nav-links">
+            <a href="/"         class="mobile-nav-link"><span class="mnl-icon">🏠</span>Home</a>
+            <a href="/moments" class="mobile-nav-link"><span class="mnl-icon">📸</span>Moments</a>
+            <a href="/aboutUs"  class="mobile-nav-link"><span class="mnl-icon">ℹ️</span>About Us</a>
+        </div>
+    </div>
+
+    <!-- footer -->
     <div class="mobile-nav-footer">
         <div id="mobileNavGuest">
             <a href="/login"    class="btn primary" style="text-align:center;display:block;">Login</a>
             <a href="/register" class="btn primary" style="text-align:center;display:block;margin-top:10px;">Sign Up</a>
         </div>
         <div id="mobileNavUser" style="display:none;">
-            <a href="/logout" class="btn primary" style="text-align:center;display:block;background:#ef4444;border-color:#ef4444;">Sign Out</a>
+            <button onclick="logout()" class="btn primary" style="text-align:center;display:block;background:#ef4444;border-color:#ef4444;">Sign Out</button>
         </div>
     </div>
+
 </nav>
 
+<!-- ═══════════════════════════════════════════════════════
+     PROFILE SIDEBAR (desktop 👤 button)
+     ═══════════════════════════════════════════════════════ -->
+<div class="profile-overlay" id="profileOverlay"></div>
+
+<aside class="profile-sidebar" id="profileSidebar" aria-label="Profile menu">
+
+    <div class="psb-header">
+        <span class="psb-title">My Account</span>
+        <button class="psb-close" id="profileSidebarClose" aria-label="Close">✕</button>
+    </div>
+
+    <!-- skeleton -->
+    <div id="psbSkeleton" style="display:none; margin:16px 16px 0;">
+        <div class="psb-skeleton">
+            <div class="psb-skeleton-avatar"></div>
+            <div class="psb-skeleton-lines">
+                <div class="psb-skeleton-line"></div>
+                <div class="psb-skeleton-line short"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- user card -->
+    <div id="psbUserCard" style="display:none; margin:16px 16px 0;">
+        <div class="psb-user-card">
+            <div class="psb-avatar">👤</div>
+            <div class="psb-user-info">
+                <div class="psb-user-name" id="psbUserName">User</div>
+                <div class="psb-user-role" id="psbUserRole">Member</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- guest card -->
+    <div id="psbGuestCard" style="margin:16px 16px 0;">
+        <div class="psb-guest-card">
+            <p>Sign in to access your events, tickets and profile.</p>
+            <div class="psb-guest-btns">
+                <a href="/login"    class="psb-btn-login">Login</a>
+                <a href="/register" class="psb-btn-signup">Sign Up</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- MY ACCOUNT — USER · ORGANIZER · ADMIN -->
+    <div id="psb-my-account" style="display:none;">
+        <div class="psb-section-label">My Account</div>
+        <nav class="psb-nav" style="padding-top:0;">
+            <a href="/profile"  class="psb-nav-item"><span class="psb-nav-icon">👤</span><span>Profile</span></a>
+            <a href="/"  class="psb-nav-item"><span class="psb-nav-icon">🏠</span><span>Home</span></a>
+            <a href="/moments" class="psb-nav-item"><span class="psb-nav-icon">📸</span><span>Moments</span></a>
+            <a href="/tickets"  class="psb-nav-item"><span class="psb-nav-icon">🎟️</span><span>My Tickets</span></a>
+            <a href="/aboutUs"  class="psb-nav-item"><span class="psb-nav-icon">ℹ️</span><span>About Us</span></a>
+        </nav>
+    </div>
+
+    <!-- ADMIN — ADMIN only -->
+    <div id="psb-admin" style="display:none;">
+        <div class="psb-divider"></div>
+        <div class="psb-section-label">Admin</div>
+        <nav class="psb-nav" style="padding-top:0;">
+            <a href="/adminPage"          class="psb-nav-item"><span class="psb-nav-icon">🛡️</span><span>Admin Page</span><span class="psb-admin-badge">Admin</span></a>
+            <a href="/campusEvents" class="psb-nav-item"><span class="psb-nav-icon">📋</span><span>Campus Events</span><span class="psb-admin-badge">Admin</span></a>
+        </nav>
+    </div>
+
+    <!-- HOST — ORGANIZER · ADMIN -->
+    <div id="psb-host" style="display:none;">
+        <div class="psb-divider"></div>
+        <div class="psb-section-label">Host</div>
+        <nav class="psb-nav" style="padding-top:0;">
+            <a href="/createEvent"  class="psb-nav-item"><span class="psb-nav-icon">📅</span><span>Create Event</span></a>
+            <a href="/hostedEvents" class="psb-nav-item"><span class="psb-nav-icon">🎪</span><span>Hosted Events</span></a>
+        </nav>
+    </div>
+
+    <!-- Logout — all logged-in roles -->
+    <div id="psb-logout" style="display:none;">
+        <div class="psb-divider"></div>
+        <nav class="psb-nav" style="padding-top:0;">
+            <button onclick="logout()" class="psb-nav-item logout"><span class="psb-nav-icon">🚪</span><span>Logout</span></button>
+        </nav>
+    </div>
+
+    <!-- GUEST NAV — not logged in -->
+    <div id="psb-guest-nav">
+        <div class="psb-section-label">Explore</div>
+        <nav class="psb-nav" style="padding-top:0;">
+            <a href="/myEvents" class="psb-nav-item"><span class="psb-nav-icon">🔥</span><span>Browse Events</span></a>
+            <a href="/aboutUs"  class="psb-nav-item"><span class="psb-nav-icon">ℹ️</span><span>About Us</span></a>
+        </nav>
+    </div>
+
+    <div class="psb-footer">
+        <p class="psb-footer-text">© 2026 Eventaura · Made with ❤️ in India</p>
+    </div>
+
+</aside>
 
 <!-- ═══════════════════ HERO ═══════════════════ -->
 <section class="about-hero">
@@ -409,46 +586,6 @@
 
 <!-- ═══════════════════ SCRIPTS ═══════════════════ -->
 <script>
-
-    /* ── Mobile nav ── */
-    const hamburgerBtn     = document.getElementById('hamburgerBtn');
-    const mobileNav        = document.getElementById('mobileNav');
-    const mobileNavOverlay = document.getElementById('mobileNavOverlay');
-    const mobileNavClose   = document.getElementById('mobileNavClose');
-
-    function openMobileNav() {
-        mobileNav.classList.add('open');
-        mobileNavOverlay.classList.add('open');
-        hamburgerBtn.setAttribute('aria-expanded', 'true');
-        hamburgerBtn.classList.add('open');
-        document.body.style.overflow = 'hidden';
-    }
-    function closeMobileNav() {
-        mobileNav.classList.remove('open');
-        mobileNavOverlay.classList.remove('open');
-        hamburgerBtn.setAttribute('aria-expanded', 'false');
-        hamburgerBtn.classList.remove('open');
-        document.body.style.overflow = '';
-    }
-
-    hamburgerBtn.addEventListener('click', openMobileNav);
-    mobileNavClose.addEventListener('click', closeMobileNav);
-    mobileNavOverlay.addEventListener('click', closeMobileNav);
-    document.querySelectorAll('.mobile-nav-link').forEach(l => l.addEventListener('click', closeMobileNav));
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMobileNav(); });
-
-    /* ── Mobile nav auth state ── */
-    if (localStorage.getItem('accessToken')) {
-        document.getElementById('mobileNavGuest').style.display = 'none';
-        document.getElementById('mobileNavUser').style.display  = 'block';
-    }
-
-    /* ── Header auth state (desktop) ── */
-    if (localStorage.getItem('accessToken')) {
-        document.getElementById('guestActions').style.display = 'none';
-        document.getElementById('userActions').style.display  = 'flex';
-    }
-
     /* ── Intersection Observer — scroll animations ── */
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
@@ -462,7 +599,7 @@
     document.querySelectorAll('.team-card, .value-card, .st-item').forEach(el => observer.observe(el));
 
 </script>
-<script th:src="@{/js/clock.js}"></script>
+<script th:src="@{/js/basic.js}"></script>
 
 </body>
 </html>

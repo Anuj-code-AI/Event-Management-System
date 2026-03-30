@@ -467,9 +467,7 @@
     }
 
     async function fetchEvents(page = 0) {
-        const token = getAccessToken();
-        const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
-        const res = await apiFetch(`${API_BASE}/getAllEvents?page=${page}&size=${pageSize}&sortBy=eventDate&sortDir=asc`, { headers });
+        const res = await fetch(`${API_BASE}/getAllApprovedEvents?page=${page}&size=${pageSize}&sortBy=eventDate`);
         if (!res.ok) throw new Error('Failed to fetch events');
         return res.json();
     }

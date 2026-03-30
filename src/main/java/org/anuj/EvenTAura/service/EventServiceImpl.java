@@ -22,6 +22,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -36,12 +37,15 @@ public class EventServiceImpl implements EventService {
 
 
     @Override
+    @Transactional
     public EventResponse createEvent(EventRequest req, Authentication auth) {
 
         String email = auth.getName();
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        // ================== VALIDATION ==================
         if (req.getTotalTickets() <= 0) {
             throw new IllegalArgumentException("Total tickets must be greater than 0");
         }
@@ -51,16 +55,25 @@ public class EventServiceImpl implements EventService {
         if (req.getTicketsAvailable() > req.getTotalTickets()) {
             throw new IllegalArgumentException("Tickets available cannot exceed total tickets");
         }
-        HostProfile profile = hostProfileRepository
-                .findTopByUserOrderByAppliedAtDesc(user)
-                .filter(p -> p.getStatus() == Status.APPROVED)
-                .orElseThrow(() -> new UnauthorizedException("Apply to become a host first"));
 
+        // ================== ROLE CHECK ==================
+        boolean isAdmin = user.getRole().equals(Role.ROLE_ADMIN);
+
+        if (!isAdmin) {
+            hostProfileRepository
+                    .findTopByUserOrderByAppliedAtDesc(user)
+                    .filter(p -> p.getStatus() == Status.APPROVED)
+                    .orElseThrow(() -> new UnauthorizedException("Apply to become a host first"));
+        }
+
+        // ================== EVENT CREATION ==================
         Event event = EventMapper.toEntity(req, user);
 
         Event savedEvent = eventRepository.save(event);
         EventResponse response = EventMapper.toResponse(savedEvent);
+
         SseEmitterHolder.broadcastNewEvent(response);
+
         return response;
     }
 
@@ -199,7 +212,8 @@ public class EventServiceImpl implements EventService {
         return events.map(EventMapper::toResponse);
     }
 
-    @Override public Page<EventSummaryResponse> getAllApprovedEvents(int page, int size) {
+    @Override
+    public Page<EventSummaryResponse> getAllApprovedEvents(int page, int size) {
         Sort sort = Sort.by("eventDate").ascending();
         Pageable pageable = PageRequest.of(page, size, sort);
         return eventRepository.findByEventStatus(
