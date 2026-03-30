@@ -2,17 +2,11 @@ package org.anuj.EvenTAura.service;
 
 
 import lombok.RequiredArgsConstructor;
-import org.anuj.EvenTAura.dto.TicketCancelResponse;
-import org.anuj.EvenTAura.dto.TicketCheckResponse;
-import org.anuj.EvenTAura.dto.TicketRequest;
-import org.anuj.EvenTAura.dto.TicketResponse;
+import org.anuj.EvenTAura.dto.*;
 import org.anuj.EvenTAura.exception.*;
 import org.anuj.EvenTAura.mapper.EventMapper;
 import org.anuj.EvenTAura.mapper.TicketMapper;
-import org.anuj.EvenTAura.model.Event;
-import org.anuj.EvenTAura.model.Ticket;
-import org.anuj.EvenTAura.model.TicketStatus;
-import org.anuj.EvenTAura.model.User;
+import org.anuj.EvenTAura.model.*;
 import org.anuj.EvenTAura.repository.EventRepository;
 import org.anuj.EvenTAura.repository.TicketRepository;
 import org.anuj.EvenTAura.repository.UserRepository;
@@ -44,6 +38,7 @@ public class TicketServiceImpl implements TicketService{
     }
 
     @Override
+    @Transactional
     public List<TicketResponse> buyTicket(Long eventId, TicketRequest req, Authentication auth) {
         User user = userRepository.findByEmail(auth.getName())
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
@@ -264,5 +259,99 @@ public class TicketServiceImpl implements TicketService{
         Ticket ticket = ticketRepository.findById(ticketId)
                 .orElseThrow(()-> new NoTicketFoundException("No ticket found with this exception"));
         return TicketMapper.toResponse(ticket);
+    }
+
+    @Override
+    public Page<AudienceResponse> audienceList(int page, int size, Long eventId, Authentication authentication) {
+
+        Sort sort = Sort.by("issuedAt").ascending(); // might not exist in Ticket btw
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        User user = userRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new EventNotExistException("Event not found"));
+
+        boolean isOwner = user.getUserId().equals(event.getUser().getUserId());
+        boolean isAdmin = user.getRole().equals(Role.ROLE_ADMIN);
+
+        if (!(isOwner || isAdmin)) {
+            throw new RuntimeException("You are not allowed to verify tickets for this event");
+        }
+
+        Page<Ticket> tickets = ticketRepository.findByEvent(event, pageable);
+
+        return tickets.map(ticket -> {
+            AudienceResponse res = new AudienceResponse();
+            res.setTicketId(ticket.getTicketId());
+            res.setName(ticket.getUser().getName());
+            res.setEmail(ticket.getUser().getEmail());
+            res.setStatus(ticket.getStatus());
+            res.setCheckedIn(ticket.isCheckedIn());
+            res.setCheckedInAt(ticket.getCheckedInAt());
+            return res;
+        });
+    }
+
+    @Override
+    @Transactional
+    public void markPresent(Long ticketId, Authentication authentication) {
+        User user = userRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        Ticket ticket = ticketRepository.findById(ticketId)
+                .orElseThrow(()-> new NoTicketFoundException("Ticket not found"));
+
+        Event event = ticket.getEvent();
+
+        // ensure the logged-in user is the organizer of this event
+        boolean isOwner = user.getUserId().equals(event.getUser().getUserId());
+        boolean isAdmin = user.getRole().equals(Role.ROLE_ADMIN);
+
+        if (!(isOwner || isAdmin)) {
+            throw new RuntimeException("You are not allowed to verify tickets for this event");
+        }
+        if (ticket.isCheckedIn()) {
+            throw new RuntimeException("Ticket already marked present");
+        }
+
+        ticket.setCheckedIn(true);
+        ticket.setCheckedInAt(LocalDateTime.now());
+        ticket.setStatus(TicketStatus.USED);
+        ticketRepository.save(ticket);
+    }
+
+    @Override
+    @Transactional
+    public void markAbsent(Long ticketId, Authentication authentication) {
+
+        User user = userRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        Ticket ticket = ticketRepository.findById(ticketId)
+                .orElseThrow(() -> new NoTicketFoundException("Ticket not found"));
+
+        Event event = ticket.getEvent();
+
+        // authorization check
+        boolean isOwner = user.getUserId().equals(event.getUser().getUserId());
+        boolean isAdmin = user.getRole().equals(Role.ROLE_ADMIN);
+
+        if (!(isOwner || isAdmin)) {
+            throw new RuntimeException("You are not allowed to verify tickets for this event");
+        }
+
+        // must already be checked in
+        if (!ticket.isCheckedIn()) {
+            throw new RuntimeException("Ticket is not marked present");
+        }
+
+        // revert attendance
+        ticket.setCheckedIn(false);
+        ticket.setCheckedInAt(null);
+
+        // optional: revert status
+        ticket.setStatus(TicketStatus.ACTIVE);
     }
 }

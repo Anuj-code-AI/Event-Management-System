@@ -1,6 +1,7 @@
 package org.anuj.EvenTAura.dto;
 
 import lombok.*;
+import org.anuj.EvenTAura.model.EventStatus;
 
 import java.time.LocalDate;
 
@@ -16,4 +17,5 @@ public class EventSummaryResponse {
     private String bannerUrl;
     private String category;
     private int ticketsAvailable;
+    private EventStatus eventStatus;
 }

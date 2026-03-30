@@ -46,10 +46,10 @@ public class SecurityConfig {
                                 "/api/v1/event/ticket-updates",
                                 "/api/v1/event/getEvent/**",
                                 "/api/v1/event/getAllEvents/**",
-                                "/api/v1/event/getAllEvents",
-                                "/eventDetail/**","/myEvents",
+                                "/api/v1/event/getAllEvents","/api/v1/event/getAllApprovedEvents/**","/api/v1/event/getAllApprovedEvents",
+                                "/registerForEvent/**","/hostedEvents/**","/adminPage","/moments","/campusEvents","/eventDetails/**",
                                 "/","/login","/register","/favicon.ico","/favicon.ico/**"
-                                ,"/profile","/createEvent","/oauth","/aboutUs","/tickets","/customEvent",
+                                ,"/profile","/createEvent","/oauth","/aboutUs","/tickets","/customEvent","/becomeOrganizer",
                                 "/uploads/**","/css/**","/js/**","/images/**", "/api/v1/tickets/*/qr").permitAll()
                     .anyRequest().authenticated()
 

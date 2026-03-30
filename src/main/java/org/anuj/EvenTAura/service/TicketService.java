@@ -1,10 +1,7 @@
 package org.anuj.EvenTAura.service;
 
 import jakarta.validation.Valid;
-import org.anuj.EvenTAura.dto.TicketCancelResponse;
-import org.anuj.EvenTAura.dto.TicketCheckResponse;
-import org.anuj.EvenTAura.dto.TicketRequest;
-import org.anuj.EvenTAura.dto.TicketResponse;
+import org.anuj.EvenTAura.dto.*;
 import org.anuj.EvenTAura.model.Ticket;
 import org.springframework.data.domain.Page;
 import org.springframework.security.core.Authentication;
@@ -25,5 +22,11 @@ public interface TicketService {
     TicketCancelResponse cancelTicket(Long ticketId, Authentication auth);
 
     TicketResponse getMyTicket(Long ticketId);
+
+    Page<AudienceResponse> audienceList(int page,int size, Long eventId, Authentication authentication);
+
+    void markPresent(Long ticketId, Authentication authentication);
+
+    void markAbsent(Long ticketId, Authentication authentication);
 }
 

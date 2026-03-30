@@ -75,7 +75,7 @@
     <nav class="nav-links">
         <a href="/">Home</a>
         <a href="/myEvents">Events</a>
-        <a href="#">Categories</a>
+        <a href="#ceModeBar">Categories</a>
         <a href="/aboutUs">About Us</a>
     </nav>
     <div class="search-bar">
@@ -111,7 +111,7 @@
     <div class="mobile-nav-links">
         <a href="/"            class="mobile-nav-link"><span class="mnl-icon">🏠</span>Home</a>
         <a href="/myEvents"     class="mobile-nav-link"><span class="mnl-icon">🔥</span>Events</a>
-        <a href="#"            class="mobile-nav-link"><span class="mnl-icon">🏷️</span>Categories</a>
+        <a href="#ceModeBar"            class="mobile-nav-link"><span class="mnl-icon">🏷️</span>Categories</a>
         <a href="/aboutUs"     class="mobile-nav-link"><span class="mnl-icon">ℹ️</span>About Us</a>
         <a href="/createEvent" class="mobile-nav-link"><span class="mnl-icon">📅</span>Create Event</a>
         <a href="/tickets"     class="mobile-nav-link"><span class="mnl-icon">🎟️</span>My Tickets</a>
@@ -448,7 +448,7 @@
             </div>
         </div>
         <div class="footer-links">
-            <div class="footer-col"><h4>Explore</h4><a href="/">Trending Events</a><a href="#">Upcoming Events</a><a href="#">Categories</a><a href="#">Cities</a></div>
+            <div class="footer-col"><h4>Explore</h4><a href="/">Trending Events</a><a href="#">Upcoming Events</a><a href="#ceModeBar">Categories</a><a href="#">Cities</a></div>
             <div class="footer-col"><h4>Organizers</h4><a href="/createEvent">Create Event</a><a href="#">Pricing</a><a href="#">Dashboard</a><a href="#">Analytics</a></div>
             <div class="footer-col"><h4>Company</h4><a href="/aboutUs">About Us</a><a href="#">Blog</a><a href="#">Careers</a><a href="#">Press</a></div>
             <div class="footer-col"><h4>Support</h4><a href="#">Help Center</a><a href="#">Contact Us</a><a href="#">Privacy Policy</a><a href="#">Terms of Service</a></div>
@@ -907,6 +907,7 @@
             const method   = isUpdate ? 'PATCH' : 'POST';
 
             try {
+
                 const response = await fetch(endpoint, {
                     method,
                     headers: { 'Authorization': `Bearer ${token}` },

@@ -10,11 +10,9 @@ import org.anuj.EvenTAura.exception.NoEventFoundException;
 import org.anuj.EvenTAura.exception.UnauthorizedException;
 import org.anuj.EvenTAura.exception.UserNotFoundException;
 import org.anuj.EvenTAura.mapper.EventMapper;
-import org.anuj.EvenTAura.model.Event;
-import org.anuj.EvenTAura.model.Role;
-import org.anuj.EvenTAura.model.Ticket;
-import org.anuj.EvenTAura.model.User;
+import org.anuj.EvenTAura.model.*;
 import org.anuj.EvenTAura.repository.EventRepository;
+import org.anuj.EvenTAura.repository.HostProfileRepository;
 import org.anuj.EvenTAura.repository.TicketRepository;
 import org.anuj.EvenTAura.repository.UserRepository;
 import org.anuj.EvenTAura.util.SseEmitterHolder;
@@ -25,6 +23,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -33,6 +32,7 @@ public class EventServiceImpl implements EventService {
     private final UserRepository userRepository;
     private final EventRepository eventRepository;
     private final TicketRepository ticketRepository;
+    private final HostProfileRepository hostProfileRepository;
 
 
     @Override
@@ -42,10 +42,20 @@ public class EventServiceImpl implements EventService {
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
-
+        if (req.getTotalTickets() <= 0) {
+            throw new IllegalArgumentException("Total tickets must be greater than 0");
+        }
+        if (req.getTicketsAvailable() < 0) {
+            throw new IllegalArgumentException("Tickets available cannot be negative");
+        }
         if (req.getTicketsAvailable() > req.getTotalTickets()) {
             throw new IllegalArgumentException("Tickets available cannot exceed total tickets");
         }
+        HostProfile profile = hostProfileRepository
+                .findTopByUserOrderByAppliedAtDesc(user)
+                .filter(p -> p.getStatus() == Status.APPROVED)
+                .orElseThrow(() -> new UnauthorizedException("Apply to become a host first"));
+
         Event event = EventMapper.toEntity(req, user);
 
         Event savedEvent = eventRepository.save(event);
@@ -128,7 +138,8 @@ public class EventServiceImpl implements EventService {
                         event.getEventDate(),
                         event.getBannerUrl(),
                         event.getCategory(),
-                        event.getTicketsAvailable()
+                        event.getTicketsAvailable(),
+                        event.getEventStatus()
                 ));
     }
 
@@ -166,6 +177,41 @@ public class EventServiceImpl implements EventService {
 
         return events.map(EventMapper::toResponse);
 
+    }
+
+    @Override
+    public Page<EventResponse> getHostedEventsForAdmin(int page, int size, Authentication auth) {
+        Sort sort = Sort.by("eventDate").ascending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        User user = userRepository.findByEmail(auth.getName())
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        if(user.getRole().equals(Role.ROLE_ADMIN)){
+            throw new UnauthorizedException("You can't axis events. You are not admin");
+        }
+        Page<Event> events = eventRepository.findAll(pageable);
+
+        if (events.isEmpty()) {
+            throw new NoEventFoundException("You didn't hosted any event yet!!");
+        }
+
+        return events.map(EventMapper::toResponse);
+    }
+
+    @Override public Page<EventSummaryResponse> getAllApprovedEvents(int page, int size) {
+        Sort sort = Sort.by("eventDate").ascending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return eventRepository.findByEventStatus(
+                EventStatus.APPROVED,pageable)
+                .map(event -> new EventSummaryResponse(
+                        event.getEventId(),
+                        event.getTitle(),
+                        event.getLocation(),
+                        event.getEventDate(),
+                        event.getBannerUrl(),
+                        event.getCategory(),
+                        event.getTicketsAvailable(),
+                        event.getEventStatus() ));
     }
 
 }

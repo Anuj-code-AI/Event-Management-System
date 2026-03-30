@@ -3,6 +3,7 @@ package org.anuj.EvenTAura.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.anuj.EvenTAura.dto.AudienceResponse;
 import org.anuj.EvenTAura.dto.TicketCheckResponse;
 import org.anuj.EvenTAura.dto.TicketRequest;
 import org.anuj.EvenTAura.dto.TicketResponse;
@@ -18,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/tickets/")
+@RequestMapping("/api/v1/tickets")
 @RequiredArgsConstructor
 public class TicketController {
     private final TicketService ticketService;
@@ -43,7 +44,7 @@ public class TicketController {
     }
 
     @PostMapping("/checkin/{ticketCode}")
-    public ResponseEntity<?> checkTicket(@PathVariable Long ticketCode,Authentication auth){
+    public ResponseEntity<TicketCheckResponse> checkTicket(@PathVariable Long ticketCode,Authentication auth){
         return ResponseEntity.ok(ticketService.checkin(ticketCode,auth));
     }
 
@@ -74,5 +75,27 @@ public class TicketController {
                 .header("Content-Type", "image/png")
                 .body(qrImage);
     }
+
+    @GetMapping("/audienceList/{eventId}")
+    public ResponseEntity<Page<AudienceResponse>> audienceList(
+            @PathVariable Long eventId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            Authentication authentication){
+        return ResponseEntity.ok(ticketService.audienceList(page,size,eventId,authentication));
+    }
+
+    @PostMapping("/{ticketId}/markPresent")
+    public ResponseEntity<?> markPresent(@PathVariable Long ticketId,Authentication authentication){
+        ticketService.markPresent(ticketId,authentication);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{ticketId}/markAbsent")
+    public ResponseEntity<?> markAbsent(@PathVariable Long ticketId,Authentication authentication){
+        ticketService.markAbsent(ticketId,authentication);
+        return ResponseEntity.noContent().build();
+    }
+
 
 }

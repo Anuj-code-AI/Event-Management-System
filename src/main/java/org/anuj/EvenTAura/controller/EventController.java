@@ -85,6 +85,14 @@ public class EventController {
         return ResponseEntity.ok(eventService.getAllEvents(page, size));
     }
 
+    @GetMapping("/getAllApprovedEvents")
+    public ResponseEntity<Page<EventSummaryResponse>> getAllApprovedEvents(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return ResponseEntity.ok(eventService.getAllApprovedEvents(page, size));
+    }
+
     //Event hosted
     @GetMapping("/getHostedEvents")
     public ResponseEntity<Page<EventResponse>> getHostedEvents(
@@ -102,5 +110,14 @@ public class EventController {
             Authentication auth){
         return ResponseEntity.ok(eventService.getJoinedEvents(page,size,auth));
     }
+
+    @GetMapping("/getHostedEventsForAdmin")
+    public ResponseEntity<Page<EventResponse>> getHostedEventsForAdmin(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            Authentication auth){
+        return ResponseEntity.ok(eventService.getHostedEventsForAdmin(page,size,auth));
+    }
+
 }
 

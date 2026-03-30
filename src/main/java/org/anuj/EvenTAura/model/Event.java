@@ -43,4 +43,7 @@ public class Event {
     @ManyToOne
     private User user;
 
+    @Enumerated(EnumType.STRING)
+    private EventStatus eventStatus;
+
 }

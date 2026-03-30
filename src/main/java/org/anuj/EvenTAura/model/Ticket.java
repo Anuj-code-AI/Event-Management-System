@@ -22,6 +22,7 @@ public class Ticket {
     @Column(unique = true, nullable = false)
     private String ticketCode;   // unique number / QR code
 
+    @Column(nullable = false)
     private boolean checkedIn = false;
 
     private LocalDateTime issuedAt;

@@ -144,6 +144,7 @@
             <button class="tab-btn" data-tab="password">🔒 Change Password</button>
             <button class="tab-btn" data-tab="notifications">🔔 Notifications</button>
             <button id="logoutBtn" class="tab-btn" data-tab="logout">❌ Logout</button>
+            <a href="/becomeOrganizer" class="tab-btn" data-tab="logout">🥇 Become Host</a>
         </nav>
 
         <!-- ── TAB: Profile Info ── -->
@@ -472,7 +473,7 @@
         <p>Delhi · Mumbai · Bangalore · Hyderabad · Chennai · Pune · Goa</p>
     </div>
 </footer>
-
+<script th:src="@{/basic.js}"></script>
 <script>
     /* ── Tabs ── */
     document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -537,26 +538,6 @@
         });
     }
 
-    /* ── Mobile nav ── */
-    const hamburgerBtn     = document.getElementById('hamburgerBtn');
-    const mobileNav        = document.getElementById('mobileNav');
-    const mobileNavOverlay = document.getElementById('mobileNavOverlay');
-    const mobileNavClose   = document.getElementById('mobileNavClose');
-    function openMobileNav() {
-        mobileNav.classList.add('open'); mobileNavOverlay.classList.add('open');
-        hamburgerBtn.setAttribute('aria-expanded', 'true'); hamburgerBtn.classList.add('open');
-        document.body.style.overflow = 'hidden';
-    }
-    function closeMobileNav() {
-        mobileNav.classList.remove('open'); mobileNavOverlay.classList.remove('open');
-        hamburgerBtn.setAttribute('aria-expanded', 'false'); hamburgerBtn.classList.remove('open');
-        document.body.style.overflow = '';
-    }
-    hamburgerBtn.addEventListener('click', openMobileNav);
-    mobileNavClose.addEventListener('click', closeMobileNav);
-    mobileNavOverlay.addEventListener('click', closeMobileNav);
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMobileNav(); });
-
     /* ── Mobile nav auth state ── */
     if (localStorage.getItem('accessToken')) {
         document.getElementById('mobileNavGuest').style.display = 'none';
@@ -616,7 +597,7 @@
                         <span>Ticket Code</span>
                         <strong>#${t.ticketCode || t.ticketId}</strong>
                     </div>
-                    <a href="/eventDetail/${ev.eventId || ''}" class="ticket-action-btn">View Event</a>
+                    <a href="/registerForEvent/${ev.eventId || ''}" class="ticket-action-btn">View Event</a>
                 </div>
             </div>
             <div class="ticket-tear"></div>
@@ -866,7 +847,6 @@
     loadHosted(0);
 </script>
 <script th:src="@{/js/profile.js}"></script>
-<script th:src="@{/js/clock.js}"></script>
 
 </body>
 </html>

@@ -1,0 +1,1455 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <title>Event Details — Eventaura</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <!-- jsQR for QR decoding -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsqr/1.4.0/jsQR.min.js"></script>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+
+    <style>
+        /* ══════════════════════════════════════
+           PROFILE SIDEBAR (shared from index)
+           ══════════════════════════════════════ */
+        .profile-overlay {
+            display:none; position:fixed; inset:0;
+            background:rgba(0,0,0,0.45); z-index:500;
+            opacity:0; transition:opacity 0.3s ease; backdrop-filter:blur(2px);
+        }
+        .profile-overlay.open { display:block; opacity:1; }
+        .profile-sidebar {
+            position:fixed; top:0; right:0; bottom:0;
+            width:min(340px,90vw); background:#fff; z-index:600;
+            display:flex; flex-direction:column;
+            box-shadow:-8px 0 40px rgba(0,0,0,0.18);
+            transform:translateX(100%);
+            transition:transform 0.38s cubic-bezier(0.23,1,0.32,1);
+            overflow-y:auto;
+        }
+        .profile-sidebar.open { transform:translateX(0); }
+        .psb-header { display:flex; align-items:center; justify-content:space-between; padding:20px 20px 16px; border-bottom:1px solid #e5e7eb; flex-shrink:0; }
+        .psb-title { font-family:'Syne',sans-serif; font-size:18px; font-weight:800; color:#1a1a2e; }
+        .psb-close { width:36px; height:36px; border-radius:50%; background:#f5f6fb; border:1.5px solid #e5e7eb; font-size:16px; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:background 0.2s,color 0.2s; color:#6b7280; flex-shrink:0; }
+        .psb-close:hover { background:#fee2e8; color:#ff4d6d; border-color:#ff4d6d; }
+        .psb-user-card { padding:16px; background:linear-gradient(135deg,#fff0f3,#fff8f0); border-radius:14px; border:1.5px solid #fecdd3; display:flex; align-items:center; gap:14px; }
+        .psb-avatar { width:52px; height:52px; border-radius:50%; background:linear-gradient(135deg,#ff4d6d,#ffa500); display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; box-shadow:0 4px 12px rgba(255,77,109,0.3); }
+        .psb-user-info { flex:1; min-width:0; }
+        .psb-user-name { font-family:'Syne',sans-serif; font-size:15px; font-weight:700; color:#1a1a2e; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .psb-user-role { font-size:12px; color:#ff4d6d; font-weight:600; margin-top:2px; }
+        .psb-guest-card { padding:16px; background:#f5f6fb; border-radius:14px; border:1.5px solid #e5e7eb; text-align:center; }
+        .psb-guest-card p { font-size:13px; color:#6b7280; margin-bottom:12px; }
+        .psb-guest-btns { display:flex; gap:10px; }
+        .psb-guest-btns a { flex:1; padding:9px; border-radius:10px; font-size:13px; font-weight:600; text-align:center; transition:all 0.2s; }
+        .psb-btn-login { background:#f5f6fb; color:#1a1a2e; border:1.5px solid #e5e7eb; }
+        .psb-btn-login:hover { border-color:#ff4d6d; color:#ff4d6d; }
+        .psb-btn-signup { background:linear-gradient(135deg,#ff4d6d,#ffa500); color:#fff; border:none; box-shadow:0 4px 12px rgba(255,77,109,0.3); }
+        .psb-btn-signup:hover { opacity:0.9; transform:translateY(-1px); }
+        .psb-nav { display:flex; flex-direction:column; padding:6px 10px; gap:2px; }
+        .psb-nav-item { display:flex; align-items:center; gap:12px; padding:11px 12px; border-radius:12px; font-size:14px; font-weight:500; color:#1a1a2e; text-decoration:none; transition:background 0.18s,color 0.18s; cursor:pointer; }
+        .psb-nav-item:hover { background:#fff0f3; color:#ff4d6d; }
+        .psb-nav-icon { width:34px; height:34px; border-radius:9px; background:#f5f6fb; border:1.5px solid #e5e7eb; display:flex; align-items:center; justify-content:center; font-size:15px; flex-shrink:0; transition:background 0.18s,border-color 0.18s; }
+        .psb-nav-item:hover .psb-nav-icon { background:#fee2e8; border-color:#fecdd3; }
+        .psb-nav-item.logout { color:#ef4444; }
+        .psb-nav-item.logout .psb-nav-icon { background:#fef2f2; border-color:#fecaca; }
+        .psb-nav-item.logout:hover { background:#fef2f2; }
+        .psb-divider { height:1px; background:#e5e7eb; margin:4px 16px; flex-shrink:0; }
+        .psb-section-label { padding:10px 22px 4px; font-size:10px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase; color:#6b7280; flex-shrink:0; }
+        .psb-admin-badge { margin-left:auto; background:#7c3aed; color:#fff; font-size:10px; font-weight:700; padding:2px 8px; border-radius:50px; white-space:nowrap; }
+        .psb-footer { padding:16px; margin-top:auto; border-top:1px solid #e5e7eb; flex-shrink:0; }
+        .psb-footer-text { font-size:11px; color:#9ca3af; text-align:center; }
+        .psb-skeleton { padding:16px; display:flex; align-items:center; gap:14px; }
+        .psb-skeleton-avatar { width:52px; height:52px; border-radius:50%; background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%); background-size:200% 100%; animation:shimmer 1.2s infinite; flex-shrink:0; }
+        .psb-skeleton-lines { flex:1; display:flex; flex-direction:column; gap:8px; }
+        .psb-skeleton-line { height:12px; border-radius:6px; background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%); background-size:200% 100%; animation:shimmer 1.2s infinite; }
+        .psb-skeleton-line.short { width:60%; }
+        @keyframes shimmer { to { background-position:-200% 0; } }
+
+        /* ══════════════════════════════════════
+           PAGE LAYOUT
+           ══════════════════════════════════════ */
+        .page-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 32px 40px 60px;
+        }
+
+        /* ── Breadcrumb ── */
+        .breadcrumb {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 13px; color: var(--muted);
+            margin-bottom: 24px;
+        }
+        .breadcrumb a { color: var(--primary); font-weight: 500; }
+        .breadcrumb a:hover { text-decoration: underline; }
+        .breadcrumb .sep { color: var(--border); }
+
+        /* ── Event hero strip ── */
+        .event-hero {
+            background: var(--surface);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            margin-bottom: 28px;
+            display: flex;
+            gap: 0;
+        }
+        .event-hero-img {
+            width: 260px;
+            flex-shrink: 0;
+            object-fit: cover;
+            object-position: center top;
+        }
+        .event-hero-info {
+            padding: 28px 32px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 12px;
+        }
+        .event-hero-badge {
+            display: inline-block;
+            padding: 4px 14px;
+            background: #fff0f3;
+            color: var(--primary);
+            border: 1.5px solid #fecdd3;
+            border-radius: 50px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            align-self: flex-start;
+        }
+        .event-hero-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--text);
+            line-height: 1.2;
+        }
+        .event-hero-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 18px;
+        }
+        .event-hero-meta span {
+            font-size: 13px;
+            color: var(--muted);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .event-stat-chips {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 4px;
+        }
+        .stat-chip {
+            padding: 6px 16px;
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: 600;
+            border: 1.5px solid var(--border);
+            background: var(--bg);
+            color: var(--text);
+        }
+        .stat-chip.green { background: #f0fdf4; border-color: #bbf7d0; color: #16a34a; }
+        .stat-chip.red   { background: #fef2f2; border-color: #fecaca; color: #dc2626; }
+        .stat-chip.blue  { background: #eff6ff; border-color: #bfdbfe; color: #2563eb; }
+
+        /* ── Toolbar ── */
+        .toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .toolbar-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .toolbar h2 {
+            font-family: 'Syne', sans-serif;
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--text);
+        }
+        .attendee-count {
+            background: var(--bg);
+            border: 1.5px solid var(--border);
+            border-radius: 50px;
+            padding: 3px 12px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--muted);
+        }
+        .toolbar-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        /* Search input in toolbar */
+        .search-inline {
+            position: relative;
+        }
+        .search-inline input {
+            padding: 9px 16px 9px 36px;
+            border-radius: 50px;
+            border: 1.5px solid var(--border);
+            background: var(--bg);
+            font-size: 13px;
+            font-family: inherit;
+            outline: none;
+            width: 200px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .search-inline input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(255,77,109,0.1); }
+        .search-inline .si-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 13px; pointer-events: none; }
+
+        /* Filter pills */
+        .filter-pill {
+            padding: 8px 16px;
+            border-radius: 50px;
+            border: 1.5px solid var(--border);
+            background: var(--bg);
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--muted);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .filter-pill:hover  { border-color: var(--primary); color: var(--primary); }
+        .filter-pill.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+
+        /* QR Button */
+        .qr-scan-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: 50px;
+            background: linear-gradient(135deg, #ff4d6d, #ffa500);
+            color: #fff;
+            font-size: 13px;
+            font-weight: 700;
+            font-family: 'Syne', sans-serif;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(255,77,109,0.35);
+            transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+            white-space: nowrap;
+        }
+        .qr-scan-btn:hover  { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(255,77,109,0.45); }
+        .qr-scan-btn:active { transform: scale(0.96); }
+        .qr-scan-btn svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+        /* ── Audience table ── */
+        .audience-table-wrap {
+            background: var(--surface);
+            border-radius: 18px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+        .audience-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .audience-table thead th {
+            padding: 14px 20px;
+            text-align: left;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            color: var(--muted);
+            background: var(--bg);
+            border-bottom: 1.5px solid var(--border);
+            white-space: nowrap;
+        }
+        .audience-table tbody tr {
+            border-bottom: 1px solid var(--border);
+            transition: background 0.15s;
+        }
+        .audience-table tbody tr:last-child { border-bottom: none; }
+        .audience-table tbody tr:hover { background: #fafafa; }
+        .audience-table td {
+            padding: 14px 20px;
+            font-size: 14px;
+            vertical-align: middle;
+        }
+
+        .td-avatar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .row-avatar {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ff4d6d, #ffa500);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px; font-weight: 700; color: #fff;
+            flex-shrink: 0;
+        }
+        .row-name  { font-weight: 600; color: var(--text); font-size: 14px; }
+        .row-email { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+        /* Status badge */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+        }
+        .status-badge.confirmed { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+        .status-badge.pending   { background: #fffbeb; color: #d97706; border: 1px solid #fde68a; }
+        .status-badge.cancelled { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+        .status-badge.waitlisted{ background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }
+
+        /* CheckIn badge */
+        .checkin-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+        .checkin-badge.yes { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+        .checkin-badge.no  { background: #f5f6fb; color: var(--muted);  border: 1px solid var(--border); }
+
+        /* Mark buttons */
+        .mark-btn {
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .mark-btn.present {
+            background: #f0fdf4;
+            color: #16a34a;
+            border: 1.5px solid #bbf7d0;
+        }
+        .mark-btn.present:hover {
+            background: #16a34a;
+            color: #fff;
+            border-color: #16a34a;
+        }
+        .mark-btn.absent {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1.5px solid #fecaca;
+        }
+        .mark-btn.absent:hover {
+            background: #dc2626;
+            color: #fff;
+            border-color: #dc2626;
+        }
+        .mark-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        /* action cell gap */
+        .action-cell { display: flex; gap: 8px; align-items: center; }
+
+        /* ── Pagination ── */
+        .pagination {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            border-top: 1px solid var(--border);
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .pagination-info { font-size: 13px; color: var(--muted); }
+        .pagination-btns { display: flex; gap: 6px; }
+        .pg-btn {
+            width: 34px; height: 34px;
+            border-radius: 8px;
+            border: 1.5px solid var(--border);
+            background: var(--bg);
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s;
+        }
+        .pg-btn:hover   { border-color: var(--primary); color: var(--primary); }
+        .pg-btn.active  { background: var(--primary); border-color: var(--primary); color: #fff; }
+        .pg-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        /* ── Skeleton rows ── */
+        .skel-row td { padding: 16px 20px; }
+        .skel-line {
+            height: 12px; border-radius: 6px;
+            background: linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.2s infinite;
+        }
+        .skel-circle {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.2s infinite;
+            flex-shrink: 0;
+        }
+
+        /* ── QR Modal ── */
+        .modal-overlay {
+            display: none;
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 700;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+        .modal-overlay.open { display: flex; }
+
+        .qr-modal {
+            background: var(--surface);
+            border-radius: 24px;
+            width: min(480px, 94vw);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+            overflow: hidden;
+            animation: modalIn 0.3s cubic-bezier(0.23,1,0.32,1);
+        }
+        @keyframes modalIn {
+            from { opacity:0; transform:scale(0.92) translateY(20px); }
+            to   { opacity:1; transform:scale(1)    translateY(0); }
+        }
+
+        .qr-modal-header {
+            padding: 20px 24px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border);
+        }
+        .qr-modal-header h3 {
+            font-family: 'Syne', sans-serif;
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--text);
+        }
+        .qr-modal-close {
+            width: 34px; height: 34px;
+            border-radius: 50%;
+            background: var(--bg);
+            border: 1.5px solid var(--border);
+            font-size: 15px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            color: var(--muted);
+            transition: background 0.2s, color 0.2s;
+        }
+        .qr-modal-close:hover { background: #fee2e8; color: var(--primary); border-color: var(--primary); }
+
+        .qr-modal-body { padding: 24px; }
+
+        /* Camera feed */
+        .qr-scanner-area {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1;
+            background: #000;
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+        #qrVideo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .qr-frame {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+        }
+        .qr-frame-box {
+            width: 55%;
+            aspect-ratio: 1;
+            border: 3px solid var(--primary);
+            border-radius: 12px;
+            box-shadow: 0 0 0 9999px rgba(0,0,0,0.45);
+            animation: pulse-border 1.5s ease-in-out infinite;
+        }
+        @keyframes pulse-border {
+            0%,100% { border-color: var(--primary); }
+            50% { border-color: var(--accent); }
+        }
+        .qr-scan-line {
+            position: absolute;
+            left: 22.5%; right: 22.5%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+            animation: scan-move 1.8s ease-in-out infinite;
+            border-radius: 2px;
+        }
+        @keyframes scan-move {
+            0%   { top: 22.5%; }
+            100% { top: 77.5%; }
+        }
+        .qr-status {
+            text-align: center;
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 16px;
+            min-height: 20px;
+        }
+
+        /* Result card inside modal */
+        .qr-result-card {
+            display: none;
+            padding: 16px;
+            border-radius: 14px;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 0;
+        }
+        .qr-result-card.success { background: #f0fdf4; border: 1.5px solid #bbf7d0; display: flex; }
+        .qr-result-card.error   { background: #fef2f2; border: 1.5px solid #fecaca; display: flex; }
+        .qr-result-card.already { background: #fffbeb; border: 1.5px solid #fde68a; display: flex; }
+        .qr-result-icon { font-size: 28px; flex-shrink: 0; }
+        .qr-result-info { flex: 1; }
+        .qr-result-name  { font-weight: 700; font-size: 15px; color: var(--text); }
+        .qr-result-email { font-size: 12px; color: var(--muted); }
+        .qr-result-msg   { font-size: 12px; font-weight: 600; margin-top: 3px; }
+        .qr-result-card.success .qr-result-msg { color: #16a34a; }
+        .qr-result-card.error   .qr-result-msg { color: #dc2626; }
+        .qr-result-card.already .qr-result-msg { color: #d97706; }
+
+        .qr-modal-footer {
+            padding: 0 24px 24px;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        .qr-modal-footer button {
+            padding: 10px 22px;
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .qr-btn-stop {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1.5px solid #fecaca;
+        }
+        .qr-btn-stop:hover { background: #dc2626; color: #fff; }
+        .qr-btn-close-modal {
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            box-shadow: 0 4px 12px rgba(255,77,109,0.3);
+        }
+        .qr-btn-close-modal:hover { background: var(--primary-dk); }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 30px; right: 30px;
+            padding: 14px 22px;
+            border-radius: 14px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #fff;
+            z-index: 9999;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            transform: translateY(80px);
+            opacity: 0;
+            transition: transform 0.35s cubic-bezier(0.23,1,0.32,1), opacity 0.35s ease;
+            pointer-events: none;
+            display: flex; align-items: center; gap: 10px;
+            max-width: 340px;
+        }
+        .toast.show { transform: translateY(0); opacity: 1; }
+        .toast.success { background: #16a34a; }
+        .toast.error   { background: #dc2626; }
+        .toast.info    { background: #2563eb; }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        .empty-state .empty-icon { font-size: 48px; margin-bottom: 14px; }
+        .empty-state h3 { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+        .empty-state p  { font-size: 14px; color: var(--muted); }
+
+        /* ── Responsive ── */
+        @media (max-width: 900px) {
+            .page-wrapper { padding: 24px 20px 48px; }
+            .event-hero { flex-direction: column; }
+            .event-hero-img { width: 100%; height: 200px; }
+        }
+        @media (max-width: 600px) {
+            .audience-table thead th:nth-child(3),
+            .audience-table td:nth-child(3) { display: none; }
+            .audience-table thead th:nth-child(4),
+            .audience-table td:nth-child(4) { display: none; }
+            .toolbar { flex-direction: column; align-items: stretch; }
+            .toolbar-right { flex-wrap: wrap; }
+            .search-inline input { width: 100%; }
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- ═══════════════════ HEADER ═══════════════════ -->
+<header class="header">
+    <div class="logo">
+        <span class="logo-text">Event<em>aura</em></span>
+    </div>
+    <nav class="nav-links">
+        <a href="/">Home</a>
+        <a href="/moments">Moments</a>
+        <a href="/tickets">Tickets</a>
+        <a href="/aboutUs">About Us</a>
+    </nav>
+    <div class="search-bar">
+        <span class="search-icon">🔍</span>
+        <input type="text" placeholder="Search events, cities...">
+    </div>
+    <div class="header-right">
+        <div class="time" id="clock"></div>
+        <button class="icon-btn" aria-label="Notifications">
+            <span>🔔</span><span class="badge">3</span>
+        </button>
+        <div id="guestActions">
+            <a href="/login"    class="btn primary">Login</a>
+            <a href="/register" class="btn primary">Sign Up</a>
+        </div>
+        <div id="userActions" style="display:none;">
+            <button class="icon-btn profile-btn" id="profileSidebarBtn" aria-label="Open profile menu">
+                <span>👤</span>
+            </button>
+        </div>
+        <button class="hamburger" id="hamburgerBtn" aria-label="Open menu">
+            <span></span><span></span><span></span>
+        </button>
+    </div>
+</header>
+
+<!-- Mobile nav overlay -->
+<div class="mobile-nav-overlay" id="mobileNavOverlay"></div>
+
+<!-- Mobile Drawer -->
+<nav class="mobile-nav" id="mobileNav" aria-label="Mobile navigation">
+    <div class="mobile-nav-header">
+        <span class="logo-text">Event<em>aura</em></span>
+        <button class="mobile-nav-close" id="mobileNavClose" aria-label="Close menu">✕</button>
+    </div>
+    <div class="mobile-search">
+        <span>🔍</span>
+        <input type="text" placeholder="Search events, cities...">
+    </div>
+    <div id="mnSkeleton" style="display:none; margin:8px 10px 0;">
+        <div class="psb-skeleton">
+            <div class="psb-skeleton-avatar"></div>
+            <div class="psb-skeleton-lines">
+                <div class="psb-skeleton-line"></div>
+                <div class="psb-skeleton-line short"></div>
+            </div>
+        </div>
+    </div>
+    <div id="mnUserCard" style="display:none; margin:8px 10px 0;">
+        <div class="psb-user-card">
+            <div class="psb-avatar">👤</div>
+            <div class="psb-user-info">
+                <div class="psb-user-name" id="mnUserName">User</div>
+                <div class="psb-user-role" id="mnUserRole">Member</div>
+            </div>
+        </div>
+    </div>
+    <div id="mnGuestCard" style="margin:8px 10px 0;">
+        <div class="psb-guest-card">
+            <p>Sign in to access your events, tickets and profile.</p>
+            <div class="psb-guest-btns">
+                <a href="/login" class="psb-btn-login">Login</a>
+                <a href="/register" class="psb-btn-signup">Sign Up</a>
+            </div>
+        </div>
+    </div>
+    <div id="mn-my-account" style="display:none;">
+        <div class="psb-section-label">My Account</div>
+        <div class="mobile-nav-links" style="padding-top:0;">
+            <a href="/profile"      class="mobile-nav-link"><span class="mnl-icon">👤</span>Profile</a>
+            <a href="/"             class="mobile-nav-link"><span class="mnl-icon">🏠</span>Home</a>
+            <a href="/moments"      class="mobile-nav-link"><span class="mnl-icon">📸</span>Moments</a>
+            <a href="/tickets"      class="mobile-nav-link"><span class="mnl-icon">🎟️</span>My Tickets</a>
+            <a href="/aboutUs"      class="mobile-nav-link"><span class="mnl-icon">ℹ️</span>About Us</a>
+        </div>
+    </div>
+    <div id="mn-admin" style="display:none;">
+        <div class="psb-divider" style="margin:4px 16px;"></div>
+        <div class="psb-section-label">Admin</div>
+        <div class="mobile-nav-links" style="padding-top:0;">
+            <a href="/adminPage"     class="mobile-nav-link"><span class="mnl-icon">🛡️</span>Admin Page<span class="psb-admin-badge">Admin</span></a>
+            <a href="/campusEvents"  class="mobile-nav-link"><span class="mnl-icon">📋</span>Campus Events<span class="psb-admin-badge">Admin</span></a>
+        </div>
+    </div>
+    <div id="mn-host" style="display:none;">
+        <div class="psb-divider" style="margin:4px 16px;"></div>
+        <div class="psb-section-label">Host</div>
+        <div class="mobile-nav-links" style="padding-top:0;">
+            <a href="/createEvent"   class="mobile-nav-link"><span class="mnl-icon">📅</span>Create Event</a>
+            <a href="/hostedEvents"  class="mobile-nav-link"><span class="mnl-icon">🎪</span>Hosted Events</a>
+        </div>
+    </div>
+    <div id="mn-guest-nav">
+        <div class="mobile-nav-links">
+            <a href="/"        class="mobile-nav-link"><span class="mnl-icon">🏠</span>Home</a>
+            <a href="/moments" class="mobile-nav-link"><span class="mnl-icon">📸</span>Moments</a>
+            <a href="/aboutUs" class="mobile-nav-link"><span class="mnl-icon">ℹ️</span>About Us</a>
+        </div>
+    </div>
+    <div class="mobile-nav-footer">
+        <div id="mobileNavGuest">
+            <a href="/login"    class="btn primary" style="text-align:center;display:block;">Login</a>
+            <a href="/register" class="btn primary" style="text-align:center;display:block;margin-top:10px;">Sign Up</a>
+        </div>
+        <div id="mobileNavUser" style="display:none;">
+            <button onclick="logout()" class="btn primary" style="text-align:center;display:block;background:#ef4444;border-color:#ef4444;">Sign Out</button>
+        </div>
+    </div>
+</nav>
+
+<!-- ═══════════════════ PROFILE SIDEBAR ═══════════════════ -->
+<div class="profile-overlay" id="profileOverlay"></div>
+<aside class="profile-sidebar" id="profileSidebar" aria-label="Profile menu">
+    <div class="psb-header">
+        <span class="psb-title">My Account</span>
+        <button class="psb-close" id="profileSidebarClose">✕</button>
+    </div>
+    <div id="psbSkeleton" style="display:none; margin:16px 16px 0;">
+        <div class="psb-skeleton">
+            <div class="psb-skeleton-avatar"></div>
+            <div class="psb-skeleton-lines">
+                <div class="psb-skeleton-line"></div>
+                <div class="psb-skeleton-line short"></div>
+            </div>
+        </div>
+    </div>
+    <div id="psbUserCard" style="display:none; margin:16px 16px 0;">
+        <div class="psb-user-card">
+            <div class="psb-avatar">👤</div>
+            <div class="psb-user-info">
+                <div class="psb-user-name" id="psbUserName">User</div>
+                <div class="psb-user-role" id="psbUserRole">Member</div>
+            </div>
+        </div>
+    </div>
+    <div id="psbGuestCard" style="margin:16px 16px 0;">
+        <div class="psb-guest-card">
+            <p>Sign in to access your events, tickets and profile.</p>
+            <div class="psb-guest-btns">
+                <a href="/login" class="psb-btn-login">Login</a>
+                <a href="/register" class="psb-btn-signup">Sign Up</a>
+            </div>
+        </div>
+    </div>
+    <div id="psb-my-account" style="display:none;">
+        <div class="psb-section-label">My Account</div>
+        <nav class="psb-nav" style="padding-top:0;">
+            <a href="/profile"  class="psb-nav-item"><span class="psb-nav-icon">👤</span><span>Profile</span></a>
+            <a href="/"         class="psb-nav-item"><span class="psb-nav-icon">🏠</span><span>Home</span></a>
+            <a href="/moments"  class="psb-nav-item"><span class="psb-nav-icon">📸</span><span>Moments</span></a>
+            <a href="/tickets"  class="psb-nav-item"><span class="psb-nav-icon">🎟️</span><span>My Tickets</span></a>
+            <a href="/aboutUs"  class="psb-nav-item"><span class="psb-nav-icon">ℹ️</span><span>About Us</span></a>
+        </nav>
+    </div>
+    <div id="psb-admin" style="display:none;">
+        <div class="psb-divider"></div>
+        <div class="psb-section-label">Admin</div>
+        <nav class="psb-nav" style="padding-top:0;">
+            <a href="/adminPage"    class="psb-nav-item"><span class="psb-nav-icon">🛡️</span><span>Admin Page</span><span class="psb-admin-badge">Admin</span></a>
+            <a href="/campusEvents" class="psb-nav-item"><span class="psb-nav-icon">📋</span><span>Campus Events</span><span class="psb-admin-badge">Admin</span></a>
+        </nav>
+    </div>
+    <div id="psb-host" style="display:none;">
+        <div class="psb-divider"></div>
+        <div class="psb-section-label">Host</div>
+        <nav class="psb-nav" style="padding-top:0;">
+            <a href="/createEvent"  class="psb-nav-item"><span class="psb-nav-icon">📅</span><span>Create Event</span></a>
+            <a href="/hostedEvents" class="psb-nav-item"><span class="psb-nav-icon">🎪</span><span>Hosted Events</span></a>
+        </nav>
+    </div>
+    <div id="psb-logout" style="display:none;">
+        <div class="psb-divider"></div>
+        <nav class="psb-nav" style="padding-top:0;">
+            <button onclick="logout()" class="psb-nav-item logout"><span class="psb-nav-icon">🚪</span><span>Logout</span></button>
+        </nav>
+    </div>
+    <div id="psb-guest-nav">
+        <div class="psb-section-label">Explore</div>
+        <nav class="psb-nav" style="padding-top:0;">
+            <a href="/"        class="psb-nav-item"><span class="psb-nav-icon">🔥</span><span>Browse Events</span></a>
+            <a href="/aboutUs" class="psb-nav-item"><span class="psb-nav-icon">ℹ️</span><span>About Us</span></a>
+        </nav>
+    </div>
+    <div class="psb-footer">
+        <p class="psb-footer-text">© 2026 Eventaura · Made with ❤️ in India</p>
+    </div>
+</aside>
+
+<!-- ═══════════════════ QR SCANNER MODAL ═══════════════════ -->
+<div class="modal-overlay" id="qrModal">
+    <div class="qr-modal">
+        <div class="qr-modal-header">
+            <h3>📷 Scan Ticket QR Code</h3>
+            <button class="qr-modal-close" id="qrModalClose">✕</button>
+        </div>
+        <div class="qr-modal-body">
+            <div class="qr-scanner-area">
+                <video id="qrVideo" autoplay playsinline muted></video>
+                <div class="qr-frame">
+                    <div class="qr-frame-box"></div>
+                </div>
+                <div class="qr-scan-line"></div>
+            </div>
+            <p class="qr-status" id="qrStatus">📡 Starting camera…</p>
+            <div class="qr-result-card" id="qrResultCard">
+                <div class="qr-result-icon" id="qrResultIcon">✅</div>
+                <div class="qr-result-info">
+                    <div class="qr-result-name"  id="qrResultName">—</div>
+                    <div class="qr-result-email" id="qrResultEmail">—</div>
+                    <div class="qr-result-msg"   id="qrResultMsg">—</div>
+                </div>
+            </div>
+        </div>
+        <div class="qr-modal-footer">
+            <button class="qr-btn-stop" id="qrBtnStop">Stop Camera</button>
+            <button class="qr-btn-close-modal" id="qrBtnCloseModal">Done</button>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════ TOAST ═══════════════════ -->
+<div class="toast" id="toast">
+    <span id="toastIcon">✅</span>
+    <span id="toastMsg">Success</span>
+</div>
+
+<!-- ═══════════════════ MAIN PAGE ═══════════════════ -->
+<main class="page-wrapper">
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+        <a href="/">🏠 Home</a>
+        <span class="sep">›</span>
+        <a href="/hostedEvents">Hosted Events</a>
+        <span class="sep">›</span>
+        <span id="bcEventTitle">Event Details</span>
+    </div>
+
+    <!-- Event hero -->
+    <div class="event-hero" id="eventHero">
+        <img id="eventBanner" class="event-hero-img" src="/images/placeholder.jpg" alt="Event Banner">
+        <div class="event-hero-info">
+            <span class="event-hero-badge" id="eventCategory">Tech</span>
+            <h1 class="event-hero-title" id="eventTitle">Loading event…</h1>
+            <div class="event-hero-meta">
+                <span>📅 <span id="eventDate">—</span></span>
+                <span>📍 <span id="eventLocation">—</span></span>
+                <span>⏰ <span id="eventTime">—</span></span>
+            </div>
+            <div class="event-stat-chips">
+                <div class="stat-chip blue">🎟️ <span id="statTotal">—</span> Registered</div>
+                <div class="stat-chip green">✅ <span id="statPresent">—</span> Present</div>
+                <div class="stat-chip red">❌ <span id="statAbsent">—</span> Absent</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+        <div class="toolbar-left">
+            <h2>Attendee List</h2>
+            <span class="attendee-count" id="attendeeCount">— students</span>
+        </div>
+        <div class="toolbar-right">
+            <!-- Filter pills -->
+            <button class="filter-pill active" data-filter="all">All</button>
+            <button class="filter-pill" data-filter="present">✅ Present</button>
+            <button class="filter-pill" data-filter="absent">❌ Absent</button>
+            <button class="filter-pill" data-filter="pending">⏳ Pending</button>
+
+            <!-- Search -->
+            <div class="search-inline">
+                <span class="si-icon">🔍</span>
+                <input type="text" id="attendeeSearch" placeholder="Search name / email…">
+            </div>
+
+            <!-- QR Scan -->
+            <button class="qr-scan-btn" id="openQrBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+                    <rect x="3" y="14" width="7" height="7" rx="1"/>
+                    <path d="M14 14h1v1h-1zM17 14h1v1h-1zM14 17h1v1h-1zM17 17h1v1h-1zM20 14v1M20 17v1M14 20h1M17 20h1M20 20"/>
+                </svg>
+                Scan QR
+            </button>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="audience-table-wrap">
+        <table class="audience-table" id="audienceTable">
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>Student</th>
+                <th>Ticket Status</th>
+                <th>Check-In</th>
+                <th>Checked-In At</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody id="audienceTbody">
+            <!-- skeleton rows -->
+            <tr class="skel-row"><td><div class="skel-line" style="width:24px"></div></td><td><div style="display:flex;align-items:center;gap:10px"><div class="skel-circle"></div><div><div class="skel-line" style="width:120px;margin-bottom:6px"></div><div class="skel-line" style="width:90px"></div></div></div></td><td><div class="skel-line" style="width:70px"></div></td><td><div class="skel-line" style="width:60px"></div></td><td><div class="skel-line" style="width:110px"></div></td><td><div style="display:flex;gap:8px"><div class="skel-line" style="width:70px;height:28px;border-radius:8px"></div><div class="skel-line" style="width:70px;height:28px;border-radius:8px"></div></div></td></tr>
+            <tr class="skel-row"><td><div class="skel-line" style="width:24px"></div></td><td><div style="display:flex;align-items:center;gap:10px"><div class="skel-circle"></div><div><div class="skel-line" style="width:140px;margin-bottom:6px"></div><div class="skel-line" style="width:100px"></div></div></div></td><td><div class="skel-line" style="width:70px"></div></td><td><div class="skel-line" style="width:60px"></div></td><td><div class="skel-line" style="width:110px"></div></td><td><div style="display:flex;gap:8px"><div class="skel-line" style="width:70px;height:28px;border-radius:8px"></div><div class="skel-line" style="width:70px;height:28px;border-radius:8px"></div></div></td></tr>
+            <tr class="skel-row"><td><div class="skel-line" style="width:24px"></div></td><td><div style="display:flex;align-items:center;gap:10px"><div class="skel-circle"></div><div><div class="skel-line" style="width:110px;margin-bottom:6px"></div><div class="skel-line" style="width:80px"></div></div></div></td><td><div class="skel-line" style="width:70px"></div></td><td><div class="skel-line" style="width:60px"></div></td><td><div class="skel-line" style="width:110px"></div></td><td><div style="display:flex;gap:8px"><div class="skel-line" style="width:70px;height:28px;border-radius:8px"></div><div class="skel-line" style="width:70px;height:28px;border-radius:8px"></div></div></td></tr>
+            </tbody>
+        </table>
+
+        <!-- Pagination -->
+        <div class="pagination" id="paginationBar">
+            <div class="pagination-info" id="paginationInfo">Loading…</div>
+            <div class="pagination-btns" id="paginationBtns"></div>
+        </div>
+    </div>
+
+</main>
+
+<!-- ═══════════════════ SCRIPTS ═══════════════════ -->
+<script>
+    /* ══════════════════════════════════════════════════════
+       HELPERS
+       ══════════════════════════════════════════════════════ */
+    function $id(id){ return document.getElementById(id); }
+    function getToken(){ return localStorage.getItem('accessToken'); }
+    function authHeaders(){ return { 'Authorization': `Bearer ${getToken()}`, 'Content-Type': 'application/json' }; }
+
+    function getEventId(){
+        // Supports /eventDetails/42 or ?eventId=42
+        const path = window.location.pathname.split('/');
+        const last = path[path.length-1];
+        if (last && !isNaN(last)) return last;
+        return new URLSearchParams(window.location.search).get('eventId') || '1';
+    }
+
+    let __auth = { isLoggedIn:false, displayRole:null, userName:null };
+
+    /* ── Toast ── */
+    let toastTimer;
+    function showToast(msg, type='success', icon='✅'){
+        const t = $id('toast');
+        $id('toastMsg').textContent = msg;
+        $id('toastIcon').textContent = icon;
+        t.className = `toast ${type} show`;
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
+    }
+
+    /* ── Date formatter ── */
+    function fmtDateTime(iso){
+        if (!iso) return '—';
+        return new Date(iso).toLocaleString('en-IN', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+    }
+    function fmtDate(d){
+        if (!d) return '—';
+        return new Date(d+'T00:00:00').toLocaleDateString('en-IN', { day:'numeric', month:'long', year:'numeric' });
+    }
+</script>
+
+<script>
+    /* ══════════════════════════════════════════════════════
+       AUTH (identical pattern to index)
+       ══════════════════════════════════════════════════════ */
+    const ROLE_API = '/api/v1/auth/roleOfMe';
+
+    function deriveDisplayRole(apiRole, status){
+        const role = String(apiRole||'').toUpperCase();
+        if (role === 'ROLE_ADMIN') return 'ADMIN';
+        if (status === 'APPROVED')  return 'ORGANIZER';
+        return 'USER';
+    }
+    function roleLabel(dr){
+        if (dr==='ADMIN') return 'Administrator';
+        if (dr==='ORGANIZER') return 'Organizer / Host';
+        return 'Member';
+    }
+    function show(id, d='block'){ const el=$id(id); if(el) el.style.display=d; }
+    function hide(id)            { const el=$id(id); if(el) el.style.display='none'; }
+
+    function applyNav(cfg){
+        const { isLoggedIn, displayRole, userName } = __auth;
+        const isAdmin = displayRole==='ADMIN', isOrg = displayRole==='ORGANIZER';
+        if(isLoggedIn){
+            show(cfg.userCard,'block'); hide(cfg.guestCard);
+            const ne=$id(cfg.userName); if(ne) ne.textContent=userName;
+            const re=$id(cfg.userRole); if(re) re.textContent=roleLabel(displayRole);
+            show(cfg.myAccount);
+            if(isAdmin) show(cfg.admin);
+            if(isOrg||isAdmin){ show(cfg.navigation); show(cfg.host); }
+            if(cfg.logout) show(cfg.logout);
+            hide(cfg.footerGuest); show(cfg.footerUser); hide(cfg.guestNav);
+        } else {
+            hide(cfg.userCard); show(cfg.guestCard,'block');
+            hide(cfg.myAccount); hide(cfg.admin); hide(cfg.navigation); hide(cfg.host);
+            if(cfg.logout) hide(cfg.logout);
+            show(cfg.guestNav); show(cfg.footerGuest); hide(cfg.footerUser);
+        }
+    }
+
+    async function loadAuthAndApplyNav(){
+        const token = getToken();
+        if(!token){ __auth={isLoggedIn:false,displayRole:null,userName:null}; paintBothPanels(false); return; }
+        show('mnSkeleton'); hide('mnGuestCard'); show('psbSkeleton'); hide('psbGuestCard');
+        hide('guestActions'); show('userActions','flex');
+        try{
+            const res = await fetch(ROLE_API,{ headers:{ 'Authorization':`Bearer ${token}` }});
+            if(!res.ok){ localStorage.removeItem('accessToken'); __auth={isLoggedIn:false,displayRole:null,userName:null}; paintBothPanels(false); return; }
+            const data = await res.json();
+            __auth = { isLoggedIn:true, displayRole:deriveDisplayRole(data.role,data.status), userName:data.name||'User' };
+            paintBothPanels(true);
+        } catch(e){ __auth={isLoggedIn:false,displayRole:null,userName:null}; paintBothPanels(false); }
+    }
+
+    function paintBothPanels(isLoggedIn){
+        hide('mnSkeleton'); hide('psbSkeleton');
+        if(!isLoggedIn){ show('guestActions','flex'); hide('userActions'); }
+        applyNav({ userCard:'mnUserCard', guestCard:'mnGuestCard', userName:'mnUserName', userRole:'mnUserRole', myAccount:'mn-my-account', admin:'mn-admin', navigation:'mn-navigation', host:'mn-host', logout:null, guestNav:'mn-guest-nav', footerGuest:'mobileNavGuest', footerUser:'mobileNavUser' });
+        applyNav({ userCard:'psbUserCard', guestCard:'psbGuestCard', userName:'psbUserName', userRole:'psbUserRole', myAccount:'psb-my-account', admin:'psb-admin', navigation:'psb-navigation', host:'psb-host', logout:'psb-logout', guestNav:'psb-guest-nav', footerGuest:'psb-guest-nav', footerUser:'psb-logout' });
+    }
+
+    function logout(){ localStorage.removeItem('accessToken'); window.location.href='/'; }
+
+    loadAuthAndApplyNav();
+</script>
+
+<script>
+    /* ══════════════════════════════════════════════════════
+       MOBILE DRAWER & PROFILE SIDEBAR (same as index)
+       ══════════════════════════════════════════════════════ */
+    const hamburgerBtn = $id('hamburgerBtn'), mobileNav = $id('mobileNav');
+    const mobileNavOverlay = $id('mobileNavOverlay'), mobileNavClose = $id('mobileNavClose');
+    function openMobileNav(){ mobileNav.classList.add('open'); mobileNavOverlay.classList.add('open'); document.body.style.overflow='hidden'; hamburgerBtn.classList.add('open'); }
+    function closeMobileNav(){ mobileNav.classList.remove('open'); mobileNavOverlay.classList.remove('open'); document.body.style.overflow=''; hamburgerBtn.classList.remove('open'); }
+    hamburgerBtn.addEventListener('click', openMobileNav);
+    mobileNavClose.addEventListener('click', closeMobileNav);
+    mobileNavOverlay.addEventListener('click', closeMobileNav);
+    document.querySelectorAll('.mobile-nav-link').forEach(l=>l.addEventListener('click', closeMobileNav));
+
+    function openProfileSidebar(){ $id('profileSidebar').classList.add('open'); $id('profileOverlay').classList.add('open'); document.body.style.overflow='hidden'; }
+    function closeProfileSidebar(){ $id('profileSidebar').classList.remove('open'); $id('profileOverlay').classList.remove('open'); document.body.style.overflow=''; }
+    $id('profileSidebarBtn').addEventListener('click', openProfileSidebar);
+    $id('profileSidebarClose').addEventListener('click', closeProfileSidebar);
+    $id('profileOverlay').addEventListener('click', closeProfileSidebar);
+    document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeMobileNav(); closeProfileSidebar(); closeQrModal(); }});
+</script>
+
+<script>
+    /* ══════════════════════════════════════════════════════
+       AUDIENCE LIST — data + rendering
+       ══════════════════════════════════════════════════════ */
+    const EVENT_ID       = getEventId();
+    const TICKET_API     = '/api/v1/tickets';
+    const EVENT_API      = '/api/v1/event';
+    const PAGE_SIZE      = 10;
+
+    let currentPage      = 0;
+    let totalPages       = 1;
+    let totalElements    = 0;
+    let allRows          = [];        // current page rows
+    let activeFilter     = 'all';
+    let searchQuery      = '';
+
+    /* ── stat counters ── */
+    let statPresent = 0, statAbsent = 0;
+
+    function statusBadgeHTML(status){
+        if (!status) return '<span class="status-badge pending">Unknown</span>';
+        const s = status.toLowerCase();
+        if (s==='confirmed') return `<span class="status-badge confirmed">✅ Confirmed</span>`;
+        if (s==='cancelled') return `<span class="status-badge cancelled">❌ Cancelled</span>`;
+        if (s==='waitlisted')return `<span class="status-badge waitlisted">⏳ Waitlisted</span>`;
+        return `<span class="status-badge pending">🟡 ${status}</span>`;
+    }
+
+    function checkinBadgeHTML(checkedIn, checkedInAt){
+        if (checkedIn) return `<span class="checkin-badge yes">✅ Present</span>`;
+        return `<span class="checkin-badge no">— Absent</span>`;
+    }
+
+    function initials(name){
+        if (!name) return '?';
+        return name.trim().split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+    }
+
+    function avatarColor(name){
+        const colors = [
+            'linear-gradient(135deg,#ff4d6d,#ffa500)',
+            'linear-gradient(135deg,#7c3aed,#a855f7)',
+            'linear-gradient(135deg,#0891b2,#38bdf8)',
+            'linear-gradient(135deg,#16a34a,#4ade80)',
+            'linear-gradient(135deg,#d97706,#fbbf24)',
+            'linear-gradient(135deg,#db2777,#f472b6)',
+        ];
+        let h = 0; for(let i=0;i<(name||'').length;i++) h = (h*31 + name.charCodeAt(i)) & 0xffff;
+        return colors[h % colors.length];
+    }
+
+    function renderRow(row, idx){
+        const globalIdx = currentPage * PAGE_SIZE + idx + 1;
+        const checkedAt = row.checkedIn && row.checkedInAt ? fmtDateTime(row.checkedInAt) : '—';
+        return `
+        <tr data-ticket-id="${row.ticketId}" data-checked-in="${row.checkedIn}" data-status="${(row.status||'').toLowerCase()}">
+            <td style="color:var(--muted);font-size:13px;font-weight:600;">${globalIdx}</td>
+            <td>
+                <div class="td-avatar">
+                    <div class="row-avatar" style="background:${avatarColor(row.name)}">${initials(row.name)}</div>
+                    <div>
+                        <div class="row-name">${row.name || '—'}</div>
+                        <div class="row-email">${row.email || '—'}</div>
+                    </div>
+                </div>
+            </td>
+            <td>${statusBadgeHTML(row.status)}</td>
+            <td>${checkinBadgeHTML(row.checkedIn, row.checkedInAt)}</td>
+            <td style="font-size:12px;color:var(--muted);">${checkedAt}</td>
+            <td>
+                <div class="action-cell">
+                    <button class="mark-btn present" onclick="markPresent(${row.ticketId},this)" ${row.checkedIn?'disabled':''}>✅ Present</button>
+                    <button class="mark-btn absent"  onclick="markAbsent(${row.ticketId},this)"  ${!row.checkedIn?'disabled':''}>❌ Absent</button>
+                </div>
+            </td>
+        </tr>`;
+    }
+
+    function renderRows(rows){
+        const tbody = $id('audienceTbody');
+        if (!rows || rows.length === 0){
+            tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">🎟️</div><h3>No attendees found</h3><p>No students have registered for this event yet.</p></div></td></tr>`;
+            return;
+        }
+        const filter = activeFilter, q = searchQuery.toLowerCase();
+        const filtered = rows.filter(r => {
+            const matchFilter =
+                filter === 'all' ? true :
+                filter === 'present' ? r.checkedIn :
+                filter === 'absent'  ? !r.checkedIn :
+                filter === 'pending' ? (r.status||'').toLowerCase() === 'pending' || (r.status||'').toLowerCase() !== 'confirmed' :
+                true;
+            const matchSearch = !q || (r.name||'').toLowerCase().includes(q) || (r.email||'').toLowerCase().includes(q);
+            return matchFilter && matchSearch;
+        });
+        if (filtered.length === 0){
+            tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">🔍</div><h3>No results</h3><p>Try adjusting the filter or search query.</p></div></td></tr>`;
+            return;
+        }
+        tbody.innerHTML = filtered.map((r, i) => renderRow(r, i)).join('');
+    }
+
+    function renderPagination(){
+        $id('paginationInfo').textContent = `Showing page ${currentPage+1} of ${totalPages} · ${totalElements} total`;
+        const btns = $id('paginationBtns');
+        btns.innerHTML = '';
+        const addBtn = (label, page, disabled, active) => {
+            const b = document.createElement('button');
+            b.className = 'pg-btn' + (active?' active':'');
+            b.textContent = label;
+            b.disabled = disabled;
+            b.addEventListener('click', () => loadAudience(page));
+            btns.appendChild(b);
+        };
+        addBtn('‹', currentPage-1, currentPage===0, false);
+        const start = Math.max(0, currentPage-2), end = Math.min(totalPages-1, currentPage+2);
+        for(let p=start; p<=end; p++) addBtn(p+1, p, false, p===currentPage);
+        addBtn('›', currentPage+1, currentPage>=totalPages-1, false);
+    }
+
+    async function loadAudience(page=0){
+        currentPage = page;
+        try{
+            const res = await fetch(`${TICKET_API}/audienceList/${EVENT_ID}?page=${page}&size=${PAGE_SIZE}`, { headers: authHeaders() });
+            if(!res.ok) throw new Error('Failed');
+            const data = await res.json();
+            allRows       = data.content || [];
+            totalPages    = data.totalPages || 1;
+            totalElements = data.totalElements || 0;
+            // recompute stats
+            statPresent = allRows.filter(r=>r.checkedIn).length;
+            statAbsent  = allRows.filter(r=>!r.checkedIn).length;
+            $id('statTotal').textContent   = totalElements;
+            $id('statPresent').textContent = statPresent;
+            $id('statAbsent').textContent  = statAbsent;
+            $id('attendeeCount').textContent = `${totalElements} student${totalElements!==1?'s':''}`;
+            renderRows(allRows);
+            renderPagination();
+        } catch(e){
+            console.error(e);
+            $id('audienceTbody').innerHTML = `<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">⚠️</div><h3>Could not load attendees</h3><p>${e.message}</p></div></td></tr>`;
+        }
+    }
+
+    /* ── Mark present / absent ── */
+    async function markPresent(ticketId, btn){
+        btn.disabled = true;
+        try{
+            const res = await fetch(`${TICKET_API}/${ticketId}/markPresent`, { method:'POST', headers: authHeaders() });
+            if(res.status === 204 || res.ok){
+                updateRowUI(ticketId, true);
+                showToast('Marked as Present ✅', 'success', '✅');
+            } else { throw new Error('Server error '+res.status); }
+        } catch(e){ showToast('Failed: '+e.message,'error','❌'); btn.disabled=false; }
+    }
+    async function markAbsent(ticketId, btn){
+        btn.disabled = true;
+        try{
+            const res = await fetch(`${TICKET_API}/${ticketId}/markAbsent`, { method:'POST', headers: authHeaders() });
+            if(res.status === 204 || res.ok){
+                updateRowUI(ticketId, false);
+                showToast('Marked as Absent ❌', 'info', '❌');
+            } else { throw new Error('Server error '+res.status); }
+        } catch(e){ showToast('Failed: '+e.message,'error','❌'); btn.disabled=false; }
+    }
+
+    function updateRowUI(ticketId, isPresent){
+        const row = $id('audienceTbody').querySelector(`tr[data-ticket-id="${ticketId}"]`);
+        if(!row) return;
+        row.dataset.checkedIn = isPresent;
+        // update checkin cell (td index 3)
+        row.cells[3].innerHTML = isPresent ? '<span class="checkin-badge yes">✅ Present</span>' : '<span class="checkin-badge no">— Absent</span>';
+        // update time cell
+        row.cells[4].textContent = isPresent ? new Date().toLocaleString('en-IN',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—';
+        // update action buttons
+        const [presentBtn, absentBtn] = row.querySelectorAll('.mark-btn');
+        if(presentBtn) presentBtn.disabled = isPresent;
+        if(absentBtn)  absentBtn.disabled  = !isPresent;
+        // update in-memory list
+        const r = allRows.find(r=>r.ticketId===ticketId);
+        if(r){ r.checkedIn=isPresent; if(isPresent) r.checkedInAt=new Date().toISOString(); }
+        // update stat chips
+        statPresent = allRows.filter(r=>r.checkedIn).length;
+        statAbsent  = allRows.filter(r=>!r.checkedIn).length;
+        $id('statPresent').textContent = statPresent;
+        $id('statAbsent').textContent  = statAbsent;
+    }
+
+    /* ── Load event info ── */
+    async function loadEventInfo(){
+        try{
+            const res = await fetch(`${EVENT_API}/getEvent/${EVENT_ID}`, { headers: authHeaders() });
+            if(!res.ok) return;
+            const ev = await res.json();
+            $id('bcEventTitle').textContent = ev.title || 'Event';
+            $id('eventTitle').textContent   = ev.title || '—';
+            $id('eventCategory').textContent= ev.category || 'Event';
+            $id('eventDate').textContent    = fmtDate(ev.eventDate);
+            $id('eventLocation').textContent= ev.location || '—';
+            $id('eventTime').textContent    = ev.time || ev.startTime || '—';
+            if(ev.bannerUrl) $id('eventBanner').src = ev.bannerUrl;
+            document.title = `${ev.title} — Eventaura`;
+        } catch(e){ /* not critical */ }
+    }
+
+    /* ── Filter pills ── */
+    document.querySelectorAll('.filter-pill').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+            document.querySelectorAll('.filter-pill').forEach(b=>b.classList.remove('active'));
+            btn.classList.add('active');
+            activeFilter = btn.dataset.filter;
+            renderRows(allRows);
+        });
+    });
+
+    /* ── Search ── */
+    $id('attendeeSearch').addEventListener('input', e=>{
+        searchQuery = e.target.value;
+        renderRows(allRows);
+    });
+
+    /* ── Boot ── */
+    loadEventInfo();
+    loadAudience(0);
+</script>
+
+<script>
+    /* ══════════════════════════════════════════════════════
+       QR SCANNER
+       ══════════════════════════════════════════════════════ */
+    let qrStream = null;
+    let qrScanTimer = null;
+    let lastScanned = null;
+    let scanCooldown = false;
+
+    const qrModal    = $id('qrModal');
+    const qrVideo    = $id('qrVideo');
+    const qrStatus   = $id('qrStatus');
+    const qrResultCard  = $id('qrResultCard');
+    const qrResultIcon  = $id('qrResultIcon');
+    const qrResultName  = $id('qrResultName');
+    const qrResultEmail = $id('qrResultEmail');
+    const qrResultMsg   = $id('qrResultMsg');
+
+    function openQrModal(){
+        qrModal.classList.add('open');
+        document.body.style.overflow = 'hidden';
+        resetQrResult();
+        startCamera();
+    }
+
+    function closeQrModal(){
+        qrModal.classList.remove('open');
+        document.body.style.overflow = '';
+        stopCamera();
+    }
+
+    async function startCamera(){
+        qrStatus.textContent = '📡 Starting camera…';
+        try{
+            qrStream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'environment' } });
+            qrVideo.srcObject = qrStream;
+            qrVideo.play();
+            qrStatus.textContent = '🔍 Point camera at ticket QR code';
+            startScanning();
+        } catch(e){
+            qrStatus.textContent = '⚠️ Camera access denied. Please allow camera permissions.';
+            console.error(e);
+        }
+    }
+
+    function stopCamera(){
+        clearInterval(qrScanTimer);
+        if(qrStream){ qrStream.getTracks().forEach(t=>t.stop()); qrStream=null; }
+        qrVideo.srcObject = null;
+    }
+
+    function startScanning(){
+        const canvas = document.createElement('canvas');
+        const ctx    = canvas.getContext('2d');
+        qrScanTimer  = setInterval(()=>{
+            if(qrVideo.readyState !== qrVideo.HAVE_ENOUGH_DATA) return;
+            if(scanCooldown) return;
+            canvas.width  = qrVideo.videoWidth;
+            canvas.height = qrVideo.videoHeight;
+            ctx.drawImage(qrVideo, 0, 0, canvas.width, canvas.height);
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts:'dontInvert' });
+            if(code && code.data){
+                const scannedValue = code.data.trim();
+                if(scannedValue !== lastScanned){
+                    lastScanned = scannedValue;
+                    handleScannedCode(scannedValue);
+                }
+            }
+        }, 300);
+    }
+
+    async function handleScannedCode(raw){
+        // Extract numeric ticket code from the QR data
+        // The QR might be just a number, or a URL like https://…/tickets/123
+        let ticketCode = raw;
+        const match = raw.match(/(\d+)\s*$/);
+        if(match) ticketCode = match[1];
+        if(!ticketCode || isNaN(ticketCode)){
+            qrStatus.textContent = `⚠️ Unrecognised QR: ${raw.substring(0,40)}`;
+            return;
+        }
+
+        scanCooldown = true;
+        qrStatus.textContent = `⏳ Checking ticket #${ticketCode}…`;
+        resetQrResult();
+
+        try{
+            const res = await fetch(`${TICKET_API}/checkin/${ticketCode}`, {
+                method: 'POST',
+                headers: authHeaders()
+            });
+            const contentType = res.headers.get('Content-Type')||'';
+            let body = {};
+            if(contentType.includes('application/json')) body = await res.json();
+
+            if(res.ok){
+                // TicketCheckResponse — show success
+                showQrResult('success', '✅', body.userName||body.name||'Student', body.userEmail||body.email||'', 'Checked in successfully!');
+                qrStatus.textContent = '✅ Checked in!';
+                showToast(`${body.userName||'Student'} checked in`, 'success', '✅');
+                // refresh current page to reflect check-in
+                setTimeout(()=>loadAudience(currentPage), 600);
+            } else if(res.status===409 || (body.message||'').toLowerCase().includes('already')){
+                showQrResult('already', '⚠️', body.userName||body.name||'Student', body.userEmail||body.email||'', 'Already checked in!');
+                qrStatus.textContent = '⚠️ Already checked in';
+            } else {
+                showQrResult('error','❌','Invalid Ticket','',body.message||'Ticket not found or invalid');
+                qrStatus.textContent = '❌ Invalid ticket';
+            }
+        } catch(e){
+            showQrResult('error','❌','Error','',e.message);
+            qrStatus.textContent = '❌ Network error';
+        }
+
+        // allow re-scan after 2.5 s
+        setTimeout(()=>{ scanCooldown=false; lastScanned=null; }, 2500);
+    }
+
+    function showQrResult(type, icon, name, email, msg){
+        qrResultCard.className = `qr-result-card ${type}`;
+        qrResultIcon.textContent  = icon;
+        qrResultName.textContent  = name;
+        qrResultEmail.textContent = email;
+        qrResultMsg.textContent   = msg;
+    }
+
+    function resetQrResult(){
+        qrResultCard.className = 'qr-result-card';
+        qrResultName.textContent = qrResultEmail.textContent = qrResultMsg.textContent = '';
+        qrResultIcon.textContent = '';
+    }
+
+    $id('openQrBtn').addEventListener('click', openQrModal);
+    $id('qrModalClose').addEventListener('click', closeQrModal);
+    $id('qrBtnCloseModal').addEventListener('click', closeQrModal);
+    $id('qrBtnStop').addEventListener('click', ()=>{
+        stopCamera();
+        qrStatus.textContent = '⏸ Camera stopped. Close this window or restart.';
+    });
+    qrModal.addEventListener('click', e=>{ if(e.target===qrModal) closeQrModal(); });
+</script>
+
+<script th:src="@{/js/basic.js}"></script>
+<script th:src="@{/js/clock.js}"></script>
+
+</body>
+</html>

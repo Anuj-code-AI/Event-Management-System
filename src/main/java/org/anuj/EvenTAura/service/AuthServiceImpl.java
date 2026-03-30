@@ -3,18 +3,14 @@ package org.anuj.EvenTAura.service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.anuj.EvenTAura.dto.LoginRequest;
-import org.anuj.EvenTAura.dto.RegisterRequest;
-import org.anuj.EvenTAura.dto.UserRequest;
-import org.anuj.EvenTAura.dto.UserResponse;
+import org.anuj.EvenTAura.dto.*;
 import org.anuj.EvenTAura.exception.InvalidPasswordException;
 import org.anuj.EvenTAura.exception.UserAlreadyExistException;
 import org.anuj.EvenTAura.exception.UserNotFoundException;
 import org.anuj.EvenTAura.mapper.UserMapper;
-import org.anuj.EvenTAura.model.RefreshToken;
-import org.anuj.EvenTAura.model.Role;
-import org.anuj.EvenTAura.model.User;
+import org.anuj.EvenTAura.model.*;
 import org.anuj.EvenTAura.repository.EventRepository;
+import org.anuj.EvenTAura.repository.HostProfileRepository;
 import org.anuj.EvenTAura.repository.RefreshRepository;
 import org.anuj.EvenTAura.repository.UserRepository;
 import org.anuj.EvenTAura.util.JwtUtil;
@@ -24,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -35,7 +32,7 @@ public class AuthServiceImpl implements AuthService{
     private final PasswordEncoder passwordEncoder;
     private final EventRepository eventRepository;
     private final RefreshRepository refreshRepository;
-
+    private final HostProfileRepository hostProfileRepository;
 
 
     @Override
@@ -110,6 +107,49 @@ public class AuthServiceImpl implements AuthService{
 
         User saved = userRepository.save(user);
         return userMapper.toResponse(saved);
+    }
+
+    @Override
+    public RoleResponse roleOfMe(Authentication authentication) {
+        User user = userRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        RoleResponse response = new RoleResponse();
+        response.setName(user.getName());
+        response.setRole(user.getRole());
+        Optional<HostProfile> profile =
+                hostProfileRepository.findTopByUserOrderByAppliedAtDesc(user);
+
+        Status status = profile
+                .map(HostProfile::getStatus)
+                .orElse(Status.NONE);
+        response.setStatus(status);
+        return response;
+    }
+
+    @Override
+    public Map<String, String> refresh(String refreshToken) {
+        // Validate the refresh token exists in DB and is not expired
+        RefreshToken stored = refreshRepository.findByToken(refreshToken)
+                .orElseThrow(() -> new RuntimeException("Invalid refresh token"));
+
+        if (stored.getExpiryDate().isBefore(LocalDateTime.now())) {
+            refreshRepository.delete(stored);
+            throw new RuntimeException("Refresh token expired, please login again");
+        }
+
+        User user = stored.getUser();
+        String newAccessToken  = jwtUtil.generateAccessToken(user.getEmail(), user.getRole());
+        String newRefreshToken = jwtUtil.generateRefreshToken(user.getEmail());
+
+        // Rotate the refresh token
+        stored.setToken(newRefreshToken);
+        stored.setExpiryDate(LocalDateTime.now().plusDays(7));
+        refreshRepository.save(stored);
+
+        return Map.of(
+                "accessToken",  newAccessToken,
+                "refreshToken", newRefreshToken
+        );
     }
 
 }

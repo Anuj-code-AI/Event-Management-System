@@ -129,7 +129,7 @@ document.getElementById("changeName-form").addEventListener("submit", async func
         }
 
         const data = await response.json();
-
+        alert("Profil updated successfully");
         loadProfile();
 
     } catch (err) {

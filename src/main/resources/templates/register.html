@@ -23,11 +23,9 @@
     <!-- LEFT PANEL — branding -->
     <aside class="auth-panel">
         <a th:href="@{/}" class="panel-logo">
-            <div class="panel-logo-icon">
-                <img th:src="@{/images/1.jpg}" alt="Eventaura">
-            </div>
             <span>Event<em>aura</em></span>
         </a>
+
 
         <div class="panel-content">
             <h1>Join the<br>community.</h1>
@@ -63,6 +61,7 @@
                     </div>
                 </li>
             </ul>
+
         </div>
 
         <!-- Floating event chips -->
@@ -120,7 +119,7 @@
 
                 <div class="fields-row">
                     <div class="field-group">
-                        <label for="firstName">User name</label>
+                        <label for="firstName">First Name</label>
                         <div class="input-wrap">
                             <span class="input-icon">👤</span>
                             <input
@@ -132,7 +131,7 @@
                         </div>
                     </div>
                     <div class="field-group">
-                        <label for="lastName">User name</label>
+                        <label for="lastName">Last Name</label>
                         <div class="input-wrap">
                             <span class="input-icon">👤</span>
                             <input
@@ -204,7 +203,9 @@
                 </button>
 
             </form>
-
+            <p class="subtle-link">
+                <a href="/becomeOrganizer">Want to host events? Become an organiser →</a>
+            </p>
         </div>
 
     </main>

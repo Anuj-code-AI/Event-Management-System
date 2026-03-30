@@ -24,4 +24,5 @@ WHERE t.user = :user
     Page<Event> findJoinedEvents(User user, Pageable pageable);
     long countByEventEventId(Long eventId);
     void deleteByEvent(Event event);
+    Page<Ticket> findByEvent(Event event, Pageable pageable);
 }

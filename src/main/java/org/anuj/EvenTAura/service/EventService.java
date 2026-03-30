@@ -20,4 +20,8 @@ public interface EventService {
     Page<EventResponse> getHostedEvents(int page,int size,Authentication auth);
 
     Page<EventResponse> getJoinedEvents(int page, int size, Authentication auth);
+
+    Page<EventResponse> getHostedEventsForAdmin(int page, int size, Authentication auth);
+
+    Page<EventSummaryResponse> getAllApprovedEvents(int page, int size);
 }

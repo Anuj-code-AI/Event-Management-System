@@ -47,9 +47,9 @@ public class PageController {
         return "oauth";
     }
 
-    @GetMapping("/eventDetail/{eventId}")
-    public String eventDetail(@PathVariable Long eventId, Model model) {
-        return "eventDetail"; // resolves to eventDetail.html
+    @GetMapping("/registerForEvent/{eventId}")
+    public String registerForEvent(@PathVariable Long eventId, Model model) {
+        return "registerForEvent";
     }
 
     @GetMapping("/aboutUs")
@@ -67,8 +67,33 @@ public class PageController {
         return "customEvent";
     }
 
-    @GetMapping("/myEvents")
-    public String myEvent(Model model) {
-        return "myEvents";
+    @GetMapping("/hostedEvents")
+    public String hostedEvent(Model model) {
+        return "hostedEvents";
+    }
+
+    @GetMapping("/becomeOrganizer")
+    public String becomeOrganizer(Model model) {
+        return "becomeOrganizer";
+    }
+
+    @GetMapping("/adminPage")
+    public String adminPage(Model model) {
+        return "adminPage";
+    }
+
+    @GetMapping("/moments")
+    public String moments(Model model) {
+        return "moments";
+    }
+
+    @GetMapping("/campusEvents")
+    public String campusEvents(Model model) {
+        return "campusEvents";
+    }
+
+    @GetMapping("/eventDetails/{eventId}")
+    public String eventDetails(@PathVariable Long eventId, Model model) {
+        return "eventDetails";
     }
 }

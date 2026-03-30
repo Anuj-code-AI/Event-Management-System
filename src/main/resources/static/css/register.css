@@ -5,6 +5,9 @@
    ═══════════════════════════════════════════ */
 
 @import url('login.css');
+/* Hide scrollbar */
+html::-webkit-scrollbar, body::-webkit-scrollbar { display:none; }
+html, body { scrollbar-width:none; -ms-overflow-style:none; }
 
 /* ── PERKS LIST (register panel) ── */
 .perks-list {
@@ -38,4 +41,36 @@
 /* Panel heading tweak for register page */
 .auth-panel .panel-content h1 {
     font-size: clamp(36px, 4vw, 52px);
+}
+
+.subtle-link {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+
+    text-align: center;
+    font-size: 18px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Make link easier to tap */
+.subtle-link a {
+    display: inline-block;
+    padding: 6px 4px;
+
+    color: #a78bfa;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+
+/* Slightly bigger on small screens */
+@media (max-width: 480px) {
+    .subtle-link {
+        font-size: 14px;
+    }
+
+    .subtle-link a {
+        padding: 8px 6px;
+    }
 }

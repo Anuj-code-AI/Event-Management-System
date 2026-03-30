@@ -4,6 +4,7 @@ import org.anuj.EvenTAura.dto.EventRequest;
 import org.anuj.EvenTAura.dto.EventResponse;
 import org.anuj.EvenTAura.dto.EventUpdateRequest;
 import org.anuj.EvenTAura.model.Event;
+import org.anuj.EvenTAura.model.EventStatus;
 import org.anuj.EvenTAura.model.User;
 
 public class EventMapper {
@@ -24,7 +25,7 @@ public class EventMapper {
         event.setTicketUrl(req.getTicketUrl());
         event.setCategory(req.getCategory());
         event.setUser(user);
-
+        event.setEventStatus(EventStatus.PENDING);
         return event;
     }
 

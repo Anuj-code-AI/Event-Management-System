@@ -3,14 +3,13 @@ package org.anuj.EvenTAura.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.anuj.EvenTAura.dto.LoginRequest;
-import org.anuj.EvenTAura.dto.RegisterRequest;
-import org.anuj.EvenTAura.dto.UserRequest;
-import org.anuj.EvenTAura.dto.UserResponse;
+import org.anuj.EvenTAura.dto.*;
 import org.anuj.EvenTAura.service.AuthService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 
 @RequiredArgsConstructor
@@ -46,5 +45,15 @@ public class AuthController {
     @PatchMapping("/update/me")
     public ResponseEntity<UserResponse> updateProfile(@RequestBody UserRequest request, Authentication authentication){
         return ResponseEntity.ok(authService.updateProfile(request,authentication));
+    }
+
+    @GetMapping("/roleOfMe")
+    public ResponseEntity<RoleResponse> roleOfMe(Authentication authentication){
+        return ResponseEntity.ok(authService.roleOfMe(authentication));
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refresh(@RequestBody Map<String, String> body) {
+        return ResponseEntity.ok(authService.refresh(body.get("refreshToken")));
     }
 }

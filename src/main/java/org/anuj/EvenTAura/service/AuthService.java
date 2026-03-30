@@ -1,9 +1,6 @@
 package org.anuj.EvenTAura.service;
 
-import org.anuj.EvenTAura.dto.LoginRequest;
-import org.anuj.EvenTAura.dto.RegisterRequest;
-import org.anuj.EvenTAura.dto.UserRequest;
-import org.anuj.EvenTAura.dto.UserResponse;
+import org.anuj.EvenTAura.dto.*;
 import org.springframework.security.core.Authentication;
 
 import java.util.Map;
@@ -17,4 +14,8 @@ public interface AuthService {
     String deleteAccount(Authentication authentication);
 
     UserResponse updateProfile(UserRequest request, Authentication authentication);
+
+    RoleResponse roleOfMe(Authentication authentication);
+
+    Map<String, String> refresh(String refreshToken);
 }
