@@ -69,7 +69,7 @@ public class TicketController {
                 .orElseThrow();
 
         byte[] qrImage = QRCodeGenerator.generateQRCodeImage(
-                "https://eventaura.com/verify/" + ticket.getTicketCode()
+                "https://eventaura-iemd.onrender.com/" + ticket.getTicketCode()
         );
         return ResponseEntity.ok()
                 .header("Content-Type", "image/png")

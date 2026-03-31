@@ -1385,14 +1385,35 @@
         }, 300);
     }
 
-    async function handleScannedCode(raw){
-        // Extract numeric ticket code from the QR data
-        // The QR might be just a number, or a URL like https://…/tickets/123
-        let ticketCode = raw;
-        const match = raw.match(/(\d+)\s*$/);
-        if(match) ticketCode = match[1];
-        if(!ticketCode || isNaN(ticketCode)){
-            qrStatus.textContent = `⚠️ Unrecognised QR: ${raw.substring(0,40)}`;
+    async function handleScannedCode(raw) {
+        // QR may contain:
+        //   - a plain numeric code:           "123456789012"
+        //   - a full check-in URL:            "https://…/checkin/123456789012"
+        //   - a QR-image URL (ticketId):      "https://…/tickets/42/qr"
+        //   - the old base URL + ticketCode:  "https://eventaura-iemd.onrender.com/123456789012"
+
+        let ticketCode = null;
+
+        // 1. Try to extract from known URL patterns first
+        const urlPatterns = [
+            /\/checkin\/(\d+)/,           // .../checkin/123
+            /\/tickets\/(\d+)\/qr/,       // .../tickets/42/qr  ← ticketId, not code; skip if possible
+            /eventaura[^/]*\.onrender\.com\/(\d+)/,  // old QR URL pattern
+            /eventaura[^/]*\.onrender\.com\/.+?\/(\d+)/, // generic trailing number
+        ];
+
+        for (const pattern of urlPatterns) {
+            const m = raw.match(pattern);
+            if (m) { ticketCode = m[1]; break; }
+        }
+
+        // 2. Fall back: if the whole raw value is purely numeric, use it directly
+        if (!ticketCode && /^\d+$/.test(raw.trim())) {
+            ticketCode = raw.trim();
+        }
+
+        if (!ticketCode) {
+            qrStatus.textContent = `⚠️ Unrecognised QR: ${raw.substring(0, 60)}`;
             return;
         }
 
@@ -1400,36 +1421,46 @@
         qrStatus.textContent = `⏳ Checking ticket #${ticketCode}…`;
         resetQrResult();
 
-        try{
+        try {
             const res = await fetch(`${TICKET_API}/checkin/${ticketCode}`, {
                 method: 'POST',
                 headers: authHeaders()
             });
-            const contentType = res.headers.get('Content-Type')||'';
-            let body = {};
-            if(contentType.includes('application/json')) body = await res.json();
 
-            if(res.ok){
-                // TicketCheckResponse — show success
-                showQrResult('success', '✅', body.userName||body.name||'Student', body.userEmail||body.email||'', 'Checked in successfully!');
+            const contentType = res.headers.get('Content-Type') || '';
+            let body = {};
+            if (contentType.includes('application/json')) body = await res.json();
+
+            if (res.ok && body.success) {
+                showQrResult('success', '✅',
+                    body.userName || body.name || 'Student',
+                    body.userEmail || body.email || '',
+                    'Checked in successfully!');
                 qrStatus.textContent = '✅ Checked in!';
-                showToast(`${body.userName||'Student'} checked in`, 'success', '✅');
-                // refresh current page to reflect check-in
-                setTimeout(()=>loadAudience(currentPage), 600);
-            } else if(res.status===409 || (body.message||'').toLowerCase().includes('already')){
-                showQrResult('already', '⚠️', body.userName||body.name||'Student', body.userEmail||body.email||'', 'Already checked in!');
+                showToast(`${body.userName || 'Student'} checked in`, 'success', '✅');
+                setTimeout(() => loadAudience(currentPage), 600);
+
+            } else if (!res.ok && res.status === 409 ||
+                       (body.message || '').toLowerCase().includes('already')) {
+                showQrResult('already', '⚠️',
+                    body.userName || body.name || 'Student',
+                    body.userEmail || body.email || '',
+                    'Already checked in!');
                 qrStatus.textContent = '⚠️ Already checked in';
+
             } else {
-                showQrResult('error','❌','Invalid Ticket','',body.message||'Ticket not found or invalid');
-                qrStatus.textContent = '❌ Invalid ticket';
+                showQrResult('error', '❌', 'Invalid Ticket', '',
+                    body.message || 'Ticket not found or invalid');
+                qrStatus.textContent = '❌ ' + (body.message || 'Invalid ticket');
             }
-        } catch(e){
-            showQrResult('error','❌','Error','',e.message);
+
+        } catch (e) {
+            showQrResult('error', '❌', 'Network Error', '', e.message);
             qrStatus.textContent = '❌ Network error';
         }
 
-        // allow re-scan after 2.5 s
-        setTimeout(()=>{ scanCooldown=false; lastScanned=null; }, 2500);
+        // Allow re-scan after 2.5s
+        setTimeout(() => { scanCooldown = false; lastScanned = null; }, 2500);
     }
 
     function showQrResult(type, icon, name, email, msg){
@@ -1457,7 +1488,6 @@
 </script>
 
 <script th:src="@{/js/basic.js}"></script>
-<script th:src="@{/js/clock.js}"></script>
 
 </body>
 </html>

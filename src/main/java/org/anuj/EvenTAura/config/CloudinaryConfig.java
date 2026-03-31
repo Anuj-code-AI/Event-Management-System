@@ -26,10 +26,6 @@ public class CloudinaryConfig {
         config.put("cloud_name", cloudName);
         config.put("api_key", apiKey);
         config.put("api_secret", apiSecret);
-        System.out.println(cloudName);
-        System.out.println("Api Key:"+apiKey);
-        System.out.println("Api Secret: "+apiSecret);
-        System.out.println("Config: "+config);
         return new Cloudinary(config);
     }
 }

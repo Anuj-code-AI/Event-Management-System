@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 @RequiredArgsConstructor
@@ -34,7 +35,9 @@ public class TicketServiceImpl implements TicketService{
     private final EventRepository eventRepository;
 
     private String generateTicketCode() {
-        return UUID.randomUUID().toString().substring(0, 8);
+        // Numeric code: fits in a Long, unique enough for tickets
+        long code = ThreadLocalRandom.current().nextLong(100_000_000_000L, 999_999_999_999L);
+        return String.valueOf(code);
     }
 
     @Override
@@ -54,9 +57,7 @@ public class TicketServiceImpl implements TicketService{
 
         for (int i = 0; i < req.getNumberOfTickets(); i++) {
             String code = generateTicketCode();
-
-            String qrData = "TICKET:" + code;
-
+            // QR data is the full check-in URL — numeric at the end so frontend regex works
             tickets.add(new Ticket(
                     null,
                     code,
@@ -65,16 +66,16 @@ public class TicketServiceImpl implements TicketService{
                     null,
                     TicketStatus.ACTIVE,
                     event,
-                    user  // NEW FIELD
+                    user
             ));
         }
 
-        // FIX: calculate updated count before broadcasting
         int updatedTicketsAvailable = event.getTicketsAvailable() - req.getNumberOfTickets();
         event.setTicketsAvailable(updatedTicketsAvailable);
-        eventRepository.save(event); // FIX: persist the updated ticket count
+        eventRepository.save(event);
 
         List<Ticket> saved = ticketRepository.saveAll(tickets);
+
         List<TicketResponse> response = saved.stream()
                 .map(ticket -> new TicketResponse(
                         ticket.getTicketId(),
@@ -85,12 +86,11 @@ public class TicketServiceImpl implements TicketService{
                         ticket.getStatus(),
                         ticket.getEvent(),
                         ticket.getUser(),
-                        "http://localhost:8080/api/v1/tickets/" + ticket.getTicketId() + "/qr"
+                        "https://eventaura-iemd.onrender.com/api/v1/tickets/" + ticket.getTicketId() + "/qr"
                 ))
                 .toList();
-        // broadcast AFTER successful save
-        SseEmitterHolder.broadcast(event.getEventId(), updatedTicketsAvailable);
 
+        SseEmitterHolder.broadcast(event.getEventId(), updatedTicketsAvailable);
         return response;
     }
 
@@ -130,58 +130,19 @@ public class TicketServiceImpl implements TicketService{
         User user = userRepository.findByEmail(auth.getName())
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        Ticket ticket = ticketRepository.findByTicketCode(Long.toString(ticketCode))
+        // ticketCode is Long from path variable; stored ticketCode is a numeric string
+        Ticket ticket = ticketRepository.findByTicketCode(String.valueOf(ticketCode))
                 .orElseThrow(() -> new NoTicketFoundException("No ticket exists with this code"));
 
         Event event = ticket.getEvent();
 
-        // check organizer permission
-        if(!user.getUserId().equals(event.getUser().getUserId())){
+        // Only the event organizer may check in tickets
+        if (!user.getUserId().equals(event.getUser().getUserId())) {
             throw new RuntimeException("You are not allowed to check in tickets for this event");
         }
 
-        // check if ticket already used
-        if(ticket.isCheckedIn()){
-            ticket.setStatus(TicketStatus.USED);
-            return new TicketCheckResponse(false, true, ticket.getStatus(),"Ticket already used");
-        }
-
-        // check event time
-        LocalDateTime eventDateTime =
-                LocalDateTime.of(event.getEventDate(), event.getEventTime());
-
-        if(eventDateTime.isBefore(LocalDateTime.now())){
-            return new TicketCheckResponse(false, false, ticket.getStatus(),"Event already started");
-        }
-
-        // mark ticket checked in
-        ticket.setCheckedIn(true);
-        ticket.setCheckedInAt(LocalDateTime.now());
-
-        ticketRepository.save(ticket);
-
-        return new TicketCheckResponse(true, true, ticket.getStatus(),"Entry allowed");
-    }
-
-    @Override
-    public TicketCheckResponse verifyTicket(Long ticketCode, Authentication auth) {
-
-        User user = userRepository.findByEmail(auth.getName())
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
-
-        Ticket ticket = ticketRepository.findByTicketCode(Long.toString(ticketCode))
-                .orElseThrow(() -> new NoTicketFoundException("No ticket exists with this code"));
-
-        Event event = ticket.getEvent();
-
-        // ensure the logged-in user is the organizer of this event
-        if(!user.getUserId().equals(event.getUser().getUserId())){
-            throw new RuntimeException("You are not allowed to verify tickets for this event");
-        }
-
-        // check if ticket already used
-        if(ticket.isCheckedIn()){
-            ticket.setStatus(TicketStatus.USED);
+        // Already checked in
+        if (ticket.isCheckedIn()) {
             return new TicketCheckResponse(
                     false,
                     true,
@@ -190,11 +151,59 @@ public class TicketServiceImpl implements TicketService{
             );
         }
 
-        // check if event already finished
-        LocalDateTime eventDateTime =
-                LocalDateTime.of(event.getEventDate(), event.getEventTime());
+        // Event must not have started yet
+        LocalDateTime eventDateTime = LocalDateTime.of(event.getEventDate(), event.getEventTime());
+        if (eventDateTime.isBefore(LocalDateTime.now())) {
+            return new TicketCheckResponse(
+                    false,
+                    false,
+                    ticket.getStatus(),
+                    "Event has already started"
+            );
+        }
 
-        if(eventDateTime.isBefore(LocalDateTime.now())){
+        // Mark checked in
+        ticket.setCheckedIn(true);
+        ticket.setCheckedInAt(LocalDateTime.now());
+        ticket.setStatus(TicketStatus.USED);
+        ticketRepository.save(ticket);
+
+        return new TicketCheckResponse(
+                true,
+                true,
+                ticket.getStatus(),
+                "Entry allowed"
+        );
+    }
+
+    @Override
+    public TicketCheckResponse verifyTicket(Long ticketCode, Authentication auth) {
+
+        User user = userRepository.findByEmail(auth.getName())
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        // Same fix as checkin() — numeric string lookup
+        Ticket ticket = ticketRepository.findByTicketCode(String.valueOf(ticketCode))
+                .orElseThrow(() -> new NoTicketFoundException("No ticket exists with this code"));
+
+        Event event = ticket.getEvent();
+
+        if (!user.getUserId().equals(event.getUser().getUserId())) {
+            throw new RuntimeException("You are not allowed to verify tickets for this event");
+        }
+
+        if (ticket.isCheckedIn()) {
+            // No need to save here — just reporting status, not mutating
+            return new TicketCheckResponse(
+                    false,
+                    true,
+                    ticket.getStatus(),
+                    "Ticket already used"
+            );
+        }
+
+        LocalDateTime eventDateTime = LocalDateTime.of(event.getEventDate(), event.getEventTime());
+        if (eventDateTime.isBefore(LocalDateTime.now())) {
             return new TicketCheckResponse(
                     false,
                     false,
@@ -353,5 +362,6 @@ public class TicketServiceImpl implements TicketService{
 
         // optional: revert status
         ticket.setStatus(TicketStatus.ACTIVE);
+        ticketRepository.save(ticket);
     }
 }
