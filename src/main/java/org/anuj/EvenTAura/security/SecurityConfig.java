@@ -97,6 +97,5 @@ public class SecurityConfig {
                         + "?access=" + access
                         + "&refresh=" + refresh
         );
-        System.out.println("OAUTH SUCCESS TRIGGERED");
     }
 }

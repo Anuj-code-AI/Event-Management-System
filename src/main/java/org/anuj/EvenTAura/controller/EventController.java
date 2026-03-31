@@ -5,6 +5,7 @@ import org.anuj.EvenTAura.dto.EventRequest;
 import org.anuj.EvenTAura.dto.EventResponse;
 import org.anuj.EvenTAura.dto.EventSummaryResponse;
 import org.anuj.EvenTAura.dto.EventUpdateRequest;
+import org.anuj.EvenTAura.service.CloudinaryService;
 import org.anuj.EvenTAura.service.EventService;
 import org.anuj.EvenTAura.service.FileStorageService;
 import org.springframework.data.domain.Page;
@@ -20,7 +21,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class EventController {
     private final EventService eventService;
-    private final FileStorageService fileStorageService;
+    //private final FileStorageService fileStorageService;
+    private final CloudinaryService cloudinaryService;
     @PostMapping("/addEvent")
     public ResponseEntity<?> createEvent(
             @ModelAttribute EventRequest request,
@@ -38,8 +40,12 @@ public class EventController {
         }
 
 
-        String bannerUrl = fileStorageService.saveImage(banner,"Banner");
-        String ticketUrl = fileStorageService.saveImage(ticket,"Ticket");
+        //String bannerUrl = fileStorageService.saveImage(banner,"Banner");
+        String bannerUrl = cloudinaryService.uploadImage(banner, "Banner");
+
+        //String ticketUrl = fileStorageService.saveImage(ticket,"Ticket");
+        String ticketUrl = cloudinaryService.uploadImage(ticket, "Banner");
+
 
         request.setBannerUrl(bannerUrl);
         request.setTicketUrl(ticketUrl);
@@ -68,10 +74,12 @@ public class EventController {
             Authentication auth
     ) {
         if (banner != null && !banner.isEmpty()) {
-            req.setBannerUrl(fileStorageService.saveImage(banner, "Banner"));
+            //req.setBannerUrl(fileStorageService.saveImage(banner, "Banner"));
+            req.setBannerUrl(cloudinaryService.uploadImage(banner, "Banner"));
         }
         if (ticket != null && !ticket.isEmpty()) {
-            req.setTicketUrl(fileStorageService.saveImage(ticket, "Ticket"));
+            //req.setTicketUrl(fileStorageService.saveImage(ticket, "Ticket"));
+            req.setTicketUrl(cloudinaryService.uploadImage(ticket, "Ticket"));
         }
         return ResponseEntity.ok(eventService.updateEvent(eventId, req, auth));
     }
