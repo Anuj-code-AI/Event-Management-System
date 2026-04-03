@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/profileSideBar.css}">
     <link rel="stylesheet" th:href="@{/css/profile.css}">
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-3C9FCSTWY3"></script>
@@ -15,48 +16,43 @@
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
-
         gtag('config', 'G-3C9FCSTWY3');
     </script>
 </head>
 
 <body>
 
-<!-- ══════════════════════════════════
-     HEADER
-     ══════════════════════════════════ -->
+<!-- ═══════════════════ HEADER ═══════════════════ -->
 <header class="header">
     <div class="logo">
         <span class="logo-text">Event<em>aura</em></span>
     </div>
-
     <nav class="nav-links">
-        <a th:href="@{/}">Home</a>
-        <a th:href="@{/myEvents}">Events</a>
-        <a th:href="@{/categories}">Categories</a>
-        <a th:href="@{/aboutUs}">About Us</a>
+        <a href="#">Home</a>
+        <a href="/moments">Moments</a>
+        <a href="/tickets">Tickets</a>
+        <a href="/aboutUs">About Us</a>
     </nav>
-
     <div class="search-bar">
         <span class="search-icon">🔍</span>
         <input type="text" placeholder="Search events, cities...">
     </div>
-
     <div class="header-right">
         <div class="time" id="clock"></div>
         <button class="icon-btn" aria-label="Notifications">
-            <span>🔔</span>
-            <span class="badge">3</span>
+            <span>🔔</span><span class="badge">3</span>
         </button>
-        <button class="icon-btn profile-btn" aria-label="Profile">
-            <span>👤</span>
-        </button>
-
-        <!-- Hamburger — visible only on mobile -->
+        <div id="guestActions">
+            <a href="/login"    class="btn primary">Login</a>
+            <a href="/register" class="btn primary">Sign Up</a>
+        </div>
+        <div id="userActions" style="display:none;">
+            <button class="icon-btn profile-btn" id="profileSidebarBtn" aria-label="Open profile menu" aria-expanded="false">
+                <span>👤</span>
+            </button>
+        </div>
         <button class="hamburger" id="hamburgerBtn" aria-label="Open menu" aria-expanded="false">
-            <span></span>
-            <span></span>
-            <span></span>
+            <span></span><span></span><span></span>
         </button>
     </div>
 </header>
@@ -64,39 +60,209 @@
 <!-- ── Mobile nav overlay ── -->
 <div class="mobile-nav-overlay" id="mobileNavOverlay"></div>
 
-<!-- ── Mobile slide-in drawer ── -->
+<!-- ═══════════════════════════════════════════════════════
+     MOBILE DRAWER
+     ═══════════════════════════════════════════════════════ -->
 <nav class="mobile-nav" id="mobileNav" aria-label="Mobile navigation">
+
     <div class="mobile-nav-header">
         <span class="logo-text">Event<em>aura</em></span>
         <button class="mobile-nav-close" id="mobileNavClose" aria-label="Close menu">✕</button>
     </div>
+
     <div class="mobile-search">
         <span>🔍</span>
         <input type="text" placeholder="Search events, cities...">
     </div>
-    <div class="mobile-nav-links">
-        <a th:href="@{/}"            class="mobile-nav-link"><span class="mnl-icon">🏠</span>Home</a>
-        <a th:href="@{/events}"      class="mobile-nav-link"><span class="mnl-icon">🔥</span>Events</a>
-        <a th:href="@{/categories}"  class="mobile-nav-link"><span class="mnl-icon">🏷️</span>Categories</a>
-        <a th:href="@{/about}"       class="mobile-nav-link"><span class="mnl-icon">ℹ️</span>About</a>
-        <a th:href="@{/createEvent}" class="mobile-nav-link"><span class="mnl-icon">📅</span>Create Event</a>
-        <a th:href="@{/tickets}"     class="mobile-nav-link"><span class="mnl-icon">🎟️</span>My Tickets</a>
-        <a th:href="@{/profile}"     class="mobile-nav-link"><span class="mnl-icon">👤</span>Profile</a>
+
+    <!-- skeleton shown while API call is in-flight -->
+    <div id="mnSkeleton" style="display:none; margin:8px 10px 0;">
+        <div class="psb-skeleton">
+            <div class="psb-skeleton-avatar"></div>
+            <div class="psb-skeleton-lines">
+                <div class="psb-skeleton-line"></div>
+                <div class="psb-skeleton-line short"></div>
+            </div>
+        </div>
     </div>
+
+    <!-- user card (all logged-in roles) -->
+    <div id="mnUserCard" style="display:none; margin:8px 10px 0;">
+        <div class="psb-user-card">
+            <div class="psb-avatar">👤</div>
+            <div class="psb-user-info">
+                <div class="psb-user-name" id="mnUserName">User</div>
+                <div class="psb-user-role" id="mnUserRole">Member</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- guest card -->
+    <div id="mnGuestCard" style="margin:8px 10px 0;">
+        <div class="psb-guest-card">
+            <p>Sign in to access your events, tickets and profile.</p>
+            <div class="psb-guest-btns">
+                <a href="/login"    class="psb-btn-login">Login</a>
+                <a href="/register" class="psb-btn-signup">Sign Up</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- MY ACCOUNT — USER · ORGANIZER · ADMIN -->
+    <div id="mn-my-account" style="display:none;">
+        <div class="psb-section-label">My Account</div>
+        <div class="mobile-nav-links" style="padding-top:0;">
+            <a href="/profile"  class="mobile-nav-link"><span class="mnl-icon">👤</span>Profile</a>
+            <a href="/"         class="mobile-nav-link"><span class="mnl-icon">🏠</span>Home</a>
+            <a href="/moments"  class="mobile-nav-link"><span class="mnl-icon">📸</span>Moments</a>
+            <a href="/tickets"  class="mobile-nav-link"><span class="mnl-icon">🎟️</span>My Tickets</a>
+            <a href="/aboutUs"  class="mobile-nav-link"><span class="mnl-icon">ℹ️</span>About Us</a>
+        </div>
+    </div>
+
+    <!-- ADMIN — ADMIN only -->
+    <div id="mn-admin" style="display:none;">
+        <div class="psb-divider" style="margin:4px 16px;"></div>
+        <div class="psb-section-label">Admin</div>
+        <div class="mobile-nav-links" style="padding-top:0;">
+            <a href="/adminPage"    class="mobile-nav-link"><span class="mnl-icon">🛡️</span>Admin Page<span class="psb-admin-badge">Admin</span></a>
+            <a href="/campusEvents" class="mobile-nav-link"><span class="mnl-icon">📋</span>Campus Events<span class="psb-admin-badge">Admin</span></a>
+        </div>
+    </div>
+
+    <!-- HOST — ORGANIZER · ADMIN -->
+    <div id="mn-host" style="display:none;">
+        <div class="psb-divider" style="margin:4px 16px;"></div>
+        <div class="psb-section-label">Host</div>
+        <div class="mobile-nav-links" style="padding-top:0;">
+            <a href="/createEvent"  class="mobile-nav-link"><span class="mnl-icon">📅</span>Create Event</a>
+            <a href="/hostedEvents" class="mobile-nav-link"><span class="mnl-icon">🎪</span>Hosted Events</a>
+        </div>
+    </div>
+
+    <!-- GUEST NAV — not logged in -->
+    <div id="mn-guest-nav">
+        <div class="mobile-nav-links">
+            <a href="/"        class="mobile-nav-link"><span class="mnl-icon">🏠</span>Home</a>
+            <a href="/moments" class="mobile-nav-link"><span class="mnl-icon">📸</span>Moments</a>
+            <a href="/aboutUs" class="mobile-nav-link"><span class="mnl-icon">ℹ️</span>About Us</a>
+        </div>
+    </div>
+
+    <!-- footer -->
     <div class="mobile-nav-footer">
         <div id="mobileNavGuest">
-            <a th:href="@{/login}"    class="btn primary" style="text-align:center;display:block;">Login</a>
-            <a th:href="@{/register}" class="btn primary" style="text-align:center;display:block;margin-top:10px;">Sign Up</a>
+            <a href="/login"    class="btn primary" style="text-align:center;display:block;">Login</a>
+            <a href="/register" class="btn primary" style="text-align:center;display:block;margin-top:10px;">Sign Up</a>
         </div>
         <div id="mobileNavUser" style="display:none;">
-            <a onclick="logout()" class="btn primary" style="text-align:center;display:block;background:#ef4444;border-color:#ef4444;">Sign Out</a>
+            <button onclick="logout()" class="btn primary" style="text-align:center;display:block;background:#ef4444;border-color:#ef4444;">Sign Out</button>
         </div>
     </div>
+
 </nav>
 
-<!-- ══════════════════════════════════
-     PROFILE HERO BANNER
-     ══════════════════════════════════ -->
+<!-- ═══════════════════════════════════════════════════════
+     PROFILE SIDEBAR (desktop 👤 button)
+     ═══════════════════════════════════════════════════════ -->
+<div class="profile-overlay" id="profileOverlay"></div>
+
+<aside class="profile-sidebar" id="profileSidebar" aria-label="Profile menu">
+
+    <div class="psb-header">
+        <span class="psb-title">My Account</span>
+        <button class="psb-close" id="profileSidebarClose" aria-label="Close">✕</button>
+    </div>
+
+    <!-- skeleton -->
+    <div id="psbSkeleton" style="display:none; margin:16px 16px 0;">
+        <div class="psb-skeleton">
+            <div class="psb-skeleton-avatar"></div>
+            <div class="psb-skeleton-lines">
+                <div class="psb-skeleton-line"></div>
+                <div class="psb-skeleton-line short"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- user card -->
+    <div id="psbUserCard" style="display:none; margin:16px 16px 0;">
+        <div class="psb-user-card">
+            <div class="psb-avatar">👤</div>
+            <div class="psb-user-info">
+                <div class="psb-user-name" id="psbUserName">User</div>
+                <div class="psb-user-role" id="psbUserRole">Member</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- guest card -->
+    <div id="psbGuestCard" style="margin:16px 16px 0;">
+        <div class="psb-guest-card">
+            <p>Sign in to access your events, tickets and profile.</p>
+            <div class="psb-guest-btns">
+                <a href="/login"    class="psb-btn-login">Login</a>
+                <a href="/register" class="psb-btn-signup">Sign Up</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- MY ACCOUNT -->
+    <div id="psb-my-account" style="display:none;">
+        <div class="psb-section-label">My Account</div>
+        <nav class="psb-nav" style="padding-top:0;">
+            <a href="/profile"  class="psb-nav-item"><span class="psb-nav-icon">👤</span><span>Profile</span></a>
+            <a href="/"         class="psb-nav-item"><span class="psb-nav-icon">🏠</span><span>Home</span></a>
+            <a href="/moments"  class="psb-nav-item"><span class="psb-nav-icon">📸</span><span>Moments</span></a>
+            <a href="/tickets"  class="psb-nav-item"><span class="psb-nav-icon">🎟️</span><span>My Tickets</span></a>
+            <a href="/aboutUs"  class="psb-nav-item"><span class="psb-nav-icon">ℹ️</span><span>About Us</span></a>
+        </nav>
+    </div>
+
+    <!-- ADMIN -->
+    <div id="psb-admin" style="display:none;">
+        <div class="psb-divider"></div>
+        <div class="psb-section-label">Admin</div>
+        <nav class="psb-nav" style="padding-top:0;">
+            <a href="/adminPage"    class="psb-nav-item"><span class="psb-nav-icon">🛡️</span><span>Admin Page</span><span class="psb-admin-badge">Admin</span></a>
+            <a href="/campusEvents" class="psb-nav-item"><span class="psb-nav-icon">📋</span><span>Campus Events</span><span class="psb-admin-badge">Admin</span></a>
+        </nav>
+    </div>
+
+    <!-- HOST -->
+    <div id="psb-host" style="display:none;">
+        <div class="psb-divider"></div>
+        <div class="psb-section-label">Host</div>
+        <nav class="psb-nav" style="padding-top:0;">
+            <a href="/createEvent"  class="psb-nav-item"><span class="psb-nav-icon">📅</span><span>Create Event</span></a>
+            <a href="/hostedEvents" class="psb-nav-item"><span class="psb-nav-icon">🎪</span><span>Hosted Events</span></a>
+        </nav>
+    </div>
+
+    <!-- Logout -->
+    <div id="psb-logout" style="display:none;">
+        <div class="psb-divider"></div>
+        <nav class="psb-nav" style="padding-top:0;">
+            <button onclick="logout()" class="psb-nav-item logout"><span class="psb-nav-icon">🚪</span><span>Logout</span></button>
+        </nav>
+    </div>
+
+    <!-- GUEST NAV -->
+    <div id="psb-guest-nav">
+        <div class="psb-section-label">Explore</div>
+        <nav class="psb-nav" style="padding-top:0;">
+            <a href="/myEvents" class="psb-nav-item"><span class="psb-nav-icon">🔥</span><span>Browse Events</span></a>
+            <a href="/aboutUs"  class="psb-nav-item"><span class="psb-nav-icon">ℹ️</span><span>About Us</span></a>
+        </nav>
+    </div>
+
+    <div class="psb-footer">
+        <p class="psb-footer-text">© 2026 Eventaura · Made with ❤️ in India</p>
+    </div>
+
+</aside>
+
+<!-- ═══════════════════ PROFILE HERO BANNER ═══════════════════ -->
 <section class="profile-hero">
     <div class="hero-bg-pattern"></div>
     <div class="hero-content">
@@ -140,20 +306,26 @@
     </div>
 </section>
 
-<!-- ══════════════════════════════════
-     MAIN CONTENT GRID
-     ══════════════════════════════════ -->
+<!-- ═══════════════════ MAIN CONTENT GRID ═══════════════════ -->
 <div class="profile-body">
 
     <!-- ── LEFT: Settings panels ── -->
-    <aside class="profile-sidebar">
+    <aside class="profile-sidebar-tabs">
 
         <nav class="tab-nav">
             <button class="tab-btn active" data-tab="info">👤 Profile Info</button>
             <button class="tab-btn" data-tab="password">🔒 Change Password</button>
             <button class="tab-btn" data-tab="notifications">🔔 Notifications</button>
-            <button id="logoutBtn" class="tab-btn" data-tab="logout">❌ Logout</button>
-            <a href="/becomeOrganizer" class="tab-btn" data-tab="logout">🥇 Become Host</a>
+            <button id="logoutBtn" class="tab-btn">❌ Logout</button>
+
+            <!--
+                Become Host — rendered dynamically by loadHostStatus():
+                  NONE     → "🥇 Become Host" link to /becomeOrganizer
+                  PENDING  → disabled button with amber "Pending Review" badge
+                  REJECTED → "🔄 Re-apply as Host" link with red "Rejected" badge
+                  APPROVED / ADMIN → hidden entirely
+            -->
+            <div id="becomeHostWrap"></div>
         </nav>
 
         <!-- ── TAB: Profile Info ── -->
@@ -304,13 +476,10 @@
 
     </aside>
 
-    <!-- ── RIGHT: Tickets ── -->
+    <!-- ── RIGHT: Tickets & Events ── -->
     <section class="profile-main">
 
-        <!-- ══════════════════════════════════
-             SECTION 1 — MY TICKETS
-             API: GET /api/v1/tickets/myTickets
-        ══════════════════════════════════ -->
+        <!-- SECTION 1 — MY TICKETS -->
         <div class="tickets-section">
             <div class="tickets-header">
                 <h2>🎟️ My Tickets</h2>
@@ -329,29 +498,22 @@
                     </div>
                 </div>
             </div>
-            <!-- loading skeleton -->
             <div class="section-loading" id="ticketsLoading">
                 <div class="skel-ticket"></div>
                 <div class="skel-ticket"></div>
             </div>
-            <!-- error state -->
             <div class="section-empty" id="ticketsEmpty" style="display:none;">
                 <div class="empty-icon">🎟️</div>
                 <p>No tickets yet. Go register for an event!</p>
                 <a href="/#events" class="ticket-action-btn" style="margin-top:12px;display:inline-block;">Browse Events →</a>
             </div>
-            <!-- ticket list -->
             <div class="ticket-strip" id="ticketStrip" style="display:none;"></div>
-            <!-- load more -->
             <div style="text-align:center;margin-top:18px;display:none;" id="ticketsMoreWrap">
                 <button class="load-more-btn" id="ticketsMoreBtn">Load More Tickets</button>
             </div>
         </div>
 
-        <!-- ══════════════════════════════════
-             SECTION 2 — EVENTS ATTENDED
-             API: GET /api/v1/event/getJoinedEvents
-        ══════════════════════════════════ -->
+        <!-- SECTION 2 — EVENTS ATTENDED -->
         <div class="past-events-section">
             <div class="tickets-header">
                 <h2>📅 Events Attended</h2>
@@ -379,16 +541,12 @@
                 <p>You haven't attended any events yet.</p>
             </div>
             <div class="past-grid" id="joinedGrid" style="display:none;"></div>
-            <!-- load more -->
             <div style="text-align:center;margin-top:18px;display:none;" id="joinedMoreWrap">
                 <button class="load-more-btn" id="joinedMoreBtn">Load More</button>
             </div>
         </div>
 
-        <!-- ══════════════════════════════════
-             SECTION 3 — EVENTS HOSTED
-             API: GET /api/v1/event/getHostedEvents
-        ══════════════════════════════════ -->
+        <!-- SECTION 3 — EVENTS HOSTED -->
         <div class="past-events-section">
             <div class="tickets-header">
                 <h2>🚀 Events Hosted</h2>
@@ -422,9 +580,7 @@
             </div>
         </div>
 
-        <!-- ══════════════════════════════════
-             DANGER ZONE
-        ══════════════════════════════════ -->
+        <!-- DANGER ZONE -->
         <div class="danger-zone">
             <div class="danger-text">
                 <h4>⚠️ Danger Zone</h4>
@@ -437,9 +593,7 @@
 
 </div>
 
-<!-- ══════════════════════════════════
-     FOOTER
-     ══════════════════════════════════ -->
+<!-- ═══════════════════ FOOTER ═══════════════════ -->
 <footer class="footer">
     <div class="footer-top">
         <div class="footer-brand">
@@ -464,9 +618,9 @@
             </div>
             <div class="footer-col">
                 <h4>Account</h4>
-                <a th:href="@{/profile}">My Profile</a>
-                <a th:href="@{/tickets}">My Tickets</a>
-                <a onclick="logout()">Sign Out</a>
+                <a href="/profile">My Profile</a>
+                <a href="/tickets">My Tickets</a>
+                <a onclick="logout()" style="cursor:pointer;">Sign Out</a>
             </div>
             <div class="footer-col">
                 <h4>Support</h4>
@@ -482,17 +636,95 @@
         <p>Delhi · Mumbai · Bangalore · Hyderabad · Chennai · Pune · Goa</p>
     </div>
 </footer>
-<script th:src="@{/basic.js}"></script>
+
+<script th:src="@{/js/basic.js}"></script>
 <script>
-    /* ── Tabs ── */
-    document.querySelectorAll('.tab-btn').forEach(btn => {
+
+    /* ════════════════════════════════════════════════════════
+       BECOME HOST — live status from /api/v1/auth/roleOfMe
+       Reuses apiFetch() from basic.js (auto token-refresh).
+
+       Status matrix:
+         NONE     → show "🥇 Become Host" link
+         PENDING  → show disabled button + amber "Pending Review" badge
+         REJECTED → show "🔄 Re-apply as Host" link + red "Rejected" badge
+         APPROVED → hide (user is already organizer; psb-host visible in sidebar)
+         ADMIN    → hide
+    ════════════════════════════════════════════════════════ */
+    async function loadHostStatus() {
+        const wrap = document.getElementById('becomeHostWrap');
+        if (!wrap) return;
+
+        const token = localStorage.getItem('accessToken');
+        if (!token) { wrap.style.display = 'none'; return; }
+
+        try {
+            const res = await apiFetch('/api/v1/auth/roleOfMe');
+            if (!res || !res.ok) { wrap.style.display = 'none'; return; }
+
+            const data   = await res.json();
+            const role   = String(data.role   || '').toUpperCase();
+            const status = String(data.status || 'NONE').toUpperCase();
+
+            // Already ADMIN or APPROVED organizer — hide the button completely
+            if (role === 'ROLE_ADMIN' || status === 'APPROVED') {
+                wrap.style.display = 'none';
+                return;
+            }
+
+            if (status === 'PENDING') {
+                wrap.innerHTML = `
+                    <button class="tab-btn" disabled
+                            title="Your host application is under review"
+                            style="opacity:1;cursor:not-allowed;display:flex;align-items:center;gap:8px;pointer-events:none;">
+                        ⏳ <span>Host Request</span>
+                        <span style="margin-left:auto;background:#fef3c7;color:#92400e;font-size:10px;
+                                     font-weight:700;padding:2px 8px;border-radius:50px;
+                                     border:1px solid #fde68a;white-space:nowrap;">
+                            Pending Review
+                        </span>
+                    </button>`;
+            } else if (status === 'REJECTED') {
+                wrap.innerHTML = `
+                    <a href="/becomeOrganizer" class="tab-btn"
+                       title="Your previous application was rejected — you may re-apply"
+                       style="display:flex;align-items:center;gap:8px;text-decoration:none;">
+                        🔄 <span>Re-apply as Host</span>
+                        <span style="margin-left:auto;background:#fef2f2;color:#991b1b;font-size:10px;
+                                     font-weight:700;padding:2px 8px;border-radius:50px;
+                                     border:1px solid #fecaca;white-space:nowrap;">
+                            Rejected
+                        </span>
+                    </a>`;
+            } else {
+                // NONE — first-time applicant
+                wrap.innerHTML = `
+                    <a href="/becomeOrganizer" class="tab-btn"
+                       style="display:flex;align-items:center;gap:8px;text-decoration:none;">
+                        🥇 <span>Become Host</span>
+                    </a>`;
+            }
+
+        } catch (err) {
+            console.error('[HostStatus] failed:', err);
+            wrap.style.display = 'none';
+        }
+    }
+
+    /* ── Tab switching (only buttons with data-tab) ── */
+    document.querySelectorAll('.tab-btn[data-tab]').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
             btn.classList.add('active');
-            document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+            const panel = document.getElementById('tab-' + btn.dataset.tab);
+            if (panel) panel.classList.add('active');
         });
     });
+
+    /* ── Logout button in tab nav ── */
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) logoutBtn.addEventListener('click', logout);
 
     /* ── Password visibility toggles ── */
     document.querySelectorAll('.toggle-pw').forEach(btn => {
@@ -505,10 +737,10 @@
     });
 
     /* ── Password strength meter ── */
-    const newPw = document.getElementById('newPassword');
-    const pwBar = document.getElementById('pwBar');
+    const newPw   = document.getElementById('newPassword');
+    const pwBar   = document.getElementById('pwBar');
     const pwLabel = document.getElementById('pwLabel');
-    const rules = {
+    const rules   = {
         'rule-len':     v => v.length >= 4,
         'rule-upper':   v => /[A-Z]/.test(v),
         'rule-num':     v => /[0-9]/.test(v),
@@ -530,10 +762,10 @@
                 { label: 'Strong', color: '#22c55e',     width: '100%' },
             ];
             const lvl = val.length === 0 ? levels[0] : (levels[score] || levels[1]);
-            pwBar.style.width = lvl.width;
+            pwBar.style.width      = lvl.width;
             pwBar.style.background = lvl.color;
-            pwLabel.textContent = lvl.label;
-            pwLabel.style.color = lvl.color;
+            pwLabel.textContent    = lvl.label;
+            pwLabel.style.color    = lvl.color;
         });
     }
 
@@ -547,20 +779,11 @@
         });
     }
 
-    /* ── Mobile nav auth state ── */
-    if (localStorage.getItem('accessToken')) {
-        document.getElementById('mobileNavGuest').style.display = 'none';
-        document.getElementById('mobileNavUser').style.display  = 'block';
-    }
-
     /* ════════════════════════════════════════════
        SECTION LOADERS — Tickets / Joined / Hosted
     ════════════════════════════════════════════ */
-
-    /* token is already declared in profile.js — read it fresh here */
     const profileToken = localStorage.getItem('accessToken');
 
-    /* ── Helpers ── */
     function fmtDate(d) {
         if (!d) return '—';
         return new Date(d + 'T00:00:00').toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' });
@@ -575,7 +798,6 @@
         return new Date(dateStr + 'T00:00:00') >= today;
     }
 
-    /* ── Build boarding-pass ticket card ── */
     function buildTicketCard(t) {
         const ev       = t.event || {};
         const upcoming = ev.eventDate ? isUpcoming(ev.eventDate) : false;
@@ -584,7 +806,6 @@
             : upcoming
             ? '<span class="ticket-status upcoming-badge">Upcoming</span>'
             : '<span class="ticket-status" style="background:#f8fafc;color:#64748b;border:1px solid #e2e8f0;">Past</span>';
-
         return `
         <div class="ticket-card ${upcoming ? 'upcoming' : 'past'}">
             <div class="ticket-left">
@@ -611,25 +832,14 @@
             </div>
             <div class="ticket-tear"></div>
             <div class="ticket-right">
-                <img
-                    src="${t.qrUrl}"
-                    alt="QR Code"
-                    style="
-                        width: 120px;
-                        height: 120px;
-                        background: white;
-                        padding: 6px;
-                        border-radius: 10px;
-                    "
-                />
+                <img src="${t.qrUrl}" alt="QR Code"
+                     style="width:120px;height:120px;background:white;padding:6px;border-radius:10px;"/>
             </div>
         </div>`;
     }
 
-    /* ── Build event grid card (joined / hosted) ── */
     function buildEventCard(ev, badge) {
         const upcoming = ev.eventDate ? isUpcoming(ev.eventDate) : false;
-        const soldOut  = ev.ticketsAvailable <= 0;
         return `
         <div class="past-card" style="cursor:pointer;" onclick="location.href='/eventDetail/${ev.eventId}'">
             <img src="${ev.bannerUrl || ''}" alt="${ev.title}"
@@ -642,26 +852,18 @@
         </div>`;
     }
 
-    /* ────────────────────────────────
-       1. MY TICKETS
-       Response: Page<TicketResponse>
-       → data.content is the array
-    ──────────────────────────────── */
+    /* ── 1. MY TICKETS ── */
     let ticketPage = 0, ticketDone = false, ticketSize = 10;
 
-    /* ── Wire size pills ── */
-    document.querySelectorAll('.ts-pill').forEach(pill => {
+    document.querySelectorAll('#ticketSizePills .ts-pill').forEach(pill => {
         pill.addEventListener('click', () => {
-            document.querySelectorAll('.ts-pill').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('#ticketSizePills .ts-pill').forEach(p => p.classList.remove('active'));
             pill.classList.add('active');
-            ticketSize = parseInt(pill.dataset.size);
-            ticketPage = 0;
-            /* clear strip and reload with new size */
+            ticketSize = parseInt(pill.dataset.size); ticketPage = 0;
             const strip = document.getElementById('ticketStrip');
-            strip.innerHTML = '';
-            strip.style.display = 'none';
-            document.getElementById('ticketsLoading').style.display = 'flex';
-            document.getElementById('ticketsEmpty').style.display   = 'none';
+            strip.innerHTML = ''; strip.style.display = 'none';
+            document.getElementById('ticketsLoading').style.display  = 'flex';
+            document.getElementById('ticketsEmpty').style.display    = 'none';
             document.getElementById('ticketsMoreWrap').style.display = 'none';
             loadMyTickets(0);
         });
@@ -674,62 +876,43 @@
                 headers: { 'Authorization': 'Bearer ' + profileToken }
             });
             if (!res.ok) throw new Error(res.status);
-
             const data    = await res.json();
-            const tickets = data.content || [];   // ← Page wrapper
-
+            const tickets = data.content || [];
             if (page === 0) document.getElementById('ticketsLoading').style.display = 'none';
-
             if (!tickets.length && page === 0) {
-                document.getElementById('ticketsEmpty').style.display = 'block';
-                return;
+                document.getElementById('ticketsEmpty').style.display = 'block'; return;
             }
-
             const total = data.totalElements || tickets.length;
-            document.getElementById('ticketCount').textContent =
-                total + ' ticket' + (total !== 1 ? 's' : '');
-
-            /* ── hero badge: total tickets ── */
-            document.getElementById('statTotalTickets').textContent = total;
-
-            /* ── hero badge: member year from first ticket's user.createdAt ── */
+            document.getElementById('ticketCount').textContent       = total + ' ticket' + (total !== 1 ? 's' : '');
+            document.getElementById('statTotalTickets').textContent  = total;
             const firstUser = tickets[0]?.user;
             if (firstUser?.createdAt) {
-                document.getElementById('statMemberYear').textContent =
-                    new Date(firstUser.createdAt).getFullYear();
+                document.getElementById('statMemberYear').textContent = new Date(firstUser.createdAt).getFullYear();
             }
-
             const strip = document.getElementById('ticketStrip');
             strip.style.display = 'flex';
             strip.innerHTML += tickets.map(buildTicketCard).join('');
-
             ticketDone = data.last;
-            const moreWrap = document.getElementById('ticketsMoreWrap');
-            if (moreWrap) moreWrap.style.display = ticketDone ? 'none' : 'block';
-
+            document.getElementById('ticketsMoreWrap').style.display = ticketDone ? 'none' : 'block';
         } catch (err) {
             console.error('Tickets load error:', err);
             document.getElementById('ticketsLoading').style.display = 'none';
-            document.getElementById('ticketsEmpty').style.display = 'block';
+            document.getElementById('ticketsEmpty').style.display   = 'block';
         }
     }
 
-    /* ────────────────────────────────
-       2. EVENTS ATTENDED (joined)
-    ──────────────────────────────── */
+    /* ── 2. EVENTS ATTENDED ── */
     let joinedPage = 0, joinedDone = false, joinedSize = 8;
 
     document.querySelectorAll('#joinedSizePills .ts-pill').forEach(pill => {
         pill.addEventListener('click', () => {
             document.querySelectorAll('#joinedSizePills .ts-pill').forEach(p => p.classList.remove('active'));
             pill.classList.add('active');
-            joinedSize = parseInt(pill.dataset.size);
-            joinedPage = 0;
+            joinedSize = parseInt(pill.dataset.size); joinedPage = 0;
             const grid = document.getElementById('joinedGrid');
-            grid.innerHTML = '';
-            grid.style.display = 'none';
-            document.getElementById('joinedLoading').style.display = 'flex';
-            document.getElementById('joinedEmpty').style.display   = 'none';
+            grid.innerHTML = ''; grid.style.display = 'none';
+            document.getElementById('joinedLoading').style.display  = 'flex';
+            document.getElementById('joinedEmpty').style.display    = 'none';
             document.getElementById('joinedMoreWrap').style.display = 'none';
             loadJoined(0);
         });
@@ -738,67 +921,46 @@
     async function loadJoined(page = 0) {
         if (!profileToken) return;
         try {
-            const res  = await fetch(`/api/v1/event/getJoinedEvents?page=${page}&size=${joinedSize}`, {
+            const res = await fetch(`/api/v1/event/getJoinedEvents?page=${page}&size=${joinedSize}`, {
                 headers: { 'Authorization': 'Bearer ' + profileToken }
             });
             if (!res.ok) throw new Error(res.status);
             const data   = await res.json();
             const events = data.content || [];
-
             if (page === 0) document.getElementById('joinedLoading').style.display = 'none';
-
             if (!events.length && page === 0) {
-                document.getElementById('joinedEmpty').style.display = 'flex';
-                return;
+                document.getElementById('joinedEmpty').style.display = 'flex'; return;
             }
-
             const total = data.totalElements || events.length;
-            document.getElementById('joinedCount').textContent = total + ' event' + (total !== 1 ? 's' : '');
-
-            /* ── hero stats: total joined + upcoming count ── */
-            document.getElementById('statJoined').textContent = total;
-            /* count upcoming from this page; refine as more pages load */
+            document.getElementById('joinedCount').textContent  = total + ' event' + (total !== 1 ? 's' : '');
+            document.getElementById('statJoined').textContent   = total;
             const upcomingCount = events.filter(ev => isUpcoming(ev.eventDate)).length;
             const prevUpcoming  = parseInt(document.getElementById('statUpcoming').textContent) || 0;
             document.getElementById('statUpcoming').textContent = prevUpcoming + upcomingCount;
             const grid = document.getElementById('joinedGrid');
             grid.style.display = 'grid';
             grid.innerHTML += events.map(ev => buildEventCard(ev, isUpcoming(ev.eventDate) ? 'Registered' : 'Attended')).join('');
-
             joinedDone = data.last;
             document.getElementById('joinedMoreWrap').style.display = joinedDone ? 'none' : 'block';
         } catch (err) {
             console.error('Joined events error:', err);
             document.getElementById('joinedLoading').style.display = 'none';
-            document.getElementById('joinedEmpty').style.display = 'flex';
+            document.getElementById('joinedEmpty').style.display   = 'flex';
         }
     }
-    document.getElementById('ticketsMoreBtn').addEventListener('click', () => {
-        ticketPage++;
-        loadMyTickets(ticketPage);
-    });
 
-    document.getElementById('joinedMoreBtn').addEventListener('click', () => {
-        joinedPage++;
-        loadJoined(joinedPage);
-    });
-
-    /* ────────────────────────────────
-       3. EVENTS HOSTED
-    ──────────────────────────────── */
+    /* ── 3. EVENTS HOSTED ── */
     let hostedPage = 0, hostedDone = false, hostedSize = 8;
 
     document.querySelectorAll('#hostedSizePills .ts-pill').forEach(pill => {
         pill.addEventListener('click', () => {
             document.querySelectorAll('#hostedSizePills .ts-pill').forEach(p => p.classList.remove('active'));
             pill.classList.add('active');
-            hostedSize = parseInt(pill.dataset.size);
-            hostedPage = 0;
+            hostedSize = parseInt(pill.dataset.size); hostedPage = 0;
             const grid = document.getElementById('hostedGrid');
-            grid.innerHTML = '';
-            grid.style.display = 'none';
-            document.getElementById('hostedLoading').style.display = 'flex';
-            document.getElementById('hostedEmpty').style.display   = 'none';
+            grid.innerHTML = ''; grid.style.display = 'none';
+            document.getElementById('hostedLoading').style.display  = 'flex';
+            document.getElementById('hostedEmpty').style.display    = 'none';
             document.getElementById('hostedMoreWrap').style.display = 'none';
             loadHosted(0);
         });
@@ -807,53 +969,46 @@
     async function loadHosted(page = 0) {
         if (!profileToken) return;
         try {
-            const res  = await fetch(`/api/v1/event/getHostedEvents?page=${page}&size=${hostedSize}`, {
+            const res = await fetch(`/api/v1/event/getHostedEvents?page=${page}&size=${hostedSize}`, {
                 headers: { 'Authorization': 'Bearer ' + profileToken }
             });
             if (!res.ok) throw new Error(res.status);
             const data   = await res.json();
             const events = data.content || [];
-
             if (page === 0) document.getElementById('hostedLoading').style.display = 'none';
-
             if (!events.length && page === 0) {
-                document.getElementById('hostedEmpty').style.display = 'flex';
-                return;
+                document.getElementById('hostedEmpty').style.display = 'flex'; return;
             }
-
             const total = data.totalElements || events.length;
-            document.getElementById('hostedCount').textContent = total + ' event' + (total !== 1 ? 's' : '');
-
-            /* ── hero stat: events hosted ── */
-            document.getElementById('statHosted').textContent = total;
+            document.getElementById('hostedCount').textContent  = total + ' event' + (total !== 1 ? 's' : '');
+            document.getElementById('statHosted').textContent   = total;
             const grid = document.getElementById('hostedGrid');
             grid.style.display = 'grid';
             grid.innerHTML += events.map(ev => {
                 const upcoming = isUpcoming(ev.eventDate);
                 const sold     = ev.totalTickets - ev.ticketsAvailable;
-                const badge    = upcoming
-                    ? `🟢 ${ev.ticketsAvailable} left`
-                    : `${sold}/${ev.totalTickets} attended`;
+                const badge    = upcoming ? `🟢 ${ev.ticketsAvailable} left` : `${sold}/${ev.totalTickets} attended`;
                 return buildEventCard(ev, badge);
             }).join('');
-
             hostedDone = data.last;
             document.getElementById('hostedMoreWrap').style.display = hostedDone ? 'none' : 'block';
         } catch (err) {
             console.error('Hosted events error:', err);
             document.getElementById('hostedLoading').style.display = 'none';
-            document.getElementById('hostedEmpty').style.display = 'flex';
+            document.getElementById('hostedEmpty').style.display   = 'flex';
         }
     }
-    document.getElementById('hostedMoreBtn').addEventListener('click', () => {
-        hostedPage++;
-        loadHosted(hostedPage);
-    });
 
-    /* ── Kick off all three ── */
+    document.getElementById('ticketsMoreBtn').addEventListener('click', () => { ticketPage++; loadMyTickets(ticketPage); });
+    document.getElementById('joinedMoreBtn').addEventListener('click',  () => { joinedPage++;  loadJoined(joinedPage);   });
+    document.getElementById('hostedMoreBtn').addEventListener('click',  () => { hostedPage++;  loadHosted(hostedPage);   });
+
+    /* ── Boot all sections + host status ── */
     loadMyTickets(0);
     loadJoined(0);
     loadHosted(0);
+    loadHostStatus();
+
 </script>
 <script th:src="@{/js/profile.js}"></script>
 
