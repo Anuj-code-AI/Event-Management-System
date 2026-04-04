@@ -2,12 +2,11 @@ document.getElementById("registerForm").addEventListener("submit", async functio
 
     e.preventDefault();
 
-    const firstName = document.getElementById("firstName").value;
-    const lastName = document.getElementById("lastName").value;
+    const name = document.getElementById("name").value;
     const email = document.getElementById("email").value;
     const password = document.getElementById("password").value;
     const confirmPassword = document.getElementById("confirmPassword").value;
-    const name = firstName.concat(" ",lastName);
+
     // client side validation
     if (password !== confirmPassword) {
         alert("Passwords do not match");
@@ -73,7 +72,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 function redirectOAuth(provider) {
     if (provider === "google") {
-        window.location.href = "/oauth2/authorization/google";
+        window.location.href = "http://localhost:8080/oauth2/authorization/google";
     } else if (provider === "github") {
         window.location.href = "/oauth2/authorization/github";
     }

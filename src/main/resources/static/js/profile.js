@@ -104,77 +104,8 @@ async function deleteAccount(){
             console.error(err);
         }
 }
-
-document.getElementById("changeName-form").addEventListener("submit", async function (e) {
-    e.preventDefault();
-    const firstName = document.getElementById("firstName").value;
-    const lastName = document.getElementById("lastName").value;
-    const name = firstName.concat(" ",lastName);
-    const token = localStorage.getItem("accessToken");
-    try {
-
-        const response = await fetch("/api/v1/auth/update/me", {
-            method: "PATCH",
-            headers: {
-                "Authorization":"Bearer "+token,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                name: name
-            })
-        });
-
-        if (!response.ok) {
-            throw new Error("Error while changing name");
-        }
-
-        const data = await response.json();
-        alert("Profil updated successfully");
-        loadProfile();
-
-    } catch (err) {
-
-        alert("Error while changing name");
-
-    }
-});
-document.getElementById("pwForm").addEventListener("submit", async function (e) {
-    e.preventDefault();
-    const newPassword = document.getElementById("newPassword").value;
-    const confirmPassword = document.getElementById("confirmPassword").value;
-    // client side validation
-    if (newPassword !== confirmPassword) {
-        alert("Passwords do not match");
-        return;
-    }
-    const token = localStorage.getItem("accessToken");
-    try {
-
-        const response = await fetch("/api/v1/auth/update/me", {
-            method: "PATCH",
-            headers: {
-                "Authorization":"Bearer "+token,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                password: newPassword
-            })
-        });
-
-        if (!response.ok) {
-            throw new Error("Error while changing password");
-        }
-
-        const data = await response.json();
-        alert("Password updated successfully!")
-        loadProfile();
-
-    } catch (err) {
-
-        alert("Error while changing password");
-
-    }
-});
-
-document.getElementById("deleteAccount").addEventListener("click", deleteAccount);
+const deleteBtn = document.getElementById("deleteAccount");
+if(deleteBtn){
+    deleteBtn.addEventListener("click", deleteAccount);
+}
 document.getElementById("logoutBtn").addEventListener("click", logout);
