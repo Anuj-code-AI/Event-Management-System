@@ -36,6 +36,7 @@ public class AuthServiceImpl implements AuthService{
 
 
     @Override
+    @Transactional
     public Map<String, String> register(RegisterRequest req) {
         if(userRepository.findByEmail(req.getEmail()).isPresent()){
             throw new UserAlreadyExistException("User already Exception");
@@ -99,6 +100,7 @@ public class AuthServiceImpl implements AuthService{
 
 
     @Override
+    @Transactional
     public UserResponse updateProfile(UserRequest request, Authentication authentication) {
         User user = userRepository.findByEmail(authentication.getName())
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
