@@ -62,7 +62,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 function redirectOAuth(provider) {
     if (provider === "google") {
-        window.location.href = "https://eventaura-iemd.onrender.com/login/oauth2/authorization/google";
+        window.location.href = "https://eventaura-iemd.onrender.com/oauth2/authorization/google";
     } else if (provider === "github") {
         window.location.href = "/oauth2/authorization/github";
     }
