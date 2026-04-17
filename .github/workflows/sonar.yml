@@ -1,24 +1,22 @@
 name: Sonar
 
 on:
-push:
-branches:
-  - main
-  - dev
+  push:
+    branches:
+      - main
+      - dev
 
 jobs:
-sonar:
-runs-on: ubuntu-latest
+  sonar:
+    runs-on: ubuntu-latest
 
-steps:
-  - name: Checkout code
-    uses: actions/checkout@v4
+    steps:
+      - uses: actions/checkout@v4
 
-  - name: Setup Java
-    uses: actions/setup-java@v4
-    with:
-      distribution: 'temurin'
-      java-version: '21'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
 
-  - name: Build and analyze
-    run: ./mvnw clean verify sonar:sonar -Dsonar.host.url=https://sonarcloud.io
+      - name: Build and analyze
+        run: ./mvnw clean verify sonar:sonar -Dsonar.projectKey=Anuj-code-AI_Event-Management-System -Dsonar.organization=anuj-code-ai -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=${{ secrets.SONAR_TOKEN }}
