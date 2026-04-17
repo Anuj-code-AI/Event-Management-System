@@ -18,5 +18,8 @@ jobs:
           distribution: temurin
           java-version: 21
 
+      - name: Give execute permission
+        run: chmod +x mvnw
+
       - name: Build and analyze
         run: ./mvnw clean verify sonar:sonar -Dsonar.projectKey=Anuj-code-AI_Event-Management-System -Dsonar.organization=anuj-code-ai -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=${{ secrets.SONAR_TOKEN }}
