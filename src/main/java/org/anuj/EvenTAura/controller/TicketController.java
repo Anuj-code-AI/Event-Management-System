@@ -7,14 +7,18 @@ import org.anuj.EvenTAura.dto.AudienceResponse;
 import org.anuj.EvenTAura.dto.TicketCheckResponse;
 import org.anuj.EvenTAura.dto.TicketRequest;
 import org.anuj.EvenTAura.dto.TicketResponse;
+import org.anuj.EvenTAura.exception.EventNotExistException;
 import org.anuj.EvenTAura.model.Ticket;
+import org.anuj.EvenTAura.repository.EventRepository;
 import org.anuj.EvenTAura.repository.TicketRepository;
+import org.anuj.EvenTAura.service.CloudinaryService;
 import org.anuj.EvenTAura.service.TicketService;
 import org.anuj.EvenTAura.util.QRCodeGenerator;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -24,10 +28,19 @@ import java.util.List;
 public class TicketController {
     private final TicketService ticketService;
     private final TicketRepository ticketRepository;
+    private final EventRepository eventRepository;
+    private final CloudinaryService cloudinaryService;
 
     @PostMapping("/buy/{eventId}")
-    public ResponseEntity<List<TicketResponse>> buyTicket(@PathVariable Long eventId, @Valid @RequestBody TicketRequest req, Authentication auth) {
-        return ResponseEntity.ok(ticketService.buyTicket(eventId,req,auth));
+    public ResponseEntity<?> buyTicket(
+            @PathVariable Long eventId,
+            @ModelAttribute TicketRequest req,
+            @RequestParam(value = "paymentScreenShot", required = false) MultipartFile file,
+            Authentication auth) {
+
+        return ResponseEntity.ok(
+                ticketService.buyTicket(eventId, file, req, auth)
+        );
     }
 
     @GetMapping("/myTickets")

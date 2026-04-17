@@ -23,6 +23,8 @@ public class EventMapper {
         event.setTicketsAvailable(req.getTicketsAvailable());
         event.setBannerUrl(req.getBannerUrl());
         event.setTicketUrl(req.getTicketUrl());
+        event.setPaymentQrUrl(req.getPaymentQrUrl());
+        event.setTicketPrice(req.getTicketPrice());
         event.setCategory(req.getCategory());
         event.setUser(user);
         event.setEventStatus(EventStatus.PENDING);
@@ -42,6 +44,8 @@ public class EventMapper {
                 event.getTicketsAvailable(),
                 event.getBannerUrl(),
                 event.getTicketUrl(),
+                event.getPaymentQrUrl(),
+                event.getTicketPrice(),
                 event.getCategory(),
                 event.getClub(),
                 event.getUser()
@@ -78,6 +82,12 @@ public class EventMapper {
         }
         if(req.getTicketUrl() != null){
             event.setTicketUrl(req.getTicketUrl());
+        }
+        if(req.getPaymentQrUrl() != null){
+            event.setPaymentQrUrl(req.getPaymentQrUrl());
+        }
+        if(req.getTicketPrice() != null){
+            event.setTicketPrice(req.getTicketPrice());
         }
         if(req.getCategory() != null){
             event.setCategory(req.getCategory());

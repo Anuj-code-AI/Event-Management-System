@@ -28,6 +28,7 @@ public class EventController {
             @ModelAttribute EventRequest request,
             @RequestParam("banner") MultipartFile banner,
             @RequestParam("ticket") MultipartFile ticket,
+            @RequestParam(value = "paymentQr", required = false) MultipartFile paymentQr,
             Authentication authentication
     ) {
 
@@ -39,20 +40,25 @@ public class EventController {
             return ResponseEntity.badRequest().body("Ticket image required");
         }
 
+        if (request.getTicketPrice() > 0) {
+            if (paymentQr == null || paymentQr.isEmpty()) {
+                return ResponseEntity.badRequest().body("Payment QR required for paid events");
+            }
+        }
 
-        //String bannerUrl = fileStorageService.saveImage(banner,"Banner");
+        String paymentQrUrl = null;
+        if (paymentQr != null && !paymentQr.isEmpty()) {
+            paymentQrUrl = cloudinaryService.uploadImage(paymentQr, "paymentQr");
+        }
+
         String bannerUrl = cloudinaryService.uploadImage(banner, "Banner");
-
-        //String ticketUrl = fileStorageService.saveImage(ticket,"Ticket");
-        String ticketUrl = cloudinaryService.uploadImage(ticket, "Banner");
-
+        String ticketUrl = cloudinaryService.uploadImage(ticket, "ticket");
 
         request.setBannerUrl(bannerUrl);
         request.setTicketUrl(ticketUrl);
+        request.setPaymentQrUrl(paymentQrUrl);
 
-
-
-        return ResponseEntity.ok(eventService.createEvent(request,authentication));
+        return ResponseEntity.ok(eventService.createEvent(request, authentication));
     }
 
     @GetMapping("/getEvent/{eventId}")

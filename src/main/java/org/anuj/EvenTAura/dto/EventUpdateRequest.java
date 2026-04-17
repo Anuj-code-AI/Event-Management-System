@@ -22,6 +22,8 @@ public class EventUpdateRequest {
     private String club;
     private String bannerUrl;
     private String ticketUrl;
+    private String paymentQrUrl;
+    private Double ticketPrice;
     private String category;
     private User organizer;
 }

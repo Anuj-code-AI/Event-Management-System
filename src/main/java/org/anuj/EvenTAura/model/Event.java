@@ -27,17 +27,18 @@ public class Event {
     private String location;
 
     private LocalDate eventDate;
-
     private LocalTime eventTime;
 
     private int totalTickets;
-
     private int ticketsAvailable;
 
     private String bannerUrl;
     private String ticketUrl;
-    private String category;
+    private String PaymentQrUrl;
 
+    private Double ticketPrice;
+
+    private String category;
     private String club;
 
     @ManyToOne

@@ -19,6 +19,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -33,6 +34,7 @@ public class TicketServiceImpl implements TicketService{
     private final TicketRepository ticketRepository;
     private final UserRepository userRepository;
     private final EventRepository eventRepository;
+    private final CloudinaryService cloudinaryService;
 
     private String generateTicketCode() {
         // Numeric code: fits in a Long, unique enough for tickets
@@ -42,41 +44,68 @@ public class TicketServiceImpl implements TicketService{
 
     @Override
     @Transactional
-    public List<TicketResponse> buyTicket(Long eventId, TicketRequest req, Authentication auth) {
+    public List<TicketResponse> buyTicket(
+            Long eventId,
+            MultipartFile file,
+            TicketRequest req,
+            Authentication auth
+    ) {
+        // ================= USER =================
         User user = userRepository.findByEmail(auth.getName())
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
+        // ================= EVENT =================
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new EventNotExistException("No event found with this id"));
 
-        if (event.getTicketsAvailable() < req.getNumberOfTickets()) {
-            throw new MaxTicketReachedException("The no. of tickets you requested are not available");
+        // ================= VALIDATIONS =================
+        if (req.getNumberOfTickets() <= 0) {
+            throw new IllegalArgumentException("Ticket count must be greater than 0");
         }
 
+        if (event.getTicketsAvailable() < req.getNumberOfTickets()) {
+            throw new MaxTicketReachedException("Requested tickets exceed availability");
+        }
+
+        String paymentScreenShotUrl = null;
+
+        if (event.getTicketPrice() > 0) {
+            if (file == null || file.isEmpty()) {
+                throw new IllegalArgumentException("Payment screenshot required for paid events");
+            }
+
+            // Optional: validate file type/size here
+            paymentScreenShotUrl = cloudinaryService.uploadImage(file, "paymentScreenShot");
+        }
+
+        // ================= CREATE TICKETS =================
         List<Ticket> tickets = new ArrayList<>();
 
         for (int i = 0; i < req.getNumberOfTickets(); i++) {
-            String code = generateTicketCode();
-            // QR data is the full check-in URL — numeric at the end so frontend regex works
             tickets.add(new Ticket(
                     null,
-                    code,
+                    generateTicketCode(),
                     false,
                     LocalDateTime.now(),
                     null,
                     TicketStatus.ACTIVE,
+                    paymentScreenShotUrl,
                     event,
                     user
             ));
         }
 
-        int updatedTicketsAvailable = event.getTicketsAvailable() - req.getNumberOfTickets();
-        event.setTicketsAvailable(updatedTicketsAvailable);
+        // ================= UPDATE EVENT =================
+        event.setTicketsAvailable(
+                event.getTicketsAvailable() - req.getNumberOfTickets()
+        );
+
+        // ================= SAVE =================
+        ticketRepository.saveAll(tickets);
         eventRepository.save(event);
 
-        List<Ticket> saved = ticketRepository.saveAll(tickets);
-
-        List<TicketResponse> response = saved.stream()
+        // ================= RESPONSE =================
+        List<TicketResponse> response = tickets.stream()
                 .map(ticket -> new TicketResponse(
                         ticket.getTicketId(),
                         ticket.getTicketCode(),
@@ -86,11 +115,17 @@ public class TicketServiceImpl implements TicketService{
                         ticket.getStatus(),
                         ticket.getEvent(),
                         ticket.getUser(),
-                        "https://eventaura-iemd.onrender.com/api/v1/tickets/" + ticket.getTicketId() + "/qr"
+                        "https://eventaura-iemd.onrender.com/api/v1/tickets/"
+                                + ticket.getTicketId() + "/qr"
                 ))
                 .toList();
 
-        SseEmitterHolder.broadcast(event.getEventId(), updatedTicketsAvailable);
+        // ================= REAL-TIME UPDATE =================
+        SseEmitterHolder.broadcast(
+                event.getEventId(),
+                event.getTicketsAvailable()
+        );
+
         return response;
     }
 

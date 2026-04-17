@@ -34,6 +34,8 @@ public class EventRequest {
     private String club;
     private String bannerUrl;
     private String ticketUrl;
+    private String paymentQrUrl;
     private String category;
+    private Double ticketPrice;
 
 }

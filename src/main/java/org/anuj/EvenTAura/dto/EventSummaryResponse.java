@@ -16,6 +16,6 @@ public class EventSummaryResponse {
     private LocalDate eventDate;
     private String bannerUrl;
     private String category;
-    private int ticketsAvailable;
+    private Double ticketPrice;
     private EventStatus eventStatus;
 }

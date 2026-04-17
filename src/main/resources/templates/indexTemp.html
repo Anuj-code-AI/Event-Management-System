@@ -9,11 +9,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="stylesheet" th:href="@{/css/profileSideBar.css}">
+    <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-3C9FCSTWY3"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
+
         gtag('config', 'G-3C9FCSTWY3');
     </script>
 </head>
@@ -58,7 +60,14 @@
 <!-- ── Mobile nav overlay ── -->
 <div class="mobile-nav-overlay" id="mobileNavOverlay"></div>
 
-<!-- ═══════════════════ MOBILE DRAWER ═══════════════════ -->
+<!-- ═══════════════════════════════════════════════════════
+     MOBILE DRAWER
+     Sections shown per resolved role:
+       GUEST     → guest card · guest nav · login/signup footer
+       USER      → user card · My Account · logout footer
+       ORGANIZER → user card · My Account · Navigation · Host · logout footer
+       ADMIN     → user card · My Account · Admin · Navigation · Host · logout footer
+     ═══════════════════════════════════════════════════════ -->
 <nav class="mobile-nav" id="mobileNav" aria-label="Mobile navigation">
 
     <div class="mobile-nav-header">
@@ -71,6 +80,7 @@
         <input type="text" placeholder="Search events, cities...">
     </div>
 
+    <!-- skeleton shown while API call is in-flight -->
     <div id="mnSkeleton" style="display:none; margin:8px 10px 0;">
         <div class="psb-skeleton">
             <div class="psb-skeleton-avatar"></div>
@@ -81,6 +91,7 @@
         </div>
     </div>
 
+    <!-- user card (all logged-in roles) -->
     <div id="mnUserCard" style="display:none; margin:8px 10px 0;">
         <div class="psb-user-card">
             <div class="psb-avatar">👤</div>
@@ -91,6 +102,7 @@
         </div>
     </div>
 
+    <!-- guest card -->
     <div id="mnGuestCard" style="margin:8px 10px 0;">
         <div class="psb-guest-card">
             <p>Sign in to access your events, tickets and profile.</p>
@@ -101,26 +113,29 @@
         </div>
     </div>
 
+    <!-- MY ACCOUNT — USER · ORGANIZER · ADMIN -->
     <div id="mn-my-account" style="display:none;">
         <div class="psb-section-label">My Account</div>
         <div class="mobile-nav-links" style="padding-top:0;">
             <a href="/profile"  class="mobile-nav-link"><span class="mnl-icon">👤</span>Profile</a>
-            <a href="/"         class="mobile-nav-link"><span class="mnl-icon">🏠</span>Home</a>
-            <a href="/moments"  class="mobile-nav-link"><span class="mnl-icon">📸</span>Moments</a>
+            <a href="/"  class="mobile-nav-link"><span class="mnl-icon">🏠</span>Home</a>
+            <a href="/moments" class="mobile-nav-link"><span class="mnl-icon">📸</span>Moments</a>
             <a href="/tickets"  class="mobile-nav-link"><span class="mnl-icon">🎟️</span>My Tickets</a>
             <a href="/aboutUs"  class="mobile-nav-link"><span class="mnl-icon">ℹ️</span>About Us</a>
         </div>
     </div>
 
+    <!-- ADMIN — ADMIN only -->
     <div id="mn-admin" style="display:none;">
         <div class="psb-divider" style="margin:4px 16px;"></div>
         <div class="psb-section-label">Admin</div>
         <div class="mobile-nav-links" style="padding-top:0;">
-            <a href="/adminPage"    class="mobile-nav-link"><span class="mnl-icon">🛡️</span>Admin Page<span class="psb-admin-badge">Admin</span></a>
+            <a href="/adminPage"          class="mobile-nav-link"><span class="mnl-icon">🛡️</span>Admin Page<span class="psb-admin-badge">Admin</span></a>
             <a href="/campusEvents" class="mobile-nav-link"><span class="mnl-icon">📋</span>Campus Events<span class="psb-admin-badge">Admin</span></a>
         </div>
     </div>
 
+    <!-- HOST — ORGANIZER · ADMIN -->
     <div id="mn-host" style="display:none;">
         <div class="psb-divider" style="margin:4px 16px;"></div>
         <div class="psb-section-label">Host</div>
@@ -130,14 +145,16 @@
         </div>
     </div>
 
+    <!-- GUEST NAV — not logged in -->
     <div id="mn-guest-nav">
         <div class="mobile-nav-links">
-            <a href="/"        class="mobile-nav-link"><span class="mnl-icon">🏠</span>Home</a>
+            <a href="/"         class="mobile-nav-link"><span class="mnl-icon">🏠</span>Home</a>
             <a href="/moments" class="mobile-nav-link"><span class="mnl-icon">📸</span>Moments</a>
-            <a href="/aboutUs" class="mobile-nav-link"><span class="mnl-icon">ℹ️</span>About Us</a>
+            <a href="/aboutUs"  class="mobile-nav-link"><span class="mnl-icon">ℹ️</span>About Us</a>
         </div>
     </div>
 
+    <!-- footer -->
     <div class="mobile-nav-footer">
         <div id="mobileNavGuest">
             <a href="/login"    class="btn primary" style="text-align:center;display:block;">Login</a>
@@ -150,7 +167,9 @@
 
 </nav>
 
-<!-- ═══════════════════ PROFILE SIDEBAR ═══════════════════ -->
+<!-- ═══════════════════════════════════════════════════════
+     PROFILE SIDEBAR (desktop 👤 button)
+     ═══════════════════════════════════════════════════════ -->
 <div class="profile-overlay" id="profileOverlay"></div>
 
 <aside class="profile-sidebar" id="profileSidebar" aria-label="Profile menu">
@@ -160,6 +179,7 @@
         <button class="psb-close" id="profileSidebarClose" aria-label="Close">✕</button>
     </div>
 
+    <!-- skeleton -->
     <div id="psbSkeleton" style="display:none; margin:16px 16px 0;">
         <div class="psb-skeleton">
             <div class="psb-skeleton-avatar"></div>
@@ -170,6 +190,7 @@
         </div>
     </div>
 
+    <!-- user card -->
     <div id="psbUserCard" style="display:none; margin:16px 16px 0;">
         <div class="psb-user-card">
             <div class="psb-avatar">👤</div>
@@ -180,6 +201,7 @@
         </div>
     </div>
 
+    <!-- guest card -->
     <div id="psbGuestCard" style="margin:16px 16px 0;">
         <div class="psb-guest-card">
             <p>Sign in to access your events, tickets and profile.</p>
@@ -190,26 +212,29 @@
         </div>
     </div>
 
+    <!-- MY ACCOUNT — USER · ORGANIZER · ADMIN -->
     <div id="psb-my-account" style="display:none;">
         <div class="psb-section-label">My Account</div>
         <nav class="psb-nav" style="padding-top:0;">
             <a href="/profile"  class="psb-nav-item"><span class="psb-nav-icon">👤</span><span>Profile</span></a>
-            <a href="/"         class="psb-nav-item"><span class="psb-nav-icon">🏠</span><span>Home</span></a>
-            <a href="/moments"  class="psb-nav-item"><span class="psb-nav-icon">📸</span><span>Moments</span></a>
+            <a href="/"  class="psb-nav-item"><span class="psb-nav-icon">🏠</span><span>Home</span></a>
+            <a href="/moments" class="psb-nav-item"><span class="psb-nav-icon">📸</span><span>Moments</span></a>
             <a href="/tickets"  class="psb-nav-item"><span class="psb-nav-icon">🎟️</span><span>My Tickets</span></a>
             <a href="/aboutUs"  class="psb-nav-item"><span class="psb-nav-icon">ℹ️</span><span>About Us</span></a>
         </nav>
     </div>
 
+    <!-- ADMIN — ADMIN only -->
     <div id="psb-admin" style="display:none;">
         <div class="psb-divider"></div>
         <div class="psb-section-label">Admin</div>
         <nav class="psb-nav" style="padding-top:0;">
-            <a href="/adminPage"    class="psb-nav-item"><span class="psb-nav-icon">🛡️</span><span>Admin Page</span><span class="psb-admin-badge">Admin</span></a>
+            <a href="/adminPage"          class="psb-nav-item"><span class="psb-nav-icon">🛡️</span><span>Admin Page</span><span class="psb-admin-badge">Admin</span></a>
             <a href="/campusEvents" class="psb-nav-item"><span class="psb-nav-icon">📋</span><span>Campus Events</span><span class="psb-admin-badge">Admin</span></a>
         </nav>
     </div>
 
+    <!-- HOST — ORGANIZER · ADMIN -->
     <div id="psb-host" style="display:none;">
         <div class="psb-divider"></div>
         <div class="psb-section-label">Host</div>
@@ -219,6 +244,7 @@
         </nav>
     </div>
 
+    <!-- Logout — all logged-in roles -->
     <div id="psb-logout" style="display:none;">
         <div class="psb-divider"></div>
         <nav class="psb-nav" style="padding-top:0;">
@@ -226,6 +252,7 @@
         </nav>
     </div>
 
+    <!-- GUEST NAV — not logged in -->
     <div id="psb-guest-nav">
         <div class="psb-section-label">Explore</div>
         <nav class="psb-nav" style="padding-top:0;">
@@ -345,7 +372,6 @@
         <p>Delhi · Mumbai · Bangalore · Hyderabad · Chennai · Pune · Goa</p>
     </div>
 </footer>
-
 <script th:src="@{/js/basic.js}"></script>
 <script>
     /* ════════════════════════════════════════════
@@ -370,28 +396,6 @@
         return map[category] || '';
     }
 
-    /**
-     * Returns an HTML string for the price badge shown on each card.
-     * Free  → green pill  "🎁 Free"
-     * Paid  → amber pill  "💳 ₹X"
-     */
-    function priceBadgeHtml(ticketPrice) {
-        const isPaid = ticketPrice != null && ticketPrice > 0;
-        if (isPaid) {
-            const formatted = '₹' + parseFloat(ticketPrice).toLocaleString('en-IN');
-            return `<span class="price-meta-badge price-meta-badge--paid">💳 ${formatted}</span>`;
-        }
-        return `<span class="price-meta-badge price-meta-badge--free">🎁 Free</span>`;
-    }
-
-    /**
-     * Same info for the banner slide — plain text version (no inline HTML needed).
-     */
-    function priceSlideText(ticketPrice) {
-        const isPaid = ticketPrice != null && ticketPrice > 0;
-        return isPaid ? '💳 ₹' + parseFloat(ticketPrice).toLocaleString('en-IN') : '🎁 Free';
-    }
-
     function buildCard(ev) {
         const upcoming = isUpcoming(ev);
         const card = document.createElement('div');
@@ -412,9 +416,9 @@
                     <span>📍 ${ev.location || '—'}</span>
                 </div>
                 <div class="event-meta" style="margin-top:4px;">
-                    <span class="price-meta-span">${priceBadgeHtml(ev.ticketPrice)}</span>
+                    <span class="ticket-meta-span">🎫 ${ev.ticketsAvailable > 0 ? ev.ticketsAvailable + ' tickets left' : '<span style="color:#ef4444;">Sold Out</span>'}</span>
                 </div>
-                <a class="card-cta">${upcoming ? 'Register' : 'View Details'}</a>
+                <a class="card-cta">${upcoming && ev.ticketsAvailable > 0 ? 'Register' : 'View Details'}</a>
             </div>`;
         card.addEventListener('click', () => { window.location.href = `/registerForEvent/${ev.eventId}`; });
         return card;
@@ -430,7 +434,7 @@
                 <div class="slide-overlay">
                     <span class="slide-tag ${!upcoming ? 'past' : ''}">${upcoming ? tag : 'Past Event'}</span>
                     <h2>${ev.title}</h2>
-                    <p>📅 ${fmtDate(ev.eventDate)} &nbsp;·&nbsp; 📍 ${ev.location || '—'} &nbsp;·&nbsp; ${priceSlideText(ev.ticketPrice)}</p>
+                    <p>📅 ${fmtDate(ev.eventDate)} &nbsp;·&nbsp; 📍 ${ev.location || '—'}</p>
                     <a class="slide-cta">${upcoming ? 'Register Now →' : 'View Details →'}</a>
                 </div>
             </div>`;
@@ -521,9 +525,22 @@
         });
     });
 
-    /* SSE live updates — EventSummaryResponse no longer has ticketsAvailable,
-       so we only handle new-event broadcasts here. The ticket-update stream
-       (if still sent) is ignored gracefully. */
+    function updateCardTickets(eventId, available) {
+        const ev = allEvents.find(e => e.eventId == eventId);
+        if (ev) ev.ticketsAvailable = available;
+        const card = document.querySelector(`#eventsGrid .event-card[data-event-id="${eventId}"]`);
+        if (!card) return;
+        const soldOut  = available <= 0;
+        const upcoming = card.dataset.upcoming === '1';
+        const ticketSpan = card.querySelector('.ticket-meta-span');
+        if (ticketSpan) ticketSpan.innerHTML = soldOut ? '🎫 <span style="color:#ef4444;">Sold Out</span>' : `🎫 ${available} tickets left`;
+        const cta = card.querySelector('.card-cta');
+        if (cta) cta.textContent = upcoming && !soldOut ? 'Register' : 'View Details';
+        card.style.transition = 'box-shadow 0.3s ease';
+        card.style.boxShadow  = '0 0 0 3px rgba(255,77,109,0.45)';
+        setTimeout(() => { card.style.boxShadow = ''; }, 1400);
+    }
+
     function addNewEventCard(ev) {
         if (document.querySelector(`#eventsGrid .event-card[data-event-id="${ev.eventId}"]`)) return;
         allEvents.unshift(ev);
@@ -533,18 +550,14 @@
             const firstPast = grid.querySelector('.event-card[data-upcoming="0"]');
             firstPast ? grid.insertBefore(card, firstPast) : grid.prepend(card);
         } else { grid.append(card); }
-        card.style.opacity   = '0';
-        card.style.transform = 'translateY(-16px)';
+        card.style.opacity = '0'; card.style.transform = 'translateY(-16px)';
         card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-        requestAnimationFrame(() => requestAnimationFrame(() => {
-            card.style.opacity   = '1';
-            card.style.transform = 'translateY(0)';
-        }));
+        requestAnimationFrame(() => requestAnimationFrame(() => { card.style.opacity = '1'; card.style.transform = 'translateY(0)'; }));
     }
 
     function initLiveUpdates() {
         const es = new EventSource('/api/v1/event/ticket-updates');
-        es.onmessage = () => {}; /* ticket count updates not shown on summary cards */
+        es.onmessage = (e) => { try { const { eventId, ticketsAvailable } = JSON.parse(e.data); updateCardTickets(eventId, ticketsAvailable); } catch(err){} };
         es.addEventListener('new-event', (e) => { try { addNewEventCard(JSON.parse(e.data)); } catch(err){} });
         es.onerror = () => {};
     }
@@ -553,29 +566,6 @@
     initLiveUpdates();
 </script>
 
-<style>
-    /* ── Price badge on event cards ── */
-    .price-meta-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        padding: 3px 10px;
-        border-radius: 50px;
-        font-size: 12px;
-        font-weight: 700;
-        letter-spacing: 0.2px;
-    }
-    .price-meta-badge--free {
-        background: #d1fae5;
-        color: #065f46;
-        border: 1px solid #a7f3d0;
-    }
-    .price-meta-badge--paid {
-        background: #fef3c7;
-        color: #92400e;
-        border: 1px solid #fde68a;
-    }
-</style>
 
 </body>
 </html>

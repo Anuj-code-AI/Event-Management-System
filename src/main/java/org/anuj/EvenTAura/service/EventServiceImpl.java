@@ -1,5 +1,6 @@
 package org.anuj.EvenTAura.service;
 
+import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import org.anuj.EvenTAura.dto.EventRequest;
 import org.anuj.EvenTAura.dto.EventResponse;
@@ -27,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.List;
 
+@Builder
 @Service
 @RequiredArgsConstructor
 public class EventServiceImpl implements EventService {
@@ -55,6 +57,12 @@ public class EventServiceImpl implements EventService {
         if (req.getTicketsAvailable() > req.getTotalTickets()) {
             throw new IllegalArgumentException("Tickets available cannot exceed total tickets");
         }
+        if (req.getTicketPrice() > 0 && req.getPaymentQrUrl() == null) {
+            throw new IllegalArgumentException("Payment QR required for paid events");
+        }
+        if (req.getTicketPrice() == 0 && req.getPaymentQrUrl() != null) {
+            throw new IllegalArgumentException("Free events should not have payment QR");
+        }
 
         // ================== ROLE CHECK ==================
         boolean isAdmin = user.getRole().equals(Role.ROLE_ADMIN);
@@ -68,13 +76,8 @@ public class EventServiceImpl implements EventService {
 
         // ================== EVENT CREATION ==================
         Event event = EventMapper.toEntity(req, user);
-
         Event savedEvent = eventRepository.save(event);
-        EventResponse response = EventMapper.toResponse(savedEvent);
-
-        SseEmitterHolder.broadcastNewEvent(response);
-
-        return response;
+        return EventMapper.toResponse(savedEvent);
     }
 
     @Override
@@ -151,7 +154,7 @@ public class EventServiceImpl implements EventService {
                         event.getEventDate(),
                         event.getBannerUrl(),
                         event.getCategory(),
-                        event.getTicketsAvailable(),
+                        event.getTicketPrice(),
                         event.getEventStatus()
                 ));
     }
@@ -225,7 +228,7 @@ public class EventServiceImpl implements EventService {
                         event.getEventDate(),
                         event.getBannerUrl(),
                         event.getCategory(),
-                        event.getTicketsAvailable(),
+                        event.getTicketPrice(),
                         event.getEventStatus() ));
     }
 

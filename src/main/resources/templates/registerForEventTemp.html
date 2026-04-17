@@ -9,217 +9,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="stylesheet" th:href="@{/css/registerForEvent.css}">
+    <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-3C9FCSTWY3"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
+
         gtag('config', 'G-3C9FCSTWY3');
     </script>
-    <style>
-        /* ── Paid event: price badge in sidebar ── */
-        .ed-price-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 5px 14px;
-            border-radius: 50px;
-            font-family: 'Syne', sans-serif;
-            font-size: 13px;
-            font-weight: 700;
-            margin-bottom: 4px;
-        }
-        .ed-price-badge--free  { background:#d1fae5; color:#065f46; border:1px solid #a7f3d0; }
-        .ed-price-badge--paid  { background:#fef3c7; color:#92400e; border:1px solid #fde68a; }
-
-        /* ── Payment QR display card ── */
-        .ed-payment-qr-card {
-            background: linear-gradient(135deg, #fff7ed 0%, #fffbeb 100%);
-            border: 2px solid #f97316;
-            border-radius: 16px;
-            padding: 18px;
-            margin-bottom: 18px;
-        }
-        .ed-payment-qr-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 14px;
-        }
-        .ed-payment-qr-icon {
-            width: 34px; height: 34px;
-            background: linear-gradient(135deg, #f97316, #fbbf24);
-            border-radius: 10px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 16px;
-            box-shadow: 0 3px 10px rgba(249,115,22,0.3);
-            flex-shrink: 0;
-        }
-        .ed-payment-qr-header-text strong {
-            display: block;
-            font-family: 'Syne', sans-serif;
-            font-size: 13px; font-weight: 700;
-            color: #7c2d12;
-        }
-        .ed-payment-qr-header-text span {
-            font-size: 11px; color: #b45309;
-        }
-        .ed-payment-qr-img-wrap {
-            background: #fff;
-            border-radius: 12px;
-            padding: 12px;
-            display: flex;
-            justify-content: center;
-            border: 1px solid rgba(249,115,22,0.2);
-        }
-        .ed-payment-qr-img-wrap img {
-            width: 160px;
-            height: 160px;
-            object-fit: contain;
-            border-radius: 8px;
-            display: block;
-        }
-        .ed-payment-qr-note {
-            background: #fff;
-            border: 1px solid rgba(249,115,22,0.3);
-            border-radius: 10px;
-            padding: 9px 12px;
-            font-size: 11px;
-            color: #b45309;
-            margin-top: 10px;
-            line-height: 1.5;
-            text-align: center;
-        }
-        .ed-payment-qr-steps {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            margin-top: 12px;
-        }
-        .ed-payment-qr-step {
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            font-size: 12px;
-            color: #92400e;
-        }
-        .ed-payment-qr-step-num {
-            width: 20px; height: 20px;
-            background: #f97316;
-            color: #fff;
-            border-radius: 50%;
-            font-size: 10px; font-weight: 700;
-            display: flex; align-items: center; justify-content: center;
-            flex-shrink: 0;
-            margin-top: 1px;
-        }
-
-        /* ── Screenshot upload zone ── */
-        .ed-screenshot-zone {
-            border: 2px dashed rgba(249,115,22,0.5);
-            border-radius: 14px;
-            background: #fff;
-            min-height: 120px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            overflow: hidden;
-            position: relative;
-            transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
-            margin-bottom: 14px;
-        }
-        .ed-screenshot-zone:hover {
-            border-color: #f97316;
-            box-shadow: 0 0 0 3px rgba(249,115,22,0.1);
-        }
-        .ed-screenshot-zone.ss-drag {
-            border-color: #f97316;
-            background: #fff7ed;
-        }
-        .ed-screenshot-zone.ss-filled {
-            border-style: solid;
-            border-color: #22c55e;
-        }
-        .ed-screenshot-idle {
-            text-align: center;
-            padding: 20px 16px;
-            pointer-events: none;
-            user-select: none;
-        }
-        .ed-screenshot-idle-icon { font-size: 28px; margin-bottom: 6px; display: block; }
-        .ed-screenshot-idle p { margin: 0; }
-        .ed-screenshot-idle .ss-title {
-            font-family: 'Syne', sans-serif;
-            font-size: 13px; font-weight: 700;
-            color: #7c2d12; margin-bottom: 3px;
-        }
-        .ed-screenshot-idle .ss-sub { font-size: 11px; color: #b45309; }
-        .ed-screenshot-idle .ss-browse { color: #f97316; text-decoration: underline; }
-        .ed-screenshot-preview {
-            width: 100%;
-            position: relative;
-        }
-        .ed-screenshot-preview img {
-            width: 100%;
-            max-height: 180px;
-            object-fit: contain;
-            display: block;
-            padding: 10px;
-            box-sizing: border-box;
-        }
-        .ed-screenshot-overlay {
-            position: absolute;
-            bottom: 0; left: 0; right: 0;
-            background: linear-gradient(to top, rgba(0,0,0,0.6), transparent);
-            padding: 10px 12px 12px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .ed-ss-remove-btn {
-            background: rgba(239,68,68,0.9);
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            padding: 4px 10px;
-            font-size: 11px; font-weight: 700;
-            cursor: pointer;
-        }
-        .ed-ss-file-meta { font-size: 10px; color: rgba(255,255,255,0.7); }
-        .ed-screenshot-err {
-            font-size: 11px; color: #ef4444;
-            display: none; margin-bottom: 8px;
-        }
-        .ed-screenshot-err.show { display: block; }
-
-        /* ── Total price display ── */
-        .ed-price-total-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: var(--bg, #f8f9fa);
-            border: 1px solid var(--border, #e5e7eb);
-            border-radius: 12px;
-            padding: 12px 16px;
-            margin-bottom: 16px;
-        }
-        .ed-price-total-label { font-size: 13px; color: var(--muted, #888); }
-        .ed-price-total-value {
-            font-family: 'Syne', sans-serif;
-            font-size: 18px; font-weight: 800;
-            color: var(--text, #111);
-        }
-        .ed-price-per-ticket { font-size: 11px; color: var(--muted, #888); margin-top: 1px; text-align: right; }
-
-        /* ── eyebrow text update for paid ── */
-        .ed-reg-eyebrow--paid {
-            background: linear-gradient(135deg, #f97316, #fbbf24) !important;
-            -webkit-background-clip: text !important;
-            -webkit-text-fill-color: transparent !important;
-            background-clip: text !important;
-        }
-    </style>
 </head>
 
 <body>
@@ -251,13 +49,20 @@
                 <button class="icon-btn profile-btn" aria-label="Profile"><span>👤</span></button>
             </a>
         </div>
+
+        <!-- Hamburger — visible only on mobile -->
         <button class="hamburger" id="hamburgerBtn" aria-label="Open menu" aria-expanded="false">
-            <span></span><span></span><span></span>
+            <span></span>
+            <span></span>
+            <span></span>
         </button>
     </div>
 </header>
 
+<!-- ── Mobile nav overlay ── -->
 <div class="mobile-nav-overlay" id="mobileNavOverlay"></div>
+
+<!-- ── Mobile slide-in drawer ── -->
 <nav class="mobile-nav" id="mobileNav" aria-label="Mobile navigation">
     <div class="mobile-nav-header">
         <span class="logo-text">Event<em>aura</em></span>
@@ -304,7 +109,6 @@
             <span class="ed-hero-pill" id="heroDate">📅 —</span>
             <span class="ed-hero-pill" id="heroTime">🕐 —</span>
             <span class="ed-hero-pill" id="heroLoc">📍 —</span>
-            <span class="ed-hero-pill" id="heroPrice" style="display:none;"></span>
         </div>
     </div>
 </div>
@@ -364,14 +168,6 @@
                             <div class="ed-detail-val" id="detTickets">—</div>
                         </div>
                     </div>
-                    <!-- Price tile — shown only for paid events -->
-                    <div class="ed-detail-tile" id="detPriceTile" style="display:none;">
-                        <div class="ed-detail-icon-wrap">💰</div>
-                        <div>
-                            <div class="ed-detail-lbl">Ticket Price</div>
-                            <div class="ed-detail-val" id="detPrice">—</div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -402,8 +198,6 @@
                     <div class="ed-ticket-info-row"><span>🕐</span><span id="ticketTime">—</span></div>
                     <div class="ed-ticket-info-row"><span>📍</span><span id="ticketLoc">—</span></div>
                     <div class="ed-ticket-info-row" id="ticketClubRow" style="display:none;"><span>🏛️</span><span id="ticketClub">—</span></div>
-                    <!-- Price row on ticket — shows for paid events -->
-                    <div class="ed-ticket-info-row" id="ticketPriceRow" style="display:none;"><span>💳</span><span id="ticketPrice">—</span></div>
                     <div class="ed-ticket-stats">
                         <div class="ed-ticket-stat">
                             <div class="ed-ticket-stat-lbl">Available</div>
@@ -433,9 +227,13 @@
                              style="width:100%;border-radius:12px;display:block;opacity:0.9;">
                     </div>
 
-                    <!-- QR SECTION -->
+                    <!-- ══ QR SECTION ══
+                         #qrPlaceholder  → decorative grid shown before booking
+                         #qrGenerated    → real <img> tags injected after booking  -->
                     <div class="ed-ticket-qr-section">
                         <div class="ed-ticket-qr-label">Scan at Entry</div>
+
+                        <!-- Placeholder: decorative fake QR grid -->
                         <div id="qrPlaceholder">
                             <div class="ed-ticket-qr-box">
                                 <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
@@ -451,6 +249,8 @@
                                 Present this at the venue entrance
                             </div>
                         </div>
+
+                        <!-- Real QR images injected by renderQRCodes() — hidden until booking -->
                         <div id="qrGenerated" style="display:none;width:100%;"></div>
                     </div>
 
@@ -468,12 +268,9 @@
                 <p>Please log in to register for this event and get your ticket.</p>
                 <a href="/login">Login to Register</a>
             </div>
-
             <div id="regFormWrap">
-                <!-- Eyebrow — "Free Entry" or "Paid Event" -->
-                <div class="ed-reg-eyebrow" id="regEyebrow">Free Entry</div>
+                <div class="ed-reg-eyebrow">Free Entry</div>
                 <div class="ed-reg-event-name" id="regTitle">—</div>
-
                 <div class="ed-reg-info">
                     <div class="ed-reg-info-row"><div class="ed-reg-info-icon">📅</div><span id="regDate">—</span></div>
                     <div class="ed-reg-info-row"><div class="ed-reg-info-icon">🕐</div><span id="regTime">—</span></div>
@@ -481,108 +278,24 @@
                     <div class="ed-reg-info-row" id="regClubRow" style="display:none;">
                         <div class="ed-reg-info-icon">🏛️</div><span id="regClub">—</span>
                     </div>
-                    <!-- Price row — shown for paid events -->
-                    <div class="ed-reg-info-row" id="regPriceRow" style="display:none;">
-                        <div class="ed-reg-info-icon">💰</div>
-                        <span id="regPriceLabel">—</span>
+                </div>
+                <div style="margin-bottom:20px;">
+                    <div class="ed-reg-info-row" style="margin-bottom:8px;">
+                        <div class="ed-reg-info-icon">🎟️</div>
+                        <span style="font-size:14px;font-weight:600;color:var(--text);">Number of Tickets</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:0;background:var(--bg);border-radius:14px;overflow:hidden;border:2px solid var(--border);transition:border-color 0.2s;" id="qtyWrap">
+                        <button type="button" onclick="changeQty(-1)"
+                                style="width:48px;height:48px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--text);font-weight:700;flex-shrink:0;transition:background 0.15s;"
+                                onmouseover="this.style.background='var(--border)'" onmouseout="this.style.background='none'">−</button>
+                        <input type="number" id="ticketQty" value="1" min="1" readonly
+                               oninput="updateSidebarTickets(parseInt(this.value) || 1)"
+                               style="flex:1;text-align:center;border:none;background:none;font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--text);outline:none;padding:0;">
+                        <button type="button" onclick="changeQty(1)"
+                                style="width:48px;height:48px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--text);font-weight:700;flex-shrink:0;transition:background 0.15s;"
+                                onmouseover="this.style.background='var(--border)'" onmouseout="this.style.background='none'">+</button>
                     </div>
                 </div>
-
-                <!-- Ticket quantity picker -->
-                <div data-qty-section>
-                    <div style="margin-bottom:20px;">
-                        <div class="ed-reg-info-row" style="margin-bottom:8px;">
-                            <div class="ed-reg-info-icon">🎟️</div>
-                            <span style="font-size:14px;font-weight:600;color:var(--text);">Number of Tickets</span>
-                        </div>
-                        <div style="display:flex;align-items:center;gap:0;background:var(--bg);border-radius:14px;overflow:hidden;border:2px solid var(--border);transition:border-color 0.2s;" id="qtyWrap">
-                            <button type="button" onclick="changeQty(-1)"
-                                    style="width:48px;height:48px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--text);font-weight:700;flex-shrink:0;"
-                                    onmouseover="this.style.background='var(--border)'" onmouseout="this.style.background='none'">−</button>
-                            <input type="number" id="ticketQty" value="1" min="1" readonly
-                                   oninput="updateSidebarTickets(parseInt(this.value) || 1)"
-                                   style="flex:1;text-align:center;border:none;background:none;font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--text);outline:none;padding:0;">
-                            <button type="button" onclick="changeQty(1)"
-                                    style="width:48px;height:48px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--text);font-weight:700;flex-shrink:0;"
-                                    onmouseover="this.style.background='var(--border)'" onmouseout="this.style.background='none'">+</button>
-                        </div>
-                    </div>
-
-                    <!-- Total price display — only for paid events -->
-                    <div class="ed-price-total-row" id="priceTotalRow" style="display:none;">
-                        <div>
-                            <div class="ed-price-total-label">Total Amount</div>
-                            <div class="ed-price-per-ticket" id="pricePerTicketLabel">—</div>
-                        </div>
-                        <div class="ed-price-total-value" id="priceTotalValue">—</div>
-                    </div>
-                </div>
-
-                <!-- ══ PAID EVENT: QR + Screenshot upload — hidden for free events ══ -->
-                <div id="paymentSection" style="display:none;">
-                    <!-- Organiser's payment QR -->
-                    <div class="ed-payment-qr-card">
-                        <div class="ed-payment-qr-header">
-                            <div class="ed-payment-qr-icon">📲</div>
-                            <div class="ed-payment-qr-header-text">
-                                <strong>Scan &amp; Pay</strong>
-                                <span>Pay the organiser via UPI before registering</span>
-                            </div>
-                        </div>
-                        <div class="ed-payment-qr-img-wrap">
-                            <img id="paymentQrImg" src="" alt="Payment QR Code">
-                        </div>
-                        <div class="ed-payment-qr-steps">
-                            <div class="ed-payment-qr-step">
-                                <div class="ed-payment-qr-step-num">1</div>
-                                <span>Scan the QR above using PhonePe, GPay, or any UPI app</span>
-                            </div>
-                            <div class="ed-payment-qr-step">
-                                <div class="ed-payment-qr-step-num">2</div>
-                                <span>Complete the payment for the total amount shown</span>
-                            </div>
-                            <div class="ed-payment-qr-step">
-                                <div class="ed-payment-qr-step-num">3</div>
-                                <span>Take a screenshot of the payment confirmation</span>
-                            </div>
-                            <div class="ed-payment-qr-step">
-                                <div class="ed-payment-qr-step-num">4</div>
-                                <span>Upload the screenshot below and click Register</span>
-                            </div>
-                        </div>
-                        <div class="ed-payment-qr-note">
-                            💡 Your registration will be confirmed after the organiser verifies your payment.
-                        </div>
-                    </div>
-
-                    <!-- Screenshot upload -->
-                    <div style="margin-bottom:6px;">
-                        <div class="ed-reg-info-row" style="margin-bottom:10px;">
-                            <div class="ed-reg-info-icon">🧾</div>
-                            <span style="font-size:13px;font-weight:600;color:var(--text);">Upload Payment Screenshot <span style="color:#ef4444;">*</span></span>
-                        </div>
-                        <div class="ed-screenshot-zone" id="ssZone">
-                            <input type="file" id="paymentScreenshot"
-                                   accept="image/jpeg,image/png,image/webp"
-                                   style="position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer;z-index:2;">
-                            <div class="ed-screenshot-idle" id="ssIdle">
-                                <span class="ed-screenshot-idle-icon">🧾</span>
-                                <p class="ss-title">Upload Payment Screenshot</p>
-                                <p class="ss-sub">or <span class="ss-browse">click to browse</span></p>
-                            </div>
-                            <div class="ed-screenshot-preview" id="ssPreview" style="display:none;">
-                                <img id="ssPreviewImg" src="" alt="Payment screenshot">
-                                <div class="ed-screenshot-overlay">
-                                    <button type="button" id="ssRemoveBtn" class="ed-ss-remove-btn">✕ Remove</button>
-                                    <span class="ed-ss-file-meta" id="ssFileMeta"></span>
-                                </div>
-                            </div>
-                        </div>
-                        <span class="ed-screenshot-err" id="ssErr">Please upload your payment screenshot.</span>
-                    </div>
-                </div>
-
-                <!-- Availability bar -->
                 <div class="ed-spots">
                     <div class="ed-spots-head">
                         <span class="ed-spots-lbl">Availability</span>
@@ -592,14 +305,12 @@
                         <div class="ed-spots-fill" id="spotsFill" style="width:0%"></div>
                     </div>
                 </div>
-
                 <button class="ed-reg-btn" id="regBtn" onclick="handleRegister()">
                     <span id="regBtnText">🎟️ Register Now</span>
                     <span class="btn-spinner" id="btnSpinner"></span>
                 </button>
                 <p class="ed-reg-note" id="regNote">Secure your spot today — it's free!</p>
             </div>
-
             <div class="ed-success" id="regSuccess">
                 <div class="ed-success-icon">🎉</div>
                 <h3>You're registered!</h3>
@@ -613,7 +324,6 @@
 
 
 <script>
-    /* ── Helpers ── */
     function fmtDate(d) {
         if (!d) return '—';
         return new Date(d + 'T00:00:00').toLocaleDateString('en-IN', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
@@ -631,58 +341,16 @@
         const today = new Date(); today.setHours(0,0,0,0);
         return new Date(d + 'T00:00:00') >= today;
     }
-    function fmtRupee(n) {
-        return '₹' + parseFloat(n).toLocaleString('en-IN');
-    }
 
-    /* ── State ── */
-    const pathParts  = window.location.pathname.split('/');
-    const eventId    = pathParts[pathParts.length - 1];
+    const pathParts = window.location.pathname.split('/');
+    const eventId   = pathParts[pathParts.length - 1];
     const token      = localStorage.getItem('accessToken');
     const isLoggedIn = !!token;
     let   eventData  = null;
 
-    /* ── Screenshot upload DOM refs ── */
-    const ssZone      = document.getElementById('ssZone');
-    const ssInput     = document.getElementById('paymentScreenshot');
-    const ssIdle      = document.getElementById('ssIdle');
-    const ssPreview   = document.getElementById('ssPreview');
-    const ssPreviewImg= document.getElementById('ssPreviewImg');
-    const ssFileMeta  = document.getElementById('ssFileMeta');
-    const ssRemoveBtn = document.getElementById('ssRemoveBtn');
-    const ssErr       = document.getElementById('ssErr');
-
-    function showSsPreview(file) {
-        if (!file || !file.type.startsWith('image/')) return;
-        ssPreviewImg.src = URL.createObjectURL(file);
-        ssIdle.style.display    = 'none';
-        ssPreview.style.display = 'block';
-        ssFileMeta.textContent  = file.name + ' · ' + (file.size/1024/1024).toFixed(2) + ' MB';
-        ssZone.classList.add('ss-filled');
-        ssErr.classList.remove('show');
-    }
-    function clearSsPreview() {
-        ssInput.value = '';
-        ssPreviewImg.src = '';
-        ssIdle.style.display    = 'block';
-        ssPreview.style.display = 'none';
-        ssZone.classList.remove('ss-filled', 'ss-drag');
-    }
-
-    ssInput.addEventListener('change', () => { if (ssInput.files[0]) showSsPreview(ssInput.files[0]); });
-    ssRemoveBtn.addEventListener('click', e => { e.stopPropagation(); e.preventDefault(); clearSsPreview(); });
-    ['dragenter','dragover'].forEach(ev => ssZone.addEventListener(ev, e => { e.preventDefault(); ssZone.classList.add('ss-drag'); }));
-    ssZone.addEventListener('dragleave', () => ssZone.classList.remove('ss-drag'));
-    ssZone.addEventListener('drop', e => {
-        e.preventDefault(); ssZone.classList.remove('ss-drag');
-        const f = e.dataTransfer.files[0];
-        if (f) { const dt = new DataTransfer(); dt.items.add(f); ssInput.files = dt.files; showSsPreview(f); }
-    });
-
-    /* ── Ticket quantity ── */
     function changeQty(delta) {
         const input = document.getElementById('ticketQty');
-        const max   = eventData ? eventData.ticketsAvailable : 1;
+        const max = eventData ? eventData.ticketsAvailable : 1;
         let val = parseInt(input.value) + delta;
         val = Math.max(1, Math.min(val, max));
         input.value = val;
@@ -698,19 +366,11 @@
         document.getElementById('spotsCount').textContent = afterBuy <= 0 ? 'Sold Out' : afterBuy + ' spots left';
         const fill = document.getElementById('spotsFill');
         fill.style.width = pct + '%';
-        fill.className   = 'ed-spots-fill';
+        fill.className = 'ed-spots-fill';
         if (pct > 80) fill.classList.add('danger');
         else if (pct > 50) fill.classList.add('warn');
-
-        // Update total price if paid event
-        if (eventData.ticketPrice > 0) {
-            const total_price = eventData.ticketPrice * qty;
-            document.getElementById('priceTotalValue').textContent    = fmtRupee(total_price);
-            document.getElementById('pricePerTicketLabel').textContent = fmtRupee(eventData.ticketPrice) + ' × ' + qty + ' ticket' + (qty > 1 ? 's' : '');
-        }
     }
 
-    /* ── SSE live updates ── */
     function initLiveUpdates() {
         const es = new EventSource('/api/v1/event/ticket-updates');
         es.onmessage = (e) => {
@@ -761,7 +421,6 @@
         }
     }
 
-    /* ── Load event ── */
     async function loadEvent() {
         try {
             const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
@@ -777,14 +436,11 @@
         }
     }
 
-    /* ── Render event ── */
     function renderEvent(ev) {
         const upcoming = isUpcoming(ev.eventDate);
         const soldOut  = ev.ticketsAvailable <= 0;
-        const isPaid   = ev.ticketPrice > 0;
         const pctSold  = ev.totalTickets > 0 ? Math.round(((ev.totalTickets - ev.ticketsAvailable) / ev.totalTickets) * 100) : 0;
 
-        /* Hero */
         const img = document.getElementById('heroBannerImg');
         img.src = ev.bannerUrl || ''; img.alt = ev.title; img.style.display = 'block';
         img.onload = () => {
@@ -800,34 +456,16 @@
         document.getElementById('heroDate').textContent  = '📅 ' + fmtDateShort(ev.eventDate);
         document.getElementById('heroTime').textContent  = '🕐 ' + fmtTime(ev.eventTime);
         document.getElementById('heroLoc').textContent   = '📍 ' + (ev.location || '—');
-        const heroPriceEl = document.getElementById('heroPrice');
-        if (isPaid) {
-            heroPriceEl.textContent    = '💳 ' + fmtRupee(ev.ticketPrice);
-            heroPriceEl.style.display  = 'inline-flex';
-        } else {
-            heroPriceEl.textContent    = '🎁 Free';
-            heroPriceEl.style.display  = 'inline-flex';
-        }
-
-        /* About / Details */
         document.getElementById('edDesc').textContent = ev.description || '—';
         document.getElementById('detDate').textContent    = fmtDate(ev.eventDate);
         document.getElementById('detTime').textContent    = fmtTime(ev.eventTime);
         document.getElementById('detLoc').textContent     = ev.location || '—';
         document.getElementById('detTickets').textContent = soldOut ? 'Sold Out' : ev.ticketsAvailable + ' left';
         if (soldOut) document.getElementById('detTickets').classList.add('sold-out');
-        if (isPaid) {
-            document.getElementById('detPriceTile').style.display = 'flex';
-            document.getElementById('detPrice').textContent       = fmtRupee(ev.ticketPrice) + ' per ticket';
-        }
-
-        /* Organiser */
         if (ev.club) {
             document.getElementById('edOrgCard').style.display = 'block';
             document.getElementById('orgName').textContent     = ev.club;
         }
-
-        /* Ticket card */
         document.getElementById('ticketBannerImg').src     = ev.bannerUrl || '';
         document.getElementById('ticketImg').src           = ev.ticketUrl || ev.bannerUrl || '';
         document.getElementById('ticketTitle').textContent = ev.title;
@@ -837,10 +475,6 @@
         if (ev.club) {
             document.getElementById('ticketClubRow').style.display = 'flex';
             document.getElementById('ticketClub').textContent      = ev.club;
-        }
-        if (isPaid) {
-            document.getElementById('ticketPriceRow').style.display = 'flex';
-            document.getElementById('ticketPrice').textContent      = fmtRupee(ev.ticketPrice) + ' per ticket';
         }
         document.getElementById('ticketAvail').textContent  = soldOut ? '—' : ev.ticketsAvailable;
         document.getElementById('ticketTotal').textContent  = ev.totalTickets;
@@ -852,8 +486,6 @@
         else if (pctSold > 50) capFill.classList.add('warn');
         document.getElementById('ticketCapSold').textContent = (ev.totalTickets - ev.ticketsAvailable) + ' sold';
         document.getElementById('ticketCapLeft').textContent = ev.ticketsAvailable + ' left';
-
-        /* Sidebar */
         document.getElementById('regTitle').textContent = ev.title;
         document.getElementById('regDate').textContent  = fmtDate(ev.eventDate);
         document.getElementById('regTime').textContent  = fmtTime(ev.eventTime);
@@ -862,23 +494,6 @@
             document.getElementById('regClubRow').style.display = 'flex';
             document.getElementById('regClub').textContent      = ev.club;
         }
-
-        /* Paid-event sidebar setup */
-        if (isPaid) {
-            document.getElementById('regEyebrow').textContent = 'Paid Event';
-            document.getElementById('regEyebrow').classList.add('ed-reg-eyebrow--paid');
-            document.getElementById('regPriceRow').style.display   = 'flex';
-            document.getElementById('regPriceLabel').textContent   = fmtRupee(ev.ticketPrice) + ' per ticket';
-            document.getElementById('priceTotalRow').style.display  = 'flex';
-            document.getElementById('priceTotalValue').textContent  = fmtRupee(ev.ticketPrice);
-            document.getElementById('pricePerTicketLabel').textContent = fmtRupee(ev.ticketPrice) + ' × 1 ticket';
-            document.getElementById('paymentSection').style.display = 'block';
-            document.getElementById('paymentQrImg').src             = ev.paymentQrUrl || '';
-            document.getElementById('regNote').textContent = 'Upload your payment screenshot after paying via UPI.';
-            document.getElementById('regBtnText').textContent = '💳 Pay & Register';
-        }
-
-        /* Qty / availability */
         const qtyInput = document.getElementById('ticketQty');
         if (qtyInput) qtyInput.max = ev.ticketsAvailable;
         document.getElementById('spotsCount').textContent = soldOut ? 'Sold Out' : ev.ticketsAvailable + ' spots left';
@@ -887,7 +502,6 @@
         if (pctSold > 80) fill.classList.add('danger');
         else if (pctSold > 50) fill.classList.add('warn');
 
-        /* Button state */
         const btn     = document.getElementById('regBtn');
         const btnText = document.getElementById('regBtnText');
         const note    = document.getElementById('regNote');
@@ -896,120 +510,120 @@
             btn.classList.add('past-event'); btn.disabled = true;
             btnText.textContent = '🕐 Event Ended';
             note.textContent    = 'This event has already taken place.';
+            const qtyWrap = document.getElementById('qtyWrap');
+            if (qtyWrap) qtyWrap.closest('div[data-qty-section]').style.display = 'none';
         } else if (soldOut) {
             btn.classList.add('sold-out'); btn.disabled = true;
             btnText.textContent = '❌ Sold Out';
             note.textContent    = 'No tickets remaining for this event.';
+            const qtyWrap = document.getElementById('qtyWrap');
+            if (qtyWrap) qtyWrap.closest('div[data-qty-section]').style.display = 'none';
         } else if (!isLoggedIn) {
             document.getElementById('loginPrompt').style.display = 'block';
             btn.style.display  = 'none';
             note.style.display = 'none';
+            const qtyWrap = document.getElementById('qtyWrap');
+            if (qtyWrap) qtyWrap.closest('div[data-qty-section]').style.display = 'none';
         }
-
         document.getElementById('edBody').style.display = 'grid';
         document.title = ev.title + ' — Eventaura';
     }
 
-    /* ── Render QR codes post-booking ── */
+    /* ══════════════════════════════════════
+       renderQRCodes(tickets)
+       Called after a successful booking.
+       tickets = List<TicketResponse> from backend.
+       Each ticket.qrCode is the URL:
+         /api/v1/tickets/{id}/qr  → returns image/png
+    ══════════════════════════════════════ */
     function renderQRCodes(tickets) {
+        // Hide decorative placeholder, show real QR container
         document.getElementById('qrPlaceholder').style.display = 'none';
         const container = document.getElementById('qrGenerated');
+
         container.innerHTML = tickets.map((ticket, idx) => `
             <div style="
-                display:flex;flex-direction:column;align-items:center;gap:12px;
-                ${idx > 0 ? 'margin-top:22px;padding-top:22px;border-top:1px dashed rgba(255,255,255,0.12);' : ''}
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 12px;
+                ${idx > 0 ? 'margin-top:22px; padding-top:22px; border-top:1px dashed rgba(255,255,255,0.12);' : ''}
             ">
                 ${tickets.length > 1 ? `
-                    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.35);">
-                        Ticket ${idx + 1} of ${tickets.length}
-                    </div>` : ''}
-                <img src="${ticket.qrUrl}" alt="QR code for ticket ${ticket.ticketCode}"
-                     style="width:160px;height:160px;border-radius:14px;display:block;background:#fff;padding:8px;">
-                <div style="font-family:monospace;font-size:11px;letter-spacing:0.08em;color:rgba(255,255,255,0.3);">${ticket.ticketCode}</div>
+                    <div style="
+                        font-size: 10px;
+                        font-weight: 700;
+                        text-transform: uppercase;
+                        letter-spacing: 1.5px;
+                        color: rgba(255,255,255,0.35);
+                    ">Ticket ${idx + 1} of ${tickets.length}</div>
+                ` : ''}
+                <img
+                    src="${ticket.qrUrl}"
+                    alt="QR code for ticket ${ticket.ticketCode}"
+                    style="
+                        width: 160px;
+                        height: 160px;
+                        border-radius: 14px;
+                        display: block;
+                        background: #ffffff;
+                        padding: 8px;
+                    "
+                >
+                <div style="
+                    font-family: monospace;
+                    font-size: 11px;
+                    letter-spacing: 0.08em;
+                    color: rgba(255,255,255,0.3);
+                ">${ticket.ticketCode}</div>
                 <div class="ed-ticket-qr-note">Present this QR at the venue entrance</div>
             </div>
         `).join('');
+
         container.style.display = 'block';
-        container.scrollIntoView({ behavior:'smooth', block:'nearest' });
+        // Gently scroll QR into view
+        container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
-    /* ── Register handler ── */
     async function handleRegister() {
         if (!token) { window.location.href = '/login'; return; }
-
         const btn     = document.getElementById('regBtn');
         const btnText = document.getElementById('regBtnText');
         const spinner = document.getElementById('btnSpinner');
         const qty     = parseInt(document.getElementById('ticketQty')?.value) || 1;
-        const isPaid  = eventData && eventData.ticketPrice > 0;
-
-        /* Validate screenshot for paid events */
-        if (isPaid) {
-            const ssFile = ssInput.files[0];
-            if (!ssFile) {
-                ssErr.classList.add('show');
-                ssZone.scrollIntoView({ behavior:'smooth', block:'center' });
-                return;
-            }
-            ssErr.classList.remove('show');
-        }
-
         btn.disabled = true; btn.classList.add('loading');
         btnText.textContent = qty > 1 ? `Booking ${qty} tickets…` : 'Booking ticket…';
         spinner.style.display = 'inline-block';
-
         try {
-            let res;
-
-            if (isPaid) {
-                /* Paid event: multipart/form-data with screenshot file */
-                const formData = new FormData();
-                formData.append('numberOfTickets', qty);
-                formData.append('paymentScreenShot', ssInput.files[0]);
-
-                res = await fetch(`/api/v1/tickets/buy/${eventId}`, {
-                    method : 'POST',
-                    headers: { 'Authorization': `Bearer ${token}` },
-                    body   : formData
-                    /* Do NOT set Content-Type — browser sets multipart boundary automatically */
-                });
-            } else {
-                /* Free event: JSON body */
-                const formData = new FormData();
-                formData.append('numberOfTickets', qty);
-
-                if (isPaid) {
-                    formData.append('paymentScreenShot', ssInput.files[0]);
-                }
-
-                res = await fetch(`/api/v1/tickets/buy/${eventId}`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: formData
-                });
-            }
-
+            const res = await fetch(`/api/v1/tickets/buy/${eventId}`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ numberOfTickets: qty })
+            });
             if (res.ok) {
+                // Backend returns List<TicketResponse>; each has .qrCode = URL string
                 const tickets = await res.json();
+
+                // Show success state in sidebar
                 document.getElementById('regFormWrap').style.display = 'none';
                 document.getElementById('regSuccess').style.display  = 'block';
                 const bookedCount = document.getElementById('bookedCount');
                 if (bookedCount) bookedCount.textContent = qty;
+
+                // Swap placeholder QR grid → real QR image(s) in the ticket card
                 renderQRCodes(tickets);
             } else {
                 const msg = await res.text();
                 alert(msg || 'Booking failed. Please try again.');
                 btn.disabled = false; btn.classList.remove('loading');
-                btnText.textContent = isPaid ? '💳 Pay & Register' : '🎟️ Register Now';
+                btnText.textContent = '🎟️ Book Tickets';
                 spinner.style.display = 'none';
             }
         } catch (err) {
             console.error(err);
             alert('Server error. Please try again.');
             btn.disabled = false; btn.classList.remove('loading');
-            btnText.textContent = isPaid ? '💳 Pay & Register' : '🎟️ Register Now';
+            btnText.textContent = '🎟️ Book Tickets';
             spinner.style.display = 'none';
         }
     }
@@ -1023,12 +637,12 @@
     const mobileNavClose   = document.getElementById('mobileNavClose');
     function openMobileNav() {
         mobileNav.classList.add('open'); mobileNavOverlay.classList.add('open');
-        hamburgerBtn.setAttribute('aria-expanded','true'); hamburgerBtn.classList.add('open');
+        hamburgerBtn.setAttribute('aria-expanded', 'true'); hamburgerBtn.classList.add('open');
         document.body.style.overflow = 'hidden';
     }
     function closeMobileNav() {
         mobileNav.classList.remove('open'); mobileNavOverlay.classList.remove('open');
-        hamburgerBtn.setAttribute('aria-expanded','false'); hamburgerBtn.classList.remove('open');
+        hamburgerBtn.setAttribute('aria-expanded', 'false'); hamburgerBtn.classList.remove('open');
         document.body.style.overflow = '';
     }
     hamburgerBtn.addEventListener('click', openMobileNav);
@@ -1036,11 +650,10 @@
     mobileNavOverlay.addEventListener('click', closeMobileNav);
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMobileNav(); });
 
+    /* ── Mobile nav auth state ── */
     if (localStorage.getItem('accessToken')) {
         document.getElementById('mobileNavGuest').style.display = 'none';
         document.getElementById('mobileNavUser').style.display  = 'block';
-        document.getElementById('guestActions').style.display   = 'none';
-        document.getElementById('userActions').style.display    = 'flex';
     }
 </script>
 <script th:src="@{/js/basic.js}"></script>

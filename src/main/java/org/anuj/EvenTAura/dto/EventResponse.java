@@ -27,8 +27,9 @@ public class EventResponse {
     private int ticketsAvailable;
     private String bannerUrl;
     private String ticketUrl;
+    private String paymentQrUrl;
+    private Double ticketPrice;
     private String category;
     private String club;
     private User organizer;
-
 }

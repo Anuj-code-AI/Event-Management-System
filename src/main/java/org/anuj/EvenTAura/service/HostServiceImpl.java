@@ -125,7 +125,7 @@ public class HostServiceImpl implements HostService{
                         event.getEventDate(),
                         event.getBannerUrl(),
                         event.getCategory(),
-                        event.getTicketsAvailable(),
+                        event.getTicketPrice(),
                         event.getEventStatus()
                 ))
                 .toList();
@@ -170,7 +170,7 @@ public class HostServiceImpl implements HostService{
                         event.getEventDate(),
                         event.getBannerUrl(),
                         event.getCategory(),
-                        event.getTicketsAvailable(),
+                        event.getTicketPrice(),
                         event.getEventStatus()
                 ))
                 .toList();
@@ -193,7 +193,7 @@ public class HostServiceImpl implements HostService{
                         event.getEventDate(),
                         event.getBannerUrl(),
                         event.getCategory(),
-                        event.getTicketsAvailable(),
+                        event.getTicketPrice(),
                         event.getEventStatus()
                 ))
                 .toList();

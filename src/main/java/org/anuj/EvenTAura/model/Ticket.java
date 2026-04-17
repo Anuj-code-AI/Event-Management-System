@@ -31,6 +31,7 @@ public class Ticket {
     @Enumerated(EnumType.STRING)
     private TicketStatus status;
 
+    private String paymentScreenShotUrl;
     @ManyToOne
     @JoinColumn(name = "event_id", nullable = false)
     private Event event;

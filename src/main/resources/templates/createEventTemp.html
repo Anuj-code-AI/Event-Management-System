@@ -14,6 +14,7 @@
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
+
         gtag('config', 'G-3C9FCSTWY3');
     </script>
     <style>
@@ -71,7 +72,6 @@
             .ce-mode-cards { flex-direction: column; }
             .ce-mode-card  { min-width: 0; }
         }
-
         /* ── Ticket Price Field ── */
         .ce-price-wrap {
             position: relative;
@@ -319,7 +319,7 @@
     <div class="mobile-nav-links">
         <a href="/"            class="mobile-nav-link"><span class="mnl-icon">🏠</span>Home</a>
         <a href="/myEvents"     class="mobile-nav-link"><span class="mnl-icon">🔥</span>Events</a>
-        <a href="#ceModeBar"   class="mobile-nav-link"><span class="mnl-icon">🏷️</span>Categories</a>
+        <a href="#ceModeBar"            class="mobile-nav-link"><span class="mnl-icon">🏷️</span>Categories</a>
         <a href="/aboutUs"     class="mobile-nav-link"><span class="mnl-icon">ℹ️</span>About Us</a>
         <a href="/createEvent" class="mobile-nav-link"><span class="mnl-icon">📅</span>Create Event</a>
         <a href="/tickets"     class="mobile-nav-link"><span class="mnl-icon">🎟️</span>My Tickets</a>
@@ -341,6 +341,7 @@
     <div class="ce-mode-inner">
         <p class="ce-mode-label">How do you want to collect registrations?</p>
         <div class="ce-mode-cards">
+            <!-- Mode 1 — Standard (active) -->
             <div class="ce-mode-card ce-mode-card--active">
                 <div class="ce-mode-icon">🎟️</div>
                 <div class="ce-mode-info">
@@ -349,6 +350,7 @@
                 </div>
                 <div class="ce-mode-check">✓</div>
             </div>
+            <!-- Mode 2 — Custom Form -->
             <div class="ce-mode-card ce-mode-card--alt" onclick="window.location.href='/customEvent'">
                 <div class="ce-mode-icon">📋</div>
                 <div class="ce-mode-info">
@@ -387,7 +389,7 @@
                 <div class="ce-step-connector"></div>
                 <div class="ce-step" id="si3">
                     <div class="ce-step-dot"><span>3</span></div>
-                    <div class="ce-step-info"><strong>Tickets</strong><span>Capacity, pricing & QR</span></div>
+                    <div class="ce-step-info"><strong>Tickets</strong><span>Capacity & availability</span></div>
                 </div>
                 <div class="ce-step-connector"></div>
                 <div class="ce-step" id="si4">
@@ -414,7 +416,6 @@
                             <span id="cpfTime">🕐 Time TBD</span>
                             <span id="cpfLoc">📍 Location TBD</span>
                             <span id="cpfClub" style="display:none;"></span>
-                            <span id="cpfPrice">🎁 Free</span>
                         </div>
                         <div class="cpf-footer">
                             <span class="cpf-tickets" id="cpfTickets">🎫 – available</span>
@@ -429,7 +430,7 @@
 
 <!-- ═══════════════════════ FORM BODY ═══════════════════════ -->
 <div class="ce-body">
-    <form id="ceForm" enctype="multipart/form-data" novalidate>
+    <form id="ceForm" action="/events/create" method="POST" enctype="multipart/form-data" novalidate>
 
         <!-- SECTION 1: Event Details -->
         <div class="ce-section" id="sec1">
@@ -537,11 +538,9 @@
         <div class="ce-section" id="sec3">
             <div class="ce-section-head">
                 <div class="ce-section-num">03</div>
-                <div><h2>Ticket Info</h2><p>Set your event's capacity, pricing and availability</p></div>
+                <div><h2>Ticket Info</h2><p>Set your event's total capacity and current availability</p></div>
             </div>
             <div class="ce-fields">
-
-                <!-- Ticket counts -->
                 <div class="ce-field-row">
                     <div class="ce-field">
                         <label for="totalTickets">Total Tickets <span class="req">*</span></label>
@@ -563,77 +562,6 @@
                     </div>
                 </div>
 
-                <!-- ══ NEW: Ticket Price ══ -->
-                <div class="ce-field ce-field--full">
-                    <label for="ticketPrice">Ticket Price <span class="req">*</span></label>
-                    <div class="ce-input-wrap ce-price-wrap" id="iw-price">
-                        <span class="ce-ico">💰</span>
-                        <span class="ce-price-prefix">₹</span>
-                        <input type="number"
-                               id="ticketPrice"
-                               name="ticketPrice"
-                               placeholder="0"
-                               min="0"
-                               step="1"
-                               value="0"
-                               required>
-                    </div>
-                    <div style="margin-top:8px;">
-                        <span class="ce-price-badge ce-price-badge--free" id="priceBadge">
-                            🎁 Free Event — No payment required
-                        </span>
-                    </div>
-                    <span class="ce-hint">Enter 0 for a free event. A Payment QR section will appear for paid events.</span>
-                    <span class="ce-err" id="ePrice"></span>
-                </div>
-
-                <!-- ══ NEW: Payment QR Upload — revealed when price > 0 ══ -->
-                <div class="ce-qr-section" id="qrSection">
-                    <div class="ce-qr-inner">
-                        <div class="ce-qr-header">
-                            <div class="ce-qr-header-icon">📲</div>
-                            <div class="ce-qr-header-text">
-                                <strong>Payment QR Code</strong>
-                                <span>Attendees scan this to pay for their ticket before registration</span>
-                            </div>
-                            <span class="ce-qr-req-tag">Required</span>
-                        </div>
-
-                        <div class="ce-qr-upload-zone" id="qrUploadZone">
-                            <!-- Hidden file input covers entire zone -->
-                            <input type="file"
-                                   id="paymentQr"
-                                   name="paymentQr"
-                                   accept="image/jpeg,image/png,image/webp"
-                                   style="position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer;z-index:2;">
-
-                            <!-- Idle state -->
-                            <div class="ce-qr-idle" id="qrIdle">
-                                <span class="ce-qr-idle-icon">🔳</span>
-                                <p class="ce-qr-upload-title">Upload Payment QR Code</p>
-                                <p class="ce-qr-upload-sub">or <span class="ce-qr-browse">click to browse</span></p>
-                                <p class="ce-upload-spec">PNG · JPG · WEBP &nbsp;·&nbsp; Max 3 MB &nbsp;·&nbsp; Square format preferred</p>
-                            </div>
-
-                            <!-- Preview state -->
-                            <div class="ce-qr-preview" id="qrPreview" style="display:none;">
-                                <img id="qrPreviewImg" src="" alt="QR Code preview">
-                                <div class="ce-qr-overlay">
-                                    <button type="button" id="removeQrImg" class="ce-remove-btn">✕ Remove</button>
-                                    <span class="ce-file-meta" id="qrFileMeta"></span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="ce-qr-note">
-                            💡 Use UPI QR codes from PhonePe, GPay, Paytm, or any UPI-linked bank account. Ensure your UPI ID is clearly visible in the QR image.
-                        </div>
-
-                        <span class="ce-err" id="eQr" style="margin-top:8px;display:block;"></span>
-                    </div>
-                </div>
-
-                <!-- Ticket image upload -->
                 <div class="ce-field ce-field--full">
                     <label for="ticketImage">Ticket Image <span class="req">*</span></label>
                     <div class="ce-ticket-upload-zone" id="ticketUploadZone">
@@ -655,8 +583,6 @@
                     <span class="ce-err" id="eTicket"></span>
                     <span class="ce-hint">This image appears on the ticket sent to attendees after registration.</span>
                 </div>
-
-                <!-- Capacity bar -->
                 <div class="ce-cap-bar" id="capBar">
                     <div class="ce-cap-top">
                         <span class="ce-cap-label">Capacity Overview</span>
@@ -701,7 +627,6 @@
                 <p class="ce-hint ce-hint--center">💡 Events with banners get <strong>3× more</strong> registrations. Use bold, high-contrast visuals.</p>
             </div>
         </div>
-
         <!-- SUBMIT BAR -->
         <div class="ce-submit-bar">
             <a href="/" class="ce-cancel">← Discard</a>
@@ -771,11 +696,6 @@
             document.getElementById('ticketsAvailable').value = ev.ticketsAvailable || '';
             document.getElementById('club').value             = ev.club             || '';
 
-            // Pre-fill ticket price and trigger QR logic
-            const priceVal = (ev.ticketPrice !== undefined && ev.ticketPrice !== null) ? ev.ticketPrice : 0;
-            document.getElementById('ticketPrice').value = priceVal;
-            document.getElementById('ticketPrice').dispatchEvent(new Event('input'));
-
             ['title','description','eventDate','eventTime','location','club','ticketsAvailable']
                 .forEach(id => document.getElementById(id).dispatchEvent(new Event('input')));
             document.getElementById('totalTickets').dispatchEvent(new Event('input'));
@@ -802,14 +722,6 @@
                 document.getElementById('ticketPreviewImg').src        = ev.ticketUrl;
                 document.getElementById('ticketUploadZone').classList.add('ce-zone--filled');
                 document.getElementById('ticketFileMeta').textContent  = 'Current ticket image';
-            }
-
-            if (ev.paymentQrUrl) {
-                document.getElementById('qrIdle').style.display    = 'none';
-                document.getElementById('qrPreview').style.display = 'block';
-                document.getElementById('qrPreviewImg').src        = ev.paymentQrUrl;
-                document.getElementById('qrUploadZone').classList.add('ce-zone--filled');
-                document.getElementById('qrFileMeta').textContent  = 'Current QR image';
             }
 
             document.getElementById('ceForm').dataset.eventId = eventId;
@@ -860,12 +772,12 @@
     });
 
     /* ─── Category picker ─── */
-    const catBtns       = document.querySelectorAll('.ce-cat-btn');
-    const catInput      = document.getElementById('category');
-    const selectedWrap  = document.getElementById('selectedCatWrap');
-    const selectedLabel = document.getElementById('selectedCatLabel');
-    const clearCatBtn   = document.getElementById('clearCat');
-    const cpfCat        = document.getElementById('cpfCat');
+    const catBtns      = document.querySelectorAll('.ce-cat-btn');
+    const catInput     = document.getElementById('category');
+    const selectedWrap = document.getElementById('selectedCatWrap');
+    const selectedLabel= document.getElementById('selectedCatLabel');
+    const clearCatBtn  = document.getElementById('clearCat');
+    const cpfCat       = document.getElementById('cpfCat');
 
     catBtns.forEach(btn => {
         btn.addEventListener('click', () => {
@@ -896,67 +808,6 @@
         cpfCat.style.display = 'none';
     });
 
-    /* ─── All upload DOM refs declared here so every function below can access them ─── */
-    // Banner
-    const zone       = document.getElementById('uploadZone');
-    const fileInput  = document.getElementById('bannerImage');
-    const idle       = document.getElementById('uploadIdle');
-    const preview    = document.getElementById('uploadPreview');
-    const previewImg = document.getElementById('uploadPreviewImg');
-    const fileMeta   = document.getElementById('fileMeta');
-    const removeBtn  = document.getElementById('removeImg');
-    const cpfBanner  = document.getElementById('cpfBanner');
-    const cpfPlaceh  = document.getElementById('cpfPlaceholder');
-    // Ticket image
-    const ticketZone       = document.getElementById('ticketUploadZone');
-    const ticketInput      = document.getElementById('ticketImage');
-    const ticketIdle       = document.getElementById('ticketIdle');
-    const ticketPreview    = document.getElementById('ticketPreview');
-    const ticketPreviewImg = document.getElementById('ticketPreviewImg');
-    const ticketFileMeta   = document.getElementById('ticketFileMeta');
-    const removeTicketBtn  = document.getElementById('removeTicketImg');
-    // QR
-    const qrZone       = document.getElementById('qrUploadZone');
-    const qrInput      = document.getElementById('paymentQr');
-    const qrIdle       = document.getElementById('qrIdle');
-    const qrPreview    = document.getElementById('qrPreview');
-    const qrPreviewImg = document.getElementById('qrPreviewImg');
-    const qrFileMeta   = document.getElementById('qrFileMeta');
-    const removeQrBtn  = document.getElementById('removeQrImg');
-
-    /* ─── Ticket Price — QR toggle logic ─── */
-    const ticketPriceInput = document.getElementById('ticketPrice');
-    const qrSection        = document.getElementById('qrSection');
-    const priceBadge       = document.getElementById('priceBadge');
-    const qrFileInput      = qrInput; // alias
-
-    function handlePriceChange() {
-        const price  = parseFloat(ticketPriceInput.value) || 0;
-        const isPaid = price > 0;
-
-        // Show / hide QR section
-        if (isPaid) {
-            qrSection.classList.add('ce-qr--visible');
-            qrFileInput.required = true;
-        } else {
-            qrSection.classList.remove('ce-qr--visible');
-            qrFileInput.required = false;
-            clearQrPreview();
-        }
-
-        // Update badge
-        priceBadge.className = 'ce-price-badge ' + (isPaid ? 'ce-price-badge--paid' : 'ce-price-badge--free');
-        priceBadge.textContent = isPaid
-            ? '💳 Paid Event — ₹' + price.toLocaleString('en-IN') + ' per ticket'
-            : '🎁 Free Event — No payment required';
-
-        syncPreview();
-    }
-
-    ticketPriceInput.addEventListener('input', handlePriceChange);
-    // Initialise on page load
-    handlePriceChange();
-
     /* ─── Live preview sync ─── */
     function fmtDate(d) {
         if (!d) return '';
@@ -974,21 +825,17 @@
         const loc   = document.getElementById('location').value.trim();
         const club  = document.getElementById('club').value.trim();
         const avail = document.getElementById('ticketsAvailable').value;
-        const price = parseFloat(document.getElementById('ticketPrice').value) || 0;
-
         document.getElementById('cpfTitle').textContent   = title || 'Your Event Title';
-        document.getElementById('cpfBadge').textContent   = title ? title.slice(0,12) + (title.length > 12 ? '…' : '') : 'Event';
+        document.getElementById('cpfBadge').textContent   = title ? title.slice(0,12) + (title.length>12?'…':'') : 'Event';
         document.getElementById('cpfDate').textContent    = date  ? '📅 ' + fmtDate(date) : '📅 Date TBD';
         document.getElementById('cpfTime').textContent    = time  ? '🕐 ' + fmtTime(time) : '🕐 Time TBD';
-        document.getElementById('cpfLoc').textContent     = loc   ? '📍 ' + loc  : '📍 Location TBD';
+        document.getElementById('cpfLoc').textContent     = loc   ? '📍 ' + loc : '📍 Location TBD';
         document.getElementById('cpfTickets').textContent = avail ? '🎫 ' + avail + ' available' : '🎫 – available';
-        document.getElementById('cpfPrice').textContent   = price > 0 ? '💳 ₹' + price.toLocaleString('en-IN') : '🎁 Free';
-
         const clubEl = document.getElementById('cpfClub');
         if (club) { clubEl.textContent = '🏛️ ' + club; clubEl.style.display = 'block'; }
         else       { clubEl.style.display = 'none'; }
     }
-    ['title','eventDate','eventTime','location','club','ticketsAvailable','ticketPrice'].forEach(id => {
+    ['title','eventDate','eventTime','location','club','ticketsAvailable'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.addEventListener('input', syncPreview);
     });
@@ -1003,12 +850,8 @@
         const sold = isNaN(avail) ? 0 : Math.max(0, total - avail);
         const pct  = Math.round((sold / total) * 100);
         const fill = document.getElementById('capFill');
-        fill.style.width      = pct + '%';
-        fill.style.background = pct > 80
-            ? 'linear-gradient(90deg,#ef4444,#b91c1c)'
-            : pct > 50
-            ? 'linear-gradient(90deg,#f97316,#eab308)'
-            : 'linear-gradient(90deg,#ff4d6d,#ff8c42)';
+        fill.style.width = pct + '%';
+        fill.style.background = pct > 80 ? 'linear-gradient(90deg,#ef4444,#b91c1c)' : pct > 50 ? 'linear-gradient(90deg,#f97316,#eab308)' : 'linear-gradient(90deg,#ff4d6d,#ff8c42)';
         document.getElementById('capPct').textContent   = pct + '% sold';
         document.getElementById('capSold').textContent  = 'Sold: ' + sold;
         document.getElementById('capAvail').textContent = 'Available: ' + (isNaN(avail) ? '–' : avail);
@@ -1019,6 +862,16 @@
     document.getElementById('ticketsAvailable').addEventListener('input', updateCap);
 
     /* ─── Banner upload ─── */
+    const zone       = document.getElementById('uploadZone');
+    const fileInput  = document.getElementById('bannerImage');
+    const idle       = document.getElementById('uploadIdle');
+    const preview    = document.getElementById('uploadPreview');
+    const previewImg = document.getElementById('uploadPreviewImg');
+    const fileMeta   = document.getElementById('fileMeta');
+    const removeBtn  = document.getElementById('removeImg');
+    const cpfBanner  = document.getElementById('cpfBanner');
+    const cpfPlaceh  = document.getElementById('cpfPlaceholder');
+
     function showBanner(file) {
         if (!file || !file.type.startsWith('image/')) return;
         const url = URL.createObjectURL(file);
@@ -1046,6 +899,14 @@
     });
 
     /* ─── Ticket image upload ─── */
+    const ticketZone       = document.getElementById('ticketUploadZone');
+    const ticketInput      = document.getElementById('ticketImage');
+    const ticketIdle       = document.getElementById('ticketIdle');
+    const ticketPreview    = document.getElementById('ticketPreview');
+    const ticketPreviewImg = document.getElementById('ticketPreviewImg');
+    const ticketFileMeta   = document.getElementById('ticketFileMeta');
+    const removeTicketBtn  = document.getElementById('removeTicketImg');
+
     function showTicketPreview(file) {
         if (!file || !file.type.startsWith('image/')) return;
         ticketPreviewImg.src = URL.createObjectURL(file);
@@ -1068,38 +929,10 @@
         if (f) { const dt = new DataTransfer(); dt.items.add(f); ticketInput.files = dt.files; showTicketPreview(f); }
     });
 
-    /* ─── QR Code image upload ─── */
-    function showQrPreview(file) {
-        if (!file || !file.type.startsWith('image/')) return;
-        qrPreviewImg.src = URL.createObjectURL(file);
-        qrIdle.style.display = 'none'; qrPreview.style.display = 'block';
-        qrFileMeta.textContent = file.name + ' · ' + (file.size/1024/1024).toFixed(2) + ' MB';
-        qrZone.classList.add('ce-zone--filled');
-    }
-    function clearQrPreview() {
-        if (qrInput)      qrInput.value = '';
-        if (qrPreviewImg) qrPreviewImg.src = '';
-        if (qrIdle)       qrIdle.style.display = 'flex';
-        if (qrPreview)    qrPreview.style.display = 'none';
-        if (qrZone)       qrZone.classList.remove('ce-zone--filled','ce-zone--drag');
-    }
-    qrInput.addEventListener('change', () => { if (qrInput.files[0]) showQrPreview(qrInput.files[0]); });
-    qrZone.addEventListener('click', e => {
-        if (!qrZone.classList.contains('ce-zone--filled') && !removeQrBtn.contains(e.target)) qrInput.click();
-    });
-    removeQrBtn.addEventListener('click', e => { e.stopPropagation(); e.preventDefault(); clearQrPreview(); });
-    ['dragenter','dragover'].forEach(ev => qrZone.addEventListener(ev, e => { e.preventDefault(); qrZone.classList.add('ce-zone--drag'); }));
-    qrZone.addEventListener('dragleave', () => qrZone.classList.remove('ce-zone--drag'));
-    qrZone.addEventListener('drop', e => {
-        e.preventDefault(); qrZone.classList.remove('ce-zone--drag');
-        const f = e.dataTransfer.files[0];
-        if (f) { const dt = new DataTransfer(); dt.items.add(f); qrInput.files = dt.files; showQrPreview(f); }
-    });
-
-    /* ─── Validation helper ─── */
+    /* ─── Validation ─── */
     function markErr(fieldId, errId, msg, ok) {
         const err = document.getElementById(errId);
-        const iw  = fieldId ? document.getElementById('iw-' + fieldId) : null;
+        const iw  = document.getElementById('iw-' + fieldId);
         if (!err) return ok;
         err.textContent = ok ? '' : msg;
         err.classList.toggle('ce-err--show', !ok);
@@ -1107,19 +940,16 @@
         return ok;
     }
 
-    /* ─── showEventPreviewMode — post-submit view ─── */
+    /* ─── showEventPreviewMode — shows after submit with Update + Delete ─── */
     function showEventPreviewMode(event) {
-        document.querySelector('.ce-body').style.display   = 'none';
-        document.querySelector('.ce-hero').style.display   = 'none';
+        /* hide form elements */
+        document.querySelector('.ce-body').style.display  = 'none';
+        document.querySelector('.ce-hero').style.display  = 'none';
         document.getElementById('ceModeBar').style.display = 'none';
 
         const container = document.createElement('div');
-        container.id        = 'eventDetailView';
+        container.id = 'eventDetailView';
         container.className = 'ev-detail-page';
-
-        const priceDisplay = (event.ticketPrice && event.ticketPrice > 0)
-            ? `<span>💳 ₹${parseFloat(event.ticketPrice).toLocaleString('en-IN')} per ticket</span>`
-            : `<span>🎁 Free Event</span>`;
 
         container.innerHTML = `
             <div class="ev-banner-wrap">
@@ -1160,7 +990,6 @@
                                     <span>📅 ${event.eventDate}</span>
                                     <span>🕐 ${event.eventTime}</span>
                                     <span>📍 ${event.location}</span>
-                                    ${priceDisplay}
                                 </div>
                                 <div class="ev-ticket-footer">
                                     <div><span class="ev-ticket-label">Available</span><strong class="ev-ticket-count">${event.ticketsAvailable}</strong></div>
@@ -1187,9 +1016,6 @@
                             <div class="ev-reg-row"><span>🕐</span><span>${event.eventTime}</span></div>
                             <div class="ev-reg-row"><span>📍</span><span>${event.location}</span></div>
                             ${event.club ? `<div class="ev-reg-row"><span>🏛️</span><span>${event.club}</span></div>` : ''}
-                            ${(event.ticketPrice && event.ticketPrice > 0)
-                                ? `<div class="ev-reg-row"><span>💳</span><span>₹${parseFloat(event.ticketPrice).toLocaleString('en-IN')} per ticket</span></div>`
-                                : `<div class="ev-reg-row"><span>🎁</span><span>Free Event</span></div>`}
                         </div>
                         <div class="ev-cap-bar-wrap">
                             <div class="ev-cap-track">
@@ -1206,6 +1032,7 @@
                 </aside>
             </div>`;
 
+        /* insert right after the header — mode bar is already hidden */
         document.querySelector('.header').insertAdjacentElement('afterend', container);
 
         document.getElementById('evUpdateBtn').addEventListener('click', () => {
@@ -1233,35 +1060,29 @@
         const isUpdate = this.dataset.mode === 'update';
         const eventId  = this.dataset.eventId;
 
-        const title    = document.getElementById('title').value.trim();
-        const desc     = document.getElementById('description').value.trim();
-        const loc      = document.getElementById('location').value.trim();
-        const date     = document.getElementById('eventDate').value;
-        const time     = document.getElementById('eventTime').value;
-        const total    = parseInt(document.getElementById('totalTickets').value);
-        const avail    = parseInt(document.getElementById('ticketsAvailable').value);
-        const club     = document.getElementById('club').value.trim();
+        const title = document.getElementById('title').value.trim();
+        const desc  = document.getElementById('description').value.trim();
+        const loc   = document.getElementById('location').value.trim();
+        const date  = document.getElementById('eventDate').value;
+        const time  = document.getElementById('eventTime').value;
+        const total = parseInt(document.getElementById('totalTickets').value);
+        const avail = parseInt(document.getElementById('ticketsAvailable').value);
+        const club  = document.getElementById('club').value.trim();
         const category = document.getElementById('category').value.trim();
-        const price    = parseFloat(document.getElementById('ticketPrice').value) || 0;
 
         const bannerFile = document.getElementById('bannerImage').files[0];
         const ticketFile = document.getElementById('ticketImage').files[0];
-        const qrFile     = document.getElementById('paymentQr').files[0];
-
-        const isPaid = price > 0;
 
         const checks = [
-            markErr('title', 'eTitle', 'Event title is required.',              title.length > 0),
-            markErr('desc',  'eDesc',  'Please add a description.',             desc.length  > 0),
-            markErr('loc',   'eLoc',   'Location is required.',                 loc.length   > 0),
-            markErr('date',  'eDate',  'Please select a date.',                 date !== ''),
-            markErr('time',  'eTime',  'Please select a time.',                 time !== ''),
-            markErr('total', 'eTotal', 'Enter total number of tickets.',        !isNaN(total) && total > 0),
-            markErr('avail', 'eAvail', 'Available tickets must be ≤ total.',   !isNaN(avail) && avail >= 0 && avail <= total),
-            markErr('price', 'ePrice', 'Ticket price must be 0 or more.',       price >= 0),
-            markErr(null,    'eQr',    'Payment QR is required for paid events.', !isPaid || isUpdate || !!qrFile),
-            markErr(null,    'eBanner','Please upload a banner image.',          isUpdate || !!bannerFile),
-            markErr(null,    'eTicket','Please upload a ticket image.',          isUpdate || !!ticketFile),
+            markErr('title', 'eTitle', 'Event title is required.',           title.length > 0),
+            markErr('desc',  'eDesc',  'Please add a description.',          desc.length  > 0),
+            markErr('loc',   'eLoc',   'Location is required.',              loc.length   > 0),
+            markErr('date',  'eDate',  'Please select a date.',              date !== ''),
+            markErr('time',  'eTime',  'Please select a time.',              time !== ''),
+            markErr('total', 'eTotal', 'Enter total number of tickets.',     !isNaN(total) && total > 0),
+            markErr('avail', 'eAvail', 'Available tickets must be ≤ total.', !isNaN(avail) && avail >= 0 && avail <= total),
+            markErr(null, 'eBanner', 'Please upload a banner image.',        isUpdate || !!bannerFile),
+            markErr(null, 'eTicket', 'Please upload a ticket image.',        isUpdate || !!ticketFile),
         ];
 
         if (checks.every(Boolean)) {
@@ -1273,13 +1094,14 @@
             formData.append('eventTime',        time);
             formData.append('totalTickets',     total);
             formData.append('ticketsAvailable', avail);
-            formData.append('ticketPrice',      price);
 
-            if (category)  formData.append('category',  category);
-            if (club)      formData.append('club',      club);
-            if (bannerFile) formData.append('banner',   bannerFile);
-            if (ticketFile) formData.append('ticket',   ticketFile);
-            if (qrFile)    formData.append('paymentQr', qrFile);
+            /* ── Optional fields — only send if filled ── */
+            if (category) formData.append('category', category);
+            if (club)     formData.append('club',     club);
+
+            /* ── Images — only if new file selected ── */
+            if (bannerFile) formData.append('banner', bannerFile);
+            if (ticketFile) formData.append('ticket', ticketFile);
 
             const btn = document.getElementById('publishBtn');
             btn.disabled = true;
@@ -1293,6 +1115,7 @@
             const method   = isUpdate ? 'PATCH' : 'POST';
 
             try {
+
                 const response = await fetch(endpoint, {
                     method,
                     headers: { 'Authorization': `Bearer ${token}` },
@@ -1301,19 +1124,19 @@
 
                 if (response.ok) {
                     const data = await response.json();
-                    showEventPreviewMode(data);
+                    showEventPreviewMode(data);   /* ← shows Update + Delete, no redirect */
                 } else {
                     alert(isUpdate ? 'Failed to update event.' : 'Failed to create event.');
                     btn.disabled = false;
                     btn.classList.remove('ce-pub--loading');
-                    document.getElementById('publishText').textContent = isUpdate ? 'Update Event' : 'Request To Publish';
+                    document.getElementById('publishText').textContent = isUpdate ? 'Update Event' : 'Publish Event';
                 }
             } catch (error) {
                 console.error(error);
                 alert('Server error. Please try again.');
                 btn.disabled = false;
                 btn.classList.remove('ce-pub--loading');
-                document.getElementById('publishText').textContent = isUpdate ? 'Update Event' : 'Request To Publish';
+                document.getElementById('publishText').textContent = isUpdate ? 'Update Event' : 'Publish Event';
             }
 
         } else {
@@ -1349,6 +1172,7 @@
     mobileNavOverlay.addEventListener('click', closeMobileNav);
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMobileNav(); });
 
+    /* ── Mobile nav auth state ── */
     if (localStorage.getItem('accessToken')) {
         document.getElementById('mobileNavGuest').style.display = 'none';
         document.getElementById('mobileNavUser').style.display  = 'block';
