@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.anuj.EvenTAura.dto.UserRequest;
 import org.anuj.EvenTAura.dto.UserResponse;
 import org.anuj.EvenTAura.model.User;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 

@@ -16,7 +16,6 @@ import org.anuj.EvenTAura.repository.EventRepository;
 import org.anuj.EvenTAura.repository.HostProfileRepository;
 import org.anuj.EvenTAura.repository.TicketRepository;
 import org.anuj.EvenTAura.repository.UserRepository;
-import org.anuj.EvenTAura.util.SseEmitterHolder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -25,8 +24,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
-import java.util.List;
 
 @Builder
 @Service

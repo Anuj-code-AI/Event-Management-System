@@ -1,6 +1,5 @@
 package org.anuj.EvenTAura.dto;
 
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import org.anuj.EvenTAura.model.Event;
 import org.anuj.EvenTAura.model.TicketStatus;

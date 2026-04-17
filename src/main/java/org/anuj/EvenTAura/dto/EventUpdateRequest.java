@@ -1,7 +1,5 @@
 package org.anuj.EvenTAura.dto;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.anuj.EvenTAura.model.User;
 
 import java.time.LocalDate;

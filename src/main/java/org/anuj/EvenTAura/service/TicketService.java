@@ -1,13 +1,11 @@
 package org.anuj.EvenTAura.service;
 
-import jakarta.validation.Valid;
 import org.anuj.EvenTAura.dto.*;
 import org.anuj.EvenTAura.model.Ticket;
 import org.springframework.data.domain.Page;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.util.List;
 
 public interface TicketService {

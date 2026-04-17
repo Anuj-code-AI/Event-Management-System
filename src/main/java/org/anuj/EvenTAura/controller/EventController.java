@@ -7,14 +7,11 @@ import org.anuj.EvenTAura.dto.EventSummaryResponse;
 import org.anuj.EvenTAura.dto.EventUpdateRequest;
 import org.anuj.EvenTAura.service.CloudinaryService;
 import org.anuj.EvenTAura.service.EventService;
-import org.anuj.EvenTAura.service.FileStorageService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/event")

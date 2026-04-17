@@ -4,13 +4,11 @@ package org.anuj.EvenTAura.service;
 import lombok.RequiredArgsConstructor;
 import org.anuj.EvenTAura.dto.*;
 import org.anuj.EvenTAura.exception.*;
-import org.anuj.EvenTAura.mapper.EventMapper;
 import org.anuj.EvenTAura.mapper.TicketMapper;
 import org.anuj.EvenTAura.model.*;
 import org.anuj.EvenTAura.repository.EventRepository;
 import org.anuj.EvenTAura.repository.TicketRepository;
 import org.anuj.EvenTAura.repository.UserRepository;
-import org.anuj.EvenTAura.util.QRCodeGenerator;
 import org.anuj.EvenTAura.util.SseEmitterHolder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,8 +22,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
-import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Service

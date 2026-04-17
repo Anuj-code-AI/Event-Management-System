@@ -1,13 +1,10 @@
 package org.anuj.EvenTAura.controller;
 
-
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.anuj.EvenTAura.dto.AudienceResponse;
 import org.anuj.EvenTAura.dto.TicketCheckResponse;
 import org.anuj.EvenTAura.dto.TicketRequest;
 import org.anuj.EvenTAura.dto.TicketResponse;
-import org.anuj.EvenTAura.exception.EventNotExistException;
 import org.anuj.EvenTAura.model.Ticket;
 import org.anuj.EvenTAura.repository.EventRepository;
 import org.anuj.EvenTAura.repository.TicketRepository;

@@ -1,8 +1,7 @@
 package org.anuj.EvenTAura.dto;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
+
 
 import lombok.*;
 @Data
