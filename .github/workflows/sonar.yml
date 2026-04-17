@@ -3,7 +3,6 @@ name: Sonar
 on:
   push:
     branches:
-      - main
       - dev
 
 jobs:
