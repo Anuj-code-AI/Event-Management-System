@@ -22,4 +22,4 @@ jobs:
         run: chmod +x mvnw
 
       - name: Build and analyze
-        run: ./mvnw clean install -DskipTests sonar -Dsonar.projectKey=Anuj-code-AI_Event-Management-System -Dsonar.organization=anuj-code-ai -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+        run: ./mvnw clean install -DskipTests org.sonarsource.scanner.maven:sonar-maven-plugin:3.10.0.2594 -Dsonar.projectKey=Anuj-code-AI_Event-Management-System -Dsonar.organization=anuj-code-ai -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=${{ secrets.SONAR_TOKEN }}
