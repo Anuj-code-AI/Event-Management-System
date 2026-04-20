@@ -2,6 +2,7 @@ package org.anuj.EvenTAura.service;
 
 
 import jakarta.transaction.Transactional;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.anuj.EvenTAura.dto.*;
 import org.anuj.EvenTAura.exception.InvalidPasswordException;
@@ -63,7 +64,7 @@ public class AuthServiceImpl implements AuthService{
     @Override
     public Map<String, String> login(LoginRequest req) {
         User user = userRepository.findByEmail(req.getEmail())
-                .orElseThrow(()->new UserNotFoundException("User not found"));
+                .orElseThrow(()->new UserNotFoundException("User not exist! Register now...."));
         if(!passwordEncoder.matches(req.getPassword(), user.getPassword())){
             throw new InvalidPasswordException("Incorrect Password");
         }
@@ -81,14 +82,14 @@ public class AuthServiceImpl implements AuthService{
     }
 
     @Override
-    public UserResponse me(Authentication auth) {
-        return userMapper.toResponse(userRepository.findByEmail(auth.getName())
+    public UserResponse me(Authentication authentication) {
+        return userMapper.toResponse(userRepository.findByEmail(authentication.getName())
                 .orElseThrow(()->new UserNotFoundException("User not found")));
     }
 
     @Override
     @Transactional
-    public String deleteAccount(Authentication authentication) {
+    public String deleteAccount(@NonNull Authentication authentication) {
         User user = userRepository.findByEmail(authentication.getName())
                 .orElseThrow(()->new UserNotFoundException("User not found"));
         refreshRepository.deleteByUser(user);

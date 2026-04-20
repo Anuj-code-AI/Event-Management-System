@@ -36,7 +36,7 @@ build/
 .env
 .env.*
 
-src/main/resources/application-dev.properties
+src/main/**/config/CacheConfig.java
 
 logs/
 *.log

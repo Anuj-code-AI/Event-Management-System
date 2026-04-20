@@ -216,6 +216,7 @@ public class EventServiceImpl implements EventService {
     public Page<EventSummaryResponse> getAllApprovedEvents(int page, int size) {
         Sort sort = Sort.by("eventDate").ascending();
         Pageable pageable = PageRequest.of(page, size, sort);
+        System.out.println("DB Hit");
         return eventRepository.findByEventStatus(
                 EventStatus.APPROVED,pageable)
                 .map(event -> new EventSummaryResponse(
