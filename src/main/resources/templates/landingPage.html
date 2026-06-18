@@ -1,0 +1,1566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="CampusHive (formerly EventAura) is the unified event management, student networking, team collaboration, and approval workflow portal for modern university campuses.">
+    <title>CampusHive | Modern University Collaboration & Event Ecosystem</title>
+
+    <!-- CSS Stylesheet -->
+    <style>
+        /* Import Google Fonts - Outfit & Inter */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
+
+        :root {
+            /* Colors */
+            --primary: #172239;             /* Premium Velvet Indigo-Slate */
+            --primary-light: #253352;
+            --accent: #E56E56;              /* Charming Coral-Terracotta */
+            --accent-hover: #D05C45;
+            --accent-light: #FAF1EF;        /* Muted Coral Cream */
+            --supporting-teal: #4A7A82;     /* Sophisticated Muted Teal */
+            --supporting-teal-light: #EDF3F4;
+
+            /* Fallback Mappings */
+            --primary-color: var(--primary);
+            --accent-color: var(--accent);
+
+            /* Backgrounds */
+            --bg-light: #FAF9F6;            /* Warm Off-White / Alabaster */
+            --bg-white: #FFFFFF;
+            --bg-dark-section: #111B2D;
+
+            /* Text */
+            --text-dark: #2A2F3B;
+            --text-muted: #626875;
+            --text-light: #FAF9F6;
+            --text-light-muted: #B9C0D0;
+
+            /* Borders */
+            --border-color: rgba(23, 34, 57, 0.08);
+            --border-color-gold: rgba(229, 110, 86, 0.25);
+
+            /* Typography */
+            --font-sans: 'Inter', sans-serif;
+            --font-heading: 'Outfit', sans-serif;
+
+            /* Shadows & Radius */
+            --shadow-sm: 0 4px 12px rgba(23, 34, 57, 0.02);
+            --shadow-md: 0 12px 24px rgba(23, 34, 57, 0.04);
+            --shadow-lg: 0 20px 40px rgba(23, 34, 57, 0.06);
+            --shadow-premium: 0 30px 60px -12px rgba(23, 34, 57, 0.08);
+            --radius-lg: 16px;
+            --radius-md: 10px;
+            --radius-sm: 6px;
+            --radius-full: 9999px;
+
+            /* Transitions */
+            --transition-smooth: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            --transition-fast: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            --container-width: 1200px;
+        }
+
+        /* Reset & Base Styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            font-size: 16px;
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            font-family: var(--font-sans);
+        }
+
+        body {
+            overflow-x: hidden;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            /* Subtle Academic Grid Pattern */
+            background-image: radial-gradient(rgba(23, 34, 57, 0.03) 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: var(--font-heading);
+            color: var(--primary);
+            font-weight: 700;
+            line-height: 1.25;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+            transition: var(--transition-fast);
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        /* Global Layout Utilities */
+        .container {
+            width: 90%;
+            max-width: var(--container-width);
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .section {
+            padding: 8rem 0;
+            position: relative;
+        }
+
+        .section-white {
+            background-color: var(--bg-white);
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .section-header {
+            text-align: center;
+            max-width: 650px;
+            margin: 0 auto 5rem auto;
+        }
+
+        .section-header .subtitle {
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            font-size: 0.85rem;
+            color: var(--accent);
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            display: block;
+            font-family: var(--font-heading);
+        }
+
+        .section-header h2 {
+            font-size: 2.6rem;
+            margin-bottom: 1.25rem;
+            letter-spacing: -0.02em;
+        }
+
+        .section-header p {
+            color: var(--text-muted);
+            font-size: 1.05rem;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.85rem 1.8rem;
+            font-family: var(--font-heading);
+            font-size: 0.95rem;
+            font-weight: 600;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            border: 1px solid transparent;
+            outline: none;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: var(--text-light);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-light);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-accent {
+            background-color: var(--accent);
+            color: var(--bg-white);
+        }
+
+        .btn-accent:hover {
+            background-color: var(--accent-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(229, 110, 86, 0.25);
+        }
+
+        .btn-outline {
+            border-color: var(--primary);
+            color: var(--primary);
+            background-color: transparent;
+        }
+
+        .btn-outline:hover {
+            background-color: rgba(23, 34, 57, 0.04);
+            transform: translateY(-2px);
+        }
+
+        /* Header & Sticky Nav */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            transition: var(--transition-smooth);
+            padding: 1.5rem 0;
+        }
+
+        header.scrolled {
+            background-color: rgba(250, 249, 246, 0.9);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-family: var(--font-heading);
+            font-weight: 800;
+            font-size: 1.45rem;
+            color: var(--primary);
+        }
+
+        .logo span {
+            color: var(--accent);
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background-color: var(--primary);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent);
+            font-weight: 800;
+        }
+
+        .mobile-only-action {
+            display: none !important;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 2.2rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            font-family: var(--font-heading);
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            position: relative;
+            padding: 0.3rem 0;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 3px;
+            background-color: var(--accent);
+            transition: var(--transition-smooth);
+        }
+
+        .nav-link:hover::after,
+        .nav-link.active::after {
+            width: 100%;
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .mobile-nav-toggle {
+            display: none;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 0.5rem;
+            z-index: 1100;
+        }
+
+        .mobile-nav-toggle svg {
+            width: 24px;
+            height: 24px;
+            stroke: var(--primary);
+        }
+
+        /* HERO CAROUSEL SYSTEM */
+        .hero-carousel {
+            position: relative;
+            min-height: 100vh;
+            overflow: hidden;
+            background-color: var(--bg-light);
+            padding-top: 6rem;
+        }
+
+        .carousel-slides-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            min-height: 80vh;
+            display: flex;
+        }
+
+        .carousel-slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: grid;
+            grid-template-columns: 1.15fr 0.85fr;
+            gap: 4.5rem;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateX(30px);
+            transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+            transform 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+            visibility 0.8s ease;
+            z-index: 1;
+        }
+
+        .carousel-slide.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(0);
+            z-index: 2;
+        }
+
+        .hero-content {
+            max-width: 600px;
+        }
+
+        .hero h1 {
+            font-size: 3.6rem;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.02em;
+        }
+
+        .hero h1 span {
+            color: var(--accent);
+        }
+
+        .hero p {
+            font-size: 1.15rem;
+            color: var(--text-muted);
+            margin-bottom: 2.5rem;
+            line-height: 1.7;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1.2rem;
+        }
+
+        .carousel-controls {
+            position: absolute;
+            bottom: 2.5rem;
+            left: 5%;
+            display: flex;
+            gap: 1rem;
+            z-index: 10;
+        }
+
+        .carousel-control-btn {
+            background-color: var(--bg-white);
+            border: 1px solid var(--border-color);
+            padding: 0.8rem 1.4rem;
+            border-radius: var(--radius-md);
+            font-family: var(--font-heading);
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            color: var(--text-muted);
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            text-align: left;
+            box-shadow: var(--shadow-sm);
+            min-width: 160px;
+        }
+
+        .carousel-control-btn span {
+            font-size: 0.7rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            margin-bottom: 0.2rem;
+            letter-spacing: 0.05em;
+        }
+
+        .carousel-control-btn:hover {
+            transform: translateY(-2px);
+            border-color: var(--accent);
+        }
+
+        .carousel-control-btn.active {
+            background-color: var(--primary);
+            color: var(--text-light);
+            border-color: var(--primary);
+            box-shadow: var(--shadow-premium);
+        }
+
+        .carousel-control-btn.active span {
+            color: var(--accent);
+        }
+
+        /* TICKET STUB LAYOUT */
+        .ticket-stub-visual {
+            position: relative;
+            width: 100%;
+            max-width: 380px;
+            margin: 0 auto;
+            background-color: var(--bg-white);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-premium);
+            overflow: hidden;
+            transition: var(--transition-smooth);
+        }
+
+        .ticket-stub-visual:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .ticket-header {
+            background-color: var(--primary);
+            padding: 1.5rem;
+            color: var(--text-light);
+            text-align: center;
+        }
+
+        .ticket-body {
+            padding: 1.8rem;
+            position: relative;
+        }
+
+        .ticket-divider {
+            position: relative;
+            height: 1px;
+            border-top: 2px dotted var(--border-color);
+            margin: 1.5rem 0;
+        }
+
+        .ticket-divider::before,
+        .ticket-divider::after {
+            content: '';
+            position: absolute;
+            top: -10px;
+            width: 20px;
+            height: 20px;
+            border-radius: var(--radius-full);
+            background-color: var(--bg-light);
+            border: 1px solid var(--border-color);
+            z-index: 2;
+        }
+
+        .ticket-divider::before {
+            left: -29px;
+        }
+
+        .ticket-divider::after {
+            right: -29px;
+        }
+
+        .ticket-footer {
+            padding: 1.5rem;
+            background-color: #FAF9FB;
+            text-align: center;
+            border-top: 1px dashed var(--border-color);
+        }
+
+        /* EVENT DIRECTORY GRID */
+        .events-template-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+        }
+
+        .ticket-card {
+            background-color: var(--bg-white);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            box-shadow: var(--shadow-premium);
+            display: flex;
+            flex-direction: column;
+            transition: var(--transition-smooth);
+        }
+
+        .ticket-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--accent);
+        }
+
+        .card-ticket-top {
+            height: 150px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--supporting-teal) 100%);
+            color: var(--text-light);
+            padding: 1.5rem;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .ticket-date-badge {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-sm);
+            padding: 0.3rem 0.6rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            width: fit-content;
+            text-transform: uppercase;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            font-family: var(--font-heading);
+        }
+
+        .card-ticket-bottom {
+            padding: 1.8rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .ticket-meta-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px dotted var(--border-color);
+            padding-top: 1.25rem;
+            margin-top: 1.5rem;
+        }
+
+        /* INTEGRATED KANBAN BOARD */
+        .kanban-visual {
+            background-color: var(--bg-white);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            box-shadow: var(--shadow-premium);
+        }
+
+        .kanban-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1rem;
+        }
+
+        .kanban-board-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+        }
+
+        .kanban-column {
+            background-color: var(--bg-light);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            border: 1px solid rgba(23, 34, 57, 0.04);
+        }
+
+        .kanban-col-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .kanban-tasks-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .kanban-card-item {
+            background-color: var(--bg-white);
+            border-radius: var(--radius-sm);
+            padding: 0.8rem;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition-fast);
+        }
+
+        .kanban-card-item:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        .kanban-tag {
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 0.15rem 0.4rem;
+            border-radius: var(--radius-sm);
+            text-transform: uppercase;
+        }
+
+        /* CAMPUS COMMUNITIES CLUBS SECTION */
+        .clubs-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+        }
+
+        .club-card {
+            background-color: var(--bg-white);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            text-align: center;
+            transition: var(--transition-smooth);
+        }
+
+        .club-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent);
+            box-shadow: var(--shadow-md);
+        }
+
+        .club-circle-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: var(--accent-light);
+            color: var(--accent-hover);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin: 0 auto 1.5rem auto;
+            border: 1.5px dashed var(--border-color-gold);
+        }
+
+        /* COLLAPSIBLE FAQ ACCORDION SECTION */
+        .faq-container {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .faq-item {
+            background-color: var(--bg-white);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            transition: var(--transition-fast);
+        }
+
+        .faq-question {
+            padding: 1.25rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            font-weight: 700;
+            color: var(--primary);
+            font-family: var(--font-heading);
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            padding: 0 1.5rem;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            line-height: 1.7;
+        }
+
+        .faq-item.active .faq-answer {
+            max-height: 150px;
+            padding-bottom: 1.25rem;
+        }
+
+        .faq-icon {
+            transition: var(--transition-fast);
+            font-weight: 700;
+        }
+
+        .faq-item.active .faq-icon {
+            transform: rotate(45deg);
+        }
+
+        /* FLOW WORKFLOW STAMP TRACKER */
+        .flow-showcase {
+            display: grid;
+            grid-template-columns: 1fr 0.3fr 1fr;
+            gap: 2rem;
+            align-items: center;
+            max-width: 850px;
+            margin: 0 auto;
+        }
+
+        .flow-step-box {
+            background-color: var(--bg-white);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 2.2rem;
+            box-shadow: var(--shadow-premium);
+            position: relative;
+        }
+
+        .flow-step-box h4 {
+            font-size: 1.15rem;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .flow-step-box p {
+            font-size: 0.9rem;
+            color: var(--text-dark);
+        }
+
+        .flow-arrow {
+            text-align: center;
+            font-size: 2rem;
+            color: var(--accent);
+            font-weight: 800;
+        }
+
+        /* Footer styles */
+        footer {
+            background-color: var(--primary);
+            color: var(--text-light-muted);
+            padding: 6rem 0 2rem 0;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr 1fr;
+            gap: 4rem;
+            margin-bottom: 4rem;
+        }
+
+        footer .logo {
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        footer p {
+            font-size: 0.9rem;
+            line-height: 1.7;
+            color: var(--text-light-muted);
+        }
+
+        footer h4 {
+            color: var(--text-light);
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+            font-family: var(--font-heading);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .footer-links {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .footer-links a {
+            font-size: 0.9rem;
+            color: var(--text-light-muted);
+            transition: var(--transition-fast);
+        }
+
+        .footer-links a:hover {
+            color: var(--accent);
+            padding-left: 4px;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding-top: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            color: var(--text-light-muted);
+        }
+
+        /* Scroll Animations */
+        .animate-on-scroll {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .animate-on-scroll.appear {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .delay-100 { transition-delay: 100ms; }
+        .delay-200 { transition-delay: 200ms; }
+
+        /* Responsive Media Queries */
+        @media (max-width: 1024px) {
+            .hero-carousel {
+                padding-top: 6rem;
+                min-height: auto;
+                height: auto;
+                padding-bottom: 3rem;
+            }
+            .carousel-slides-wrapper {
+                display: flex;
+                flex-direction: column;
+                height: auto;
+                min-height: auto;
+                gap: 2rem;
+            }
+            .carousel-slide {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                opacity: 0;
+                visibility: hidden;
+                transform: translateY(20px);
+                transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+                visibility 0.6s ease;
+                display: flex;
+                flex-direction: column;
+                gap: 2.5rem;
+                text-align: center;
+                z-index: 1;
+            }
+            .carousel-slide.active {
+                position: relative;
+                opacity: 1;
+                visibility: visible;
+                transform: translateY(0);
+                z-index: 2;
+            }
+            .hero-content {
+                max-width: 100%;
+            }
+            .hero h1 {
+                font-size: 2.6rem;
+            }
+            .hero-buttons {
+                justify-content: center;
+            }
+            .carousel-controls {
+                position: relative;
+                bottom: auto;
+                left: auto;
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 0.5rem;
+                width: 100%;
+                margin-top: 1rem;
+                z-index: 10;
+            }
+            .carousel-control-btn {
+                min-width: 0;
+                padding: 0.7rem 0.5rem;
+                font-size: 0.8rem;
+                align-items: center;
+                justify-content: center;
+                text-align: center;
+            }
+            .carousel-control-btn span {
+                display: none;
+            }
+            .events-template-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .clubs-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .kanban-board-grid {
+                grid-template-columns: 1fr;
+            }
+            .flow-showcase {
+                grid-template-columns: 1fr;
+            }
+            .flow-arrow {
+                transform: rotate(90deg);
+                margin: 1rem 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .section {
+                padding: 5rem 0;
+            }
+            .section-header h2 {
+                font-size: 2rem;
+            }
+            .mobile-nav-toggle {
+                display: block;
+            }
+            .mobile-only-action {
+                display: block !important;
+            }
+            .nav-menu {
+                position: fixed;
+                top: 0;
+                right: -100%;
+                width: 280px;
+                height: 100vh;
+                background-color: var(--bg-light);
+                flex-direction: column;
+                justify-content: center;
+                box-shadow: -10px 0 30px rgba(23, 34, 57, 0.05);
+                transition: var(--transition-smooth);
+                z-index: 1050;
+                gap: 2rem;
+            }
+            .nav-menu.mobile-open {
+                right: 0;
+            }
+            .nav-actions {
+                display: none;
+            }
+            .events-template-grid {
+                grid-template-columns: 1fr;
+            }
+            .clubs-grid {
+                grid-template-columns: 1fr;
+            }
+            footer {
+                padding: 4rem 0 1.5rem 0;
+            }
+            .footer-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+            .footer-bottom {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+<!-- Navigation Header -->
+<header id="main-header">
+    <div class="container nav-container">
+        <a href="landingPage.html" class="logo" id="header-logo">
+            <div class="logo-icon">C</div>
+            Campus<span>Hive</span>
+        </a>
+
+        <nav>
+            <!-- Hamburger Menu toggle icon -->
+            <button class="mobile-nav-toggle" id="mobile-nav-toggle" aria-label="Toggle navigation">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round"/></svg>
+            </button>
+
+            <ul class="nav-menu" id="nav-menu">
+                <li><a href="globalEvent.html" class="nav-link" id="nav-events">Events</a></li>
+                <li><a href="login.html" class="nav-link" id="nav-communities">Communities</a></li>
+                <li><a href="login.html" class="nav-link" id="nav-collab">Collaboration</a></li>
+                <li><a href="aboutUs.html" class="nav-link" id="nav-about">About Us</a></li>
+                <li class="mobile-only-action"><a href="login" class="nav-link" id="nav-mobile-login">Sign In</a></li>
+                <li class="mobile-only-action"><a href="register" class="btn btn-accent" style="color:white; margin-top: 1rem; width: 100%;" id="nav-mobile-register">Get Started</a></li>
+            </ul>
+        </nav>
+
+
+        <div class="nav-actions">
+            <a href="login" class="btn btn-outline" id="btn-nav-login">Sign In</a>
+            <a href="register" class="btn btn-primary" id="btn-nav-register">Get Started</a>
+        </div>
+    </div>
+</header>
+
+<!-- Multi-Hero Carousel Section -->
+<section class="hero-carousel">
+    <div class="container carousel-slides-wrapper">
+
+        <!-- HERO SLIDE 1: Student / Discover Events -->
+        <div class="carousel-slide active" data-slide="0">
+            <div class="hero-content">
+                <div class="badge">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 19.5A2.5 2.5 0 0 0 6.5 22H20M4 19.5V3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H4"/></svg>
+                    DISCOVER & RSVP
+                </div>
+                <h1>Claim Tickets to Your Favorite <span>Campus Events</span></h1>
+                <p>
+                    Explore a dynamic catalog of technical hackathons, guest panels, and student concerts. Register instantly, download dynamic ticket templates, and scan admission badges at gate check-ins.
+                </p>
+                <div class="hero-buttons">
+                    <a href="globalEvent" class="btn btn-accent" id="slide1-explore">Explore Events</a>
+                    <a href="login" class="btn btn-outline" id="slide1-signin">Sign In</a>
+                </div>
+            </div>
+
+            <div class="hero-visual">
+                <div class="ticket-stub-visual">
+                    <div class="ticket-header">
+                        <h3 style="color:var(--text-light); font-size:1rem; text-transform:uppercase; letter-spacing:0.05em;">Student Admission Badge</h3>
+                    </div>
+
+                    <div class="ticket-body">
+                        <span style="font-size:0.75rem; color:var(--accent); font-weight:700; text-transform:uppercase;">OCTOBER 18, 2026</span>
+                        <h4 style="font-size:1.3rem; margin-top:0.3rem; margin-bottom:0.5rem;">Annual Tech Sprint</h4>
+                        <p style="font-size:0.8rem; color:var(--text-muted);">Venue: CS Laboratory 3 • Admissions Open</p>
+
+                        <div class="ticket-divider"></div>
+
+                        <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem;">
+                            <span>Seat Type: General</span>
+                            <span style="font-weight:700; color:var(--primary);">FREE</span>
+                        </div>
+                    </div>
+
+                    <div class="ticket-footer">
+                        <span style="font-size:0.7rem; color:var(--text-muted); font-weight:700; letter-spacing:0.05em;">SCAN QR BADGE AT DOOR</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- HERO SLIDE 2: Organizer / Trello Sprints -->
+        <div class="carousel-slide" data-slide="1">
+            <div class="hero-content">
+                <div class="badge">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/></svg>
+                    VOLUNTEER & PLAN
+                </div>
+                <h1>Coordinate Logistics on <span>Kanban Boards</span></h1>
+                <p>
+                    Orchestrate volunteer shifts, draft schedules, monitor flyers compliance, and collaborate with student groups using clean, responsive Trello boards integrated directly into your event planning desk.
+                </p>
+                <div class="hero-buttons">
+                    <a href="login.html" class="btn btn-accent" id="slide2-trello">Start Organizing</a>
+                    <a href="login.html" class="btn btn-outline" id="slide2-join">Join Committee</a>
+                </div>
+            </div>
+
+            <div class="hero-visual">
+                <div class="ticket-stub-visual" style="border-top: 4px solid var(--accent);">
+                    <div style="padding: 1.5rem; border-bottom: 1px solid var(--border-color);">
+                        <h3 style="font-size: 1.1rem; color: var(--primary);">HackFest Task List</h3>
+                        <p style="font-size: 0.75rem; color: var(--text-muted);">Organized by Developer Association</p>
+                    </div>
+
+                    <div style="padding: 1.5rem; display:flex; flex-direction:column; gap:0.8rem;">
+                        <div style="background-color: var(--bg-light); padding: 0.6rem 0.8rem; border-radius: 6px; font-size: 0.8rem; display:flex; justify-content:space-between; align-items:center;">
+                            <span>Catering Reserved</span>
+                            <span style="color:#10B981; font-weight:700;">✔</span>
+                        </div>
+                        <div style="background-color: var(--bg-light); padding: 0.6rem 0.8rem; border-radius: 6px; font-size: 0.8rem; display:flex; justify-content:space-between; align-items:center; border-left: 2px solid var(--accent);">
+                            <span>Dean signature check</span>
+                            <span style="color:var(--accent); font-weight:700;">PENDING</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- HERO SLIDE 3: Admin / compliance approvals -->
+        <div class="carousel-slide" data-slide="2">
+            <div class="hero-content">
+                <div class="badge">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    COMPLIANCE & APPROVALS
+                </div>
+                <h1>Streamline Official <span>Advisory Workflows</span></h1>
+                <p>
+                    Skip the paper chases and hallway signature loops. Submit room reservations and budget reports directly to student affairs boards. Track compliance audits in real-time.
+                </p>
+                <div class="hero-buttons">
+                    <a href="login.html" class="btn btn-accent" id="slide3-proposal">Submit Proposal</a>
+                    <a href="adminPage.html" class="btn btn-outline" id="slide3-dean">Dean Audit Portal</a>
+                </div>
+            </div>
+
+            <div class="hero-visual">
+                <div class="ticket-stub-visual" style="border-top: 4px solid var(--primary);">
+                    <div style="padding: 1.5rem; border-bottom: 1px solid var(--border-color);">
+                        <h3 style="font-size: 1.1rem; color: var(--primary);">Approval Tracker</h3>
+                        <p style="font-size: 0.75rem; color: var(--text-muted);">Proposal ID: #0829</p>
+                    </div>
+
+                    <div style="padding: 1.5rem; display:flex; flex-direction:column; gap:0.8rem; font-size:0.8rem;">
+                        <div style="display:flex; align-items:center; gap:0.5rem; color:#10B981; font-weight:600;">✔ Faculty Board Approved</div>
+                        <div style="display:flex; align-items:center; gap:0.5rem; color:#E67E65; font-weight:600;">○ Dean Signature Pending</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Carousel Indicators/Dots (perspectives selector) -->
+        <div class="carousel-controls">
+            <button class="carousel-control-btn active" data-slide="0" id="btn-slide-student">
+                <span>Perspectives</span>
+                For Students
+            </button>
+            <button class="carousel-control-btn" data-slide="1" id="btn-slide-organizer">
+                <span>Perspectives</span>
+                For Organizers
+            </button>
+            <button class="carousel-control-btn" data-slide="2" id="btn-slide-dean">
+                <span>Perspectives</span>
+                For Deans
+            </button>
+        </div>
+
+    </div>
+</section>
+
+<!-- Ticket Showcase / Event Directory Section -->
+<section class="section section-white" id="events-section">
+    <div class="container">
+        <div class="section-header animate-on-scroll">
+            <span class="subtitle">TICKET REGISTRY</span>
+            <h2>Explore Ticket Catalogs</h2>
+            <p>Discover technical workshops, student debates, and winter concerts styled as charming ticket templates.</p>
+        </div>
+
+        <div class="events-template-grid">
+            <!-- Ticket Card 1 -->
+            <article class="ticket-card animate-on-scroll">
+                <div class="card-ticket-top">
+                    <span class="ticket-date-badge">Oct 18 • 9:00 AM</span>
+                    <span style="font-size:0.75rem; background-color:rgba(255,255,255,0.1); padding:0.2rem 0.5rem; border-radius:4px; align-self:flex-end;">Tech</span>
+                </div>
+                <div class="card-ticket-bottom">
+                    <div>
+                        <h3 style="font-size:1.25rem; margin-bottom:0.5rem; line-height:1.3;">Annual HackFest 2026</h3>
+                        <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1.5rem;">Collaborative 36-hour code sprint to build campus utility apps.</p>
+                    </div>
+                    <div class="ticket-meta-footer">
+                        <span style="font-weight:700; color:var(--primary);">FREE</span>
+                        <a href="globalEvent.html" class="btn btn-primary" style="padding:0.4rem 1.2rem; font-size:0.8rem;">Claim Ticket</a>
+                    </div>
+                </div>
+            </article>
+
+            <!-- Ticket Card 2 -->
+            <article class="ticket-card animate-on-scroll delay-100">
+                <div class="card-ticket-top" style="background: linear-gradient(135deg, var(--accent) 0%, #EAA290 100%);">
+                    <span class="ticket-date-badge">Dec 05 • 6:30 PM</span>
+                    <span style="font-size:0.75rem; background-color:rgba(255,255,255,0.1); padding:0.2rem 0.5rem; border-radius:4px; align-self:flex-end;">Music</span>
+                </div>
+                <div class="card-ticket-bottom">
+                    <div>
+                        <h3 style="font-size:1.25rem; margin-bottom:0.5rem; line-height:1.3;">Winter Symphony & Jazz</h3>
+                        <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1.5rem;">Evening showcase featuring university ensemble musicians.</p>
+                    </div>
+                    <div class="ticket-meta-footer">
+                        <span style="font-weight:700; color:var(--primary);">$12.00</span>
+                        <a href="globalEvent.html" class="btn btn-primary" style="padding:0.4rem 1.2rem; font-size:0.8rem;">Claim Ticket</a>
+                    </div>
+                </div>
+            </article>
+
+            <!-- Ticket Card 3 -->
+            <article class="ticket-card animate-on-scroll delay-200">
+                <div class="card-ticket-top" style="background: linear-gradient(135deg, var(--supporting-teal) 0%, #87B3B7 100%);">
+                    <span class="ticket-date-badge">Nov 12 • 2:00 PM</span>
+                    <span style="font-size:0.75rem; background-color:rgba(255,255,255,0.1); padding:0.2rem 0.5rem; border-radius:4px; align-self:flex-end;">Business</span>
+                </div>
+                <div class="card-ticket-bottom">
+                    <div>
+                        <h3 style="font-size:1.25rem; margin-bottom:0.5rem; line-height:1.3;">Leadership Seminar</h3>
+                        <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1.5rem;">Keynote speeches from industry founders on career paths.</p>
+                    </div>
+                    <div class="ticket-meta-footer">
+                        <span style="font-weight:700; color:var(--primary);">FREE</span>
+                        <a href="globalEvent.html" class="btn btn-primary" style="padding:0.4rem 1.2rem; font-size:0.8rem;">Claim Ticket</a>
+                    </div>
+                </div>
+            </article>
+        </div>
+
+        <div style="text-align:center; margin-top:4rem;" class="animate-on-scroll">
+            <a href="globalEvent.html" class="btn btn-outline">Explore All Global Events</a>
+        </div>
+    </div>
+</section>
+
+<!-- Campus Communities / Clubs Section -->
+<section class="section" id="clubs-section">
+    <div class="container">
+        <div class="section-header animate-on-scroll">
+            <span class="subtitle">SOCIETIES DIRECTORY</span>
+            <h2>Popular Student Communities</h2>
+            <p>Connect with campus clubs and unions to collaborate on research, arts, or tech initiatives.</p>
+        </div>
+
+        <div class="clubs-grid">
+            <!-- Club 1 -->
+            <div class="club-card animate-on-scroll">
+                <div class="club-circle-icon">DS</div>
+                <h3 style="font-size:1.15rem; margin-bottom:0.5rem;">Developer Student Org</h3>
+                <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:1.2rem;">Weekly workshops and code hackathons.</p>
+                <span style="font-size:0.75rem; font-weight:700; color:var(--accent);">520 Members</span>
+            </div>
+
+            <!-- Club 2 -->
+            <div class="club-card animate-on-scroll delay-100">
+                <div class="club-circle-icon" style="background-color: var(--accent-light); color: var(--accent-hover);">FA</div>
+                <h3 style="font-size:1.15rem; margin-bottom:0.5rem;">Fine Arts Society</h3>
+                <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:1.2rem;">Exhibits, murals, and live theater play runs.</p>
+                <span style="font-size:0.75rem; font-weight:700; color:var(--accent);">180 Members</span>
+            </div>
+
+            <!-- Club 3 -->
+            <div class="club-card animate-on-scroll delay-200">
+                <div class="club-circle-icon" style="background-color: var(--supporting-teal-light); color: var(--supporting-teal);">EC</div>
+                <h3 style="font-size:1.15rem; margin-bottom:0.5rem;">Entrepreneurship Cell</h3>
+                <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:1.2rem;">Student startups and venture seed pitch decks.</p>
+                <span style="font-size:0.75rem; font-weight:700; color:var(--accent);">340 Members</span>
+            </div>
+
+            <!-- Club 4 -->
+            <div class="club-card animate-on-scroll delay-300">
+                <div class="club-circle-icon">DB</div>
+                <h3 style="font-size:1.15rem; margin-bottom:0.5rem;">Debate Union</h3>
+                <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:1.2rem;">Parliamentary debates and speech cups.</p>
+                <span style="font-size:0.75rem; font-weight:700; color:var(--accent);">150 Members</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Interactive Trello Board Showcase -->
+<section class="section section-white" id="trello-section">
+    <div class="container">
+        <div class="section-header animate-on-scroll">
+            <span class="subtitle">TEAM WORKSPACE</span>
+            <h2>Integrated Kanban Boards</h2>
+            <p>Coordinate volunteer shifts, track tasks, and allocate flyer designs easily.</p>
+        </div>
+
+        <div class="kanban-visual animate-on-scroll">
+            <div class="kanban-header">
+                <div>
+                    <h3 style="font-size:1.2rem;">HackFest 2026 Logistics Board</h3>
+                    <span style="font-size:0.8rem; color:var(--text-muted);">Active workspace for organizing committee</span>
+                </div>
+                <a href="login.html" class="btn btn-outline" style="padding: 0.5rem 1.2rem; font-size:0.8rem;">Open Workspace</a>
+            </div>
+
+            <div class="kanban-board-grid">
+                <!-- Column 1 -->
+                <div class="kanban-column">
+                    <div class="kanban-col-title">
+                        <span>To Do</span>
+                        <span style="opacity:0.6;">2</span>
+                    </div>
+                    <div class="kanban-tasks-list">
+                        <div class="kanban-card-item">
+                            <span class="kanban-tag" style="background-color: var(--accent-light); color: var(--accent-hover);">Marketing</span>
+                            <h4 style="font-size:0.85rem; margin-top:0.4rem;">Design Promo Flyer</h4>
+                            <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.2rem;">Coordinate sizes with printing committee.</p>
+                        </div>
+                        <div class="kanban-card-item">
+                            <span class="kanban-tag" style="background-color:#E2E8F0; color:#475569;">Tech</span>
+                            <h4 style="font-size:0.85rem; margin-top:0.4rem;">Set Up Tickets RSVP</h4>
+                            <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.2rem;">Configure questionnaire on dashboard.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Column 2 -->
+                <div class="kanban-column">
+                    <div class="kanban-col-title">
+                        <span>In Progress</span>
+                        <span style="opacity:0.6;">1</span>
+                    </div>
+                    <div class="kanban-tasks-list">
+                        <div class="kanban-card-item">
+                            <span class="kanban-tag" style="background-color:var(--supporting-teal-light); color:var(--supporting-teal);">Logistics</span>
+                            <h4 style="font-size:0.85rem; margin-top:0.4rem;">Dean Signature Request</h4>
+                            <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.2rem;">Submit budget sheet to student board.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Column 3 -->
+                <div class="kanban-column">
+                    <div class="kanban-col-title">
+                        <span>Done</span>
+                        <span style="opacity:0.6;">1</span>
+                    </div>
+                    <div class="kanban-tasks-list">
+                        <div class="kanban-card-item" style="opacity:0.75;">
+                            <span class="kanban-tag" style="background-color:#D1FAE5; color:#059669;">Food</span>
+                            <h4 style="font-size:0.85rem; margin-top:0.4rem; text-decoration:line-through;">Reserve Catering Vendor</h4>
+                            <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.2rem;">Finalized dinner orders with student advisor.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- Step-by-Step Approval Integration Flow -->
+<section class="section" id="flow-section">
+    <div class="container">
+        <div class="section-header animate-on-scroll">
+            <span class="subtitle">INTEGRATION FLOW</span>
+            <h2>How a Trello Task turns into a Live Ticket</h2>
+            <p>A unified pipeline translating student group task lists into published event badges.</p>
+        </div>
+
+        <div class="flow-showcase animate-on-scroll">
+            <div class="flow-step-box">
+                <h4>1. Logistics checklist</h4>
+                <p>Organizers assign flyer design and submit budget requests inside the team's task board.</p>
+            </div>
+
+            <div class="flow-arrow">➔</div>
+
+            <div class="flow-step-box">
+                <h4 style="color:var(--primary);">2. Ticket Published</h4>
+                <p>Upon advisor and dean signature verification, a ticket stub with custom QR codes is published to the directory.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FAQ Accordion Section -->
+<section class="section section-white" id="faq-section">
+    <div class="container">
+        <div class="section-header animate-on-scroll">
+            <span class="subtitle">ADMINISTRATIVE SUPPORT</span>
+            <h2>Frequently Asked Questions</h2>
+            <p>Understand the official compliance and registration guidelines below.</p>
+        </div>
+
+        <div class="faq-container animate-on-scroll">
+            <!-- FAQ 1 -->
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>How do we secure funding for student organization events?</span>
+                    <span class="faq-icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Submit a digital budget proposal sheet inside your Organizer dashboard. Upon review and sign-off from your designated faculty board advisor, the system automatically routes the proposal to the Student Affairs desk for final dean stamp and release.</p>
+                </div>
+            </div>
+
+            <!-- FAQ 2 -->
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>What is the turnaround time for Dean approval signatures?</span>
+                    <span class="faq-icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Digital signatures inside CampusHive are completed within 24 to 48 hours. The system has built-in notification alerts that ping deans and administrative offices about pending approvals directly on their portal desks.</p>
+                </div>
+            </div>
+
+            <!-- FAQ 3 -->
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>How does the digital QR ticket check-in audit log work?</span>
+                    <span class="faq-icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    <p>When students register for events, a digital QR badge is generated. At the door, coordinators scan the code using any standard smartphone camera. The attendance roster is updated in real-time on your dashboard ledger.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer>
+    <div class="container footer-grid">
+        <div>
+            <a href="landingPage.html" class="logo" style="color:var(--text-light); margin-bottom:1.5rem;" id="footer-logo">
+                <div class="logo-icon" style="background-color: var(--accent); color: var(--primary);">C</div>
+                Campus<span>Hive</span>
+            </a>
+            <p style="font-size: 0.85rem; max-width:300px;">A unified campus event registration, student community networking, and team collaboration dashboard. Built by students, for students.</p>
+        </div>
+        <div>
+            <h4 style="color: var(--text-light); margin-bottom:1.5rem;">Ecosystem</h4>
+            <ul class="footer-links">
+                <li><a href="globalEvent.html">Events directory</a></li>
+                <li><a href="aboutUs.html">About us</a></li>
+                <li><a href="becomeOrganizer.html">Become Organizer</a></li>
+            </ul>
+        </div>
+        <div>
+            <h4 style="color: var(--text-light); margin-bottom:1.5rem;">Audit & Control</h4>
+            <ul class="footer-links">
+                <li><a href="adminPage.html">Dean portal</a></li>
+                <li><a href="hostedEvents.html">Hosted events</a></li>
+                <li><a href="tickets.html">Tickets audit</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="container footer-bottom">
+        <div>&copy; 2026 CampusHive Inc. All Rights Reserved.</div>
+        <div>Designed with premium university standards.</div>
+    </div>
+</footer>
+
+<!-- Interactivity Script -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // 1. Sticky Navigation Header
+        const header = document.querySelector('header');
+        const checkScroll = () => {
+            if (window.scrollY > 50) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        };
+        window.addEventListener('scroll', checkScroll);
+        checkScroll();
+
+        // 2. Mobile Responsive Nav Menu Toggle
+        const mobileToggle = document.getElementById('mobile-nav-toggle');
+        const navMenu = document.getElementById('nav-menu');
+
+        if (mobileToggle && navMenu) {
+            mobileToggle.addEventListener('click', () => {
+                navMenu.classList.toggle('mobile-open');
+
+                const iconPath = mobileToggle.querySelector('path');
+                if (navMenu.classList.contains('mobile-open')) {
+                    iconPath.setAttribute('d', 'M6 18L18 6M6 6l12 12'); // Change to 'X'
+                } else {
+                    iconPath.setAttribute('d', 'M4 6h16M4 12h16M4 18h16'); // Back to hamburger
+                }
+            });
+
+            // Close mobile nav when clicking a menu link
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    navMenu.classList.remove('mobile-open');
+                    const iconPath = mobileToggle.querySelector('path');
+                    if (iconPath) {
+                        iconPath.setAttribute('d', 'M4 6h16M4 12h16M4 18h16');
+                    }
+                });
+            });
+        }
+
+        // 3. Multi-Hero Slide Switcher (Perspectives Selector)
+        const controlButtons = document.querySelectorAll('.carousel-control-btn');
+        const carouselSlides = document.querySelectorAll('.carousel-slide');
+
+        controlButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const targetSlideIndex = button.getAttribute('data-slide');
+
+                // Update control button active styles
+                controlButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+
+                // Transition slides
+                carouselSlides.forEach(slide => {
+                    slide.classList.remove('active');
+                    if (slide.getAttribute('data-slide') === targetSlideIndex) {
+                        slide.classList.add('active');
+                    }
+                });
+            });
+        });
+
+        // 4. Auto-Rotation for Hero (Optional - pauses on mouse hover)
+        let slideInterval;
+        let currentSlide = 0;
+
+        const startSlideRotation = () => {
+            slideInterval = setInterval(() => {
+                currentSlide = (currentSlide + 1) % carouselSlides.length;
+                controlButtons[currentSlide].click();
+            }, 8000); // Rotate every 8 seconds
+        };
+
+        const stopSlideRotation = () => {
+            clearInterval(slideInterval);
+        };
+
+        startSlideRotation();
+
+        const heroSection = document.querySelector('.hero-carousel');
+        if (heroSection) {
+            heroSection.addEventListener('mouseenter', stopSlideRotation);
+            heroSection.addEventListener('mouseleave', startSlideRotation);
+        }
+
+        // 5. Collapsible FAQ Accordion Toggle
+        const faqItems = document.querySelectorAll('.faq-item');
+        faqItems.forEach(item => {
+            const question = item.querySelector('.faq-question');
+            question.addEventListener('click', () => {
+                const isActive = item.classList.contains('active');
+
+                // Close other open questions
+                faqItems.forEach(i => i.classList.remove('active'));
+
+                // Toggle current question
+                if (!isActive) {
+                    item.classList.add('active');
+                }
+            });
+        });
+
+        // 6. Scroll Animations Observer
+        const scrollElements = document.querySelectorAll('.animate-on-scroll');
+        const scrollObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('appear');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1 });
+
+        scrollElements.forEach(element => {
+            scrollObserver.observe(element);
+        });
+    });
+
+</script>
+</body>
+</html>

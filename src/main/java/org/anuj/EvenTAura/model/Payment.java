@@ -3,6 +3,7 @@ package org.anuj.EvenTAura.model;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.anuj.EvenTAura.model.enums.PaymentStatus;
 
 import java.time.LocalDateTime;
 

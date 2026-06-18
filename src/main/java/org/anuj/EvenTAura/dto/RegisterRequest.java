@@ -7,19 +7,23 @@ import jakarta.validation.constraints.Size;
 
 
 import lombok.*;
+
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class RegisterRequest {
 
     @NotBlank(message = "Name cannot be empty")
     private String name;
 
     @Email(message = "Invalid email format")
+    @NotBlank
     private String email;
 
+    @NotBlank
     @Size(min = 4,message = "Password must be at least 4 characters")
     private String password;
 
+    @NotBlank
     private String confirmPassword;
+
+    private String university;
 }

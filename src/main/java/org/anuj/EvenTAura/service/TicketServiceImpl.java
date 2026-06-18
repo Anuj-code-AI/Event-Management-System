@@ -3,13 +3,14 @@ package org.anuj.EvenTAura.service;
 
 import lombok.RequiredArgsConstructor;
 import org.anuj.EvenTAura.dto.*;
-import org.anuj.EvenTAura.exception.*;
+import org.anuj.EvenTAura.exception.AllExceptions.*;
 import org.anuj.EvenTAura.mapper.TicketMapper;
 import org.anuj.EvenTAura.model.*;
+import org.anuj.EvenTAura.model.enums.TicketStatus;
 import org.anuj.EvenTAura.repository.EventRepository;
 import org.anuj.EvenTAura.repository.TicketRepository;
 import org.anuj.EvenTAura.repository.UserRepository;
-import org.anuj.EvenTAura.util.SseEmitterHolder;
+import org.anuj.EvenTAura.security.CustomUserDetails;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -19,8 +20,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -40,28 +41,29 @@ public class TicketServiceImpl implements TicketService{
 
     @Override
     @Transactional
-    public List<TicketResponse> buyTicket(
+    public TicketResponse buyTicket(
             Long eventId,
             MultipartFile file,
-            TicketRequest req,
-            Authentication auth
+            Authentication authentication
     ) {
         // ================= USER =================
-        User user = userRepository.findByEmail(auth.getName())
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        User user = userRepository.findByUserId(userDetails.getId())
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         // ================= EVENT =================
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new EventNotExistException("No event found with this id"));
 
-        // ================= VALIDATIONS =================
-        if (req.getNumberOfTickets() <= 0) {
-            throw new IllegalArgumentException("Ticket count must be greater than 0");
-        }
+        // ================= VALIDATION =================
+        if(event.getTicketsAvailable() <= 0)
+            throw new RuntimeException("Sold out");
 
-        if (event.getTicketsAvailable() < req.getNumberOfTickets()) {
-            throw new MaxTicketReachedException("Requested tickets exceed availability");
-        }
+        boolean alreadyRegistered =
+                ticketRepository.existsByEventAndUser(event, user);
+
+        if(alreadyRegistered)
+            throw new RuntimeException("Already registered");
 
         String paymentScreenShotUrl = null;
 
@@ -74,92 +76,63 @@ public class TicketServiceImpl implements TicketService{
             paymentScreenShotUrl = cloudinaryService.uploadImage(file, "paymentScreenShot");
         }
 
-        // ================= CREATE TICKETS =================
-        List<Ticket> tickets = new ArrayList<>();
-
-        for (int i = 0; i < req.getNumberOfTickets(); i++) {
-            tickets.add(new Ticket(
-                    null,
-                    generateTicketCode(),
-                    false,
-                    LocalDateTime.now(),
-                    null,
-                    TicketStatus.ACTIVE,
-                    paymentScreenShotUrl,
-                    event,
-                    user
-            ));
-        }
+        Ticket ticket = new Ticket(
+                null,
+                generateTicketCode(),
+                false,
+                LocalDateTime.now(),
+                null,
+                TicketStatus.ACTIVE,
+                paymentScreenShotUrl,
+                event,
+                user
+        );
 
         // ================= UPDATE EVENT =================
-        event.setTicketsAvailable(
-                event.getTicketsAvailable() - req.getNumberOfTickets()
-        );
+        event.setTicketsAvailable(event.getTicketsAvailable() - 1);
 
         // ================= SAVE =================
-        ticketRepository.saveAll(tickets);
-        eventRepository.save(event);
-
-        // ================= RESPONSE =================
-        List<TicketResponse> response = tickets.stream()
-                .map(ticket -> new TicketResponse(
-                        ticket.getTicketId(),
-                        ticket.getTicketCode(),
-                        ticket.isCheckedIn(),
-                        ticket.getIssuedAt(),
-                        ticket.getCheckedInAt(),
-                        ticket.getStatus(),
-                        ticket.getEvent(),
-                        ticket.getUser(),
-                        "https://eventaura-iemd.onrender.com/api/v1/tickets/"
-                                + ticket.getTicketId() + "/qr"
-                ))
-                .toList();
-
-        // ================= REAL-TIME UPDATE =================
-        SseEmitterHolder.broadcast(
-                event.getEventId(),
-                event.getTicketsAvailable()
-        );
-
-        return response;
+        ticketRepository.save(ticket);
+        return TicketMapper.toResponse(ticket);
     }
 
     @Override
-    public Page<TicketResponse> myTicket(int page, int size, Authentication auth) {
-        Pageable pageable = PageRequest.of(page, size);
+    public Page<TicketResponse> myTickets(int page, int size, Authentication authentication) {
 
-        User user = userRepository.findByEmail(auth.getName())
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        User user = userRepository.findByUserId(userDetails.getId())
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        Sort sort = Sort.by("issuedAt").ascending();
+        Pageable pageable = PageRequest.of(page, size);
 
         Page<Ticket> tickets = ticketRepository.findAllByUser(user,pageable);
 
         if (tickets.isEmpty()) {
-            throw new NoTicketFoundException("You didn't joined any event yet!! Joined now");
+            throw new NoTicketFoundException("You didn't joined any event yet!! Join now");
         }
-
 
         return tickets.map(TicketMapper::toResponse);
     }
 
     @Override
-    public List<Ticket> getTickets(Long eventId, Authentication auth) {
-        User user = userRepository.findByEmail(auth.getName())
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+    public List<Ticket> getTickets(Long eventId, Authentication authentication) {
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(()-> new EventNotExistException("No event found with this id"));
-        if(!user.getUserId().equals(event.getUser().getUserId())){
+        boolean isHod = authentication.getAuthorities().stream()
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_HOD"));
+        if(!userDetails.getId().equals(event.getUser().getUserId()) && !isHod){
             throw new UnauthorizedException("You cannot check tickets");
         }
-        List<Ticket> tickets = ticketRepository.findAllByEvent(event);
-        return tickets;
+        return ticketRepository.findAllByEvent(event);
     }
 
     @Override
-    public TicketCheckResponse checkin(Long ticketCode, Authentication auth) {
+    @Transactional
+    public TicketCheckResponse checkin(Long ticketCode, Authentication authentication) {
 
-        User user = userRepository.findByEmail(auth.getName())
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
         // ticketCode is Long from path variable; stored ticketCode is a numeric string
         Ticket ticket = ticketRepository.findByTicketCode(String.valueOf(ticketCode))
@@ -167,8 +140,11 @@ public class TicketServiceImpl implements TicketService{
 
         Event event = ticket.getEvent();
 
-        // Only the event organizer may check in tickets
-        if (!user.getUserId().equals(event.getUser().getUserId())) {
+        boolean isHOD = authentication.getAuthorities().stream()
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_HOD"));
+
+        // Only the event organizer or HOD may check in tickets
+        if (!userDetails.getId().equals(event.getUser().getUserId()) && !isHOD) {
             throw new RuntimeException("You are not allowed to check in tickets for this event");
         }
 
@@ -183,13 +159,12 @@ public class TicketServiceImpl implements TicketService{
         }
 
         // Event must not have started yet
-        LocalDateTime eventDateTime = LocalDateTime.of(event.getEventDate(), event.getEventTime());
-        if (eventDateTime.isBefore(LocalDateTime.now())) {
+        if (LocalDate.now().isAfter(event.getEventDate())) {
             return new TicketCheckResponse(
                     false,
                     false,
                     ticket.getStatus(),
-                    "Event has already started"
+                    "Event has already ended"
             );
         }
 
@@ -197,8 +172,6 @@ public class TicketServiceImpl implements TicketService{
         ticket.setCheckedIn(true);
         ticket.setCheckedInAt(LocalDateTime.now());
         ticket.setStatus(TicketStatus.USED);
-        ticketRepository.save(ticket);
-
         return new TicketCheckResponse(
                 true,
                 true,
@@ -208,10 +181,9 @@ public class TicketServiceImpl implements TicketService{
     }
 
     @Override
-    public TicketCheckResponse verifyTicket(Long ticketCode, Authentication auth) {
+    public TicketCheckResponse verifyTicket(Long ticketCode, Authentication authentication) {
 
-        User user = userRepository.findByEmail(auth.getName())
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
         // Same fix as checkin() — numeric string lookup
         Ticket ticket = ticketRepository.findByTicketCode(String.valueOf(ticketCode))
@@ -219,7 +191,11 @@ public class TicketServiceImpl implements TicketService{
 
         Event event = ticket.getEvent();
 
-        if (!user.getUserId().equals(event.getUser().getUserId())) {
+        boolean isHOD = authentication.getAuthorities().stream()
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_HOD"));
+
+        // Only the event organizer or HOD may check in tickets
+        if (!userDetails.getId().equals(event.getUser().getUserId()) && !isHOD) {
             throw new RuntimeException("You are not allowed to verify tickets for this event");
         }
 
@@ -233,13 +209,13 @@ public class TicketServiceImpl implements TicketService{
             );
         }
 
-        LocalDateTime eventDateTime = LocalDateTime.of(event.getEventDate(), event.getEventTime());
-        if (eventDateTime.isBefore(LocalDateTime.now())) {
+        // Event must not have started yet
+        if (LocalDate.now().isAfter(event.getEventDate())) {
             return new TicketCheckResponse(
                     false,
                     false,
                     ticket.getStatus(),
-                    "Event already started or finished"
+                    "Event has already ended"
             );
         }
 
@@ -253,16 +229,15 @@ public class TicketServiceImpl implements TicketService{
 
     @Override
     @Transactional
-    public TicketCancelResponse cancelTicket(Long ticketId, Authentication auth) {
+    public TicketCancelResponse cancelTicket(Long ticketId, Authentication authentication) {
 
-        User user = userRepository.findByEmail(auth.getName())
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
         Ticket ticket = ticketRepository.findById(ticketId)
                 .orElseThrow(() -> new NoTicketFoundException("Ticket not found"));
 
         // ensure the ticket belongs to the user
-        if(!ticket.getUser().getUserId().equals(user.getUserId())){
+        if(!ticket.getUser().getUserId().equals(userDetails.getId())){
             throw new RuntimeException("You cannot cancel this ticket");
         }
 
@@ -271,7 +246,7 @@ public class TicketServiceImpl implements TicketService{
             throw new RuntimeException("Used ticket cannot be cancelled");
         }
 
-        // ticket already cancelled
+        // ticket already canceled
         if(ticket.getStatus() == TicketStatus.CANCELLED){
             throw new RuntimeException("Ticket already cancelled");
         }
@@ -295,9 +270,17 @@ public class TicketServiceImpl implements TicketService{
     }
 
     @Override
-    public TicketResponse getMyTicket(Long ticketId) {
+    public TicketResponse getMyTicket(Long ticketId, Authentication authentication) {
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+
         Ticket ticket = ticketRepository.findById(ticketId)
-                .orElseThrow(()-> new NoTicketFoundException("No ticket found with this exception"));
+                .orElseThrow(() -> new NoTicketFoundException("Ticket not found"));
+
+        // ensure the ticket belongs to the user
+        if(!ticket.getUser().getUserId().equals(userDetails.getId())){
+            throw new RuntimeException("No ticket found");
+        }
+
         return TicketMapper.toResponse(ticket);
     }
 
@@ -307,16 +290,17 @@ public class TicketServiceImpl implements TicketService{
         Sort sort = Sort.by("issuedAt").ascending(); // might not exist in Ticket btw
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        User user = userRepository.findByEmail(authentication.getName())
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new EventNotExistException("Event not found"));
 
-        boolean isOwner = user.getUserId().equals(event.getUser().getUserId());
-        boolean isAdmin = user.getRole().equals(Role.ROLE_ADMIN);
+        boolean isOwner = userDetails.getId().equals(event.getUser().getUserId());
+        boolean isHOD = authentication.getAuthorities().stream()
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_HOD"));
 
-        if (!(isOwner || isAdmin)) {
+
+        if (!isOwner && !isHOD) {
             throw new RuntimeException("You are not allowed to verify tickets for this event");
         }
 
@@ -337,19 +321,20 @@ public class TicketServiceImpl implements TicketService{
     @Override
     @Transactional
     public void markPresent(Long ticketId, Authentication authentication) {
-        User user = userRepository.findByEmail(authentication.getName())
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
         Ticket ticket = ticketRepository.findById(ticketId)
                 .orElseThrow(()-> new NoTicketFoundException("Ticket not found"));
 
         Event event = ticket.getEvent();
 
-        // ensure the logged-in user is the organizer of this event
-        boolean isOwner = user.getUserId().equals(event.getUser().getUserId());
-        boolean isAdmin = user.getRole().equals(Role.ROLE_ADMIN);
+        // ensure the logged-in user is either the organizer of this event or the HOD
+        boolean isOwner = userDetails.getId().equals(event.getUser().getUserId());
+        boolean isHOD = authentication.getAuthorities().stream()
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_HOD"));
 
-        if (!(isOwner || isAdmin)) {
+        if (!isOwner && !isHOD) {
             throw new RuntimeException("You are not allowed to verify tickets for this event");
         }
         if (ticket.isCheckedIn()) {
@@ -366,19 +351,19 @@ public class TicketServiceImpl implements TicketService{
     @Transactional
     public void markAbsent(Long ticketId, Authentication authentication) {
 
-        User user = userRepository.findByEmail(authentication.getName())
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
         Ticket ticket = ticketRepository.findById(ticketId)
-                .orElseThrow(() -> new NoTicketFoundException("Ticket not found"));
+                .orElseThrow(()-> new NoTicketFoundException("Ticket not found"));
 
         Event event = ticket.getEvent();
 
-        // authorization check
-        boolean isOwner = user.getUserId().equals(event.getUser().getUserId());
-        boolean isAdmin = user.getRole().equals(Role.ROLE_ADMIN);
+        // ensure the logged-in user is either the organizer of this event or the HOD
+        boolean isOwner = userDetails.getId().equals(event.getUser().getUserId());
+        boolean isHOD = authentication.getAuthorities().stream()
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_HOD"));
 
-        if (!(isOwner || isAdmin)) {
+        if (!isOwner && !isHOD) {
             throw new RuntimeException("You are not allowed to verify tickets for this event");
         }
 
@@ -394,5 +379,7 @@ public class TicketServiceImpl implements TicketService{
         // optional: revert status
         ticket.setStatus(TicketStatus.ACTIVE);
         ticketRepository.save(ticket);
+
+
     }
 }

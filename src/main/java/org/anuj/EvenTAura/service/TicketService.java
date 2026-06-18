@@ -9,19 +9,16 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 public interface TicketService {
-    List<TicketResponse> buyTicket(Long eventId, MultipartFile file, TicketRequest req, Authentication auth);
-
-    Page<TicketResponse> myTicket(int page, int size, Authentication auth);
+    TicketResponse buyTicket(Long eventId, MultipartFile file, Authentication auth);
+    Page<TicketResponse> myTickets(int page, int size, Authentication auth);
 
     List<Ticket> getTickets(Long eventId, Authentication auth);
 
     TicketCheckResponse checkin(Long ticketId, Authentication auth);
-
     TicketCheckResponse verifyTicket(Long ticketCode, Authentication auth);
 
     TicketCancelResponse cancelTicket(Long ticketId, Authentication auth);
-
-    TicketResponse getMyTicket(Long ticketId);
+    TicketResponse getMyTicket(Long ticketId, Authentication authentication);
 
     Page<AudienceResponse> audienceList(int page,int size, Long eventId, Authentication authentication);
 

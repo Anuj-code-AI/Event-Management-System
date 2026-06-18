@@ -1,93 +1,104 @@
 package org.anuj.EvenTAura.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.anuj.EvenTAura.service.AuthService;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 
 @Controller
 @RequiredArgsConstructor
 public class PageController {
-    private final AuthService authService;
+
     @GetMapping("/")
-    public String home(Model model){
-        return "index";
+    public String landingPage(){
+        return "landingPage";
     }
 
     @GetMapping("/login")
-    public String login(Model model){
+    public String login(){
         return "login";
     }
 
     @GetMapping("/register")
-    public String register(Model model){
+    public String register(){
         return "register";
     }
 
+    @GetMapping("/globalEvents")
+    public String globalEvents(){
+        return "globalEvents";
+    }
+
+    @GetMapping("/campusEvents")
+    public String campusEvents(){
+        return "campusEvents";
+    }
+
+
+
+
+    @GetMapping("/indexTemp")
+    public String indexTemp(){
+        return "indexTemp";
+    }
+
     @GetMapping("/profile")
-    public String profile(Model model){
+    public String profile(){
         return "profile";
     }
 
     @GetMapping("/createEvent")
-    public String createEvent(Model model){
+    public String createEvent(){
         return "createEvent";
     }
 
     @GetMapping("/oauth")
-    public String oauth(Model model) {
+    public String oauth() {
         return "oauth";
     }
 
     @GetMapping("/registerForEvent/{eventId}")
-    public String registerForEvent(@PathVariable Long eventId, Model model) {
+    public String registerForEvent() {
         return "registerForEvent";
     }
 
     @GetMapping("/aboutUs")
-    public String aboutUs(Model model) {
+    public String aboutUs() {
         return "aboutUs";
     }
 
     @GetMapping("/tickets")
-    public String tickets(Model model) {
+    public String tickets() {
         return "tickets";
     }
 
     @GetMapping("/customEvent")
-    public String customEvent(Model model) {
+    public String customEvent() {
         return "customEvent";
     }
 
     @GetMapping("/hostedEvents")
-    public String hostedEvent(Model model) {
+    public String hostedEvent() {
         return "hostedEvents";
     }
 
     @GetMapping("/becomeOrganizer")
-    public String becomeOrganizer(Model model) {
+    public String becomeOrganizer() {
         return "becomeOrganizer";
     }
 
     @GetMapping("/adminPage")
-    public String adminPage(Model model) {
+    public String adminPage() {
         return "adminPage";
     }
 
     @GetMapping("/moments")
-    public String moments(Model model) {
+    public String moments() {
         return "moments";
     }
 
-    @GetMapping("/campusEvents")
-    public String campusEvents(Model model) {
-        return "campusEvents";
-    }
 
     @GetMapping("/eventDetails/{eventId}")
-    public String eventDetails(@PathVariable Long eventId, Model model) {
+    public String eventDetails() {
         return "eventDetails";
     }
 }

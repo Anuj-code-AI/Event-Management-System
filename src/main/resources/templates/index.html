@@ -2,580 +2,813 @@
 <html xmlns:th="http://www.thymeleaf.org">
 
 <head>
-    <title>Eventaura</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/css/style.css}">
-    <link rel="stylesheet" th:href="@{/css/profileSideBar.css}">
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-3C9FCSTWY3"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', 'G-3C9FCSTWY3');
-    </script>
-</head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>EventAura — College & Club Events</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet"/>
+    <style>
+        /* ═══════════════════════ TOKENS ═══════════════════════ */
+        :root {
+            --bg:          #0D1117;
+            --bg2:         #111827;
+            --bgc:         #161D2B;
+            --bgc2:        #1A2235;
+            --blue:        #3B82F6;
+            --blueb:       #60A5FA;
+            --blueg:       rgba(59,130,246,.18);
+            --purple:      #8B5CF6;
+            --purpleg:     rgba(139,92,246,.15);
+            --cyan:        #06B6D4;
+            --amber:       #F59E0B;
+            --border:      rgba(255,255,255,.07);
+            --borderg:     rgba(59,130,246,.25);
+            --txh:         #F1F5F9;
+            --txb:         #CBD5E1;
+            --txm:         #94A3B8;
+            --txf:         #64748B;
+            --r:           10px;
+            --rl:          16px;
+            --rxl:         24px;
+            --fd:          'Syne', sans-serif;
+            --fb:          'DM Sans', sans-serif;
+        }
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+        html{scroll-behavior:smooth}
+        body{background:var(--bg);color:var(--txb);font-family:var(--fb);font-size:15px;line-height:1.6;overflow-x:hidden}
+        ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:rgba(59,130,246,.3);border-radius:3px}
 
+        /* ─── HEADER ─── */
+        .hd{position:fixed;top:0;left:0;right:0;z-index:100;height:64px;display:flex;align-items:center;padding:0 32px;gap:36px;background:rgba(13,17,23,.88);backdrop-filter:blur(18px);border-bottom:1px solid var(--border)}
+        .hd-logo{display:flex;align-items:center;gap:10px;text-decoration:none;flex-shrink:0}
+        .hd-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--blue),var(--purple));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#fff;font-family:var(--fd);letter-spacing:-1px}
+        .hd-name{font-family:var(--fd);font-size:18px;font-weight:700;color:var(--txh);letter-spacing:-.3px}
+        .hd-name span{color:var(--blueb)}
+        .hd-nav{display:flex;align-items:center;gap:2px;flex:1}
+        .hnl{padding:6px 14px;font-size:13.5px;font-weight:500;color:var(--txm);text-decoration:none;border-radius:6px;transition:color .2s,background .2s}
+        .hnl:hover{color:var(--txh);background:rgba(255,255,255,.05)}
+        .hnl.active{color:var(--blueb)}
+        .hd-acts{display:flex;align-items:center;gap:10px;margin-left:auto}
+        .btn-g{padding:8px 18px;font-size:13.5px;font-weight:500;color:var(--txb);background:transparent;border:1px solid var(--border);border-radius:7px;cursor:pointer;text-decoration:none;transition:all .2s;font-family:var(--fb)}
+        .btn-g:hover{border-color:var(--blueb);color:var(--blueb);background:var(--blueg)}
+        .btn-p{padding:8px 20px;font-size:13.5px;font-weight:600;color:#fff;background:linear-gradient(135deg,var(--blue),var(--purple));border:none;border-radius:7px;cursor:pointer;text-decoration:none;transition:all .25s;font-family:var(--fb);box-shadow:0 0 20px rgba(59,130,246,.25)}
+        .btn-p:hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(59,130,246,.38)}
+        .hbg{display:none;background:none;border:none;cursor:pointer;padding:8px;color:var(--txb);flex-direction:column;gap:5px}
+        .hbg span{display:block;width:22px;height:2px;background:currentColor;border-radius:2px;transition:all .3s}
+        .hbg.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+        .hbg.open span:nth-child(2){opacity:0}
+        .hbg.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+
+        /* ─── DRAWER ─── */
+        .drw{position:fixed;inset:0;z-index:200;pointer-events:none}
+        .drw-ov{position:absolute;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);opacity:0;transition:opacity .3s;pointer-events:none}
+        .drw-pn{position:absolute;top:0;left:0;bottom:0;width:285px;background:var(--bgc);border-right:1px solid var(--border);padding:24px 18px;transform:translateX(-100%);transition:transform .32s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;gap:4px;pointer-events:none;overflow-y:auto}
+        .drw.open .drw-ov{opacity:1;pointer-events:all}
+        .drw.open .drw-pn{transform:translateX(0);pointer-events:all}
+        .drw.open{pointer-events:all}
+        .drw-logo{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+        .drw-logo-i{width:30px;height:30px;background:linear-gradient(135deg,var(--blue),var(--purple));border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;font-family:var(--fd)}
+        .drw-logo-t{font-family:var(--fd);font-size:17px;font-weight:700;color:var(--txh)}
+        .drw-logo-t span{color:var(--blueb)}
+        .drw-div{height:1px;background:var(--border);margin:10px 0}
+        .dnl{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:var(--txm);text-decoration:none;font-size:13.5px;font-weight:500;transition:background .2s,color .2s}
+        .dnl:hover,.dnl.active{background:var(--blueg);color:var(--blueb)}
+        .dnl svg{width:16px;height:16px;flex-shrink:0}
+        .drw-sl{font-size:10.5px;font-weight:700;color:var(--txf);text-transform:uppercase;letter-spacing:.08em;padding:6px 12px 2px}
+        .drw-guest{background:linear-gradient(135deg,rgba(59,130,246,.09),rgba(139,92,246,.09));border:1px solid var(--borderg);border-radius:10px;padding:14px;margin-top:auto}
+        .drw-guest p{font-size:12.5px;color:var(--txm);margin-bottom:10px}
+        .drw-gbtns{display:flex;gap:8px}
+        .drw-gbtns a{flex:1;text-align:center;padding:8px 0;border-radius:6px;font-size:12.5px;font-weight:500;text-decoration:none;transition:all .2s}
+        .dbl{background:var(--bg);border:1px solid var(--border);color:var(--txb)}
+        .dbl:hover{border-color:var(--blueb);color:var(--blueb)}
+        .dbs{background:linear-gradient(135deg,var(--blue),var(--purple));color:#fff}
+        .drw-user{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:10px;padding:14px;margin-top:auto;display:none}
+        .drw-user.vis{display:block}
+        .drw-uav{width:38px;height:38px;background:linear-gradient(135deg,var(--blue),var(--purple));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff;font-family:var(--fd);margin-bottom:8px}
+        .drw-uname{font-size:14px;font-weight:600;color:var(--txh)}
+        .drw-urole{font-size:12px;color:var(--txm);margin-bottom:10px}
+        .drw-logout{width:100%;padding:8px;border-radius:7px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);color:#F87171;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;font-family:var(--fb)}
+        .drw-logout:hover{background:rgba(239,68,68,.18)}
+
+        /* ─── HERO ─── */
+        .hero{min-height:100vh;padding-top:64px;display:flex;align-items:center;position:relative;overflow:hidden}
+        .hero-bg{position:absolute;inset:0;z-index:0;background-image:linear-gradient(rgba(59,130,246,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(59,130,246,.035) 1px,transparent 1px);background-size:52px 52px}
+        .hero-bg::before{content:'';position:absolute;top:-180px;left:-180px;width:650px;height:650px;background:radial-gradient(ellipse,rgba(59,130,246,.13) 0%,transparent 70%);animation:bgp 7s ease-in-out infinite alternate}
+        .hero-bg::after{content:'';position:absolute;bottom:-80px;right:-80px;width:480px;height:480px;background:radial-gradient(ellipse,rgba(139,92,246,.09) 0%,transparent 70%);animation:bgp 9s ease-in-out infinite alternate-reverse}
+        @keyframes bgp{from{opacity:.6;transform:scale(1)}to{opacity:1;transform:scale(1.1)}}
+        #ptc{position:absolute;inset:0;z-index:1;pointer-events:none}
+        .hero-in{position:relative;z-index:2;max-width:1200px;margin:0 auto;width:100%;padding:80px 32px;display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
+        .hero-ey{display:inline-flex;align-items:center;gap:8px;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.22);border-radius:50px;padding:5px 14px;font-size:11.5px;font-weight:600;color:var(--blueb);letter-spacing:.06em;text-transform:uppercase;margin-bottom:22px;animation:fsd .6s ease both}
+        .ey-dot{width:7px;height:7px;background:var(--blueb);border-radius:50%;animation:blink 2s ease-in-out infinite}
+        @keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+        .hero-h1{font-family:var(--fd);font-size:clamp(38px,5.2vw,60px);font-weight:800;color:var(--txh);line-height:1.08;letter-spacing:-1.5px;margin-bottom:14px;animation:fsd .7s .1s ease both}
+        .hero-tw{display:inline-block;position:relative;min-width:230px;height:1.08em;vertical-align:bottom}
+        .tw-i{position:absolute;left:0;top:0;opacity:0;transform:translateY(22px);transition:opacity .5s,transform .5s;white-space:nowrap;background:linear-gradient(90deg,var(--amber),#F97316);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+        .tw-i.on{opacity:1;transform:translateY(0)}
+        .hero-sub{font-size:16px;font-weight:400;color:var(--txm);line-height:1.72;max-width:430px;margin-bottom:34px;animation:fsd .7s .2s ease both}
+        .hero-ctas{display:flex;align-items:center;gap:14px;flex-wrap:wrap;animation:fsd .7s .3s ease both}
+        .cta-a{display:inline-flex;align-items:center;gap:8px;padding:13px 28px;font-size:15px;font-weight:600;color:#fff;background:linear-gradient(135deg,var(--blue),var(--purple));border:none;border-radius:9px;cursor:pointer;text-decoration:none;transition:all .25s;font-family:var(--fb);box-shadow:0 0 0 0 rgba(59,130,246,.4)}
+        .cta-a:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(59,130,246,.38)}
+        .cta-b{display:inline-flex;align-items:center;gap:8px;padding:13px 24px;font-size:15px;font-weight:500;color:var(--txb);background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:9px;cursor:pointer;text-decoration:none;transition:all .25s;font-family:var(--fb)}
+        .cta-b:hover{border-color:var(--blueb);color:var(--blueb);background:var(--blueg)}
+        .hero-stats{display:flex;align-items:center;gap:30px;margin-top:38px;padding-top:30px;border-top:1px solid var(--border);animation:fsd .7s .4s ease both}
+        .st-num{font-family:var(--fd);font-size:26px;font-weight:700;color:var(--txh);line-height:1}
+        .st-lbl{font-size:11.5px;color:var(--txf);margin-top:3px}
+        @keyframes fsd{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:translateY(0)}}
+
+        /* RIGHT MOCKUP */
+        .hero-r{position:relative;height:520px;animation:fsd .8s .2s ease both}
+        .orbit{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);border-radius:50%;border:1px solid rgba(59,130,246,.1);pointer-events:none}
+        .o1{width:360px;height:360px;animation:spin 22s linear infinite}
+        .o2{width:510px;height:510px;animation:spin 34s linear infinite reverse;border-style:dashed}
+        @keyframes spin{from{transform:translate(-50%,-50%) rotate(0deg)}to{transform:translate(-50%,-50%) rotate(360deg)}}
+        .fbdg{position:absolute;display:flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(22,29,43,.9);border:1px solid var(--border);border-radius:40px;font-size:12px;font-weight:600;color:var(--txb);box-shadow:0 4px 20px rgba(0,0,0,.4);white-space:nowrap;z-index:10;backdrop-filter:blur(10px)}
+        .fbdg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+        .fb1{top:28px;left:-8px;animation:fy 4s ease-in-out infinite;border-color:rgba(239,68,68,.25)}
+        .fb1 .fbdg-dot{background:#EF4444;animation:blink 1.2s infinite}
+        .fb2{top:76px;right:-16px;animation:fy 5s ease-in-out infinite .8s;border-color:var(--borderg)}
+        .fb2 .fbdg-dot{background:var(--blueb)}
+        .fb3{bottom:90px;left:-16px;animation:fy 4.5s ease-in-out infinite .4s;border-color:rgba(139,92,246,.25)}
+        .fb3 .fbdg-dot{background:var(--purple)}
+        @keyframes fy{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+        .mcs{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:272px}
+        .mc-back2{position:absolute;top:-22px;left:22px;right:22px;height:60px;background:rgba(22,29,43,.5);border:1px solid var(--border);border-radius:var(--rl);z-index:0;opacity:.35}
+        .mc-back1{position:absolute;top:-12px;left:12px;right:12px;height:60px;background:var(--bgc2);border:1px solid var(--border);border-radius:var(--rl);z-index:1;opacity:.65}
+        .mc{position:relative;z-index:3;background:var(--bgc);border:1px solid var(--border);border-radius:var(--rl);padding:16px;box-shadow:0 8px 32px rgba(0,0,0,.45);transition:transform .3s}
+        .mc:hover{transform:translateY(-4px)}
+        .mc-banner{height:108px;border-radius:10px;margin-bottom:12px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
+        .mc-banner-txt{text-align:center;font-family:var(--fd);font-size:17px;font-weight:800;color:rgba(255,255,255,.92);text-shadow:0 2px 12px rgba(0,0,0,.4);padding:10px}
+        .mc-banner-sub{font-size:10px;font-weight:400;opacity:.7;display:block;margin-top:2px;font-family:var(--fb)}
+        .mc-tag{position:absolute;top:8px;left:8px;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;background:rgba(0,0,0,.38);color:#fff;backdrop-filter:blur(6px)}
+        .mc-title{font-family:var(--fd);font-size:14.5px;font-weight:700;color:var(--txh);margin-bottom:7px;line-height:1.25}
+        .mc-meta{display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--txf)}
+        .mc-price{padding:3px 9px;background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.22);border-radius:20px;color:var(--amber);font-weight:600;font-size:10.5px}
+        .mc-btn{width:100%;margin-top:12px;padding:9px;background:linear-gradient(90deg,var(--blue),var(--purple));border:none;border-radius:7px;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--fb)}
+        .cglow{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:200px;height:200px;background:radial-gradient(circle,rgba(59,130,246,.14) 0%,transparent 70%);border-radius:50%;animation:bgp 4s ease-in-out infinite}
+
+        /* ─── SECTION BASE ─── */
+        .sec{padding:80px 32px;max-width:1200px;margin:0 auto;width:100%}
+        .sec-hdr{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:30px;flex-wrap:wrap;gap:12px}
+        .sec-title{font-family:var(--fd);font-size:clamp(24px,3.2vw,34px);font-weight:800;color:var(--txh);letter-spacing:-.7px;line-height:1.1}
+        .sec-sub{font-size:13.5px;color:var(--txm);margin-top:4px}
+        .sec-link{font-size:13.5px;font-weight:600;color:var(--blueb);text-decoration:none;display:flex;align-items:center;gap:5px;transition:gap .2s}
+        .sec-link:hover{gap:9px}
+        .sec-div{height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent);margin:0 32px}
+
+        /* ─── CATEGORY BAR ─── */
+        .catbar{padding:22px 32px;max-width:1200px;margin:0 auto;display:flex;align-items:center;gap:9px;overflow-x:auto;scrollbar-width:none}
+        .catbar::-webkit-scrollbar{display:none}
+        .cpill{display:inline-flex;align-items:center;gap:6px;padding:7px 16px;border-radius:50px;font-size:13px;font-weight:500;color:var(--txm);background:var(--bgc);border:1px solid var(--border);cursor:pointer;white-space:nowrap;transition:all .2s;flex-shrink:0;font-family:var(--fb)}
+        .cpill:hover{border-color:var(--blueb);color:var(--blueb);background:var(--blueg)}
+        .cpill.on{background:linear-gradient(135deg,rgba(59,130,246,.18),rgba(139,92,246,.18));border-color:rgba(59,130,246,.38);color:var(--blueb)}
+
+        /* ─── EVENT CARDS ─── */
+        .egrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(296px,1fr));gap:20px}
+        .ecard{background:var(--bgc);border:1px solid var(--border);border-radius:var(--rl);overflow:hidden;cursor:pointer;transition:border-color .25s,transform .25s,box-shadow .25s;position:relative}
+        .ecard:hover{border-color:rgba(59,130,246,.3);transform:translateY(-4px);box-shadow:0 14px 40px rgba(0,0,0,.32),0 0 0 1px rgba(59,130,246,.1)}
+        .cimgw{position:relative;overflow:hidden;aspect-ratio:16/9;background:var(--bgc2)}
+        .cimgw img{width:100%;height:100%;object-fit:cover;transition:transform .4s}
+        .ecard:hover .cimgw img{transform:scale(1.06)}
+        .ciph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:30px}
+        .gt{background:linear-gradient(135deg,#1e3a5f,#2563EB)}
+        .gm{background:linear-gradient(135deg,#2d1b69,#7C3AED,#C026D3)}
+        .gs{background:linear-gradient(135deg,#1e3a2f,#059669)}
+        .gg{background:linear-gradient(135deg,#1a1a2e,#E11D48)}
+        .gd{background:linear-gradient(135deg,#1a2535,#F59E0B)}
+        .gx{background:linear-gradient(135deg,#1B2A4A,#2563EB)}
+        .ebadge{position:absolute;top:10px;left:10px;padding:4px 10px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;background:rgba(0,0,0,.45);color:#fff;backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.1)}
+        .bt{background:rgba(37,99,235,.68);border-color:rgba(96,165,250,.28)}
+        .bm{background:rgba(124,58,237,.68);border-color:rgba(167,139,250,.28)}
+        .bs{background:rgba(5,150,105,.68);border-color:rgba(52,211,153,.28)}
+        .bg{background:rgba(225,29,72,.68);border-color:rgba(251,113,133,.28)}
+        .bd{background:rgba(245,158,11,.68);border-color:rgba(252,211,77,.28)}
+        .past-tag{position:absolute;top:10px;right:10px;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:600;background:rgba(15,23,42,.7);color:rgba(255,255,255,.6);backdrop-filter:blur(6px);text-transform:uppercase;letter-spacing:.05em}
+        .einfo{padding:15px 17px 17px}
+        .etitle{font-family:var(--fd);font-size:15.5px;font-weight:700;color:var(--txh);margin-bottom:9px;line-height:1.28;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+        .emeta{display:flex;flex-direction:column;gap:5px;margin-bottom:13px}
+        .emr{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--txm)}
+        .emr svg{width:12px;height:12px;color:var(--txf);flex-shrink:0}
+        .efoot{display:flex;align-items:center;justify-content:space-between;padding-top:11px;border-top:1px solid var(--border)}
+        .ptag{font-size:12.5px;font-weight:700;color:var(--amber)}
+        .ptag.free{color:#34D399}
+        .ccta{display:inline-flex;align-items:center;gap:5px;padding:7px 15px;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.22);border-radius:6px;color:var(--blueb);font-size:12px;font-weight:600;cursor:pointer;text-decoration:none;transition:all .2s;font-family:var(--fb)}
+        .ccta:hover{background:rgba(59,130,246,.2);border-color:var(--blueb)}
+
+        /* Skeleton */
+        .ecard.sk{cursor:default;pointer-events:none}
+        .ecard.sk:hover{transform:none;box-shadow:none;border-color:var(--border)}
+        .skel{background:linear-gradient(90deg,var(--bgc2) 25%,rgba(255,255,255,.04) 50%,var(--bgc2) 75%);background-size:200% 100%;animation:shim 1.5s infinite;border-radius:6px}
+        @keyframes shim{from{background-position:200% 0}to{background-position:-200% 0}}
+
+        /* Load more */
+        .lmw{text-align:center;margin-top:40px}
+        .lmbtn{display:inline-flex;align-items:center;gap:10px;padding:12px 32px;background:var(--bgc);border:1px solid var(--border);border-radius:8px;color:var(--txb);font-size:14px;font-weight:500;cursor:pointer;transition:all .2s;font-family:var(--fb)}
+        .lmbtn:hover{border-color:var(--blueb);color:var(--blueb)}
+        .lmbtn:disabled{opacity:.5;cursor:default}
+        .lmspin{width:14px;height:14px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spn .8s linear infinite;display:none}
+        .lmbtn.ld .lmspin{display:block}
+        .lmbtn.ld .lmtxt{display:none}
+        @keyframes spn{to{transform:rotate(360deg)}}
+
+        /* Empty state */
+        .empty{grid-column:1/-1;text-align:center;padding:80px 20px;color:var(--txf)}
+        .empty-ic{font-size:40px;margin-bottom:12px}
+        .empty-t{font-family:var(--fd);font-size:20px;font-weight:700;color:var(--txm);margin-bottom:6px}
+        .empty-s{font-size:14px}
+
+        /* ─── FEATURE STRIP ─── */
+        .fstrip{background:var(--bgc);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:72px 32px}
+        .fstrip-in{max-width:1200px;margin:0 auto}
+        .fstrip-lbl{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--blueb);margin-bottom:10px}
+        .fstrip-h{font-family:var(--fd);font-size:clamp(22px,2.8vw,30px);font-weight:800;color:var(--txh);letter-spacing:-.4px;max-width:520px;margin-bottom:44px}
+        .fstrip-h span{color:var(--purple)}
+        .fgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px}
+        .fi{padding:22px;background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:var(--rl);transition:border-color .2s,background .2s}
+        .fi:hover{border-color:rgba(59,130,246,.22);background:rgba(59,130,246,.04)}
+        .fi-ic{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:14px}
+        .fib{background:rgba(59,130,246,.12)}
+        .fip{background:rgba(139,92,246,.12)}
+        .fic{background:rgba(6,182,212,.12)}
+        .fia{background:rgba(245,158,11,.12)}
+        .fi-t{font-family:var(--fd);font-size:14.5px;font-weight:700;color:var(--txh);margin-bottom:5px}
+        .fi-d{font-size:13px;color:var(--txm);line-height:1.6}
+
+        /* ─── CTA BAND ─── */
+        .ctaband{padding:80px 32px;text-align:center;position:relative;overflow:hidden}
+        .ctaband-bg{position:absolute;inset:0;background:linear-gradient(135deg,rgba(59,130,246,.07),rgba(139,92,246,.07));z-index:0}
+        .ctaband-in{position:relative;z-index:1;max-width:560px;margin:0 auto}
+        .ctaband-h{font-family:var(--fd);font-size:clamp(26px,3.5vw,38px);font-weight:800;color:var(--txh);letter-spacing:-.6px;margin-bottom:12px}
+        .ctaband-sub{font-size:15px;color:var(--txm);margin-bottom:28px}
+        .ctaband-btns{display:flex;justify-content:center;gap:14px;flex-wrap:wrap}
+
+        /* ─── FOOTER ─── */
+        .foot{background:var(--bgc);border-top:1px solid var(--border);padding:56px 32px 32px}
+        .foot-in{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px;margin-bottom:44px}
+        .foot-logo{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+        .fl-i{width:30px;height:30px;background:linear-gradient(135deg,var(--blue),var(--purple));border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;font-family:var(--fd)}
+        .fl-t{font-family:var(--fd);font-size:17px;font-weight:700;color:var(--txh)}
+        .fl-t span{color:var(--blueb)}
+        .foot-desc{font-size:13px;color:var(--txm);line-height:1.65;max-width:250px}
+        .foot-ct{font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--txm);margin-bottom:14px}
+        .foot-links{display:flex;flex-direction:column;gap:10px}
+        .flnk{font-size:13.5px;color:var(--txf);text-decoration:none;transition:color .2s}
+        .flnk:hover{color:var(--blueb)}
+        .foot-bot{max-width:1200px;margin:0 auto;padding-top:22px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+        .foot-copy{font-size:12.5px;color:var(--txf)}
+        .fbot-links{display:flex;gap:20px}
+        .fbot-lnk{font-size:12.5px;color:var(--txf);text-decoration:none;transition:color .2s}
+        .fbot-lnk:hover{color:var(--txm)}
+
+        /* ─── TOAST ─── */
+        .toast-wrap{position:fixed;bottom:24px;right:24px;z-index:999;display:flex;flex-direction:column;gap:10px}
+        .toast{display:flex;align-items:center;gap:10px;padding:12px 18px;background:var(--bgc2);border:1px solid var(--border);border-radius:8px;font-size:13.5px;color:var(--txb);box-shadow:0 8px 24px rgba(0,0,0,.3);animation:tin .3s ease;max-width:320px}
+        .toast.suc{border-color:rgba(52,211,153,.28)}
+        .toast.err{border-color:rgba(239,68,68,.28)}
+        @keyframes tin{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+
+        /* ─── RESPONSIVE ─── */
+        @media(max-width:900px){
+            .hd-nav{display:none}
+            .hbg{display:flex}
+            .hero-in{grid-template-columns:1fr;gap:40px;padding:60px 20px 40px}
+            .hero-r{height:340px}
+            .o1{width:260px;height:260px}
+            .o2{width:360px;height:360px}
+            .mcs{width:235px}
+            .foot-in{grid-template-columns:1fr 1fr}
+        }
+        @media(max-width:640px){
+            .hd{padding:0 16px;gap:14px}
+            .hero-in{padding:48px 16px 28px}
+            .hero-h1{font-size:33px;letter-spacing:-1px}
+            .hero-sub{font-size:14px}
+            .hero-stats{gap:18px}
+            .hero-r{display:none}
+            .sec{padding:52px 16px}
+            .sec-div{margin:0 16px}
+            .catbar{padding:14px 16px}
+            .egrid{grid-template-columns:1fr}
+            .fstrip{padding:48px 16px}
+            .fgrid{grid-template-columns:1fr}
+            .ctaband{padding:60px 16px}
+            .foot{padding:40px 16px 24px}
+            .foot-in{grid-template-columns:1fr;gap:26px}
+            .foot-bot{flex-direction:column;align-items:flex-start}
+            .sec-hdr{flex-direction:column;align-items:flex-start}
+        }
+    </style>
+</head>
 <body>
 
-<!-- ═══════════════════ HEADER ═══════════════════ -->
-<header class="header">
-    <div class="logo">
-        <span class="logo-text">Event<em>aura</em></span>
-    </div>
-    <nav class="nav-links">
-        <a href="#">Home</a>
-        <a href="/moments">Moments</a>
-        <a href="/tickets">Tickets</a>
-        <a href="/aboutUs">About Us</a>
+<!-- TOAST -->
+<div class="toast-wrap" id="twrap"></div>
+
+<!-- ══════════ HEADER ══════════ -->
+<header class="hd">
+    <a href="/" class="hd-logo">
+        <div class="hd-icon">EA</div>
+        <span class="hd-name">Event<span>Aura</span></span>
+    </a>
+    <nav class="hd-nav">
+        <a href="/" class="hnl active">Home</a>
+        <a href="/indexTemp" class="hnl">Events</a>
+        <a href="/clubs" class="hnl">Clubs</a>
+        <a href="/about" class="hnl">About</a>
     </nav>
-    <div class="search-bar">
-        <span class="search-icon">🔍</span>
-        <input type="text" placeholder="Search events, cities...">
-    </div>
-    <div class="header-right">
-        <div class="time" id="clock"></div>
-        <button class="icon-btn" aria-label="Notifications">
-            <span>🔔</span><span class="badge">3</span>
-        </button>
-        <div id="guestActions">
-            <a href="/login"    class="btn primary">Login</a>
-            <a href="/register" class="btn primary">Sign Up</a>
+    <div class="hd-acts">
+        <div id="gActs" style="display:flex;align-items:center;gap:10px">
+            <a href="/login" class="btn-g">Sign In</a>
+            <a href="/register" class="btn-p">Get Started</a>
         </div>
-        <div id="userActions" style="display:none;">
-            <button class="icon-btn profile-btn" id="profileSidebarBtn" aria-label="Open profile menu" aria-expanded="false">
-                <span>👤</span>
-            </button>
+        <div id="uActs" style="display:none;align-items:center;gap:10px">
+            <span id="hdrName" style="font-size:13.5px;color:var(--txm);font-weight:500"></span>
+            <a href="/profile" class="btn-g" style="display:flex;align-items:center;gap:6px">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+                Profile
+            </a>
+            <button onclick="doLogout()" class="btn-g" style="color:#F87171;border-color:rgba(239,68,68,.2)">Logout</button>
         </div>
-        <button class="hamburger" id="hamburgerBtn" aria-label="Open menu" aria-expanded="false">
-            <span></span><span></span><span></span>
-        </button>
     </div>
+    <button class="hbg" id="hbg" aria-label="Menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+    </button>
 </header>
 
-<!-- ── Mobile nav overlay ── -->
-<div class="mobile-nav-overlay" id="mobileNavOverlay"></div>
-
-<!-- ═══════════════════ MOBILE DRAWER ═══════════════════ -->
-<nav class="mobile-nav" id="mobileNav" aria-label="Mobile navigation">
-
-    <div class="mobile-nav-header">
-        <span class="logo-text">Event<em>aura</em></span>
-        <button class="mobile-nav-close" id="mobileNavClose" aria-label="Close menu">✕</button>
-    </div>
-
-    <div class="mobile-search">
-        <span>🔍</span>
-        <input type="text" placeholder="Search events, cities...">
-    </div>
-
-    <div id="mnSkeleton" style="display:none; margin:8px 10px 0;">
-        <div class="psb-skeleton">
-            <div class="psb-skeleton-avatar"></div>
-            <div class="psb-skeleton-lines">
-                <div class="psb-skeleton-line"></div>
-                <div class="psb-skeleton-line short"></div>
+<!-- ══════════ DRAWER ══════════ -->
+<div class="drw" id="drw">
+    <div class="drw-ov" id="drwOv"></div>
+    <nav class="drw-pn">
+        <div class="drw-logo">
+            <div class="drw-logo-i">EA</div>
+            <span class="drw-logo-t">Event<span>Aura</span></span>
+        </div>
+        <a href="/" class="dnl active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Home
+        </a>
+        <a href="/indexTemp" class="dnl">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Events
+        </a>
+        <a href="/clubs" class="dnl">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>Clubs
+        </a>
+        <div class="drw-div"></div>
+        <!-- Role-based items, shown by JS -->
+        <div id="drwRoleSec" style="display:none">
+            <div class="drw-sl">My Dashboard</div>
+            <a href="/my-registrations" class="dnl" id="drwMyRegs">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>My Registrations
+            </a>
+            <a href="/my-events" class="dnl" id="drwHostEvts" style="display:none">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>Hosted Events
+            </a>
+            <a href="/host/create" class="dnl" id="drwCreate" style="display:none">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>Create Event
+            </a>
+            <a href="/admin" class="dnl" id="drwAdmin" style="display:none">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Admin Panel
+            </a>
+            <div class="drw-div"></div>
+        </div>
+        <!-- Guest card -->
+        <div class="drw-guest" id="drwGuest">
+            <p>Join EventAura to discover and register for campus events.</p>
+            <div class="drw-gbtns">
+                <a href="/login" class="dbl">Sign In</a>
+                <a href="/register" class="dbs">Register</a>
             </div>
         </div>
-    </div>
+        <!-- User card -->
+        <div class="drw-user" id="drwUser">
+            <div class="drw-uav" id="drwUAv">U</div>
+            <div class="drw-uname" id="drwUName">—</div>
+            <div class="drw-urole" id="drwURole">Member</div>
+            <button class="drw-logout" onclick="doLogout()">Sign Out</button>
+        </div>
+    </nav>
+</div>
 
-    <div id="mnUserCard" style="display:none; margin:8px 10px 0;">
-        <div class="psb-user-card">
-            <div class="psb-avatar">👤</div>
-            <div class="psb-user-info">
-                <div class="psb-user-name" id="mnUserName">User</div>
-                <div class="psb-user-role" id="mnUserRole">Member</div>
+<!-- ══════════ HERO ══════════ -->
+<section class="hero">
+    <div class="hero-bg"></div>
+    <canvas id="ptc"></canvas>
+    <div class="hero-in">
+        <!-- LEFT -->
+        <div class="hero-l">
+            <div class="hero-ey"><span class="ey-dot"></span>Campus Events Platform</div>
+            <h1 class="hero-h1">
+                Where campus<br>
+                <span class="hero-tw" id="tw">
+          <span class="tw-i on">clubs thrive.</span>
+          <span class="tw-i">hackathons launch.</span>
+          <span class="tw-i">talent shines.</span>
+          <span class="tw-i">memories form.</span>
+        </span>
+            </h1>
+            <p class="hero-sub">EventAura connects college clubs and students on one platform — discover events, register instantly, and host your next big show.</p>
+            <div class="hero-ctas">
+                <a href="/events" class="cta-a">Browse Events
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                </a>
+                <a href="/host/create" class="cta-b">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                    Host an Event
+                </a>
+            </div>
+            <div class="hero-stats">
+                <div><div class="st-num" id="stE">—</div><div class="st-lbl">Events Live</div></div>
+                <div><div class="st-num" id="stC">40+</div><div class="st-lbl">Clubs Active</div></div>
+                <div><div class="st-num" id="stR">—</div><div class="st-lbl">Registrations</div></div>
             </div>
         </div>
-    </div>
-
-    <div id="mnGuestCard" style="margin:8px 10px 0;">
-        <div class="psb-guest-card">
-            <p>Sign in to access your events, tickets and profile.</p>
-            <div class="psb-guest-btns">
-                <a href="/login"    class="psb-btn-login">Login</a>
-                <a href="/register" class="psb-btn-signup">Sign Up</a>
+        <!-- RIGHT mockup -->
+        <div class="hero-r">
+            <div class="orbit o1"></div>
+            <div class="orbit o2"></div>
+            <div class="cglow"></div>
+            <div class="fbdg fb1"><span class="fbdg-dot"></span>Hackathon Live Now</div>
+            <div class="fbdg fb2"><span class="fbdg-dot"></span>12 Clubs Active</div>
+            <div class="fbdg fb3"><span class="fbdg-dot"></span>🎟 320 Registrations Today</div>
+            <div class="mcs">
+                <div class="mc-back2"></div>
+                <div class="mc-back1"></div>
+                <div class="mc" id="mcMain"></div>
             </div>
         </div>
-    </div>
-
-    <div id="mn-my-account" style="display:none;">
-        <div class="psb-section-label">My Account</div>
-        <div class="mobile-nav-links" style="padding-top:0;">
-            <a href="/profile"  class="mobile-nav-link"><span class="mnl-icon">👤</span>Profile</a>
-            <a href="/"         class="mobile-nav-link"><span class="mnl-icon">🏠</span>Home</a>
-            <a href="/moments"  class="mobile-nav-link"><span class="mnl-icon">📸</span>Moments</a>
-            <a href="/tickets"  class="mobile-nav-link"><span class="mnl-icon">🎟️</span>My Tickets</a>
-            <a href="/aboutUs"  class="mobile-nav-link"><span class="mnl-icon">ℹ️</span>About Us</a>
-        </div>
-    </div>
-
-    <div id="mn-admin" style="display:none;">
-        <div class="psb-divider" style="margin:4px 16px;"></div>
-        <div class="psb-section-label">Admin</div>
-        <div class="mobile-nav-links" style="padding-top:0;">
-            <a href="/adminPage"    class="mobile-nav-link"><span class="mnl-icon">🛡️</span>Admin Page<span class="psb-admin-badge">Admin</span></a>
-            <a href="/campusEvents" class="mobile-nav-link"><span class="mnl-icon">📋</span>Campus Events<span class="psb-admin-badge">Admin</span></a>
-        </div>
-    </div>
-
-    <div id="mn-host" style="display:none;">
-        <div class="psb-divider" style="margin:4px 16px;"></div>
-        <div class="psb-section-label">Host</div>
-        <div class="mobile-nav-links" style="padding-top:0;">
-            <a href="/createEvent"  class="mobile-nav-link"><span class="mnl-icon">📅</span>Create Event</a>
-            <a href="/hostedEvents" class="mobile-nav-link"><span class="mnl-icon">🎪</span>Hosted Events</a>
-        </div>
-    </div>
-
-    <div id="mn-guest-nav">
-        <div class="mobile-nav-links">
-            <a href="/"        class="mobile-nav-link"><span class="mnl-icon">🏠</span>Home</a>
-            <a href="/moments" class="mobile-nav-link"><span class="mnl-icon">📸</span>Moments</a>
-            <a href="/aboutUs" class="mobile-nav-link"><span class="mnl-icon">ℹ️</span>About Us</a>
-        </div>
-    </div>
-
-    <div class="mobile-nav-footer">
-        <div id="mobileNavGuest">
-            <a href="/login"    class="btn primary" style="text-align:center;display:block;">Login</a>
-            <a href="/register" class="btn primary" style="text-align:center;display:block;margin-top:10px;">Sign Up</a>
-        </div>
-        <div id="mobileNavUser" style="display:none;">
-            <button onclick="logout()" class="btn primary" style="text-align:center;display:block;background:#ef4444;border-color:#ef4444;">Sign Out</button>
-        </div>
-    </div>
-
-</nav>
-
-<!-- ═══════════════════ PROFILE SIDEBAR ═══════════════════ -->
-<div class="profile-overlay" id="profileOverlay"></div>
-
-<aside class="profile-sidebar" id="profileSidebar" aria-label="Profile menu">
-
-    <div class="psb-header">
-        <span class="psb-title">My Account</span>
-        <button class="psb-close" id="profileSidebarClose" aria-label="Close">✕</button>
-    </div>
-
-    <div id="psbSkeleton" style="display:none; margin:16px 16px 0;">
-        <div class="psb-skeleton">
-            <div class="psb-skeleton-avatar"></div>
-            <div class="psb-skeleton-lines">
-                <div class="psb-skeleton-line"></div>
-                <div class="psb-skeleton-line short"></div>
-            </div>
-        </div>
-    </div>
-
-    <div id="psbUserCard" style="display:none; margin:16px 16px 0;">
-        <div class="psb-user-card">
-            <div class="psb-avatar">👤</div>
-            <div class="psb-user-info">
-                <div class="psb-user-name" id="psbUserName">User</div>
-                <div class="psb-user-role" id="psbUserRole">Member</div>
-            </div>
-        </div>
-    </div>
-
-    <div id="psbGuestCard" style="margin:16px 16px 0;">
-        <div class="psb-guest-card">
-            <p>Sign in to access your events, tickets and profile.</p>
-            <div class="psb-guest-btns">
-                <a href="/login"    class="psb-btn-login">Login</a>
-                <a href="/register" class="psb-btn-signup">Sign Up</a>
-            </div>
-        </div>
-    </div>
-
-    <div id="psb-my-account" style="display:none;">
-        <div class="psb-section-label">My Account</div>
-        <nav class="psb-nav" style="padding-top:0;">
-            <a href="/profile"  class="psb-nav-item"><span class="psb-nav-icon">👤</span><span>Profile</span></a>
-            <a href="/"         class="psb-nav-item"><span class="psb-nav-icon">🏠</span><span>Home</span></a>
-            <a href="/moments"  class="psb-nav-item"><span class="psb-nav-icon">📸</span><span>Moments</span></a>
-            <a href="/tickets"  class="psb-nav-item"><span class="psb-nav-icon">🎟️</span><span>My Tickets</span></a>
-            <a href="/aboutUs"  class="psb-nav-item"><span class="psb-nav-icon">ℹ️</span><span>About Us</span></a>
-        </nav>
-    </div>
-
-    <div id="psb-admin" style="display:none;">
-        <div class="psb-divider"></div>
-        <div class="psb-section-label">Admin</div>
-        <nav class="psb-nav" style="padding-top:0;">
-            <a href="/adminPage"    class="psb-nav-item"><span class="psb-nav-icon">🛡️</span><span>Admin Page</span><span class="psb-admin-badge">Admin</span></a>
-            <a href="/campusEvents" class="psb-nav-item"><span class="psb-nav-icon">📋</span><span>Campus Events</span><span class="psb-admin-badge">Admin</span></a>
-        </nav>
-    </div>
-
-    <div id="psb-host" style="display:none;">
-        <div class="psb-divider"></div>
-        <div class="psb-section-label">Host</div>
-        <nav class="psb-nav" style="padding-top:0;">
-            <a href="/createEvent"  class="psb-nav-item"><span class="psb-nav-icon">📅</span><span>Create Event</span></a>
-            <a href="/hostedEvents" class="psb-nav-item"><span class="psb-nav-icon">🎪</span><span>Hosted Events</span></a>
-        </nav>
-    </div>
-
-    <div id="psb-logout" style="display:none;">
-        <div class="psb-divider"></div>
-        <nav class="psb-nav" style="padding-top:0;">
-            <button onclick="logout()" class="psb-nav-item logout"><span class="psb-nav-icon">🚪</span><span>Logout</span></button>
-        </nav>
-    </div>
-
-    <div id="psb-guest-nav">
-        <div class="psb-section-label">Explore</div>
-        <nav class="psb-nav" style="padding-top:0;">
-            <a href="/myEvents" class="psb-nav-item"><span class="psb-nav-icon">🔥</span><span>Browse Events</span></a>
-            <a href="/aboutUs"  class="psb-nav-item"><span class="psb-nav-icon">ℹ️</span><span>About Us</span></a>
-        </nav>
-    </div>
-
-    <div class="psb-footer">
-        <p class="psb-footer-text">© 2026 Eventaura · Made with ❤️ in India</p>
-    </div>
-
-</aside>
-
-<!-- ═══════════════════ BANNER SLIDESHOW ═══════════════════ -->
-<section class="banner-section" aria-label="Featured Events Banner">
-    <div class="banner-track" id="bannerTrack"></div>
-    <div class="banner-dots"  id="bannerDots"></div>
-    <button class="banner-arrow prev" id="prevBtn" aria-label="Previous slide">&#8592;</button>
-    <button class="banner-arrow next" id="nextBtn" aria-label="Next slide">&#8594;</button>
-</section>
-
-<!-- ═══════════════════ CATEGORY PILLS ═══════════════════ -->
-<section class="categories-section">
-    <div class="categories-scroll">
-        <button class="cat-pill active">🌟 All</button>
-        <button class="cat-pill">💻 Tech</button>
-        <button class="cat-pill">🎵 Music</button>
-        <button class="cat-pill">🚀 Startup</button>
-        <button class="cat-pill">🎮 Gaming</button>
-        <button class="cat-pill">🎨 Design</button>
-        <button class="cat-pill">🤖 AI & ML</button>
-        <button class="cat-pill">🔬 Science</button>
     </div>
 </section>
 
-<!-- ═══════════════════ TRENDING EVENTS ═══════════════════ -->
-<section id="events" class="events-section">
-    <div class="section-header">
+<!-- ══════════ CATEGORY BAR ══════════ -->
+<div class="catbar">
+    <button class="cpill on" data-cat="all">🎯 All</button>
+    <button class="cpill" data-cat="tech">💻 Tech</button>
+    <button class="cpill" data-cat="hackathon">⚡ Hackathon</button>
+    <button class="cpill" data-cat="music">🎵 Music</button>
+    <button class="cpill" data-cat="startup">🚀 Startup</button>
+    <button class="cpill" data-cat="gaming">🎮 Gaming</button>
+    <button class="cpill" data-cat="design">🎨 Design</button>
+    <button class="cpill" data-cat="workshop">🛠 Workshop</button>
+    <button class="cpill" data-cat="sports">🏆 Sports</button>
+    <button class="cpill" data-cat="culture">🎭 Culture</button>
+</div>
+<div class="sec-div"></div>
+
+<!-- ══════════ EVENTS GRID ══════════ -->
+<section class="sec">
+    <div class="sec-hdr">
         <div>
-            <h2>🔥 Trending Events</h2>
-            <p>Don't miss what's hot right now</p>
+            <h2 class="sec-title">Upcoming Events</h2>
+            <p class="sec-sub">Curated events from clubs across campus</p>
         </div>
-        <a href="#" class="view-all">View All →</a>
+        <a href="/events" class="sec-link">View All
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </a>
     </div>
-    <div class="events-grid" id="eventsGrid"></div>
-    <div class="load-more-wrap" id="loadMoreWrap" style="display:none;">
-        <button class="load-more-btn" id="loadMoreBtn">Load More Events</button>
+    <div class="egrid" id="egrid">
+        <!-- skeletons -->
+        <div class="ecard sk"><div class="cimgw"><div class="skel" style="width:100%;height:100%;border-radius:0"></div></div><div class="einfo"><div class="skel" style="height:18px;width:75%;margin-bottom:10px"></div><div class="skel" style="height:12px;width:58%;margin-bottom:6px"></div><div class="skel" style="height:12px;width:45%;margin-bottom:14px"></div><div class="skel" style="height:32px;border-radius:6px"></div></div></div>
+        <div class="ecard sk"><div class="cimgw"><div class="skel" style="width:100%;height:100%;border-radius:0"></div></div><div class="einfo"><div class="skel" style="height:18px;width:68%;margin-bottom:10px"></div><div class="skel" style="height:12px;width:55%;margin-bottom:6px"></div><div class="skel" style="height:12px;width:42%;margin-bottom:14px"></div><div class="skel" style="height:32px;border-radius:6px"></div></div></div>
+        <div class="ecard sk"><div class="cimgw"><div class="skel" style="width:100%;height:100%;border-radius:0"></div></div><div class="einfo"><div class="skel" style="height:18px;width:82%;margin-bottom:10px"></div><div class="skel" style="height:12px;width:60%;margin-bottom:6px"></div><div class="skel" style="height:12px;width:38%;margin-bottom:14px"></div><div class="skel" style="height:32px;border-radius:6px"></div></div></div>
     </div>
-</section>
-
-<!-- ═══════════════════ NEWSLETTER ═══════════════════ -->
-<section class="newsletter-section">
-    <div class="newsletter-inner">
-        <div class="newsletter-text">
-            <h3>Never miss an event</h3>
-            <p>Get personalized recommendations straight to your inbox.</p>
-        </div>
-        <div class="newsletter-form">
-            <input type="email" placeholder="Enter your email address">
-            <button>Subscribe</button>
-        </div>
+    <div class="lmw" id="lmw" style="display:none">
+        <button class="lmbtn" id="lmbtn"><span class="lmtxt">Load More Events</span><div class="lmspin"></div></button>
     </div>
 </section>
 
-<!-- ═══════════════════ FOOTER ═══════════════════ -->
-<footer class="footer">
-    <div class="footer-top">
-        <div class="footer-brand">
-            <div class="logo">
-                <div class="logo-icon">
-                    <img th:src="@{/images/1.jpg}" alt="Eventaura Logo">
-                </div>
-                <span class="logo-text">Event<em>aura</em></span>
-            </div>
-            <p>India's premier event discovery platform. Find, book, and experience the best events near you.</p>
-            <div class="social-links">
-                <a href="#" aria-label="Twitter">𝕏</a>
-                <a href="#" aria-label="Instagram">📸</a>
-                <a href="#" aria-label="LinkedIn">in</a>
-                <a href="#" aria-label="YouTube">▶</a>
+<!-- ══════════ FEATURE STRIP ══════════ -->
+<div class="fstrip">
+    <div class="fstrip-in">
+        <div class="fstrip-lbl">Why EventAura</div>
+        <h2 class="fstrip-h">Built for <span>campus energy,</span> with industry-grade tools.</h2>
+        <div class="fgrid">
+            <div class="fi"><div class="fi-ic fib">📋</div><div class="fi-t">Instant Registration</div><p class="fi-d">One-click sign-up for any event. Free or ticketed — seamless either way.</p></div>
+            <div class="fi"><div class="fi-ic fip">🛡</div><div class="fi-t">Role-Based Access</div><p class="fi-d">Students, Organizers, Admins — everyone gets exactly what they need.</p></div>
+            <div class="fi"><div class="fi-ic fic">🔔</div><div class="fi-t">Live Updates</div><p class="fi-d">New events appear in real time. Never miss what's happening on campus.</p></div>
+            <div class="fi"><div class="fi-ic fia">📊</div><div class="fi-t">Organizer Dashboard</div><p class="fi-d">Track registrations, manage attendees and publish events with ease.</p></div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════ CTA BAND ══════════ -->
+<div class="ctaband">
+    <div class="ctaband-bg"></div>
+    <div class="ctaband-in">
+        <h2 class="ctaband-h">Your next big campus moment starts here.</h2>
+        <p class="ctaband-sub">Whether you're a student looking for events or a club ready to host — EventAura has you covered.</p>
+        <div class="ctaband-btns">
+            <a href="/register" class="cta-a">Create Account</a>
+            <a href="/events" class="cta-b">Explore Events</a>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════ FOOTER ══════════ -->
+<footer class="foot">
+    <div class="foot-in">
+        <div>
+            <div class="foot-logo"><div class="fl-i">EA</div><span class="fl-t">Event<span>Aura</span></span></div>
+            <p class="foot-desc">The official campus events platform for colleges and clubs. Discover, register, and host — all in one place.</p>
+        </div>
+        <div>
+            <div class="foot-ct">Platform</div>
+            <div class="foot-links">
+                <a href="/events" class="flnk">Browse Events</a>
+                <a href="/clubs" class="flnk">Clubs</a>
+                <a href="/host/create" class="flnk">Host an Event</a>
+                <a href="/register" class="flnk">Get Started</a>
             </div>
         </div>
-        <div class="footer-links">
-            <div class="footer-col">
-                <h4>Explore</h4>
-                <a href="#">Trending Events</a>
-                <a href="#">Upcoming Events</a>
-                <a href="#">Categories</a>
-                <a href="#">Cities</a>
+        <div>
+            <div class="foot-ct">Account</div>
+            <div class="foot-links">
+                <a href="/login" class="flnk">Sign In</a>
+                <a href="/my-registrations" class="flnk">My Registrations</a>
+                <a href="/my-events" class="flnk">My Events</a>
+                <a href="/profile" class="flnk">Profile</a>
             </div>
-            <div class="footer-col">
-                <h4>Organizers</h4>
-                <a href="/createEvent">Create Event</a>
-                <a href="#">Pricing</a>
-                <a href="#">Dashboard</a>
-                <a href="#">Analytics</a>
-            </div>
-            <div class="footer-col">
-                <h4>Company</h4>
-                <a href="/aboutUs">About Us</a>
-                <a href="#">Blog</a>
-                <a href="#">Careers</a>
-                <a href="#">Press</a>
-            </div>
-            <div class="footer-col">
-                <h4>Support</h4>
-                <a href="#">Help Center</a>
-                <a href="#">Contact Us</a>
-                <a href="#">Privacy Policy</a>
-                <a href="#">Terms of Service</a>
+        </div>
+        <div>
+            <div class="foot-ct">Info</div>
+            <div class="foot-links">
+                <a href="/about" class="flnk">About</a>
+                <a href="/contact" class="flnk">Contact</a>
+                <a href="/privacy" class="flnk">Privacy</a>
+                <a href="/terms" class="flnk">Terms</a>
             </div>
         </div>
     </div>
-    <div class="footer-bottom">
-        <p>© 2026 Eventaura. All rights reserved. Made with ❤️ in India.</p>
-        <p>Delhi · Mumbai · Bangalore · Hyderabad · Chennai · Pune · Goa</p>
+    <div class="foot-bot">
+        <span class="foot-copy">© 2025 EventAura. All rights reserved.</span>
+        <div class="fbot-links">
+            <a href="/privacy" class="fbot-lnk">Privacy</a>
+            <a href="/terms" class="fbot-lnk">Terms</a>
+            <a href="/contact" class="fbot-lnk">Support</a>
+        </div>
     </div>
 </footer>
 
-<script th:src="@{/js/basic.js}"></script>
 <script>
-    /* ════════════════════════════════════════════
-       EVENTAURA INDEX — Dynamic Events from API
-       ════════════════════════════════════════════ */
-    const API_BASE = '/api/v1/event';
-    let currentPage = 0;
-    const pageSize  = 10;
-    let allLoaded   = false;
-    let allEvents   = [];
-
-    function isUpcoming(event) {
-        const today = new Date(); today.setHours(0,0,0,0);
-        return new Date(event.eventDate + 'T00:00:00') >= today;
-    }
-    function fmtDate(d) {
-        if (!d) return '';
-        return new Date(d + 'T00:00:00').toLocaleDateString('en-IN', { day:'numeric', month:'long', year:'numeric' });
-    }
-    function badgeClass(category) {
-        const map = { tech:'', startup:'startup', music:'music', gaming:'gaming', design:'design', 'ai-ml':'', science:'', robotics:'', hackathon:'', workshop:'', networking:'', sports:'', culture:'', food:'' };
-        return map[category] || '';
-    }
-
-    /**
-     * Returns an HTML string for the price badge shown on each card.
-     * Free  → green pill  "🎁 Free"
-     * Paid  → amber pill  "💳 ₹X"
-     */
-    function priceBadgeHtml(ticketPrice) {
-        const isPaid = ticketPrice != null && ticketPrice > 0;
-        if (isPaid) {
-            const formatted = '₹' + parseFloat(ticketPrice).toLocaleString('en-IN');
-            return `<span class="price-meta-badge price-meta-badge--paid">💳 ${formatted}</span>`;
-        }
-        return `<span class="price-meta-badge price-meta-badge--free">🎁 Free</span>`;
-    }
-
-    /**
-     * Same info for the banner slide — plain text version (no inline HTML needed).
-     */
-    function priceSlideText(ticketPrice) {
-        const isPaid = ticketPrice != null && ticketPrice > 0;
-        return isPaid ? '💳 ₹' + parseFloat(ticketPrice).toLocaleString('en-IN') : '🎁 Free';
-    }
-
-    function buildCard(ev) {
-        const upcoming = isUpcoming(ev);
-        const card = document.createElement('div');
-        card.className = 'event-card';
-        card.dataset.category = (ev.category || '').toLowerCase();
-        card.dataset.upcoming  = upcoming ? '1' : '0';
-        card.dataset.eventId   = ev.eventId;
-        card.innerHTML = `
-            <div class="card-img-wrap">
-                <img src="${ev.bannerUrl || '/images/placeholder.jpg'}" alt="${ev.title}" loading="lazy">
-                <span class="event-badge ${badgeClass(ev.category)}">${ev.category || 'Event'}</span>
-                ${!upcoming ? '<span style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.55);color:rgba(255,255,255,0.7);font-size:10px;padding:3px 8px;border-radius:50px;font-weight:600;">Past</span>' : ''}
-            </div>
-            <div class="event-info">
-                <h3>${ev.title}</h3>
-                <div class="event-meta">
-                    <span>📅 ${fmtDate(ev.eventDate)}</span>
-                    <span>📍 ${ev.location || '—'}</span>
-                </div>
-                <div class="event-meta" style="margin-top:4px;">
-                    <span class="price-meta-span">${priceBadgeHtml(ev.ticketPrice)}</span>
-                </div>
-                <a class="card-cta">${upcoming ? 'Register' : 'View Details'}</a>
-            </div>`;
-        card.addEventListener('click', () => { window.location.href = `/registerForEvent/${ev.eventId}`; });
-        return card;
-    }
-
-    function buildSlide(ev) {
-        const upcoming = isUpcoming(ev);
-        const tagLabels = { tech:'Tech', music:'Music', startup:'Startup', gaming:'Gaming', design:'Design', 'ai-ml':'AI', science:'Science', robotics:'Robotics', hackathon:'Hackathon', workshop:'Workshop' };
-        const tag = tagLabels[ev.category] || ev.category || 'Featured';
-        return `
-            <div class="banner-slide" data-event-id="${ev.eventId}" style="cursor:pointer;">
-                <img src="${ev.bannerUrl || '/images/placeholder.jpg'}" alt="${ev.title}">
-                <div class="slide-overlay">
-                    <span class="slide-tag ${!upcoming ? 'past' : ''}">${upcoming ? tag : 'Past Event'}</span>
-                    <h2>${ev.title}</h2>
-                    <p>📅 ${fmtDate(ev.eventDate)} &nbsp;·&nbsp; 📍 ${ev.location || '—'} &nbsp;·&nbsp; ${priceSlideText(ev.ticketPrice)}</p>
-                    <a class="slide-cta">${upcoming ? 'Register Now →' : 'View Details →'}</a>
-                </div>
-            </div>`;
-    }
-
-    function buildDots(count) {
-        const wrap = document.getElementById('bannerDots');
-        wrap.innerHTML = '';
-        for (let i = 0; i < count; i++) {
-            const btn = document.createElement('button');
-            btn.className = 'dot' + (i === 0 ? ' active' : '');
-            btn.setAttribute('aria-label', `Slide ${i + 1}`);
-            btn.addEventListener('click', () => { goTo(i); resetTimer(); });
-            wrap.appendChild(btn);
-        }
-    }
-
-    let current = 0, timer, slideCount = 0;
-    function goTo(index) {
-        const track = document.getElementById('bannerTrack');
-        current = ((index % slideCount) + slideCount) % slideCount;
-        track.style.transform = `translateX(-${current * 100}%)`;
-        document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === current));
-    }
-    function autoPlay()   { timer = setInterval(() => goTo(current + 1), 4500); }
-    function resetTimer() { clearInterval(timer); autoPlay(); }
-
-    function initSlideshow(slides) {
-        const track = document.getElementById('bannerTrack');
-        track.innerHTML = slides.map(ev => buildSlide(ev)).join('');
-        slideCount = slides.length;
-        buildDots(slideCount);
-        goTo(0); autoPlay();
-        track.querySelectorAll('.banner-slide').forEach(s => {
-            s.addEventListener('click', () => { window.location.href = `/registerForEvent/${s.dataset.eventId}`; });
-        });
-        document.getElementById('nextBtn').addEventListener('click', () => { goTo(current + 1); resetTimer(); });
-        document.getElementById('prevBtn').addEventListener('click', () => { goTo(current - 1); resetTimer(); });
-    }
-
-    async function fetchEvents(page = 0) {
-        const res = await fetch(`${API_BASE}/getAllApprovedEvents?page=${page}&size=${pageSize}&sortBy=eventDate`);
-        if (!res.ok) throw new Error('Failed to fetch events');
-        return res.json();
-    }
-
-    async function loadPage(page) {
-        const btn = document.getElementById('loadMoreBtn');
-        if (btn) btn.disabled = true;
-        try {
-            const data   = await fetchEvents(page);
-            const events = data.content || [];
-            if (page === 0) {
-                allEvents = events;
-                const upcoming = events.filter(isUpcoming).sort((a,b) => new Date(a.eventDate)-new Date(b.eventDate));
-                const past     = events.filter(e => !isUpcoming(e)).sort((a,b) => new Date(b.eventDate)-new Date(a.eventDate));
-                const sorted   = [...upcoming, ...past];
-                if (sorted.slice(0,5).length) initSlideshow(sorted.slice(0,5));
-                const grid = document.getElementById('eventsGrid');
-                grid.innerHTML = '';
-                sorted.forEach(ev => grid.appendChild(buildCard(ev)));
-            } else {
-                const grid = document.getElementById('eventsGrid');
-                events.forEach(ev => { allEvents.push(ev); grid.appendChild(buildCard(ev)); });
+    /* ══ PARTICLES ══ */
+    (()=>{
+        const c=document.getElementById('ptc'),cx=c.getContext('2d');
+        let W,H,pts=[];
+        const COLS=['rgba(59,130,246,','rgba(139,92,246,','rgba(6,182,212,'];
+        function rsz(){W=c.width=window.innerWidth;H=c.height=window.innerHeight}
+        window.addEventListener('resize',rsz);rsz();
+        function mk(){return{x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.6+.4,vx:(Math.random()-.5)*.32,vy:-Math.random()*.45-.1,a:Math.random()*.45+.1,col:COLS[Math.floor(Math.random()*3)]}}
+        for(let i=0;i<65;i++)pts.push(mk());
+        function frame(){
+            cx.clearRect(0,0,W,H);
+            for(let i=0;i<pts.length;i++)for(let j=i+1;j<pts.length;j++){
+                const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y,d=Math.sqrt(dx*dx+dy*dy);
+                if(d<120){cx.strokeStyle=`rgba(59,130,246,${.035*(1-d/120)})`;cx.lineWidth=.5;cx.beginPath();cx.moveTo(pts[i].x,pts[i].y);cx.lineTo(pts[j].x,pts[j].y);cx.stroke()}
             }
-            allLoaded = data.last;
-            const wrap = document.getElementById('loadMoreWrap');
-            if (wrap) wrap.style.display = allLoaded ? 'none' : 'block';
-            if (btn)  btn.disabled = false;
-        } catch (err) {
-            console.error('Error loading events:', err);
-            if (btn) btn.disabled = false;
+            for(const p of pts){
+                cx.beginPath();cx.arc(p.x,p.y,p.r,0,Math.PI*2);cx.fillStyle=p.col+p.a+')';cx.fill();
+                p.x+=p.vx;p.y+=p.vy;
+                if(p.y<-10||p.x<-10||p.x>W+10){Object.assign(p,mk());p.y=H+10}
+            }
+            requestAnimationFrame(frame)
+        }
+        frame();
+    })();
+
+    /* ══ TYPEWORD ══ */
+    (()=>{
+        const items=document.querySelectorAll('.tw-i');
+        let i=0;
+        setInterval(()=>{items[i].classList.remove('on');i=(i+1)%items.length;items[i].classList.add('on');},2500);
+    })();
+
+    /* ══ MOCK CARDS ══ */
+    const MOCKS=[
+        {title:'HackSphere 2025',sub:'National Hackathon',tag:'Hackathon',gr:'gt',date:'Dec 14, 2025',loc:'Main Auditorium',price:null},
+        {title:'TechFest Summit',sub:'CS Club Annual Fest',tag:'Tech',gr:'gt',date:'Jan 18, 2026',loc:'Convention Hall',price:199},
+        {title:'Resonance Music Night',sub:'Cultural Club',tag:'Music',gr:'gm',date:'Feb 7, 2026',loc:'Open Amphitheatre',price:150},
+    ];
+    let mi=0;
+    function renderMC(d){
+        document.getElementById('mcMain').innerHTML=`
+    <div class="mc-banner ${d.gr}">
+      <div class="mc-banner-txt">${d.title}<span class="mc-banner-sub">${d.sub}</span></div>
+      <span class="mc-tag">${d.tag}</span>
+    </div>
+    <div class="mc-title">${d.title}</div>
+    <div class="mc-meta"><span>📅 ${d.date} · 📍 ${d.loc}</span><span class="mc-price">${d.price?'₹'+d.price:'🎁 Free'}</span></div>
+    <button class="mc-btn">Register Now →</button>`;
+    }
+    renderMC(MOCKS[0]);
+    setInterval(()=>{mi=(mi+1)%MOCKS.length;renderMC(MOCKS[mi]);},4200);
+
+    /* ══ DRAWER ══ */
+    const drw=document.getElementById('drw'),drwOv=document.getElementById('drwOv'),hbg=document.getElementById('hbg');
+    function openD(){drw.classList.add('open');document.body.style.overflow='hidden';hbg.classList.add('open');hbg.setAttribute('aria-expanded','true')}
+    function closeD(){drw.classList.remove('open');document.body.style.overflow='';hbg.classList.remove('open');hbg.setAttribute('aria-expanded','false')}
+    hbg.addEventListener('click',openD);
+    drwOv.addEventListener('click',closeD);
+    document.addEventListener('keydown',e=>{if(e.key==='Escape')closeD()});
+
+    /* ══ TOAST ══ */
+    function toast(msg,type='info'){
+        const el=document.createElement('div');
+        el.className=`toast ${type==='success'?'suc':type==='error'?'err':''}`;
+        el.innerHTML=`<span style="font-size:15px">${type==='success'?'✅':type==='error'?'❌':'ℹ️'}</span> ${msg}`;
+        document.getElementById('twrap').appendChild(el);
+        setTimeout(()=>el.remove(),3600);
+    }
+
+    /* ══ COUNT ANIM ══ */
+    function countUp(id,target,suffix=''){
+        const el=document.getElementById(id);if(!el||!target)return;
+        let cur=0;const step=Math.max(1,Math.ceil(target/30));
+        const t=setInterval(()=>{cur=Math.min(cur+step,target);el.textContent=cur+suffix;if(cur>=target)clearInterval(t);},40);
+    }
+    countUp('stR',320,'+');
+
+    /* ══ AUTH TOKENS ══ */
+    const getAT=()=>localStorage.getItem('accessToken');
+    const getRT=()=>localStorage.getItem('refreshToken');
+    const saveT=(a,r)=>{localStorage.setItem('accessToken',a);localStorage.setItem('refreshToken',r)};
+    const clearT=()=>{localStorage.removeItem('accessToken');localStorage.removeItem('refreshToken')};
+    function expd(tok){try{const p=JSON.parse(atob(tok.split('.')[1]));return(p.exp*1000)<(Date.now()-30000)}catch{return true}}
+    async function tryRef(){
+        const rt=getRT();if(!rt){clearT();return null}
+        try{
+            const r=await fetch('/api/v1/auth/refresh',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({refreshToken:rt})});
+            if(!r.ok){clearT();return null}
+            const d=await r.json();saveT(d.accessToken,d.refreshToken);return d.accessToken;
+        }catch{clearT();return null}
+    }
+    async function apiFetch(url,opts={}){
+        let tok=getAT();
+        if(!tok||expd(tok)){tok=await tryRef();if(!tok)return null}
+        opts.headers={'Content-Type':'application/json',...opts.headers,'Authorization':`Bearer ${tok}`};
+        let res=await fetch(url,opts);
+        if(res.status===401){tok=await tryRef();if(!tok)return null;opts.headers['Authorization']=`Bearer ${tok}`;res=await fetch(url,opts)}
+        return res;
+    }
+
+    /* ══ AUTH NAV ══ */
+    let auth={on:false,role:null,name:null};
+    function roleOf(r,s){const rr=String(r||'').toUpperCase();if(rr==='ROLE_ADMIN')return'ADMIN';if(s==='APPROVED')return'ORGANIZER';return'USER'}
+    function roleLabel(r){if(r==='ADMIN')return'Administrator';if(r==='ORGANIZER')return'Organizer / Host';return'Member'}
+
+    function paintNav(){
+        const {on,role,name}=auth;
+        if(on){
+            document.getElementById('gActs').style.display='none';
+            document.getElementById('uActs').style.display='flex';
+            const hn=document.getElementById('hdrName');if(hn)hn.textContent=name||'';
+            document.getElementById('drwGuest').style.display='none';
+            const du=document.getElementById('drwUser');du.classList.add('vis');
+            document.getElementById('drwUAv').textContent=(name||'U')[0].toUpperCase();
+            document.getElementById('drwUName').textContent=name||'User';
+            document.getElementById('drwURole').textContent=roleLabel(role);
+            document.getElementById('drwRoleSec').style.display='block';
+            document.getElementById('drwMyRegs').style.display='flex';
+            if(role==='ORGANIZER'||role==='ADMIN'){
+                document.getElementById('drwHostEvts').style.display='flex';
+                document.getElementById('drwCreate').style.display='flex';
+            }
+            if(role==='ADMIN')document.getElementById('drwAdmin').style.display='flex';
+        } else {
+            document.getElementById('gActs').style.display='flex';
+            document.getElementById('uActs').style.display='none';
+            document.getElementById('drwGuest').style.display='block';
+            document.getElementById('drwUser').classList.remove('vis');
         }
     }
 
-    document.getElementById('loadMoreBtn').addEventListener('click', () => { currentPage++; loadPage(currentPage); });
+    async function loadAuth(){
+        const tok=getAT();
+        if(!tok){paintNav();return}
+        try{
+            const res=await apiFetch('/api/v1/auth/roleOfMe');
+            if(!res||!res.ok){clearT();paintNav();return}
+            const d=await res.json();
+            auth={on:true,role:roleOf(d.role,d.status),name:d.name||'User'};
+            paintNav();
+        }catch{clearT();paintNav()}
+    }
 
-    document.querySelectorAll('.cat-pill').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.cat-pill').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            const label = btn.textContent.trim().toLowerCase();
-            document.querySelectorAll('#eventsGrid .event-card').forEach(card => {
-                if (label.includes('all')) { card.style.display = ''; return; }
-                const cat = card.dataset.category || '';
-                card.style.display = label.includes(cat) || cat.includes(label.replace(/[^a-z]/g,'')) ? '' : 'none';
+    function doLogout(){clearT();window.location.href='/'}
+    window.doLogout=doLogout;
+
+    /* ══ EVENT CARDS ══ */
+    const API='/api/v1/event';
+    let page=0,done=false;
+    const PG=12;
+    const CGRAD={tech:'gt','ai-ml':'gt',hackathon:'gt',music:'gm',culture:'gm',startup:'gs',science:'gs',gaming:'gg',sports:'gg',design:'gd',workshop:'gd',networking:'gd'};
+    const CBADGE={tech:'bt','ai-ml':'bt',hackathon:'bt',music:'bm',culture:'bm',startup:'bs',science:'bs',gaming:'bg',sports:'bg',design:'bd',workshop:'bd'};
+    const CEMJ={tech:'💻','ai-ml':'🤖',hackathon:'⚡',music:'🎵',startup:'🚀',gaming:'🎮',design:'🎨',workshop:'🛠',sports:'🏆',culture:'🎭',networking:'🤝',science:'🔬',robotics:'🦾',food:'🍕'};
+
+    function upcoming(ev){const t=new Date();t.setHours(0,0,0,0);return new Date(ev.eventDate+'T00:00:00')>=t}
+    function fmtD(d){if(!d)return'';return new Date(d+'T00:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}
+
+    function mkCard(ev){
+        const up=upcoming(ev);
+        const cat=(ev.category||'default').toLowerCase();
+        const gr=CGRAD[cat]||'gx',bd=CBADGE[cat]||'',em=CEMJ[cat]||'📅';
+        const paid=ev.ticketPrice!=null&&ev.ticketPrice>0;
+        const el=document.createElement('div');
+        el.className='ecard';el.dataset.category=cat;el.dataset.upcoming=up?'1':'0';el.dataset.eventId=ev.eventId;
+        const img=ev.bannerUrl
+            ?`<img src="${ev.bannerUrl}" alt="${ev.title}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\"ciph ${gr}\\">${em}</div>'">`
+            :`<div class="ciph ${gr}">${em}</div>`;
+        el.innerHTML=`
+    <div class="cimgw">${img}
+      <span class="ebadge ${bd}">${ev.category||'Event'}</span>
+      ${!up?'<span class="past-tag">Past</span>':''}
+    </div>
+    <div class="einfo">
+      <h3 class="etitle">${ev.title}</h3>
+      <div class="emeta">
+        <div class="emr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>${fmtD(ev.eventDate)}</div>
+        <div class="emr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>${ev.location||'—'}</div>
+      </div>
+      <div class="efoot">
+        <span class="ptag${paid?'':' free'}">${paid?'💳 ₹'+parseFloat(ev.ticketPrice).toLocaleString('en-IN'):'🎁 Free'}</span>
+        <a class="ccta" href="/registerForEvent/${ev.eventId}">${up?'Register':'Details'}
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </a>
+      </div>
+    </div>`;
+        el.addEventListener('click',e=>{if(e.target.closest('.ccta'))return;window.location.href=`/registerForEvent/${ev.eventId}`});
+        return el;
+    }
+
+    async function loadPage(pg){
+        const btn=document.getElementById('lmbtn'),wrap=document.getElementById('lmw');
+        if(btn){btn.classList.add('ld');btn.disabled=true}
+        try{
+            const res=await fetch(`${API}/getAllApprovedEvents?page=${pg}&size=${PG}&sortBy=eventDate`);
+            if(!res.ok)throw new Error();
+            const data=await res.json();
+            const evs=data.content||[];
+            const grid=document.getElementById('egrid');
+            if(pg===0){
+                grid.innerHTML='';
+                const up=evs.filter(upcoming).sort((a,b)=>new Date(a.eventDate)-new Date(b.eventDate));
+                const past=evs.filter(e=>!upcoming(e)).sort((a,b)=>new Date(b.eventDate)-new Date(a.eventDate));
+                const all=[...up,...past];
+                if(all.length===0){
+                    grid.innerHTML='<div class="empty"><div class="empty-ic">🗓</div><div class="empty-t">No events yet</div><p class="empty-s">Be the first — host an event for your club!</p></div>';
+                } else {
+                    all.forEach(ev=>grid.appendChild(mkCard(ev)));
+                    countUp('stE',up.length,'+');
+                }
+            } else {
+                evs.forEach(ev=>grid.appendChild(mkCard(ev)));
+            }
+            done=data.last;
+            if(wrap)wrap.style.display=done?'none':'block';
+        }catch{
+            if(pg===0){
+                document.getElementById('egrid').innerHTML='<div class="empty"><div class="empty-ic">⚠️</div><div class="empty-t">Couldn\'t load events</div><p class="empty-s">Check your connection and refresh.</p></div>';
+            } else toast('Failed to load more events','error');
+        }finally{
+            if(btn){btn.classList.remove('ld');btn.disabled=false}
+        }
+    }
+
+    document.getElementById('lmbtn').addEventListener('click',()=>{page++;loadPage(page)});
+
+    /* ══ CATEGORY FILTER ══ */
+    document.querySelectorAll('.cpill').forEach(b=>{
+        b.addEventListener('click',()=>{
+            document.querySelectorAll('.cpill').forEach(x=>x.classList.remove('on'));
+            b.classList.add('on');
+            const cat=b.dataset.cat;
+            document.querySelectorAll('#egrid .ecard').forEach(c=>{
+                if(cat==='all'){c.style.display='';return}
+                const cc=c.dataset.category||'';
+                c.style.display=(cc===cat||cc.includes(cat)||cat.includes(cc))?'':'none';
             });
         });
     });
 
-    /* SSE live updates — EventSummaryResponse no longer has ticketsAvailable,
-       so we only handle new-event broadcasts here. The ticket-update stream
-       (if still sent) is ignored gracefully. */
-    function addNewEventCard(ev) {
-        if (document.querySelector(`#eventsGrid .event-card[data-event-id="${ev.eventId}"]`)) return;
-        allEvents.unshift(ev);
-        const card = buildCard(ev);
-        const grid = document.getElementById('eventsGrid');
-        if (isUpcoming(ev)) {
-            const firstPast = grid.querySelector('.event-card[data-upcoming="0"]');
-            firstPast ? grid.insertBefore(card, firstPast) : grid.prepend(card);
-        } else { grid.append(card); }
-        card.style.opacity   = '0';
-        card.style.transform = 'translateY(-16px)';
-        card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-        requestAnimationFrame(() => requestAnimationFrame(() => {
-            card.style.opacity   = '1';
-            card.style.transform = 'translateY(0)';
-        }));
-    }
+    /* ══ LIVE SSE ══ */
+    try{
+        const es=new EventSource('/api/v1/event/ticket-updates');
+        es.addEventListener('new-event',e=>{
+            try{
+                const ev=JSON.parse(e.data);
+                const grid=document.getElementById('egrid');
+                if(grid.querySelector(`[data-event-id="${ev.eventId}"]`))return;
+                const card=mkCard(ev);
+                card.style.cssText='opacity:0;transform:translateY(-14px);transition:opacity .5s,transform .5s';
+                const fp=grid.querySelector('[data-upcoming="0"]');
+                fp?grid.insertBefore(card,fp):grid.prepend(card);
+                requestAnimationFrame(()=>requestAnimationFrame(()=>{card.style.opacity='1';card.style.transform='translateY(0)'}));
+                toast(`New event: ${ev.title}`,'success');
+            }catch{}
+        });
+        es.onerror=()=>{};
+    }catch{}
 
-    function initLiveUpdates() {
-        const es = new EventSource('/api/v1/event/ticket-updates');
-        es.onmessage = () => {}; /* ticket count updates not shown on summary cards */
-        es.addEventListener('new-event', (e) => { try { addNewEventCard(JSON.parse(e.data)); } catch(err){} });
-        es.onerror = () => {};
-    }
-
+    /* ══ BOOT ══ */
     loadPage(0);
-    initLiveUpdates();
+    loadAuth();
 </script>
-
-<style>
-    /* ── Price badge on event cards ── */
-    .price-meta-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        padding: 3px 10px;
-        border-radius: 50px;
-        font-size: 12px;
-        font-weight: 700;
-        letter-spacing: 0.2px;
-    }
-    .price-meta-badge--free {
-        background: #d1fae5;
-        color: #065f46;
-        border: 1px solid #a7f3d0;
-    }
-    .price-meta-badge--paid {
-        background: #fef3c7;
-        color: #92400e;
-        border: 1px solid #fde68a;
-    }
-</style>
-
 </body>
 </html>

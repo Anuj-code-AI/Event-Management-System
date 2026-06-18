@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class HostRequest {
+public class  HostRequest {
     @Email(message = "Invalid email format")
     private String collegeEmail;
 

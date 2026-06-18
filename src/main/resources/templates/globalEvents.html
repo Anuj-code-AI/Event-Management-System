@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Explore and RSVP to all campus events, conferences, sports meets, and music nights happening at your university.">
+    <title>Global Events Calendar | CampusHive</title>
+
+    <!-- CSS Stylesheet -->
+    <link rel="stylesheet" href="css/landingPage.css">
+    <link rel="stylesheet" href="css/gloablEvents.css">
+</head>
+<body>
+
+<!-- Header Navigation -->
+<header class="scrolled-dark" id="main-header">
+    <div class="container nav-container">
+        <a href="landingPage" class="logo" style="color: var(--text-light);" id="header-logo">
+            <div class="logo-icon" style="background-color: var(--accent); color: var(--primary);">C</div>
+            Campus<span>Hive</span>
+        </a>
+
+        <nav>
+            <ul class="nav-menu">
+                <li><a href="globalEvent" class="nav-link active" style="color: var(--text-light);" id="nav-events">Events</a></li>
+                <li><a href="login" class="nav-link" id="nav-communities">Communities</a></li>
+                <li><a href="login" class="nav-link" id="nav-collab">Collaboration</a></li>
+                <li><a href="aboutUs" class="nav-link" id="nav-about">About Us</a></li>
+            </ul>
+        </nav>
+
+        <div class="nav-actions">
+            <a href="login" class="btn btn-outline-gold" id="btn-nav-login">Sign In</a>
+            <a href="register" class="btn btn-accent" id="btn-nav-register">Get Started</a>
+        </div>
+    </div>
+</header>
+
+<!-- Title/Hero Section -->
+<section class="events-hero">
+    <div class="container">
+        <h1>Global Events Directory</h1>
+        <p>Discover technical seminars, cultural festivals, student elections, workshops, and music shows happening across the university network.</p>
+    </div>
+</section>
+
+<!-- Filter Bar -->
+<section class="search-filter-section">
+    <div class="container search-filter-grid">
+        <!-- Search -->
+        <div class="search-box">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" class="search-input" id="events-search" placeholder="Search events by keyword..." oninput="filterCards()">
+        </div>
+
+        <!-- Tags -->
+        <div class="filter-tags">
+            <button class="filter-btn active" onclick="setCategory('all', this)">All Categories</button>
+            <button class="filter-btn" onclick="setCategory('tech', this)">Technology</button>
+            <button class="filter-btn" onclick="setCategory('music', this)">Music</button>
+            <button class="filter-btn" onclick="setCategory('business', this)">Business</button>
+            <button class="filter-btn" onclick="setCategory('arts', this)">Arts & Culture</button>
+        </div>
+    </div>
+</section>
+
+<!-- Catalog Grid -->
+<section style="background-color: var(--bg-light);">
+    <div class="container">
+        <div class="catalog-grid" id="catalog-container">
+
+            <!-- Card 1 -->
+            <article class="event-card event-item-card" data-category="tech">
+                <div class="event-img">
+                    <div style="width: 100%; height: 100%; background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%); opacity: 0.85;"></div>
+                    <span class="event-badge">Technology</span>
+                </div>
+                <div class="event-info">
+                    <div class="event-date">Oct 18, 2026 • 9:00 AM</div>
+                    <h3>Annual HackFest 2026</h3>
+                    <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.25rem;">Collaborative 36-hour code sprint to build campus utility apps.</p>
+                    <a href="login.html" class="btn btn-primary" style="width: 100%; margin-bottom: 1rem;">Get Tickets</a>
+                    <div class="event-meta">
+                        <span class="event-loc">CS Lab 3</span>
+                        <span class="event-price">Free</span>
+                    </div>
+                </div>
+            </article>
+
+            <!-- Card 2 -->
+            <article class="event-card event-item-card" data-category="music">
+                <div class="event-img">
+                    <div style="width: 100%; height: 100%; background: linear-gradient(135deg, var(--primary-light) 0%, #4A5D78 100%); opacity: 0.85;"></div>
+                    <span class="event-badge">Music</span>
+                </div>
+                <div class="event-info">
+                    <div class="event-date">Dec 05, 2026 • 6:30 PM</div>
+                    <h3>Winter Symphony & Jazz Night</h3>
+                    <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.25rem;">An evening showcase featuring the University Ensemble and guest artists.</p>
+                    <a href="login.html" class="btn btn-primary" style="width: 100%; margin-bottom: 1rem;">Get Tickets</a>
+                    <div class="event-meta">
+                        <span class="event-loc">Campus Amphitheater</span>
+                        <span class="event-price">$12</span>
+                    </div>
+                </div>
+            </article>
+
+            <!-- Card 3 -->
+            <article class="event-card event-item-card" data-category="business">
+                <div class="event-img">
+                    <div style="width: 100%; height: 100%; background: linear-gradient(135deg, #1A365D 0%, var(--accent-hover) 100%); opacity: 0.85;"></div>
+                    <span class="event-badge">Business</span>
+                </div>
+                <div class="event-info">
+                    <div class="event-date">Nov 12, 2026 • 2:00 PM</div>
+                    <h3>Academic Leadership Seminar</h3>
+                    <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.25rem;">Keynote speeches from industry founders on career paths and growth.</p>
+                    <a href="login.html" class="btn btn-primary" style="width: 100%; margin-bottom: 1rem;">Get Tickets</a>
+                    <div class="event-meta">
+                        <span class="event-loc">Main Auditorium</span>
+                        <span class="event-price">Free</span>
+                    </div>
+                </div>
+            </article>
+
+            <!-- Card 4 -->
+            <article class="event-card event-item-card" data-category="tech">
+                <div class="event-img">
+                    <div style="width: 100%; height: 100%; background: linear-gradient(135deg, #1E293B 0%, var(--accent-color) 100%); opacity: 0.85;"></div>
+                    <span class="event-badge">Technology</span>
+                </div>
+                <div class="event-info">
+                    <div class="event-date">Sep 22, 2026 • 4:00 PM</div>
+                    <h3>Inter-College Chess Championship</h3>
+                    <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.25rem;">Compete with students from neighboring institutions in classical and blitz.</p>
+                    <a href="login.html" class="btn btn-primary" style="width: 100%; margin-bottom: 1rem;">Get Tickets</a>
+                    <div class="event-meta">
+                        <span class="event-loc">Student Lounge</span>
+                        <span class="event-price">Free</span>
+                    </div>
+                </div>
+            </article>
+
+            <!-- Card 5 -->
+            <article class="event-card event-item-card" data-category="arts">
+                <div class="event-img">
+                    <div style="width: 100%; height: 100%; background: linear-gradient(135deg, var(--accent-hover) 0%, var(--primary-color) 100%); opacity: 0.85;"></div>
+                    <span class="event-badge">Arts & Culture</span>
+                </div>
+                <div class="event-info">
+                    <div class="event-date">Oct 30, 2026 • 11:00 AM</div>
+                    <h3>Creative Arts Exhibition</h3>
+                    <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.25rem;">Featuring beautiful abstract sculptures, live acrylic painting, and student films.</p>
+                    <a href="login.html" class="btn btn-primary" style="width: 100%; margin-bottom: 1rem;">Get Tickets</a>
+                    <div class="event-meta">
+                        <span class="event-loc">Fine Arts Gallery</span>
+                        <span class="event-price">Free</span>
+                    </div>
+                </div>
+            </article>
+
+            <!-- Card 6 -->
+            <article class="event-card event-item-card" data-category="business">
+                <div class="event-img">
+                    <div style="width: 100%; height: 100%; background: linear-gradient(135deg, var(--primary-color) 0%, #3B82F6 100%); opacity: 0.85;"></div>
+                    <span class="event-badge">Business</span>
+                </div>
+                <div class="event-info">
+                    <div class="event-date">Nov 20, 2026 • 5:00 PM</div>
+                    <h3>Startup Pitch Arena 2026</h3>
+                    <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.25rem;">Pitch your early-stage business models to local venture capitalists for seed funding.</p>
+                    <a href="login.html" class="btn btn-primary" style="width: 100%; margin-bottom: 1rem;">Get Tickets</a>
+                    <div class="event-meta">
+                        <span class="event-loc">MBA Seminar Hall</span>
+                        <span class="event-price">$5</span>
+                    </div>
+                </div>
+            </article>
+
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer style="background-color: var(--primary-color);">
+    <div class="container footer-bottom" style="border-top: none; padding-top: 2rem; margin-top: 0;">
+        <div>&copy; 2026 CampusHive Inc. All Rights Reserved.</div>
+        <div>Designed with premium university standards.</div>
+    </div>
+</footer>
+
+<!-- Basic catalog scripting -->
+<script>
+    let activeCategory = 'all';
+
+    function setCategory(cat, btn) {
+        activeCategory = cat;
+
+        // Update active button styles
+        const btns = document.querySelectorAll('.filter-btn');
+        btns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        filterCards();
+    }
+
+    function filterCards() {
+        const query = document.getElementById('events-search').value.toLowerCase();
+        const cards = document.querySelectorAll('.event-item-card');
+
+        cards.forEach(card => {
+            const title = card.querySelector('h3').textContent.toLowerCase();
+            const desc = card.querySelector('p').textContent.toLowerCase();
+            const cat = card.getAttribute('data-category');
+
+            const matchesQuery = title.includes(query) || desc.includes(query);
+            const matchesCategory = activeCategory === 'all' || cat === activeCategory;
+
+            if (matchesQuery && matchesCategory) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+</script>
+</body>
+</html>

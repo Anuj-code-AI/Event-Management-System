@@ -1,15 +1,21 @@
 package org.anuj.EvenTAura.service;
 
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.anuj.EvenTAura.dto.EventSummaryResponse;
 import org.anuj.EvenTAura.dto.HostRequest;
-import org.anuj.EvenTAura.exception.EventNotExistException;
-import org.anuj.EvenTAura.exception.UserNotFoundException;
+import org.anuj.EvenTAura.exception.AllExceptions.AccessDeniedException;
+import org.anuj.EvenTAura.exception.AllExceptions.EventNotExistException;
+import org.anuj.EvenTAura.exception.AllExceptions.UserNotFoundException;
 import org.anuj.EvenTAura.model.*;
+import org.anuj.EvenTAura.model.enums.EventStatus;
+import org.anuj.EvenTAura.model.enums.SystemRole;
+import org.anuj.EvenTAura.model.enums.HostStatus;
 import org.anuj.EvenTAura.repository.EventRepository;
-import org.anuj.EvenTAura.repository.HostProfileRepository;
+import org.anuj.EvenTAura.repository.HostApplicationRepository;
 import org.anuj.EvenTAura.repository.UserRepository;
+import org.anuj.EvenTAura.security.CustomUserDetails;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
@@ -18,106 +24,133 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class HostServiceImpl implements HostService{
-    private final HostProfileRepository hostProfileRepository;
+    private final HostApplicationRepository hostApplicationRepository;
     private final UserRepository userRepository;
     private final EventRepository eventRepository;
 
     @Override
-    public void applyForHost(Authentication authentication, HostRequest request) {
-        User user = userRepository.findByEmail(authentication.getName())
-                .orElseThrow(()-> new UserNotFoundException("User not found"));
-        if (hostProfileRepository.existsByUserAndStatus(user,Status.PENDING)) {
+    @Transactional
+    public void applyForHost(HostRequest request, Authentication authentication) {
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        User user = userRepository.findByUserId(userDetails.getId())
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        if (hostApplicationRepository.existsByUserAndStatus(user, HostStatus.PENDING)) {
             throw new RuntimeException("Application already pending");
         }
-
-        if (hostProfileRepository.existsByUserAndStatus(user,Status.APPROVED)) {
+        if (hostApplicationRepository.existsByUserAndStatus(user, HostStatus.APPROVED)) {
             throw new RuntimeException("Already a host");
         }
-
-        HostProfile profile = new HostProfile();
-        profile.setUser(user);
-        profile.setCollegeEmail(request.getCollegeEmail());
-        profile.setPhone(request.getPhone());
-        profile.setStatus(Status.PENDING);
-
-        hostProfileRepository.save(profile);
+        String[] domain = request.getCollegeEmail().split("@");
+        if(!domain[0].equals(user.getUniversity().getDomain())){
+            throw new RuntimeException("Login with college email");
+        }
+        HostApplication application = new HostApplication();
+        application.setUser(user);
+        application.setCollegeEmail(request.getCollegeEmail());
+        application.setPhone(request.getPhone());
+        application.setStatus(HostStatus.PENDING);
     }
 
     @Override
+    @Transactional
     public void approveHost(Long hostId, Authentication authentication) {
-        User user = userRepository.findByEmail(authentication.getName())
-                .orElseThrow(()-> new UserNotFoundException("No user exist"));
-        if(!user.getRole().equals(Role.ROLE_ADMIN)){
-            throw new RuntimeException("You are not a admin. You can't approve request");
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        User hod = userRepository.findByUserId(userDetails.getId())
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+       if(!hod.getSystemRole().equals(SystemRole.HOD)){
+            throw new AccessDeniedException("Restricted Feature");
         }
-
-        HostProfile profile = hostProfileRepository.findById(hostId)
+        HostApplication profile = hostApplicationRepository.findById(hostId)
                 .orElseThrow(() -> new RuntimeException("Not found"));
-
-        profile.setStatus(Status.APPROVED);
-        hostProfileRepository.save(profile);
+        if(!profile.getUser().getUniversity().equals(hod.getUniversity())){
+            throw new AccessDeniedException(
+                    "You cannot approve host application from another university"
+            );
+        }
+        profile.setStatus(HostStatus.APPROVED);
     }
 
     @Override
     public void rejectHost(Long hostId, Authentication authentication) {
-        User user = userRepository.findByEmail(authentication.getName())
-                .orElseThrow(()-> new UserNotFoundException("No user exist"));
-        if(!user.getRole().equals(Role.ROLE_ADMIN)){
-            throw new RuntimeException("You are not a admin. You can't approve request");
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        User hod = userRepository.findByUserId(userDetails.getId())
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        if(!hod.getSystemRole().equals(SystemRole.HOD)){
+            throw new AccessDeniedException(
+                    "You can't reject application you are not a hod"
+            );
         }
-        HostProfile profile = hostProfileRepository.findById(hostId)
+        HostApplication profile = hostApplicationRepository.findById(hostId)
                 .orElseThrow(() -> new RuntimeException("Not found"));
-
-        profile.setStatus(Status.REJECTED);
-        hostProfileRepository.save(profile);
-    }
-
-    @Override
-    public List<HostProfile> pendingHost(Authentication authentication) {
-        User user = userRepository.findByEmail(authentication.getName())
-                .orElseThrow(()-> new UserNotFoundException("No user exist"));
-        if(!user.getRole().equals(Role.ROLE_ADMIN)){
-            throw new RuntimeException("You are not a admin.");
+        if(!profile.getUser().getUniversity().equals(hod.getUniversity())){
+            throw new AccessDeniedException(
+                    "You cannot reject host application from another university"
+            );
         }
-        List<HostProfile> profiles = hostProfileRepository.findByStatus(Status.PENDING);
-        return profiles;
+        profile.setStatus(HostStatus.REJECTED);
+        hostApplicationRepository.save(profile);
     }
 
     @Override
+    public List<HostApplication> pendingHost(Authentication authentication) {
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        User hod = userRepository.findByUserId(userDetails.getId())
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        if(!hod.getSystemRole().equals(SystemRole.HOD)){
+            throw new AccessDeniedException("Restricted Feature");
+        }
+        return hostApplicationRepository.findByUser_UniversityAndStatus(hod.getUniversity(),HostStatus.PENDING);
+    }
+
+    @Override
+    @Transactional
     public void approveEvent(Long eventId, Authentication authentication) {
-        User user = userRepository.findByEmail(authentication.getName())
-                .orElseThrow(()-> new UserNotFoundException("No user exist"));
-        if(!user.getRole().equals(Role.ROLE_ADMIN)){
-            throw new RuntimeException("You are not a admin. You can't approve request");
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        User hod = userRepository.findByUserId(userDetails.getId())
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        if(!hod.getSystemRole().equals(SystemRole.HOD)){
+            throw new AccessDeniedException("Restricted Feature");
         }
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(()->new EventNotExistException("Event not found"));
+        if(!event.getUniversity().equals(hod.getUniversity())){
+            throw new AccessDeniedException(
+                    "You cannot approve events from another university"
+            );
+        }
         event.setEventStatus(EventStatus.APPROVED);
-        eventRepository.save(event);
     }
 
     @Override
+    @Transactional
     public void rejectEvent(Long eventId, Authentication authentication) {
-        User user = userRepository.findByEmail(authentication.getName())
-                .orElseThrow(()-> new UserNotFoundException("No user exist"));
-        if(!user.getRole().equals(Role.ROLE_ADMIN)){
-            throw new RuntimeException("You are not a admin. You can't approve request");
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        User hod = userRepository.findByUserId(userDetails.getId())
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        if(!hod.getSystemRole().equals(SystemRole.HOD)){
+            throw new AccessDeniedException("Restricted Feature");
         }
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(()->new EventNotExistException("Event not found"));
-        event.setEventStatus(EventStatus.REJECTED);
-        eventRepository.save(event);
+        if(!event.getUniversity().equals(hod.getUniversity())){
+            throw new AccessDeniedException(
+                    "You cannot approve events from another university"
+            );
+        }
+        event.setEventStatus(EventStatus.APPROVED);
     }
 
     @Override
     public List<EventSummaryResponse> pendingEvent(Authentication authentication) {
-        User user = userRepository.findByEmail(authentication.getName())
-                .orElseThrow(()-> new UserNotFoundException("No user exist"));
-        if(!user.getRole().equals(Role.ROLE_ADMIN)){
-            throw new RuntimeException("You are not a admin. You can't approve request");
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        User hod = userRepository.findByUserId(userDetails.getId())
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        if(!hod.getSystemRole().equals(SystemRole.HOD)){
+            throw new AccessDeniedException("Restricted Feature");
         }
-        List<Event> events = eventRepository.findByEventStatus(EventStatus.PENDING);
-        List<EventSummaryResponse> response = events.stream()
+        List<Event> events = eventRepository.findByEventStatusAndUniversity(EventStatus.PENDING, hod.getUniversity());
+        return events.stream()
                 .map(event -> new EventSummaryResponse(
                         event.getEventId(),
                         event.getTitle(),
@@ -129,40 +162,42 @@ public class HostServiceImpl implements HostService{
                         event.getEventStatus()
                 ))
                 .toList();
-        return response;
     }
 
     @Override
-    public List<HostProfile> approvedHost(Authentication authentication) {
-        User user = userRepository.findByEmail(authentication.getName())
-                .orElseThrow(()-> new UserNotFoundException("No user exist"));
-        if(!user.getRole().equals(Role.ROLE_ADMIN)){
-            throw new RuntimeException("You are not a admin.");
+    public List<HostApplication> approvedHost(Authentication authentication) {
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        User hod = userRepository.findByUserId(userDetails.getId())
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        if(!hod.getSystemRole().equals(SystemRole.HOD)){
+            throw new AccessDeniedException("Restricted Feature");
         }
-        List<HostProfile> profiles = hostProfileRepository.findByStatus(Status.APPROVED);
-        return profiles;
+
+        return hostApplicationRepository.findByUser_UniversityAndStatus(hod.getUniversity(),HostStatus.APPROVED);
     }
 
     @Override
-    public List<HostProfile> rejectedHost(Authentication authentication) {
-        User user = userRepository.findByEmail(authentication.getName())
-                .orElseThrow(()-> new UserNotFoundException("No user exist"));
-        if(!user.getRole().equals(Role.ROLE_ADMIN)){
-            throw new RuntimeException("You are not a admin.");
+    public List<HostApplication> rejectedHost(Authentication authentication) {
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        User hod = userRepository.findByUserId(userDetails.getId())
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        if(!hod.getSystemRole().equals(SystemRole.HOD)){
+            throw new AccessDeniedException("Restricted Feature");
         }
-        List<HostProfile> profiles = hostProfileRepository.findByStatus(Status.REJECTED);
-        return profiles;
+        return hostApplicationRepository.findByUser_UniversityAndStatus(hod.getUniversity(),HostStatus.REJECTED);
+
     }
 
     @Override
     public List<EventSummaryResponse> approvedEvent(Authentication authentication) {
-        User user = userRepository.findByEmail(authentication.getName())
-                .orElseThrow(()-> new UserNotFoundException("No user exist"));
-        if(!user.getRole().equals(Role.ROLE_ADMIN)){
-            throw new RuntimeException("You are not a admin. You can't approve request");
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        User hod = userRepository.findByUserId(userDetails.getId())
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        if(!hod.getSystemRole().equals(SystemRole.HOD)){
+            throw new AccessDeniedException("Restricted Feature");
         }
-        List<Event> events = eventRepository.findByEventStatus(EventStatus.APPROVED);
-        List<EventSummaryResponse> response = events.stream()
+        List<Event> events = eventRepository.findByEventStatusAndUniversity(EventStatus.APPROVED, hod.getUniversity());
+        return events.stream()
                 .map(event -> new EventSummaryResponse(
                         event.getEventId(),
                         event.getTitle(),
@@ -174,18 +209,18 @@ public class HostServiceImpl implements HostService{
                         event.getEventStatus()
                 ))
                 .toList();
-        return response;
     }
 
     @Override
     public List<EventSummaryResponse> rejectedEvent(Authentication authentication) {
-        User user = userRepository.findByEmail(authentication.getName())
-                .orElseThrow(()-> new UserNotFoundException("No user exist"));
-        if(!user.getRole().equals(Role.ROLE_ADMIN)){
-            throw new RuntimeException("You are not a admin. You can't approve request");
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        User hod = userRepository.findByUserId(userDetails.getId())
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        if(!hod.getSystemRole().equals(SystemRole.HOD)){
+            throw new AccessDeniedException("Restricted Feature");
         }
-        List<Event> events = eventRepository.findByEventStatus(EventStatus.REJECTED);
-        List<EventSummaryResponse> response = events.stream()
+        List<Event> events = eventRepository.findByEventStatusAndUniversity(EventStatus.REJECTED, hod.getUniversity());
+        return events.stream()
                 .map(event -> new EventSummaryResponse(
                         event.getEventId(),
                         event.getTitle(),
@@ -197,6 +232,5 @@ public class HostServiceImpl implements HostService{
                         event.getEventStatus()
                 ))
                 .toList();
-        return response;
     }
 }

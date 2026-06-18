@@ -1,7 +1,7 @@
 package org.anuj.EvenTAura.dto;
 
 import lombok.*;
-import org.anuj.EvenTAura.model.EventStatus;
+import org.anuj.EvenTAura.model.enums.EventStatus;
 
 import java.time.LocalDate;
 
@@ -13,7 +13,7 @@ public class EventSummaryResponse {
     private Long eventId;
     private String title;
     private String location;
-    private LocalDate eventDate;
+    private LocalDate lastRegistrationDate;
     private String bannerUrl;
     private String category;
     private Double ticketPrice;

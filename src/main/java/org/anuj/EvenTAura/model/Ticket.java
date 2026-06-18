@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.anuj.EvenTAura.model.enums.TicketStatus;
 
 import java.time.LocalDateTime;
 
@@ -13,6 +14,13 @@ import java.time.LocalDateTime;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Table(
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        columnNames = {"event_id", "user_id"}
+                )
+        }
+)
 public class Ticket {
 
     @Id

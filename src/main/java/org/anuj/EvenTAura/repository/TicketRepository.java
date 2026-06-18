@@ -25,4 +25,6 @@ WHERE t.user = :user
     long countByEventEventId(Long eventId);
     void deleteByEvent(Event event);
     Page<Ticket> findByEvent(Event event, Pageable pageable);
+    boolean existsByEventAndUser(Event event, User user);
+
 }

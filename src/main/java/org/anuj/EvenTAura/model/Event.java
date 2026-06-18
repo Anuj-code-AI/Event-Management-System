@@ -5,6 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.anuj.EvenTAura.model.enums.EventMode;
+import org.anuj.EvenTAura.model.enums.EventStatus;
+import org.anuj.EvenTAura.model.enums.ParticipationType;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -25,7 +28,9 @@ public class Event {
     private String description;
 
     private String location;
+    private String city;
 
+    private LocalDate lastRegistrationDate;
     private LocalDate eventDate;
     private LocalTime eventTime;
 
@@ -34,7 +39,7 @@ public class Event {
 
     private String bannerUrl;
     private String ticketUrl;
-    private String PaymentQrUrl;
+    private String paymentQrUrl;
 
     private Double ticketPrice;
 
@@ -44,7 +49,19 @@ public class Event {
     @ManyToOne
     private User user;
 
+    @ManyToOne
+    @JoinColumn(name = "university_id", nullable = false)
+    private University university;
+
     @Enumerated(EnumType.STRING)
     private EventStatus eventStatus;
 
+    @Enumerated(EnumType.STRING)
+    private ParticipationType participationType;
+
+    @Enumerated(EnumType.STRING)
+    private EventMode eventMode;
+
+    @Version
+    private Long version;
 }

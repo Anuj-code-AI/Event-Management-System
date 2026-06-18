@@ -3,7 +3,7 @@ package org.anuj.EvenTAura.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.anuj.EvenTAura.model.TicketStatus;
+import org.anuj.EvenTAura.model.enums.TicketStatus;
 
 import java.time.LocalDateTime;
 

@@ -5,6 +5,7 @@ import org.anuj.EvenTAura.model.Ticket;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 public class TicketMapper {
+
     public static TicketResponse toResponse(Ticket ticket){
         String qrUrl = ServletUriComponentsBuilder
                 .fromCurrentContextPath()

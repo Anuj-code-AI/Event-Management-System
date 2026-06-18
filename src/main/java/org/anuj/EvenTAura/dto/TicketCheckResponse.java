@@ -2,7 +2,7 @@ package org.anuj.EvenTAura.dto;
 
 
 import lombok.AllArgsConstructor;
-import org.anuj.EvenTAura.model.TicketStatus;
+import org.anuj.EvenTAura.model.enums.TicketStatus;
 import lombok.*;
 @Data
 @NoArgsConstructor

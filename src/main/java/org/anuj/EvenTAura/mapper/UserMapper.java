@@ -1,28 +1,49 @@
 package org.anuj.EvenTAura.mapper;
 
 import lombok.RequiredArgsConstructor;
-import org.anuj.EvenTAura.dto.UserRequest;
+import org.anuj.EvenTAura.dto.RegisterRequest;
 import org.anuj.EvenTAura.dto.UserResponse;
+import org.anuj.EvenTAura.dto.UserUpdateRequest;
+import org.anuj.EvenTAura.model.University;
 import org.anuj.EvenTAura.model.User;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.anuj.EvenTAura.model.enums.AuthProvider;
+import org.anuj.EvenTAura.model.enums.SystemRole;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
 public class UserMapper {
 
-    private final PasswordEncoder passwordEncoder;
-
-    public UserResponse toResponse(User user){
-        return new UserResponse(user.getName(), user.getEmail());
+    public static User toEntity(RegisterRequest request, University university){
+        User user = new User();
+        user.setName(request.getName());
+        user.setEmail(request.getEmail());
+        user.setPassword(request.getPassword());
+        user.setProvider(AuthProvider.LOCAL);
+        user.setUniversity(university);
+        user.setSystemRole(SystemRole.USER);
+        return user;
     }
 
-    public void updateUserfromRequest(UserRequest request, User user){
-        if(request.getName() != null){
+    public static UserResponse toResponse(User user){
+        return new UserResponse(user.getUserId(),
+                user.getName(),
+                user.getEmail(),
+                user.getSystemRole(),
+                user.getUniversity().getName(),
+                user.getProvider());
+    }
+
+    public static void toUpdatedEntity(User user, UserUpdateRequest request, University university){
+        if (request.getName() != null && !request.getName().isBlank()) {
             user.setName(request.getName());
         }
-        if(request.getPassword() != null){
-            user.setPassword(passwordEncoder.encode(request.getPassword()));
+        if (request.getUniversity() != null && !request.getUniversity().isBlank()) {
+            user.setUniversity(university);
+        }
+        if (request.getPassword() != null) {
+            user.setPassword(request.getPassword());
         }
     }
+
 }

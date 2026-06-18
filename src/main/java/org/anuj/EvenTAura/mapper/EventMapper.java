@@ -4,7 +4,7 @@ import org.anuj.EvenTAura.dto.EventRequest;
 import org.anuj.EvenTAura.dto.EventResponse;
 import org.anuj.EvenTAura.dto.EventUpdateRequest;
 import org.anuj.EvenTAura.model.Event;
-import org.anuj.EvenTAura.model.EventStatus;
+import org.anuj.EvenTAura.model.enums.EventStatus;
 import org.anuj.EvenTAura.model.User;
 
 public class EventMapper {
@@ -16,18 +16,23 @@ public class EventMapper {
         event.setTitle(req.getTitle());
         event.setDescription(req.getDescription());
         event.setLocation(req.getLocation());
+        event.setCity(req.getCity());
+        event.setLastRegistrationDate(req.getLastRegistrationDate());
         event.setEventDate(req.getEventDate());
         event.setEventTime(req.getEventTime());
-        event.setClub(req.getClub());
         event.setTotalTickets(req.getTotalTickets());
         event.setTicketsAvailable(req.getTicketsAvailable());
         event.setBannerUrl(req.getBannerUrl());
         event.setTicketUrl(req.getTicketUrl());
         event.setPaymentQrUrl(req.getPaymentQrUrl());
-        event.setTicketPrice(req.getTicketPrice());
         event.setCategory(req.getCategory());
+        event.setClub(req.getClub());
+        event.setTicketPrice(req.getTicketPrice());
         event.setUser(user);
+        event.setUniversity(user.getUniversity());
         event.setEventStatus(EventStatus.PENDING);
+        event.setParticipationType(req.getParticipationType());
+        event.setEventMode(req.getEventMode());
         return event;
     }
 
@@ -38,6 +43,8 @@ public class EventMapper {
                 event.getTitle(),
                 event.getDescription(),
                 event.getLocation(),
+                event.getCity(),
+                event.getLastRegistrationDate(),
                 event.getEventDate(),
                 event.getEventTime(),
                 event.getTotalTickets(),
@@ -48,7 +55,11 @@ public class EventMapper {
                 event.getTicketPrice(),
                 event.getCategory(),
                 event.getClub(),
-                event.getUser()
+                event.getUser(),
+                event.getUniversity(),
+                event.getEventStatus(),
+                event.getParticipationType(),
+                event.getEventMode()
         );
     }
 
@@ -62,14 +73,17 @@ public class EventMapper {
         if(req.getLocation() != null){
             event.setLocation(req.getLocation());
         }
+        if(req.getCity() != null){
+            event.setCity(req.getCity());
+        }
+        if(req.getLastRegistrationDate() != null){
+            event.setLastRegistrationDate(req.getLastRegistrationDate());
+        }
         if(req.getEventDate() != null){
             event.setEventDate(req.getEventDate());
         }
         if(req.getEventTime() != null){
             event.setEventTime(req.getEventTime());
-        }
-        if(req.getClub() != null){
-            event.setClub(req.getClub());
         }
         if(req.getTotalTickets() != null){
             event.setTotalTickets(req.getTotalTickets());
@@ -92,5 +106,15 @@ public class EventMapper {
         if(req.getCategory() != null){
             event.setCategory(req.getCategory());
         }
+        if(req.getClub() != null){
+            event.setClub(req.getClub());
+        }
+        if(req.getParticipationType() != null){
+            event.setParticipationType(req.getParticipationType());
+        }
+        if(req.getEventMode() != null){
+            event.setEventMode(req.getEventMode());
+        }
     }
+
 }

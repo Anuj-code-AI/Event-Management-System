@@ -1,13 +1,13 @@
 package org.anuj.EvenTAura.security;
 
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.anuj.EvenTAura.model.User;
+import org.anuj.EvenTAura.repository.UserRepository;
 import org.anuj.EvenTAura.util.JwtUtil;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -21,7 +21,9 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
+
     private final JwtUtil jwtUtil;
+    private final UserRepository userRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -31,27 +33,58 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String header = request.getHeader("Authorization");
 
-        if (header != null && header.startsWith("Bearer ")) {
-            String token = header.substring(7);
+        if (header == null || !header.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
-            try {
-                Claims claims = jwtUtil.parse(token);
-                String email = claims.getSubject();
-                String role = claims.get("role", String.class);
+        String token = header.substring(7);
+        Claims claims = jwtUtil.extractAllClaims(token);
 
-                UsernamePasswordAuthenticationToken auth =
-                        new UsernamePasswordAuthenticationToken(
-                                email,
-                                null,
-                                List.of(new SimpleGrantedAuthority("ROLE_" + role))
-                        );
+        if (claims == null) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("Invalid or expired token");
+            return;
+        }
 
-                SecurityContextHolder.getContext().setAuthentication(auth);
+        try {
+            // ✅ Extract from JWT
+            Long userId = Long.parseLong(claims.getSubject());
+            String email = claims.get("email", String.class);
+            List<String> roles = claims.get("roles", List.class);
 
-            } catch (JwtException e) {
-                // invalid token → ignore authentication
-                SecurityContextHolder.clearContext();
+            // ✅ Optional but IMPORTANT: validate user from DB
+            User user = userRepository.findById(userId).orElse(null);
+
+            if (user == null || !user.getIsActive()) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("User not found or inactive");
+                return;
             }
+
+            // ✅ Convert roles to authorities
+            List<SimpleGrantedAuthority> authorities = roles.stream()
+                    .map(SimpleGrantedAuthority::new)
+                    .toList();
+
+            // ✅ Build CustomUserDetails
+            CustomUserDetails userDetails =
+                    new CustomUserDetails(userId, email, authorities, user.getIsActive());
+
+            // ✅ Set authentication
+            UsernamePasswordAuthenticationToken auth =
+                    new UsernamePasswordAuthenticationToken(
+                            userDetails,
+                            null,
+                            authorities
+                    );
+
+            SecurityContextHolder.getContext().setAuthentication(auth);
+
+        } catch (Exception e) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("Invalid token structure");
+            return;
         }
 
         filterChain.doFilter(request, response);

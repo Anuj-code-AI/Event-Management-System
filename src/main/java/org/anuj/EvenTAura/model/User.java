@@ -3,11 +3,9 @@ package org.anuj.EvenTAura.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
+import org.anuj.EvenTAura.model.enums.AuthProvider;
+import org.anuj.EvenTAura.model.enums.SystemRole;
 
-import java.time.LocalDateTime;
-
-@Builder
 @Entity
 @Table(name="users")
 @AllArgsConstructor @NoArgsConstructor
@@ -22,12 +20,22 @@ public class User {
 
     @Column(unique = true,nullable = false)
     private String email;
+
     private String password;
 
     @Enumerated(EnumType.STRING)
-    private Role role;
+    @Column(nullable = false)
+    private SystemRole systemRole;
 
-    @CreationTimestamp
-    private LocalDateTime createdAt;
+    @ManyToOne
+    @JoinColumn(name = "university_id")
+    private University university;
+
+    @Column(nullable = false)
+    private Boolean isActive = true;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private AuthProvider provider;
 
 }
