@@ -160,20 +160,40 @@ public class EventServiceImpl implements EventService {
 
     // Get all global events
     @Override
-    public Page<EventSummaryResponse> getGlobalEvents(int page, int size) {
+    public Page<EventSummaryResponse> getGlobalEvents(
+            String query,
+            int page,
+            int size
+    ) {
         Sort sort = Sort.by("eventDate").ascending();
         Pageable pageable = PageRequest.of(page, size, sort);
-        return eventRepository.findByParticipationType(ParticipationType.PUBLIC, pageable)
-                .map(event -> new EventSummaryResponse(
-                        event.getEventId(),
-                        event.getTitle(),
-                        event.getLocation(),
-                        event.getLastRegistrationDate(),
-                        event.getBannerUrl(),
-                        event.getCategory(),
-                        event.getTicketPrice(),
-                        event.getEventStatus()
-                ));
+
+        Page<Event> events;
+
+        if (query == null || query.isBlank()) {
+            events = eventRepository.findByParticipationType(
+                    ParticipationType.PUBLIC,
+                    pageable
+            );
+        } else {
+            events = eventRepository
+                    .findByParticipationTypeAndTitleContainingIgnoreCase(
+                            ParticipationType.PUBLIC,
+                            query,
+                            pageable
+                    );
+        }
+
+        return events.map(event -> new EventSummaryResponse(
+                event.getEventId(),
+                event.getTitle(),
+                event.getLocation(),
+                event.getLastRegistrationDate(),
+                event.getBannerUrl(),
+                event.getCategory(),
+                event.getTicketPrice(),
+                event.getEventStatus()
+        ));
     }
 
     // Get all university events

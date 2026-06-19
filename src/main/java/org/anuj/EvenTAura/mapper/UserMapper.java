@@ -26,11 +26,15 @@ public class UserMapper {
     }
 
     public static UserResponse toResponse(User user){
+        String university = null;
+        if(user.getUniversity()!=null){
+            university = user.getUniversity().getName();
+        }
         return new UserResponse(user.getUserId(),
                 user.getName(),
                 user.getEmail(),
                 user.getSystemRole(),
-                user.getUniversity().getName(),
+                university,
                 user.getProvider());
     }
 

@@ -14,7 +14,7 @@ public interface EventService {
     Void cancelEvent(Long eventId, Authentication auth);
 
     EventResponse getEvent(Long eventId);
-    Page<EventSummaryResponse> getGlobalEvents(int page, int size);
+    Page<EventSummaryResponse> getGlobalEvents(String query, int page, int size);
     Page<EventSummaryResponse> getUniversityEvents(int page, int size, Authentication authentication);
     Page<EventSummaryResponse> getHostedEvents(int page,int size,Authentication auth);
     Page<EventSummaryResponse> getJoinedEvents(int page, int size, Authentication auth);

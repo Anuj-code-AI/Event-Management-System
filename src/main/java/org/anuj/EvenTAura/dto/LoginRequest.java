@@ -18,6 +18,6 @@ public class LoginRequest {
 
     @Schema(description = "User password (min 8 characters)", example = "********")
     @NotBlank
-    @Size(min = 8, message = "Password must be at least 8 characters")
+    @Size(min = 4, message = "Password must be at least 8 characters")
     private String password;
 }

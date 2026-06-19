@@ -55,19 +55,9 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/auth/**",
-                                        "/api/oauth2/**",
-                                        "/oauth2/**","/error",
-                                "/api/v1/event/ticket-updates",
-                                "/api/v1/event/getEvent/**",
-                                "/api/v1/event/getAllEvents/**","/v3/api-docs/**",
-                                "/swagger-ui/**",
-                                "/swagger-ui.html",
-                                "/api/v1/event/getAllEvents","/api/v1/event/getAllApprovedEvents/**","/api/v1/event/getAllApprovedEvents",
-                                "/registerForEvent/**","/hostedEvents/**","/adminPage","/moments","/campusEvents","/eventDetails/**","/indexTemp",
-                                "/","/login","/register","/favicon.ico","/favicon.ico/**"
-                                ,"/profile","/createEvent","/oauth","/aboutUs","/tickets","/customEvent","/becomeOrganizer",
-                                "/uploads/**","/css/**","/js/**","/images/**", "/api/v1/tickets/*/qr").permitAll()
+                        .requestMatchers("/favicon.ico","/favicon.ico/**","/css/**","/js/**","/images/**","/webjars/**",
+                                "/" , "/aboutUs" , "/contact" , "/login" , "/register" , "/home" , "/index" ,
+                                "/api/v1/auth/**" ,"/api/v1/event/global/**").permitAll()
                     .anyRequest().authenticated()
 
                 )

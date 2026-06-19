@@ -37,6 +37,7 @@ public class EventStartUpJob {
         User user = userRepository.findByEmail("admin@gmail.com")
                 .orElseGet(this::createUser);
         System.out.println("Name: " + user.getName());
+        System.out.println("Email: " + user.getEmail());
         System.out.println("Password: admin@1234");
     }
 

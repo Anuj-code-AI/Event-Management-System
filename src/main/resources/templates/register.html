@@ -1,277 +1,254 @@
 <!DOCTYPE html>
-<html lang="en">
+<html class="dark" lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Register your CampusHive profile. Join your college community, request event approvals, and volunteer for campus activities.">
-    <title>Register Profile | CampusHive Portal</title>
-
-    <!-- CSS Stylesheet -->
-    <link rel="stylesheet" href="css/landingPage.css">
-
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Register | CampusHive</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+            rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-error-container": "#ffdad6",
+                        "error": "#ffb4ab",
+                        "surface-container": "#171f1c",
+                        "error-container": "#93000a",
+                        "surface-container-low": "#131a17",
+                        "surface-bright": "#313d36",
+                        "secondary": "#7fc9a0",
+                        "on-secondary": "#08311c",
+                        "primary-fixed-dim": "#4edea3",
+                        "outline-variant": "#33453c",
+                        "surface-tint": "#4edea3",
+                        "on-tertiary-fixed-variant": "#0b513d",
+                        "on-tertiary-container": "#004231",
+                        "background": "#0a1310",
+                        "on-secondary-container": "#c2ecd4",
+                        "tertiary": "#95d3ba",
+                        "primary": "#4edea3",
+                        "surface-container-high": "#212a26",
+                        "outline": "#86948a",
+                        "secondary-fixed": "#c2ecd4",
+                        "on-primary-container": "#00422b",
+                        "inverse-primary": "#006c49",
+                        "tertiary-container": "#1f5b41",
+                        "surface-container-highest": "#2c3631",
+                        "on-tertiary": "#003829",
+                        "surface-container-lowest": "#05100c",
+                        "tertiary-fixed-dim": "#95d3ba",
+                        "surface-dim": "#0a1310",
+                        "on-secondary-fixed-variant": "#1d5235",
+                        "inverse-on-surface": "#22302a",
+                        "on-secondary-fixed": "#03210f",
+                        "inverse-surface": "#dcebe0",
+                        "secondary-container": "#1d5235",
+                        "surface": "#0a1310",
+                        "on-primary": "#003824",
+                        "on-error": "#690005",
+                        "on-surface": "#dcebe0",
+                        "primary-fixed": "#6ffbbe",
+                        "on-surface-variant": "#bbcabf",
+                        "secondary-fixed-dim": "#7fc9a0",
+                        "on-primary-fixed": "#002113",
+                        "on-tertiary-fixed": "#002117",
+                        "primary-container": "#10b981",
+                        "tertiary-fixed": "#b0f0d6",
+                        "on-background": "#dcebe0"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.5rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "24px",
+                        "xl": "40px",
+                        "2xl": "64px",
+                        "container-max": "1280px",
+                        "xs": "4px",
+                        "sm": "8px",
+                        "md": "16px",
+                        "margin-mobile": "16px",
+                        "base": "8px",
+                        "lg": "24px"
+                    },
+                    "fontFamily": {
+                        "body-sm": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "display-lg-mobile": ["Inter"],
+                        "title-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "headline-sm": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-md": ["30px", { "lineHeight": "38px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "display-lg-mobile": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "title-lg": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }]
+                    }
+                },
+            },
+        }
+    </script>
     <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
         body {
-            background-color: var(--bg-light);
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
+            background-color: #0a1310;
+            color: #dcebe0;
+            font-family: 'Inter', sans-serif;
         }
 
-        .auth-container {
-            display: grid;
-            grid-template-columns: 1.1fr 0.9fr;
-            flex-grow: 1;
-            min-height: calc(100vh - 80px);
-            margin-top: 80px;
+        .hero-mesh {
+            background-image: radial-gradient(at 0% 0%, hsla(158, 64%, 52%, 0.10) 0, transparent 50%),
+            radial-gradient(at 100% 100%, hsla(158, 64%, 52%, 0.08) 0, transparent 50%);
         }
 
-        .auth-sidebar {
-            background: radial-gradient(circle at 20% 30%, rgba(197, 162, 103, 0.15) 0%, rgba(10, 25, 47, 0) 80%), var(--primary-color);
-            color: var(--text-light);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            padding: 4rem;
-            border-right: 1px solid var(--accent-color);
-        }
-
-        .auth-sidebar h2 {
-            color: var(--text-light);
-            font-size: 2.5rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .auth-sidebar h2 span {
-            color: var(--accent-color);
-        }
-
-        .auth-sidebar p {
-            color: var(--text-light-muted);
-            font-size: 1.1rem;
-            line-height: 1.7;
-            margin-bottom: 3rem;
-        }
-
-        .benefit-item {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .benefit-icon {
-            width: 24px;
-            height: 24px;
-            border-radius: var(--radius-sm);
-            background-color: rgba(197, 162, 103, 0.15);
-            color: var(--accent-color);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .benefit-text h4 {
-            color: var(--text-light);
-            font-size: 1rem;
-            margin-bottom: 0.2rem;
-        }
-
-        .benefit-text p {
-            color: var(--text-light-muted);
-            font-size: 0.9rem;
-        }
-
-        .auth-form-wrapper {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 4rem;
-            background-color: var(--bg-light);
-        }
-
-        .auth-card {
-            width: 100%;
-            max-width: 440px;
-            background-color: var(--bg-white);
-            border: 1px solid var(--border-color-light);
-            border-radius: var(--radius-lg);
-            padding: 2.5rem;
-            box-shadow: var(--shadow-premium);
-        }
-
-        .auth-card h3 {
-            font-size: 1.75rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .auth-card p {
-            color: var(--text-muted);
-            font-size: 0.95rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .form-group {
-            margin-bottom: 1.1rem;
-        }
-
-        .form-label {
-            display: block;
-            font-family: var(--font-heading);
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: var(--primary-color);
-            margin-bottom: 0.4rem;
-        }
-
-        .form-input, .form-select {
-            width: 100%;
-            padding: 0.7rem 0.9rem;
-            border-radius: var(--radius-md);
-            border: 1px solid var(--border-color-light);
-            font-family: var(--font-sans);
-            font-size: 0.95rem;
+        input:focus {
             outline: none;
-            transition: var(--transition-fast);
-            background-color: #FAF9F6;
-        }
-
-        .form-input:focus, .form-select:focus {
-            border-color: var(--accent-color);
-            background-color: var(--bg-white);
-            box-shadow: 0 0 0 2px rgba(197, 162, 103, 0.15);
-        }
-
-        .auth-submit-btn {
-            width: 100%;
-            padding: 0.85rem;
-            font-size: 1rem;
-            margin-top: 1rem;
-        }
-
-        .auth-footer {
-            text-align: center;
-            margin-top: 1.5rem;
-            font-size: 0.9rem;
-            color: var(--text-muted);
-        }
-
-        .auth-footer a {
-            color: var(--accent-hover);
-            font-weight: 600;
-        }
-
-        .auth-footer a:hover {
-            text-decoration: underline;
-        }
-
-        @media (max-width: 1024px) {
-            .auth-container {
-                grid-template-columns: 1fr;
-            }
-            .auth-sidebar {
-                display: none;
-            }
-            .auth-form-wrapper {
-                padding: 2rem;
-            }
         }
     </style>
 </head>
-<body>
 
-<!-- Navigation Header -->
-<header class="scrolled" id="auth-header">
-    <div class="container nav-container">
-        <a href="landingPage" class="logo" id="auth-logo">
-            <div class="logo-icon">C</div>
-            Campus<span>Hive</span>
+<body class="dark overflow-x-hidden">
+<!-- Header -->
+<header class="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-md border-b border-outline-variant">
+    <div class="flex justify-between items-center h-16 px-md md:px-lg max-w-container-max mx-auto">
+        <a href="/" class="flex items-center gap-3">
+            <img src="/images/logo.png" alt="CampusHive Logo" class="w-10 h-10 object-contain"/>
+            <span class="text-xl font-bold tracking-tight">
+                <span class="text-white">Campus</span><span class="text-primary">Hive</span>
+            </span>
         </a>
-        <div class="nav-actions">
-            <a href="landingPage" class="btn btn-outline" style="padding: 0.5rem 1.2rem; font-size: 0.85rem;" id="btn-auth-back">Back to Site</a>
+        <div class="hidden md:flex gap-lg ml-auto items-center">
+            <a class="text-on-surface-variant hover:text-primary transition-colors text-body-sm" href="/contact">Contact</a>
+            <a class="text-on-surface-variant hover:text-primary transition-colors text-body-sm" href="/aboutUs">About Us</a>
+            <a class="text-primary font-semibold text-body-sm" href="/login">Sign In</a>
         </div>
     </div>
 </header>
 
-<!-- Split Auth View -->
-<div class="auth-container">
-
-    <!-- Left marketing panel -->
-    <div class="auth-sidebar">
-        <h2>Empowering student <span>communities</span></h2>
-        <p>Join the digital campus framework designed to maximize event reach, team organization, and student engagement.</p>
-
-        <!-- Benefit 1 -->
-        <div class="benefit-item">
-            <div class="benefit-icon">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+<main class="pt-16 min-h-screen flex items-center justify-center hero-mesh px-md py-2xl">
+    <div class="w-full max-w-md">
+        <div class="bg-surface-container border border-outline-variant rounded-xl shadow-2xl p-xl">
+            <div class="text-center mb-lg">
+                <h1 class="text-headline-md text-on-background mb-xs">Create your account</h1>
+                <p class="text-body-sm text-on-surface-variant">Join CampusHive and start managing campus events.</p>
             </div>
-            <div class="benefit-text">
-                <h4>Unified Calendering</h4>
-                <p>Instantly subscribe to campus cultural, technical, and executive events.</p>
-            </div>
-        </div>
 
-        <!-- Benefit 2 -->
-        <div class="benefit-item">
-            <div class="benefit-icon">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-            </div>
-            <div class="benefit-text">
-                <h4>Collaborative Roles</h4>
-                <p>Register as an Event Organizer to unlock project boards and checklists.</p>
-            </div>
-        </div>
-    </div>
+            <!-- Error banner -->
+            <div id="error-banner" class="hidden mb-md p-sm rounded-lg bg-error-container border border-error/30 text-on-error-container text-body-sm"></div>
 
-    <!-- Right credentials panel -->
-    <div class="auth-form-wrapper">
-        <div class="auth-card">
-            <h3>Create Profile</h3>
-            <p>Register your official university login below.</p>
+            <a href="/oauth2/authorization/google"
+               class="w-full flex items-center justify-center gap-sm border border-outline-variant hover:bg-surface-container-high text-on-surface font-semibold px-lg py-sm rounded-lg transition-all mb-md">
+                <svg class="w-5 h-5" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                    <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.5 6 29.5 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.5z"/>
+                    <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 16 19 13 24 13c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.5 6 29.5 4 24 4c-7.7 0-14.4 4.3-17.7 10.7z"/>
+                    <path fill="#4CAF50" d="M24 44c5.4 0 10.3-1.9 14.1-5.1l-6.5-5.5C29.5 35.4 26.9 36 24 36c-5.3 0-9.7-3.3-11.3-8l-6.6 5.1C9.5 39.6 16.2 44 24 44z"/>
+                    <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.2-4.2 5.6l6.5 5.5C40.9 36.5 44 30.9 44 24c0-1.3-.1-2.7-.4-3.5z"/>
+                </svg>
+                <span>Continue with Google</span>
+            </a>
 
-            <form onsubmit="event.preventDefault(); alert('Registration simulated! In a Spring Boot environment this will submit to /api/auth/register'); window.location.href='login.html';">
-                <div class="form-group">
-                    <label class="form-label" for="reg-name">Full Name</label>
-                    <input type="text" id="reg-name" class="form-input" placeholder="Alex Carter" required>
+            <div class="flex items-center gap-sm mb-md">
+                <div class="flex-1 h-px bg-outline-variant"></div>
+                <span class="text-label-md text-on-surface-variant">OR</span>
+                <div class="flex-1 h-px bg-outline-variant"></div>
+            </div>
+
+            <form id="register-form" class="space-y-md" novalidate>
+                <div>
+                    <label for="name" class="block text-body-sm font-medium text-on-surface-variant mb-xs">Full Name</label>
+                    <input id="name" name="name" type="text" required autocomplete="name"
+                           class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-md py-sm text-on-surface placeholder:text-on-surface-variant/50 focus:border-primary transition-colors"
+                           placeholder="Jane Doe" />
+                </div>
+                <div>
+                    <label for="email" class="block text-body-sm font-medium text-on-surface-variant mb-xs">Email</label>
+                    <input id="email" name="email" type="email" required autocomplete="email"
+                           class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-md py-sm text-on-surface placeholder:text-on-surface-variant/50 focus:border-primary transition-colors"
+                           placeholder="abc@gmail.com" />
+                </div>
+                <div>
+                    <label for="university" class="block text-body-sm font-medium text-on-surface-variant mb-xs">University <span class="text-on-surface-variant/60">(optional)</span></label>
+                    <input id="university" name="university" type="text" autocomplete="organization"
+                           class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-md py-sm text-on-surface placeholder:text-on-surface-variant/50 focus:border-primary transition-colors"
+                           placeholder="State University" />
+                </div>
+                <div>
+                    <label for="password" class="block text-body-sm font-medium text-on-surface-variant mb-xs">Password</label>
+                    <input id="password" name="password" type="password" required minlength="4" autocomplete="new-password"
+                           class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-md py-sm text-on-surface placeholder:text-on-surface-variant/50 focus:border-primary transition-colors"
+                           placeholder="At least 4 characters" />
+                </div>
+                <div>
+                    <label for="confirmPassword" class="block text-body-sm font-medium text-on-surface-variant mb-xs">Confirm Password</label>
+                    <input id="confirmPassword" name="confirmPassword" type="password" required minlength="4" autocomplete="new-password"
+                           class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-md py-sm text-on-surface placeholder:text-on-surface-variant/50 focus:border-primary transition-colors"
+                           placeholder="Re-enter your password" />
                 </div>
 
-                <div class="form-group">
-                    <label class="form-label" for="reg-email">University Email</label>
-                    <input type="email" id="reg-email" class="form-input" placeholder="alex.carter@university.edu" required>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" for="reg-role">Account Type / Role</label>
-                    <select id="reg-role" class="form-select" required>
-                        <option value="" disabled selected>Select your role...</option>
-                        <option value="student">Student attendee</option>
-                        <option value="organizer">Student Group Organizer</option>
-                        <option value="faculty">Faculty / Dean Advisor</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" for="reg-pass">Secure Password</label>
-                    <input type="password" id="reg-pass" class="form-input" placeholder="••••••••" required>
-                </div>
-
-                <button type="submit" class="btn btn-primary auth-submit-btn" id="reg-btn-submit">Register Account</button>
+                <button id="submit-btn" type="submit"
+                        class="w-full bg-primary hover:bg-primary-fixed text-on-primary font-bold px-lg py-sm rounded-lg transition-all transform hover:scale-[1.01] shadow-lg shadow-primary/20 mt-sm">
+                    Create Account
+                </button>
             </form>
 
-            <div class="auth-footer">
-                Already have an account? <a href="login.html" id="reg-link-login">Sign in instead</a>
-            </div>
+            <p class="text-center text-body-sm text-on-surface-variant mt-lg">
+                Already have an account?
+                <a href="/login" class="text-primary font-semibold hover:underline">Sign in</a>
+            </p>
         </div>
     </div>
-</div>
+</main>
 
-<!-- Small Footer -->
-<footer style="padding: 1.5rem 0; background-color: var(--primary-color);">
-    <div class="container footer-bottom" style="border-top: none; padding-top: 0; margin-top: 0;">
-        <div>&copy; 2026 CampusHive Inc. All Rights Reserved.</div>
-        <div>Official University Portal.</div>
-    </div>
-</footer>
+<script src="/js/auth.js"></script>
+<script>
+    const form = document.getElementById("register-form");
+    const errorBanner = document.getElementById("error-banner");
+    const submitBtn = document.getElementById("submit-btn");
 
+    // Auto-login: if a valid session already exists (existing token + working refresh
+    // cookie), skip this page entirely and go straight to /home.
+    checkExistingSessionAndRedirect("/home");
+
+    bindAuthForm({
+        formEl: form,
+        errorEl: errorBanner,
+        buttonEl: submitBtn,
+        buttonDefaultText: "Create Account",
+        redirectTo: "/home",
+        onSubmit: async () => {
+            const formData = new FormData(form);
+            await registerUser({
+                name: formData.get("name").trim(),
+                email: formData.get("email").trim(),
+                password: formData.get("password"),
+                confirmPassword: formData.get("confirmPassword"),
+                university: formData.get("university").trim(),
+            });
+        },
+    });
+</script>
 </body>
+
 </html>

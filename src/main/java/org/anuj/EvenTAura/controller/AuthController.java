@@ -77,7 +77,7 @@ public class AuthController {
     private void setRefreshCookie(HttpServletResponse res,String token) {
         ResponseCookie c = ResponseCookie.from("refreshToken",token)
                 .httpOnly(true)
-                .secure(true)               // send only over HTTPS
+                .secure(false)               // send only over HTTPS
                 .sameSite("Strict")          // CSRF protection
                 .path("/api/v1/auth/refresh")    // cookie NOT sent to /api/* endpoints
                 .maxAge(Duration.ofDays(7))

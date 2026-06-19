@@ -23,6 +23,14 @@ public class PageController {
         return "register";
     }
 
+    @GetMapping("/home")
+    public String home(){
+        return "home";
+    }
+
+
+
+
     @GetMapping("/globalEvents")
     public String globalEvents(){
         return "globalEvents";
@@ -33,12 +41,14 @@ public class PageController {
         return "campusEvents";
     }
 
-
-
-
     @GetMapping("/indexTemp")
     public String indexTemp(){
         return "indexTemp";
+    }
+
+    @GetMapping("/index")
+    public String index(){
+        return "index";
     }
 
     @GetMapping("/profile")
@@ -95,7 +105,6 @@ public class PageController {
     public String moments() {
         return "moments";
     }
-
 
     @GetMapping("/eventDetails/{eventId}")
     public String eventDetails() {

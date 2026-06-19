@@ -1,21 +1,110 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-3C9FCSTWY3"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
+<html class="dark" lang="en">
 
-        gtag('config', 'G-3C9FCSTWY3');
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Signing you in... | CampusHive</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+            rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-error-container": "#ffdad6",
+                        "error": "#ffb4ab",
+                        "surface-container": "#171f1c",
+                        "error-container": "#93000a",
+                        "surface-container-low": "#131a17",
+                        "secondary": "#7fc9a0",
+                        "background": "#0a1310",
+                        "primary": "#4edea3",
+                        "outline-variant": "#33453c",
+                        "on-primary": "#003824",
+                        "on-error": "#690005",
+                        "on-surface": "#dcebe0",
+                        "on-surface-variant": "#bbcabf",
+                        "on-background": "#dcebe0"
+                    },
+                    "borderRadius": { "DEFAULT": "0.5rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+                    "spacing": { "md": "16px", "sm": "8px", "lg": "24px", "xl": "40px", "xs": "4px" },
+                    "fontFamily": { "body-md": ["Inter"], "title-lg": ["Inter"] },
+                    "fontSize": {
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "title-lg": ["20px", { "lineHeight": "28px", "fontWeight": "600" }]
+                    }
+                },
+            },
+        }
     </script>
+    <style>
+        body {
+            background-color: #0a1310;
+            color: #dcebe0;
+            font-family: 'Inter', sans-serif;
+        }
+        .spinner {
+            border: 3px solid #33453c;
+            border-top-color: #4edea3;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
 </head>
-<body>
-<h1>Oauth</h1>
-<script th:src="@{/js/oauth.js}"></script>
+
+<body class="flex items-center justify-center min-h-screen px-md">
+<div class="text-center max-w-sm">
+    <div id="oauth-loading" class="flex flex-col items-center gap-md">
+        <div class="spinner"></div>
+        <p class="text-body-md text-on-surface-variant">Signing you in with Google...</p>
+    </div>
+
+    <div id="oauth-error" class="hidden flex-col items-center gap-md">
+        <span class="material-symbols-outlined text-error text-[40px]">error</span>
+        <p id="oauth-error-text" class="text-body-md text-on-surface-variant">Something went wrong during sign in.</p>
+        <a href="/login" class="text-primary font-semibold hover:underline">Back to login</a>
+    </div>
+</div>
+
+<script>
+    /**
+     * Reads the access token from the URL (?access=...), set by the backend's
+     * oauthSuccess redirect. Stores it, then immediately scrubs it from the
+     * visible URL/history with replaceState so it doesn't linger in browser
+     * history after this point — see chat for the tradeoff this doesn't solve
+     * (the token still transits as a query param up to this point).
+     */
+    (function handleOAuthCallback() {
+        const params = new URLSearchParams(window.location.search);
+        const accessToken = params.get("access");
+        const errorEl = document.getElementById("oauth-error");
+        const errorTextEl = document.getElementById("oauth-error-text");
+        const loadingEl = document.getElementById("oauth-loading");
+
+        if (!accessToken) {
+            loadingEl.classList.add("hidden");
+            errorEl.classList.remove("hidden");
+            errorEl.classList.add("flex");
+            errorTextEl.textContent = "No access token was returned. Please try signing in again.";
+            return;
+        }
+
+        localStorage.setItem("accessToken", accessToken);
+
+        // Strip the token out of the URL so it doesn't sit in browser history.
+        const cleanUrl = window.location.origin + window.location.pathname;
+        window.history.replaceState({}, document.title, cleanUrl);
+
+        window.location.href = "/home";
+    })();
+</script>
 </body>
+
 </html>

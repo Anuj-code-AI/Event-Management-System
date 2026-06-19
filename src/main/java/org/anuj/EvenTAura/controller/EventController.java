@@ -118,12 +118,18 @@ public class EventController {
     }
 
     // Get all global events
-    @GetMapping("/getGlobalEvents")
+    @GetMapping("/global")
     public ResponseEntity<ApiResponse<Page<EventSummaryResponse>>> getGlobalEvents(
+            @RequestParam(required = false) String query,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        return ResponseEntity.ok(ApiResponse.success("Global event loaded successfully", eventService.getGlobalEvents(page, size)));
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        "Global events loaded successfully",
+                        eventService.getGlobalEvents(query, page, size)
+                )
+        );
     }
 
     // Get all university events
