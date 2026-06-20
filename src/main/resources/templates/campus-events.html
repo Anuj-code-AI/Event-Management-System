@@ -4,19 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>About CampusHive | Student Event Management Platform</title>
-
-    <meta name="description"
-          content="CampusHive is a modern student event management platform that simplifies event discovery, registrations, networking, and campus engagement. Learn about our mission and the team behind it.">
-
-    <meta name="keywords"
-          content="CampusHive, Student Events, College Events, University Events, Campus Management, Event Registration, Student Networking">
-
-    <meta name="author" content="Anuj Chourasiya">
-    <meta name="robots" content="index,follow">
-    <meta name="theme-color" content="#10b981">
-
-    <link rel="canonical" href="https://campushive.in/aboutUs">
+    <title>Campus Events | CampusHive</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
@@ -136,41 +124,18 @@
             radial-gradient(at 100% 0%, hsla(158, 64%, 52%, 0.08) 0, transparent 50%);
         }
 
-        .glass-card {
-            background: rgba(23, 31, 28, 0.45);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(51, 69, 60, 0.5);
-        }
+        #sidebar-nav::-webkit-scrollbar { width: 4px; }
+        #sidebar-nav::-webkit-scrollbar-thumb { background: #33453c; border-radius: 4px; }
 
-        .glow-icon {
-            transition: all 0.3s ease;
-        }
-
-        .glow-icon:hover {
-            color: #4edea3;
-            text-shadow: 0 0 10px rgba(78, 222, 163, 0.6);
-            transform: translateY(-2px);
+        .logo-placeholder {
+            background-image: radial-gradient(circle, #212a26 0%, #131a17 100%);
         }
     </style>
-    <script type="application/ld+json">
-        {
-            "@context":"https://schema.org",
-            "@type":"Organization",
-            "name":"CampusHive",
-            "url":"https://campushive.in",
-            "founder":{
-                "@type":"Person",
-                "name":"Anuj Chourasiya"
-            },
-            "description":"CampusHive is a student event management platform that connects students with workshops, hackathons, competitions, and campus opportunities."
-        }
-    </script>
 </head>
 
 <body class="dark overflow-x-hidden">
 
-<!-- Mobile backdrop -->
+<!-- Mobile backdrop, shown only when sidebar drawer is open -->
 <div id="sidebar-overlay" class="hidden fixed inset-0 bg-black/60 z-30 md:hidden"></div>
 
 <div class="flex min-h-screen">
@@ -179,11 +144,13 @@
     <aside id="sidebar"
            class="flex flex-col w-sidebar-w h-screen fixed left-0 top-0 bg-surface-container-lowest border-r border-outline-variant z-40
            -translate-x-full md:translate-x-0 transition-transform duration-200">
+        <!-- Mobile-only close button -->
         <button id="sidebar-close" aria-label="Close menu"
                 class="md:hidden absolute top-md right-md text-on-surface-variant hover:text-on-surface">
             <span class="material-symbols-outlined">close</span>
         </button>
 
+        <!-- Profile block -->
         <div class="flex flex-col items-center text-center pt-xl pb-lg px-md border-b border-outline-variant">
             <a href="/profile" aria-label="Go to profile"
                class="w-20 h-20 rounded-full bg-surface-container-high border-2 border-primary/40 hover:border-primary transition-colors flex items-center justify-center overflow-hidden mb-md">
@@ -193,10 +160,12 @@
             <p id="sidebar-role" class="text-label-md text-primary uppercase tracking-wide mt-xs">—</p>
         </div>
 
+        <!-- Nav items (signed-in) -->
         <nav id="sidebar-nav" class="flex-1 overflow-y-auto px-sm py-md space-y-xs">
             <!-- populated by sidebar.js -->
         </nav>
 
+        <!-- Signed-out auth buttons -->
         <div id="sidebar-auth-actions" class="hidden flex-1 flex flex-col gap-sm px-md py-md">
             <a href="/login" class="w-full text-center bg-primary hover:bg-primary-fixed text-on-primary font-bold px-lg py-sm rounded-lg transition-all">
                 Log In
@@ -206,6 +175,7 @@
             </a>
         </div>
 
+        <!-- Logout -->
         <div id="sidebar-logout-wrap" class="px-sm py-md border-t border-outline-variant">
             <button id="logout-btn"
                     class="w-full flex items-center gap-sm px-md py-sm rounded-lg text-body-sm font-medium text-error hover:bg-error-container/20 transition-colors">
@@ -221,6 +191,8 @@
         <!-- ---------- HEADER ---------- -->
         <header class="sticky top-0 z-20 h-16 bg-background/90 backdrop-blur-md border-b border-outline-variant">
             <div class="h-full flex items-center gap-md px-md md:px-lg">
+
+                <!-- Mobile: hamburger + brand -->
                 <button id="sidebar-open" class="md:hidden text-on-surface-variant hover:text-on-surface" aria-label="Open menu">
                     <span class="material-symbols-outlined">menu</span>
                 </button>
@@ -232,9 +204,29 @@
                     </span>
                 </a>
 
-                <h1 class="hidden md:block text-title-lg font-bold text-on-background">About Us</h1>
+                <!-- Desktop search bar -->
+                <div class="hidden md:flex flex-1 max-w-xl">
+                    <label class="relative block w-full">
+                        <span class="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
+                        <input
+                                id="eventSearch"
+                                type="search"
+                                placeholder="Search events on your campus..."
+                                class="w-full bg-surface-container-low border border-outline-variant rounded-full pl-[40px] pr-md py-sm text-body-sm text-on-surface placeholder:text-on-surface-variant/60 focus:border-primary focus:outline-none transition-colors"
+                        /></label>
+                </div>
 
-                <a href="/home" class="hidden md:flex items-center gap-2 ml-auto">
+                <div class="hidden md:flex items-center gap-xs ml-auto">
+                    <button aria-label="Notifications" class="relative w-10 h-10 rounded-full hover:bg-surface-container-high flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors">
+                        <span class="material-symbols-outlined">notifications</span>
+                        <span class="absolute top-2 right-2 w-2 h-2 rounded-full bg-error"></span>
+                    </button>
+                    <button aria-label="Settings" class="w-10 h-10 rounded-full hover:bg-surface-container-high flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors">
+                        <span class="material-symbols-outlined">settings</span>
+                    </button>
+                </div>
+
+                <a href="/home" class="hidden md:flex items-center gap-2 pl-md border-l border-outline-variant">
                     <img src="/images/logo.png" alt="CampusHive Logo" class="w-7 h-7 object-contain" />
                     <span class="text-title-lg font-bold tracking-tight whitespace-nowrap">
                         <span class="text-white">Campus</span><span class="text-primary">Hive</span>
@@ -244,110 +236,88 @@
         </header>
 
         <!-- ---------- MAIN CONTENT ---------- -->
-        <main class="flex-1 px-md md:px-lg py-lg space-y-xl hero-mesh">
+        <main class="flex-1 px-md md:px-lg py-lg space-y-xl">
 
             <!-- Banner -->
             <section class="relative rounded-xl overflow-hidden hero-mesh border border-outline-variant p-lg md:p-xl">
                 <div class="relative z-10 max-w-2xl">
                     <span class="inline-flex items-center gap-xs bg-surface-container-high border border-outline-variant text-on-surface-variant text-label-md px-sm py-xs rounded-full mb-md">
                         <span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
-                        OUR TEAM & VISION
+                        CAMPUS PORTAL
                     </span>
-                    <h2 class="text-headline-md md:text-display-lg text-on-background leading-tight mb-sm">
-                        Building the Future of Campus Engagement
-                    </h2>
+                    <h1 id="banner-title-area" class="text-headline-md md:text-display-lg text-on-background leading-tight mb-sm flex items-center gap-md flex-wrap">
+                        <span id="banner-logo-container" class="hidden shrink-0"></span>
+                        <span id="banner-university-name">Campus Events</span>
+                    </h1>
                     <p class="text-body-md text-on-surface-variant max-w-lg">
-                        CampusHive is designed to bring students, organizers, and institutions together through seamless event discovery, registrations, networking, and community engagement.
+                        Explore exclusive events, workshops, and sports happening on your university campus.
                     </p>
                 </div>
             </section>
 
-            <!-- Profile Showcase Grid -->
-            <section class="max-w-4xl mx-auto">
-                <div class="glass-card rounded-xl p-lg md:p-xl shadow-2xl flex flex-col md:flex-row items-center gap-lg border border-outline-variant/60">
-                    
-                    <!-- Profile avatar picture -->
-                    <div class="shrink-0 w-48 h-48 rounded-full bg-surface-container-high border-4 border-primary/30 flex items-center justify-center overflow-hidden hover:border-primary transition-colors shadow-2xl hover:scale-[1.02] duration-300">
-                        <img src="/images/developer_profile.png" alt="Anuj Chourasiya Profile" class="w-full h-full object-cover" onerror="this.src='/images/logo.png'">
-                    </div>
+            <!-- Loading State -->
+            <div id="loading-state" class="flex flex-col items-center justify-center py-2xl">
+                <div class="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-md"></div>
+                <p class="text-body-sm text-on-surface-variant">Checking your university details...</p>
+            </div>
 
-                    <!-- Developer details -->
-                    <div class="flex-1 space-y-md text-center md:text-left">
-                        <div class="space-y-xs">
-                            <h3 class="text-headline-sm font-bold text-on-background">Anuj Chourasiya</h3>
-                            <p class="text-title-lg font-semibold text-primary">3rd Year Backend Developer</p>
-                        </div>
+            <!-- Error State -->
+            <div id="error-state" class="hidden flex flex-col items-center justify-center py-2xl text-center space-y-md">
+                <span class="material-symbols-outlined text-[64px] text-error">error</span>
+                <h2 class="text-headline-sm text-on-surface font-bold">Something went wrong</h2>
+                <p id="error-message" class="text-body-md text-on-surface-variant max-w-md">Failed to load events. Please try again later.</p>
+                <button onclick="retryLoad()" class="bg-surface-container hover:bg-surface-container-high border border-outline-variant px-lg py-sm rounded-lg font-bold transition-all">
+                    Retry
+                </button>
+            </div>
 
-                        <p class="text-body-md text-on-surface-variant">
-                            CampusHive was founded and engineered by Anuj Chourasiya, a backend-focused software developer passionate about scalable systems, secure architectures, and impactful student solutions.
-
-                            The platform was built to solve a common campus challenge: students often miss valuable events, workshops, hackathons, and networking opportunities. CampusHive centralizes everything into one intelligent ecosystem, making campus life more connected and accessible.
-                        </p>
-
-                        <!-- Tech stack tag list -->
-                        <div class="flex flex-wrap justify-center md:justify-start gap-xs">
-                            <span class="bg-surface-container-high text-on-surface border border-outline-variant/30 text-label-md px-sm py-xs rounded-full">Java</span>
-                            <span class="bg-surface-container-high text-on-surface border border-outline-variant/30 text-label-md px-sm py-xs rounded-full">Spring Boot</span>
-                            <span class="bg-surface-container-high text-on-surface border border-outline-variant/30 text-label-md px-sm py-xs rounded-full">Spring Security</span>
-                            <span class="bg-surface-container-high text-on-surface border border-outline-variant/30 text-label-md px-sm py-xs rounded-full">JPA / Hibernate</span>
-                            <span class="bg-surface-container-high text-on-surface border border-outline-variant/30 text-label-md px-sm py-xs rounded-full">MySQL</span>
-                            <span class="bg-surface-container-high text-on-surface border border-outline-variant/30 text-label-md px-sm py-xs rounded-full">Thymeleaf</span>
-                            <span class="bg-surface-container-high text-on-surface border border-outline-variant/30 text-label-md px-sm py-xs rounded-full">Tailwind CSS</span>
-                        </div>
-
-                        <!-- Brand Social Links -->
-                        <div class="flex items-center justify-center md:justify-start gap-lg pt-md border-t border-outline-variant/20">
-                            <a href="https://www.linkedin.com/in/anujchourasiya" target="_blank" rel="noopener noreferrer"
-                               class="glow-icon text-on-surface-variant flex items-center gap-xs font-semibold hover:text-primary transition-all"
-                               aria-label="LinkedIn Profile">
-                                <i class="fa-brands fa-linkedin text-[24px]"></i>
-                                <span class="hidden sm:inline text-body-sm">LinkedIn</span>
-                            </a>
-                            <a href="https://github.com/Anuj-code-AI" target="_blank" rel="noopener noreferrer"
-                               class="glow-icon text-on-surface-variant flex items-center gap-xs font-semibold hover:text-primary transition-all"
-                               aria-label="GitHub Profile">
-                                <i class="fa-brands fa-github text-[24px]"></i>
-                                <span class="hidden sm:inline text-body-sm">GitHub</span>
-                            </a>
-                            <a href="https://www.instagram.com/anuj_chourasiya8/" target="_blank" rel="noopener noreferrer"
-                               class="glow-icon text-on-surface-variant flex items-center gap-xs font-semibold hover:text-primary transition-all"
-                               aria-label="Instagram Profile">
-                                <i class="fa-brands fa-instagram text-[24px]"></i>
-                                <span class="hidden sm:inline text-body-sm">Instagram</span>
-                            </a>
-                        </div>
-                    </div>
+            <!-- No University State (Redirection Alert) -->
+            <div id="no-university-state" class="hidden flex flex-col items-center justify-center py-2xl text-center space-y-lg bg-surface-container border border-outline-variant rounded-xl p-xl max-w-xl mx-auto shadow-2xl animate-fade-in">
+                <div class="w-16 h-16 rounded-full bg-error-container/20 border border-error/20 flex items-center justify-center text-error mb-xs">
+                    <span class="material-symbols-outlined text-[40px]">school</span>
                 </div>
-            </section>
-            <section class="max-w-5xl mx-auto">
-                <div class="glass-card rounded-xl p-xl">
-                    <h3 class="text-headline-sm font-bold mb-md text-primary">
-                        Our Mission
-                    </h3>
-
-                    <p class="text-body-md text-on-surface-variant leading-relaxed">
-                        We believe every student should have equal access to opportunities.
-                        CampusHive aims to become the central hub for workshops, hackathons,
-                        cultural events, seminars, competitions, and student communities.
+                <div class="space-y-sm">
+                    <h2 class="text-headline-sm text-on-surface font-bold">Add a University First</h2>
+                    <p class="text-body-md text-on-surface-variant">
+                        You haven't associated your profile with any university yet. Please select a university in your profile settings to view events on your campus.
                     </p>
                 </div>
-            </section>
-            <section class="max-w-5xl mx-auto grid md:grid-cols-3 gap-lg">
-                <div class="glass-card p-lg rounded-xl text-center">
-                    <h4 class="text-display-lg text-primary font-bold">100+</h4>
-                    <p class="text-on-surface-variant">Universities Targeted</p>
+                <a href="/profile" class="inline-flex items-center gap-sm bg-primary hover:bg-primary-fixed text-on-primary font-bold px-lg py-md rounded-lg transition-all shadow-lg shadow-primary/20">
+                    <span class="material-symbols-outlined">person</span>
+                    <span>Go to Profile</span>
+                </a>
+            </div>
+
+            <!-- Campus Events Content Section -->
+            <div id="campus-events-section" class="hidden space-y-md">
+                <div class="flex items-center justify-between mb-md">
+                    <h2 id="campus-name-heading" class="text-headline-sm text-on-surface font-bold">Events on Campus</h2>
                 </div>
 
-                <div class="glass-card p-lg rounded-xl text-center">
-                    <h4 class="text-display-lg text-primary font-bold">10K+</h4>
-                    <p class="text-on-surface-variant">Future Student Users</p>
+                <!-- Event Cards Grid -->
+                <div id="events-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-lg">
+                    <!-- Dynamically populated -->
                 </div>
 
-                <div class="glass-card p-lg rounded-xl text-center">
-                    <h4 class="text-display-lg text-primary font-bold">∞</h4>
-                    <p class="text-on-surface-variant">Opportunities Connected</p>
+                <!-- Empty State -->
+                <div id="events-empty-msg" class="hidden flex flex-col items-center justify-center py-2xl text-center space-y-sm bg-surface-container border border-outline-variant rounded-xl p-lg">
+                    <span class="material-symbols-outlined text-[48px] text-on-surface-variant/40">event_busy</span>
+                    <p class="text-body-md text-on-surface-variant font-medium">No events found on your campus.</p>
                 </div>
-            </section>
+
+                <!-- Pagination -->
+                <div id="events-pagination" class="hidden flex items-center justify-between pt-md border-t border-outline-variant/30">
+                    <span id="pagination-info" class="text-body-sm text-on-surface-variant">Showing page 1 of 1</span>
+                    <div class="flex gap-2">
+                        <button id="prev-page-btn" class="border border-outline-variant hover:bg-surface-container text-on-surface px-md py-xs rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+                            Previous
+                        </button>
+                        <button id="next-page-btn" class="border border-outline-variant hover:bg-surface-container text-on-surface px-md py-xs rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+                            Next
+                        </button>
+                    </div>
+                </div>
+            </div>
 
         </main>
 
@@ -356,7 +326,7 @@
             <div class="flex flex-col md:flex-row justify-between items-center gap-md text-center md:text-left">
                 <p class="text-body-sm text-on-surface-variant">© 2026 CampusHive. Empowering student engagement across 100+ campuses worldwide.</p>
                 <div class="flex gap-md text-body-sm text-on-surface-variant">
-                    <a href="/aboutUs" class="text-primary font-medium hover:underline">About Us</a>
+                    <a href="/aboutUs" class="hover:text-primary transition-colors">About Us</a>
                     <a href="/contact" class="hover:text-primary transition-colors">Support</a>
                     <a href="#" class="hover:text-primary transition-colors">Privacy</a>
                 </div>
@@ -369,6 +339,7 @@
 <script src="/js/auto-refresh.js"></script>
 <script src="/js/nav-config.js"></script>
 <script src="/js/sidebar.js"></script>
+<script src="/js/campus-events.js"></script>
 </body>
 
 </html>

@@ -56,7 +56,11 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/favicon.ico","/favicon.ico/**","/css/**","/js/**","/images/**","/webjars/**",
-                                "/" , "/aboutUs" , "/contact" , "/login" , "/register" , "/home" , "/index" ,
+
+                                "/" , "/aboutUs" , "/contact" , "/login" , "/register" , "/home" , "/universities" ,
+                                "/campus-events" , "/event-management" , "/oauth" , "/request-event" , "/admin" , "/eventDetails/**" ,
+                                "/eventDetails" , "/tickets" , "/myEvents" , "/profile" ,
+
                                 "/api/v1/auth/**" ,"/api/v1/event/global/**").permitAll()
                     .anyRequest().authenticated()
 

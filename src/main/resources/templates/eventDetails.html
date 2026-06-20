@@ -1,1493 +1,393 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="en">
-<head>
-    <title>Event Details — Eventaura</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-    <!-- jsQR for QR decoding -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsqr/1.4.0/jsQR.min.js"></script>
-    <link rel="stylesheet" th:href="@{/css/style.css}">
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-3C9FCSTWY3"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
+<html class="dark" lang="en">
 
-        gtag('config', 'G-3C9FCSTWY3');
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Event Details | CampusHive</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+            rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-error-container": "#ffdad6",
+                        "error": "#ffb4ab",
+                        "surface-container": "#171f1c",
+                        "error-container": "#93000a",
+                        "surface-container-low": "#131a17",
+                        "surface-bright": "#313d36",
+                        "secondary": "#7fc9a0",
+                        "on-secondary": "#08311c",
+                        "primary-fixed-dim": "#4edea3",
+                        "outline-variant": "#33453c",
+                        "surface-tint": "#4edea3",
+                        "on-tertiary-fixed-variant": "#0b513d",
+                        "on-tertiary-container": "#004231",
+                        "background": "#0a1310",
+                        "on-secondary-container": "#c2ecd4",
+                        "tertiary": "#95d3ba",
+                        "primary": "#4edea3",
+                        "surface-container-high": "#212a26",
+                        "outline": "#86948a",
+                        "secondary-fixed": "#c2ecd4",
+                        "on-primary-container": "#00422b",
+                        "inverse-primary": "#006c49",
+                        "tertiary-container": "#1f5b41",
+                        "surface-container-highest": "#2c3631",
+                        "on-tertiary": "#003829",
+                        "surface-container-lowest": "#05100c",
+                        "tertiary-fixed-dim": "#95d3ba",
+                        "surface-dim": "#0a1310",
+                        "on-secondary-fixed-variant": "#1d5235",
+                        "inverse-on-surface": "#22302a",
+                        "on-secondary-fixed": "#03210f",
+                        "inverse-surface": "#dcebe0",
+                        "secondary-container": "#1d5235",
+                        "surface": "#0a1310",
+                        "on-primary": "#003824",
+                        "on-error": "#690005",
+                        "on-surface": "#dcebe0",
+                        "primary-fixed": "#6ffbbe",
+                        "on-surface-variant": "#bbcabf",
+                        "secondary-fixed-dim": "#7fc9a0",
+                        "on-primary-fixed": "#002113",
+                        "on-tertiary-fixed": "#002117",
+                        "primary-container": "#10b981",
+                        "tertiary-fixed": "#b0f0d6",
+                        "on-background": "#dcebe0"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.5rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "24px",
+                        "xl": "40px",
+                        "2xl": "64px",
+                        "container-max": "1280px",
+                        "xs": "4px",
+                        "sm": "8px",
+                        "md": "16px",
+                        "margin-mobile": "16px",
+                        "base": "8px",
+                        "lg": "24px",
+                        "sidebar-w": "272px"
+                    },
+                    "fontFamily": {
+                        "body-sm": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "display-lg-mobile": ["Inter"],
+                        "title-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "headline-sm": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-md": ["30px", { "lineHeight": "38px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "display-lg-mobile": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "title-lg": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }]
+                    }
+                },
+            },
+        }
     </script>
     <style>
-        /* ══════════════════════════════════════
-           PROFILE SIDEBAR (shared from index)
-           ══════════════════════════════════════ */
-        .profile-overlay {
-            display:none; position:fixed; inset:0;
-            background:rgba(0,0,0,0.45); z-index:500;
-            opacity:0; transition:opacity 0.3s ease; backdrop-filter:blur(2px);
-        }
-        .profile-overlay.open { display:block; opacity:1; }
-        .profile-sidebar {
-            position:fixed; top:0; right:0; bottom:0;
-            width:min(340px,90vw); background:#fff; z-index:600;
-            display:flex; flex-direction:column;
-            box-shadow:-8px 0 40px rgba(0,0,0,0.18);
-            transform:translateX(100%);
-            transition:transform 0.38s cubic-bezier(0.23,1,0.32,1);
-            overflow-y:auto;
-        }
-        .profile-sidebar.open { transform:translateX(0); }
-        .psb-header { display:flex; align-items:center; justify-content:space-between; padding:20px 20px 16px; border-bottom:1px solid #e5e7eb; flex-shrink:0; }
-        .psb-title { font-family:'Syne',sans-serif; font-size:18px; font-weight:800; color:#1a1a2e; }
-        .psb-close { width:36px; height:36px; border-radius:50%; background:#f5f6fb; border:1.5px solid #e5e7eb; font-size:16px; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:background 0.2s,color 0.2s; color:#6b7280; flex-shrink:0; }
-        .psb-close:hover { background:#fee2e8; color:#ff4d6d; border-color:#ff4d6d; }
-        .psb-user-card { padding:16px; background:linear-gradient(135deg,#fff0f3,#fff8f0); border-radius:14px; border:1.5px solid #fecdd3; display:flex; align-items:center; gap:14px; }
-        .psb-avatar { width:52px; height:52px; border-radius:50%; background:linear-gradient(135deg,#ff4d6d,#ffa500); display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; box-shadow:0 4px 12px rgba(255,77,109,0.3); }
-        .psb-user-info { flex:1; min-width:0; }
-        .psb-user-name { font-family:'Syne',sans-serif; font-size:15px; font-weight:700; color:#1a1a2e; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-        .psb-user-role { font-size:12px; color:#ff4d6d; font-weight:600; margin-top:2px; }
-        .psb-guest-card { padding:16px; background:#f5f6fb; border-radius:14px; border:1.5px solid #e5e7eb; text-align:center; }
-        .psb-guest-card p { font-size:13px; color:#6b7280; margin-bottom:12px; }
-        .psb-guest-btns { display:flex; gap:10px; }
-        .psb-guest-btns a { flex:1; padding:9px; border-radius:10px; font-size:13px; font-weight:600; text-align:center; transition:all 0.2s; }
-        .psb-btn-login { background:#f5f6fb; color:#1a1a2e; border:1.5px solid #e5e7eb; }
-        .psb-btn-login:hover { border-color:#ff4d6d; color:#ff4d6d; }
-        .psb-btn-signup { background:linear-gradient(135deg,#ff4d6d,#ffa500); color:#fff; border:none; box-shadow:0 4px 12px rgba(255,77,109,0.3); }
-        .psb-btn-signup:hover { opacity:0.9; transform:translateY(-1px); }
-        .psb-nav { display:flex; flex-direction:column; padding:6px 10px; gap:2px; }
-        .psb-nav-item { display:flex; align-items:center; gap:12px; padding:11px 12px; border-radius:12px; font-size:14px; font-weight:500; color:#1a1a2e; text-decoration:none; transition:background 0.18s,color 0.18s; cursor:pointer; }
-        .psb-nav-item:hover { background:#fff0f3; color:#ff4d6d; }
-        .psb-nav-icon { width:34px; height:34px; border-radius:9px; background:#f5f6fb; border:1.5px solid #e5e7eb; display:flex; align-items:center; justify-content:center; font-size:15px; flex-shrink:0; transition:background 0.18s,border-color 0.18s; }
-        .psb-nav-item:hover .psb-nav-icon { background:#fee2e8; border-color:#fecdd3; }
-        .psb-nav-item.logout { color:#ef4444; }
-        .psb-nav-item.logout .psb-nav-icon { background:#fef2f2; border-color:#fecaca; }
-        .psb-nav-item.logout:hover { background:#fef2f2; }
-        .psb-divider { height:1px; background:#e5e7eb; margin:4px 16px; flex-shrink:0; }
-        .psb-section-label { padding:10px 22px 4px; font-size:10px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase; color:#6b7280; flex-shrink:0; }
-        .psb-admin-badge { margin-left:auto; background:#7c3aed; color:#fff; font-size:10px; font-weight:700; padding:2px 8px; border-radius:50px; white-space:nowrap; }
-        .psb-footer { padding:16px; margin-top:auto; border-top:1px solid #e5e7eb; flex-shrink:0; }
-        .psb-footer-text { font-size:11px; color:#9ca3af; text-align:center; }
-        .psb-skeleton { padding:16px; display:flex; align-items:center; gap:14px; }
-        .psb-skeleton-avatar { width:52px; height:52px; border-radius:50%; background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%); background-size:200% 100%; animation:shimmer 1.2s infinite; flex-shrink:0; }
-        .psb-skeleton-lines { flex:1; display:flex; flex-direction:column; gap:8px; }
-        .psb-skeleton-line { height:12px; border-radius:6px; background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%); background-size:200% 100%; animation:shimmer 1.2s infinite; }
-        .psb-skeleton-line.short { width:60%; }
-        @keyframes shimmer { to { background-position:-200% 0; } }
-
-        /* ══════════════════════════════════════
-           PAGE LAYOUT
-           ══════════════════════════════════════ */
-        .page-wrapper {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 32px 40px 60px;
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
         }
 
-        /* ── Breadcrumb ── */
-        .breadcrumb {
-            display: flex; align-items: center; gap: 8px;
-            font-size: 13px; color: var(--muted);
-            margin-bottom: 24px;
-        }
-        .breadcrumb a { color: var(--primary); font-weight: 500; }
-        .breadcrumb a:hover { text-decoration: underline; }
-        .breadcrumb .sep { color: var(--border); }
-
-        /* ── Event hero strip ── */
-        .event-hero {
-            background: var(--surface);
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: var(--shadow);
-            margin-bottom: 28px;
-            display: flex;
-            gap: 0;
-        }
-        .event-hero-img {
-            width: 260px;
-            flex-shrink: 0;
-            object-fit: cover;
-            object-position: center top;
-        }
-        .event-hero-info {
-            padding: 28px 32px;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            gap: 12px;
-        }
-        .event-hero-badge {
-            display: inline-block;
-            padding: 4px 14px;
-            background: #fff0f3;
-            color: var(--primary);
-            border: 1.5px solid #fecdd3;
-            border-radius: 50px;
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-            align-self: flex-start;
-        }
-        .event-hero-title {
-            font-family: 'Syne', sans-serif;
-            font-size: 26px;
-            font-weight: 800;
-            color: var(--text);
-            line-height: 1.2;
-        }
-        .event-hero-meta {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 18px;
-        }
-        .event-hero-meta span {
-            font-size: 13px;
-            color: var(--muted);
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        .event-stat-chips {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            margin-top: 4px;
-        }
-        .stat-chip {
-            padding: 6px 16px;
-            border-radius: 50px;
-            font-size: 13px;
-            font-weight: 600;
-            border: 1.5px solid var(--border);
-            background: var(--bg);
-            color: var(--text);
-        }
-        .stat-chip.green { background: #f0fdf4; border-color: #bbf7d0; color: #16a34a; }
-        .stat-chip.red   { background: #fef2f2; border-color: #fecaca; color: #dc2626; }
-        .stat-chip.blue  { background: #eff6ff; border-color: #bfdbfe; color: #2563eb; }
-
-        /* ── Toolbar ── */
-        .toolbar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-        .toolbar-left {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        .toolbar h2 {
-            font-family: 'Syne', sans-serif;
-            font-size: 20px;
-            font-weight: 800;
-            color: var(--text);
-        }
-        .attendee-count {
-            background: var(--bg);
-            border: 1.5px solid var(--border);
-            border-radius: 50px;
-            padding: 3px 12px;
-            font-size: 12px;
-            font-weight: 700;
-            color: var(--muted);
-        }
-        .toolbar-right {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
+        body {
+            background-color: #0a1310;
+            color: #dcebe0;
+            font-family: 'Inter', sans-serif;
         }
 
-        /* Search input in toolbar */
-        .search-inline {
-            position: relative;
-        }
-        .search-inline input {
-            padding: 9px 16px 9px 36px;
-            border-radius: 50px;
-            border: 1.5px solid var(--border);
-            background: var(--bg);
-            font-size: 13px;
-            font-family: inherit;
-            outline: none;
-            width: 200px;
-            transition: border-color 0.2s, box-shadow 0.2s;
-        }
-        .search-inline input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(255,77,109,0.1); }
-        .search-inline .si-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 13px; pointer-events: none; }
-
-        /* Filter pills */
-        .filter-pill {
-            padding: 8px 16px;
-            border-radius: 50px;
-            border: 1.5px solid var(--border);
-            background: var(--bg);
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--muted);
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .filter-pill:hover  { border-color: var(--primary); color: var(--primary); }
-        .filter-pill.active { background: var(--primary); border-color: var(--primary); color: #fff; }
-
-        /* QR Button */
-        .qr-scan-btn {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 20px;
-            border-radius: 50px;
-            background: linear-gradient(135deg, #ff4d6d, #ffa500);
-            color: #fff;
-            font-size: 13px;
-            font-weight: 700;
-            font-family: 'Syne', sans-serif;
-            border: none;
-            cursor: pointer;
-            box-shadow: 0 4px 14px rgba(255,77,109,0.35);
-            transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
-            white-space: nowrap;
-        }
-        .qr-scan-btn:hover  { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(255,77,109,0.45); }
-        .qr-scan-btn:active { transform: scale(0.96); }
-        .qr-scan-btn svg { width: 18px; height: 18px; flex-shrink: 0; }
-
-        /* ── Audience table ── */
-        .audience-table-wrap {
-            background: var(--surface);
-            border-radius: 18px;
-            box-shadow: var(--shadow);
-            overflow: hidden;
-        }
-        .audience-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        .audience-table thead th {
-            padding: 14px 20px;
-            text-align: left;
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 0.8px;
-            text-transform: uppercase;
-            color: var(--muted);
-            background: var(--bg);
-            border-bottom: 1.5px solid var(--border);
-            white-space: nowrap;
-        }
-        .audience-table tbody tr {
-            border-bottom: 1px solid var(--border);
-            transition: background 0.15s;
-        }
-        .audience-table tbody tr:last-child { border-bottom: none; }
-        .audience-table tbody tr:hover { background: #fafafa; }
-        .audience-table td {
-            padding: 14px 20px;
-            font-size: 14px;
-            vertical-align: middle;
+        .hero-mesh {
+            background-image: radial-gradient(at 0% 0%, hsla(158, 64%, 52%, 0.10) 0, transparent 50%),
+            radial-gradient(at 100% 0%, hsla(158, 64%, 52%, 0.08) 0, transparent 50%);
         }
 
-        .td-avatar {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .row-avatar {
-            width: 36px; height: 36px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #ff4d6d, #ffa500);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 14px; font-weight: 700; color: #fff;
-            flex-shrink: 0;
-        }
-        .row-name  { font-weight: 600; color: var(--text); font-size: 14px; }
-        .row-email { font-size: 12px; color: var(--muted); margin-top: 2px; }
-
-        /* Status badge */
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            padding: 4px 12px;
-            border-radius: 50px;
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 0.3px;
-        }
-        .status-badge.confirmed { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
-        .status-badge.pending   { background: #fffbeb; color: #d97706; border: 1px solid #fde68a; }
-        .status-badge.cancelled { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
-        .status-badge.waitlisted{ background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }
-
-        /* CheckIn badge */
-        .checkin-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            padding: 4px 12px;
-            border-radius: 50px;
-            font-size: 11px;
-            font-weight: 700;
-        }
-        .checkin-badge.yes { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
-        .checkin-badge.no  { background: #f5f6fb; color: var(--muted);  border: 1px solid var(--border); }
-
-        /* Mark buttons */
-        .mark-btn {
-            padding: 6px 14px;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: 600;
-            font-family: inherit;
-            cursor: pointer;
-            transition: all 0.2s;
-            white-space: nowrap;
-        }
-        .mark-btn.present {
-            background: #f0fdf4;
-            color: #16a34a;
-            border: 1.5px solid #bbf7d0;
-        }
-        .mark-btn.present:hover {
-            background: #16a34a;
-            color: #fff;
-            border-color: #16a34a;
-        }
-        .mark-btn.absent {
-            background: #fef2f2;
-            color: #dc2626;
-            border: 1.5px solid #fecaca;
-        }
-        .mark-btn.absent:hover {
-            background: #dc2626;
-            color: #fff;
-            border-color: #dc2626;
-        }
-        .mark-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-
-        /* action cell gap */
-        .action-cell { display: flex; gap: 8px; align-items: center; }
-
-        /* ── Pagination ── */
-        .pagination {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 16px 20px;
-            border-top: 1px solid var(--border);
-            flex-wrap: wrap;
-            gap: 12px;
-        }
-        .pagination-info { font-size: 13px; color: var(--muted); }
-        .pagination-btns { display: flex; gap: 6px; }
-        .pg-btn {
-            width: 34px; height: 34px;
-            border-radius: 8px;
-            border: 1.5px solid var(--border);
-            background: var(--bg);
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text);
-            cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-            transition: all 0.2s;
-        }
-        .pg-btn:hover   { border-color: var(--primary); color: var(--primary); }
-        .pg-btn.active  { background: var(--primary); border-color: var(--primary); color: #fff; }
-        .pg-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
-        /* ── Skeleton rows ── */
-        .skel-row td { padding: 16px 20px; }
-        .skel-line {
-            height: 12px; border-radius: 6px;
-            background: linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%);
-            background-size: 200% 100%;
-            animation: shimmer 1.2s infinite;
-        }
-        .skel-circle {
-            width: 36px; height: 36px; border-radius: 50%;
-            background: linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%);
-            background-size: 200% 100%;
-            animation: shimmer 1.2s infinite;
-            flex-shrink: 0;
-        }
-
-        /* ── QR Modal ── */
-        .modal-overlay {
-            display: none;
-            position: fixed; inset: 0;
-            background: rgba(0,0,0,0.6);
-            z-index: 700;
-            align-items: center;
-            justify-content: center;
-            backdrop-filter: blur(4px);
-        }
-        .modal-overlay.open { display: flex; }
-
-        .qr-modal {
-            background: var(--surface);
-            border-radius: 24px;
-            width: min(480px, 94vw);
-            box-shadow: 0 20px 60px rgba(0,0,0,0.25);
-            overflow: hidden;
-            animation: modalIn 0.3s cubic-bezier(0.23,1,0.32,1);
-        }
-        @keyframes modalIn {
-            from { opacity:0; transform:scale(0.92) translateY(20px); }
-            to   { opacity:1; transform:scale(1)    translateY(0); }
-        }
-
-        .qr-modal-header {
-            padding: 20px 24px 16px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-bottom: 1px solid var(--border);
-        }
-        .qr-modal-header h3 {
-            font-family: 'Syne', sans-serif;
-            font-size: 18px;
-            font-weight: 800;
-            color: var(--text);
-        }
-        .qr-modal-close {
-            width: 34px; height: 34px;
-            border-radius: 50%;
-            background: var(--bg);
-            border: 1.5px solid var(--border);
-            font-size: 15px;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer;
-            color: var(--muted);
-            transition: background 0.2s, color 0.2s;
-        }
-        .qr-modal-close:hover { background: #fee2e8; color: var(--primary); border-color: var(--primary); }
-
-        .qr-modal-body { padding: 24px; }
-
-        /* Camera feed */
-        .qr-scanner-area {
-            position: relative;
-            width: 100%;
-            aspect-ratio: 1;
-            background: #000;
-            border-radius: 16px;
-            overflow: hidden;
-            margin-bottom: 16px;
-        }
-        #qrVideo {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-        }
-        .qr-frame {
-            position: absolute;
-            inset: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            pointer-events: none;
-        }
-        .qr-frame-box {
-            width: 55%;
-            aspect-ratio: 1;
-            border: 3px solid var(--primary);
-            border-radius: 12px;
-            box-shadow: 0 0 0 9999px rgba(0,0,0,0.45);
-            animation: pulse-border 1.5s ease-in-out infinite;
-        }
-        @keyframes pulse-border {
-            0%,100% { border-color: var(--primary); }
-            50% { border-color: var(--accent); }
-        }
-        .qr-scan-line {
-            position: absolute;
-            left: 22.5%; right: 22.5%;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, var(--primary), transparent);
-            animation: scan-move 1.8s ease-in-out infinite;
-            border-radius: 2px;
-        }
-        @keyframes scan-move {
-            0%   { top: 22.5%; }
-            100% { top: 77.5%; }
-        }
-        .qr-status {
-            text-align: center;
-            font-size: 13px;
-            color: var(--muted);
-            margin-bottom: 16px;
-            min-height: 20px;
-        }
-
-        /* Result card inside modal */
-        .qr-result-card {
-            display: none;
-            padding: 16px;
-            border-radius: 14px;
-            gap: 12px;
-            align-items: center;
-            margin-bottom: 0;
-        }
-        .qr-result-card.success { background: #f0fdf4; border: 1.5px solid #bbf7d0; display: flex; }
-        .qr-result-card.error   { background: #fef2f2; border: 1.5px solid #fecaca; display: flex; }
-        .qr-result-card.already { background: #fffbeb; border: 1.5px solid #fde68a; display: flex; }
-        .qr-result-icon { font-size: 28px; flex-shrink: 0; }
-        .qr-result-info { flex: 1; }
-        .qr-result-name  { font-weight: 700; font-size: 15px; color: var(--text); }
-        .qr-result-email { font-size: 12px; color: var(--muted); }
-        .qr-result-msg   { font-size: 12px; font-weight: 600; margin-top: 3px; }
-        .qr-result-card.success .qr-result-msg { color: #16a34a; }
-        .qr-result-card.error   .qr-result-msg { color: #dc2626; }
-        .qr-result-card.already .qr-result-msg { color: #d97706; }
-
-        .qr-modal-footer {
-            padding: 0 24px 24px;
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
-        }
-        .qr-modal-footer button {
-            padding: 10px 22px;
-            border-radius: 50px;
-            font-size: 13px;
-            font-weight: 600;
-            font-family: inherit;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .qr-btn-stop {
-            background: #fef2f2;
-            color: #dc2626;
-            border: 1.5px solid #fecaca;
-        }
-        .qr-btn-stop:hover { background: #dc2626; color: #fff; }
-        .qr-btn-close-modal {
-            background: var(--primary);
-            color: #fff;
-            border: none;
-            box-shadow: 0 4px 12px rgba(255,77,109,0.3);
-        }
-        .qr-btn-close-modal:hover { background: var(--primary-dk); }
-
-        /* Toast */
-        .toast {
-            position: fixed;
-            bottom: 30px; right: 30px;
-            padding: 14px 22px;
-            border-radius: 14px;
-            font-size: 14px;
-            font-weight: 600;
-            color: #fff;
-            z-index: 9999;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-            transform: translateY(80px);
-            opacity: 0;
-            transition: transform 0.35s cubic-bezier(0.23,1,0.32,1), opacity 0.35s ease;
-            pointer-events: none;
-            display: flex; align-items: center; gap: 10px;
-            max-width: 340px;
-        }
-        .toast.show { transform: translateY(0); opacity: 1; }
-        .toast.success { background: #16a34a; }
-        .toast.error   { background: #dc2626; }
-        .toast.info    { background: #2563eb; }
-
-        /* Empty state */
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-        }
-        .empty-state .empty-icon { font-size: 48px; margin-bottom: 14px; }
-        .empty-state h3 { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
-        .empty-state p  { font-size: 14px; color: var(--muted); }
-
-        /* ── Responsive ── */
-        @media (max-width: 900px) {
-            .page-wrapper { padding: 24px 20px 48px; }
-            .event-hero { flex-direction: column; }
-            .event-hero-img { width: 100%; height: 200px; }
-        }
-        @media (max-width: 600px) {
-            .audience-table thead th:nth-child(3),
-            .audience-table td:nth-child(3) { display: none; }
-            .audience-table thead th:nth-child(4),
-            .audience-table td:nth-child(4) { display: none; }
-            .toolbar { flex-direction: column; align-items: stretch; }
-            .toolbar-right { flex-wrap: wrap; }
-            .search-inline input { width: 100%; }
+        .glass-card {
+            background: rgba(23, 31, 28, 0.45);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(51, 69, 60, 0.5);
         }
     </style>
 </head>
 
-<body>
+<body class="dark overflow-x-hidden">
 
-<!-- ═══════════════════ HEADER ═══════════════════ -->
-<header class="header">
-    <div class="logo">
-        <span class="logo-text">Event<em>aura</em></span>
-    </div>
-    <nav class="nav-links">
-        <a href="/">Home</a>
-        <a href="/moments">Moments</a>
-        <a href="/tickets">Tickets</a>
-        <a href="/aboutUs">About Us</a>
-    </nav>
-    <div class="search-bar">
-        <span class="search-icon">🔍</span>
-        <input type="text" placeholder="Search events, cities...">
-    </div>
-    <div class="header-right">
-        <div class="time" id="clock"></div>
-        <button class="icon-btn" aria-label="Notifications">
-            <span>🔔</span><span class="badge">3</span>
+<!-- Mobile backdrop -->
+<div id="sidebar-overlay" class="hidden fixed inset-0 bg-black/60 z-30 md:hidden"></div>
+
+<div class="flex min-h-screen">
+
+    <!-- ===================== SIDEBAR ===================== -->
+    <aside id="sidebar"
+           class="flex flex-col w-sidebar-w h-screen fixed left-0 top-0 bg-surface-container-lowest border-r border-outline-variant z-40
+           -translate-x-full md:translate-x-0 transition-transform duration-200">
+        <button id="sidebar-close" aria-label="Close menu"
+                class="md:hidden absolute top-md right-md text-on-surface-variant hover:text-on-surface">
+            <span class="material-symbols-outlined">close</span>
         </button>
-        <div id="guestActions">
-            <a href="/login"    class="btn primary">Login</a>
-            <a href="/register" class="btn primary">Sign Up</a>
+
+        <div class="flex flex-col items-center text-center pt-xl pb-lg px-md border-b border-outline-variant">
+            <a href="/profile" aria-label="Go to profile"
+               class="w-20 h-20 rounded-full bg-surface-container-high border-2 border-primary/40 hover:border-primary transition-colors flex items-center justify-center overflow-hidden mb-md">
+                <span class="material-symbols-outlined text-on-surface-variant text-[44px]">person</span>
+            </a>
+            <p id="sidebar-username" class="text-title-lg font-semibold text-on-background">—</p>
+            <p id="sidebar-role" class="text-label-md text-primary uppercase tracking-wide mt-xs">—</p>
         </div>
-        <div id="userActions" style="display:none;">
-            <button class="icon-btn profile-btn" id="profileSidebarBtn" aria-label="Open profile menu">
-                <span>👤</span>
+
+        <nav id="sidebar-nav" class="flex-1 overflow-y-auto px-sm py-md space-y-xs">
+            <!-- populated by sidebar.js -->
+        </nav>
+
+        <div id="sidebar-auth-actions" class="hidden flex-1 flex flex-col gap-sm px-md py-md">
+            <a href="/login" class="w-full text-center bg-primary hover:bg-primary-fixed text-on-primary font-bold px-lg py-sm rounded-lg transition-all">
+                Log In
+            </a>
+            <a href="/register" class="w-full text-center border border-outline-variant hover:bg-surface-container-high text-on-surface font-bold px-lg py-sm rounded-lg transition-all">
+                Sign Up
+            </a>
+        </div>
+
+        <div id="sidebar-logout-wrap" class="px-sm py-md border-t border-outline-variant">
+            <button id="logout-btn"
+                    class="w-full flex items-center gap-sm px-md py-sm rounded-lg text-body-sm font-medium text-error hover:bg-error-container/20 transition-colors">
+                <span class="material-symbols-outlined text-[22px]">logout</span>
+                <span>Log Out</span>
             </button>
         </div>
-        <button class="hamburger" id="hamburgerBtn" aria-label="Open menu">
-            <span></span><span></span><span></span>
-        </button>
-    </div>
-</header>
+    </aside>
 
-<!-- Mobile nav overlay -->
-<div class="mobile-nav-overlay" id="mobileNavOverlay"></div>
+    <!-- ===================== MAIN COLUMN ===================== -->
+    <div class="flex-1 md:ml-sidebar-w flex flex-col min-w-0">
 
-<!-- Mobile Drawer -->
-<nav class="mobile-nav" id="mobileNav" aria-label="Mobile navigation">
-    <div class="mobile-nav-header">
-        <span class="logo-text">Event<em>aura</em></span>
-        <button class="mobile-nav-close" id="mobileNavClose" aria-label="Close menu">✕</button>
-    </div>
-    <div class="mobile-search">
-        <span>🔍</span>
-        <input type="text" placeholder="Search events, cities...">
-    </div>
-    <div id="mnSkeleton" style="display:none; margin:8px 10px 0;">
-        <div class="psb-skeleton">
-            <div class="psb-skeleton-avatar"></div>
-            <div class="psb-skeleton-lines">
-                <div class="psb-skeleton-line"></div>
-                <div class="psb-skeleton-line short"></div>
-            </div>
-        </div>
-    </div>
-    <div id="mnUserCard" style="display:none; margin:8px 10px 0;">
-        <div class="psb-user-card">
-            <div class="psb-avatar">👤</div>
-            <div class="psb-user-info">
-                <div class="psb-user-name" id="mnUserName">User</div>
-                <div class="psb-user-role" id="mnUserRole">Member</div>
-            </div>
-        </div>
-    </div>
-    <div id="mnGuestCard" style="margin:8px 10px 0;">
-        <div class="psb-guest-card">
-            <p>Sign in to access your events, tickets and profile.</p>
-            <div class="psb-guest-btns">
-                <a href="/login" class="psb-btn-login">Login</a>
-                <a href="/register" class="psb-btn-signup">Sign Up</a>
-            </div>
-        </div>
-    </div>
-    <div id="mn-my-account" style="display:none;">
-        <div class="psb-section-label">My Account</div>
-        <div class="mobile-nav-links" style="padding-top:0;">
-            <a href="/profile"      class="mobile-nav-link"><span class="mnl-icon">👤</span>Profile</a>
-            <a href="/"             class="mobile-nav-link"><span class="mnl-icon">🏠</span>Home</a>
-            <a href="/moments"      class="mobile-nav-link"><span class="mnl-icon">📸</span>Moments</a>
-            <a href="/tickets"      class="mobile-nav-link"><span class="mnl-icon">🎟️</span>My Tickets</a>
-            <a href="/aboutUs"      class="mobile-nav-link"><span class="mnl-icon">ℹ️</span>About Us</a>
-        </div>
-    </div>
-    <div id="mn-admin" style="display:none;">
-        <div class="psb-divider" style="margin:4px 16px;"></div>
-        <div class="psb-section-label">Admin</div>
-        <div class="mobile-nav-links" style="padding-top:0;">
-            <a href="/adminPage"     class="mobile-nav-link"><span class="mnl-icon">🛡️</span>Admin Page<span class="psb-admin-badge">Admin</span></a>
-            <a href="/campusEvents"  class="mobile-nav-link"><span class="mnl-icon">📋</span>Campus Events<span class="psb-admin-badge">Admin</span></a>
-        </div>
-    </div>
-    <div id="mn-host" style="display:none;">
-        <div class="psb-divider" style="margin:4px 16px;"></div>
-        <div class="psb-section-label">Host</div>
-        <div class="mobile-nav-links" style="padding-top:0;">
-            <a href="/createEvent"   class="mobile-nav-link"><span class="mnl-icon">📅</span>Create Event</a>
-            <a href="/hostedEvents"  class="mobile-nav-link"><span class="mnl-icon">🎪</span>Hosted Events</a>
-        </div>
-    </div>
-    <div id="mn-guest-nav">
-        <div class="mobile-nav-links">
-            <a href="/"        class="mobile-nav-link"><span class="mnl-icon">🏠</span>Home</a>
-            <a href="/moments" class="mobile-nav-link"><span class="mnl-icon">📸</span>Moments</a>
-            <a href="/aboutUs" class="mobile-nav-link"><span class="mnl-icon">ℹ️</span>About Us</a>
-        </div>
-    </div>
-    <div class="mobile-nav-footer">
-        <div id="mobileNavGuest">
-            <a href="/login"    class="btn primary" style="text-align:center;display:block;">Login</a>
-            <a href="/register" class="btn primary" style="text-align:center;display:block;margin-top:10px;">Sign Up</a>
-        </div>
-        <div id="mobileNavUser" style="display:none;">
-            <button onclick="logout()" class="btn primary" style="text-align:center;display:block;background:#ef4444;border-color:#ef4444;">Sign Out</button>
-        </div>
-    </div>
-</nav>
+        <!-- ---------- HEADER ---------- -->
+        <header class="sticky top-0 z-20 h-16 bg-background/90 backdrop-blur-md border-b border-outline-variant">
+            <div class="h-full flex items-center gap-md px-md md:px-lg">
+                <button id="sidebar-open" class="md:hidden text-on-surface-variant hover:text-on-surface" aria-label="Open menu">
+                    <span class="material-symbols-outlined">menu</span>
+                </button>
 
-<!-- ═══════════════════ PROFILE SIDEBAR ═══════════════════ -->
-<div class="profile-overlay" id="profileOverlay"></div>
-<aside class="profile-sidebar" id="profileSidebar" aria-label="Profile menu">
-    <div class="psb-header">
-        <span class="psb-title">My Account</span>
-        <button class="psb-close" id="profileSidebarClose">✕</button>
-    </div>
-    <div id="psbSkeleton" style="display:none; margin:16px 16px 0;">
-        <div class="psb-skeleton">
-            <div class="psb-skeleton-avatar"></div>
-            <div class="psb-skeleton-lines">
-                <div class="psb-skeleton-line"></div>
-                <div class="psb-skeleton-line short"></div>
-            </div>
-        </div>
-    </div>
-    <div id="psbUserCard" style="display:none; margin:16px 16px 0;">
-        <div class="psb-user-card">
-            <div class="psb-avatar">👤</div>
-            <div class="psb-user-info">
-                <div class="psb-user-name" id="psbUserName">User</div>
-                <div class="psb-user-role" id="psbUserRole">Member</div>
-            </div>
-        </div>
-    </div>
-    <div id="psbGuestCard" style="margin:16px 16px 0;">
-        <div class="psb-guest-card">
-            <p>Sign in to access your events, tickets and profile.</p>
-            <div class="psb-guest-btns">
-                <a href="/login" class="psb-btn-login">Login</a>
-                <a href="/register" class="psb-btn-signup">Sign Up</a>
-            </div>
-        </div>
-    </div>
-    <div id="psb-my-account" style="display:none;">
-        <div class="psb-section-label">My Account</div>
-        <nav class="psb-nav" style="padding-top:0;">
-            <a href="/profile"  class="psb-nav-item"><span class="psb-nav-icon">👤</span><span>Profile</span></a>
-            <a href="/"         class="psb-nav-item"><span class="psb-nav-icon">🏠</span><span>Home</span></a>
-            <a href="/moments"  class="psb-nav-item"><span class="psb-nav-icon">📸</span><span>Moments</span></a>
-            <a href="/tickets"  class="psb-nav-item"><span class="psb-nav-icon">🎟️</span><span>My Tickets</span></a>
-            <a href="/aboutUs"  class="psb-nav-item"><span class="psb-nav-icon">ℹ️</span><span>About Us</span></a>
-        </nav>
-    </div>
-    <div id="psb-admin" style="display:none;">
-        <div class="psb-divider"></div>
-        <div class="psb-section-label">Admin</div>
-        <nav class="psb-nav" style="padding-top:0;">
-            <a href="/adminPage"    class="psb-nav-item"><span class="psb-nav-icon">🛡️</span><span>Admin Page</span><span class="psb-admin-badge">Admin</span></a>
-            <a href="/campusEvents" class="psb-nav-item"><span class="psb-nav-icon">📋</span><span>Campus Events</span><span class="psb-admin-badge">Admin</span></a>
-        </nav>
-    </div>
-    <div id="psb-host" style="display:none;">
-        <div class="psb-divider"></div>
-        <div class="psb-section-label">Host</div>
-        <nav class="psb-nav" style="padding-top:0;">
-            <a href="/createEvent"  class="psb-nav-item"><span class="psb-nav-icon">📅</span><span>Create Event</span></a>
-            <a href="/hostedEvents" class="psb-nav-item"><span class="psb-nav-icon">🎪</span><span>Hosted Events</span></a>
-        </nav>
-    </div>
-    <div id="psb-logout" style="display:none;">
-        <div class="psb-divider"></div>
-        <nav class="psb-nav" style="padding-top:0;">
-            <button onclick="logout()" class="psb-nav-item logout"><span class="psb-nav-icon">🚪</span><span>Logout</span></button>
-        </nav>
-    </div>
-    <div id="psb-guest-nav">
-        <div class="psb-section-label">Explore</div>
-        <nav class="psb-nav" style="padding-top:0;">
-            <a href="/"        class="psb-nav-item"><span class="psb-nav-icon">🔥</span><span>Browse Events</span></a>
-            <a href="/aboutUs" class="psb-nav-item"><span class="psb-nav-icon">ℹ️</span><span>About Us</span></a>
-        </nav>
-    </div>
-    <div class="psb-footer">
-        <p class="psb-footer-text">© 2026 Eventaura · Made with ❤️ in India</p>
-    </div>
-</aside>
+                <a href="/home" class="flex md:hidden items-center gap-2">
+                    <img src="/images/logo.png" alt="CampusHive Logo" class="w-7 h-7 object-contain" />
+                    <span class="text-title-lg font-bold tracking-tight whitespace-nowrap">
+                        <span class="text-white">Campus</span><span class="text-primary">Hive</span>
+                    </span>
+                </a>
 
-<!-- ═══════════════════ QR SCANNER MODAL ═══════════════════ -->
-<div class="modal-overlay" id="qrModal">
-    <div class="qr-modal">
-        <div class="qr-modal-header">
-            <h3>📷 Scan Ticket QR Code</h3>
-            <button class="qr-modal-close" id="qrModalClose">✕</button>
-        </div>
-        <div class="qr-modal-body">
-            <div class="qr-scanner-area">
-                <video id="qrVideo" autoplay playsinline muted></video>
-                <div class="qr-frame">
-                    <div class="qr-frame-box"></div>
-                </div>
-                <div class="qr-scan-line"></div>
+                <h1 class="hidden md:block text-title-lg font-bold text-on-background">Event details</h1>
+
+                <a href="/home" class="hidden md:flex items-center gap-2 ml-auto">
+                    <img src="/images/logo.png" alt="CampusHive Logo" class="w-7 h-7 object-contain" />
+                    <span class="text-title-lg font-bold tracking-tight whitespace-nowrap">
+                        <span class="text-white">Campus</span><span class="text-primary">Hive</span>
+                    </span>
+                </a>
             </div>
-            <p class="qr-status" id="qrStatus">📡 Starting camera…</p>
-            <div class="qr-result-card" id="qrResultCard">
-                <div class="qr-result-icon" id="qrResultIcon">✅</div>
-                <div class="qr-result-info">
-                    <div class="qr-result-name"  id="qrResultName">—</div>
-                    <div class="qr-result-email" id="qrResultEmail">—</div>
-                    <div class="qr-result-msg"   id="qrResultMsg">—</div>
-                </div>
-            </div>
-        </div>
-        <div class="qr-modal-footer">
-            <button class="qr-btn-stop" id="qrBtnStop">Stop Camera</button>
-            <button class="qr-btn-close-modal" id="qrBtnCloseModal">Done</button>
-        </div>
-    </div>
-</div>
+        </header>
 
-<!-- ═══════════════════ TOAST ═══════════════════ -->
-<div class="toast" id="toast">
-    <span id="toastIcon">✅</span>
-    <span id="toastMsg">Success</span>
-</div>
+        <!-- ---------- MAIN CONTENT ---------- -->
+        <main class="flex-1 px-md md:px-lg py-lg space-y-lg hero-mesh">
 
-<!-- ═══════════════════ MAIN PAGE ═══════════════════ -->
-<main class="page-wrapper">
-
-    <!-- Breadcrumb -->
-    <div class="breadcrumb">
-        <a href="/">🏠 Home</a>
-        <span class="sep">›</span>
-        <a href="/hostedEvents">Hosted Events</a>
-        <span class="sep">›</span>
-        <span id="bcEventTitle">Event Details</span>
-    </div>
-
-    <!-- Event hero -->
-    <div class="event-hero" id="eventHero">
-        <img id="eventBanner" class="event-hero-img" src="/images/placeholder.jpg" alt="Event Banner">
-        <div class="event-hero-info">
-            <span class="event-hero-badge" id="eventCategory">Tech</span>
-            <h1 class="event-hero-title" id="eventTitle">Loading event…</h1>
-            <div class="event-hero-meta">
-                <span>📅 <span id="eventDate">—</span></span>
-                <span>📍 <span id="eventLocation">—</span></span>
-                <span>⏰ <span id="eventTime">—</span></span>
-            </div>
-            <div class="event-stat-chips">
-                <div class="stat-chip blue">🎟️ <span id="statTotal">—</span> Registered</div>
-                <div class="stat-chip green">✅ <span id="statPresent">—</span> Present</div>
-                <div class="stat-chip red">❌ <span id="statAbsent">—</span> Absent</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Toolbar -->
-    <div class="toolbar">
-        <div class="toolbar-left">
-            <h2>Attendee List</h2>
-            <span class="attendee-count" id="attendeeCount">— students</span>
-        </div>
-        <div class="toolbar-right">
-            <!-- Filter pills -->
-            <button class="filter-pill active" data-filter="all">All</button>
-            <button class="filter-pill" data-filter="present">✅ Present</button>
-            <button class="filter-pill" data-filter="absent">❌ Absent</button>
-            <button class="filter-pill" data-filter="pending">⏳ Pending</button>
-
-            <!-- Search -->
-            <div class="search-inline">
-                <span class="si-icon">🔍</span>
-                <input type="text" id="attendeeSearch" placeholder="Search name / email…">
+            <!-- Loading Spinner -->
+            <div id="details-loading" class="flex flex-col items-center justify-center py-2xl">
+                <div class="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-md"></div>
+                <p class="text-body-sm text-on-surface-variant">Loading event specifications...</p>
             </div>
 
-            <!-- QR Scan -->
-            <button class="qr-scan-btn" id="openQrBtn">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
-                    <rect x="3" y="14" width="7" height="7" rx="1"/>
-                    <path d="M14 14h1v1h-1zM17 14h1v1h-1zM14 17h1v1h-1zM17 17h1v1h-1zM20 14v1M20 17v1M14 20h1M17 20h1M20 20"/>
-                </svg>
-                Scan QR
-            </button>
-        </div>
-    </div>
+            <!-- Error message -->
+            <div id="details-error" class="hidden flex flex-col items-center justify-center py-2xl text-center space-y-md">
+                <span class="material-symbols-outlined text-[64px] text-error">error</span>
+                <h2 class="text-headline-sm text-on-surface font-bold">Failed to load event</h2>
+                <p id="details-error-text" class="text-body-md text-on-surface-variant max-w-md">The event page you requested could not be resolved.</p>
+                <a href="/home" class="bg-surface-container hover:bg-surface-container-high border border-outline-variant px-lg py-sm rounded-lg font-bold transition-all">
+                    Return Home
+                </a>
+            </div>
 
-    <!-- Table -->
-    <div class="audience-table-wrap">
-        <table class="audience-table" id="audienceTable">
-            <thead>
-            <tr>
-                <th>#</th>
-                <th>Student</th>
-                <th>Ticket Status</th>
-                <th>Check-In</th>
-                <th>Checked-In At</th>
-                <th>Actions</th>
-            </tr>
-            </thead>
-            <tbody id="audienceTbody">
-            <!-- skeleton rows -->
-            <tr class="skel-row"><td><div class="skel-line" style="width:24px"></div></td><td><div style="display:flex;align-items:center;gap:10px"><div class="skel-circle"></div><div><div class="skel-line" style="width:120px;margin-bottom:6px"></div><div class="skel-line" style="width:90px"></div></div></div></td><td><div class="skel-line" style="width:70px"></div></td><td><div class="skel-line" style="width:60px"></div></td><td><div class="skel-line" style="width:110px"></div></td><td><div style="display:flex;gap:8px"><div class="skel-line" style="width:70px;height:28px;border-radius:8px"></div><div class="skel-line" style="width:70px;height:28px;border-radius:8px"></div></div></td></tr>
-            <tr class="skel-row"><td><div class="skel-line" style="width:24px"></div></td><td><div style="display:flex;align-items:center;gap:10px"><div class="skel-circle"></div><div><div class="skel-line" style="width:140px;margin-bottom:6px"></div><div class="skel-line" style="width:100px"></div></div></div></td><td><div class="skel-line" style="width:70px"></div></td><td><div class="skel-line" style="width:60px"></div></td><td><div class="skel-line" style="width:110px"></div></td><td><div style="display:flex;gap:8px"><div class="skel-line" style="width:70px;height:28px;border-radius:8px"></div><div class="skel-line" style="width:70px;height:28px;border-radius:8px"></div></div></td></tr>
-            <tr class="skel-row"><td><div class="skel-line" style="width:24px"></div></td><td><div style="display:flex;align-items:center;gap:10px"><div class="skel-circle"></div><div><div class="skel-line" style="width:110px;margin-bottom:6px"></div><div class="skel-line" style="width:80px"></div></div></div></td><td><div class="skel-line" style="width:70px"></div></td><td><div class="skel-line" style="width:60px"></div></td><td><div class="skel-line" style="width:110px"></div></td><td><div style="display:flex;gap:8px"><div class="skel-line" style="width:70px;height:28px;border-radius:8px"></div><div class="skel-line" style="width:70px;height:28px;border-radius:8px"></div></div></td></tr>
-            </tbody>
-        </table>
-
-        <!-- Pagination -->
-        <div class="pagination" id="paginationBar">
-            <div class="pagination-info" id="paginationInfo">Loading…</div>
-            <div class="pagination-btns" id="paginationBtns"></div>
-        </div>
-    </div>
-
-</main>
-
-<!-- ═══════════════════ SCRIPTS ═══════════════════ -->
-<script>
-    /* ══════════════════════════════════════════════════════
-       HELPERS
-       ══════════════════════════════════════════════════════ */
-    function $id(id){ return document.getElementById(id); }
-    function getToken(){ return localStorage.getItem('accessToken'); }
-    function authHeaders(){ return { 'Authorization': `Bearer ${getToken()}`, 'Content-Type': 'application/json' }; }
-
-    function getEventId(){
-        // Supports /eventDetails/42 or ?eventId=42
-        const path = window.location.pathname.split('/');
-        const last = path[path.length-1];
-        if (last && !isNaN(last)) return last;
-        return new URLSearchParams(window.location.search).get('eventId') || '1';
-    }
-
-    let __auth = { isLoggedIn:false, displayRole:null, userName:null };
-
-    /* ── Toast ── */
-    let toastTimer;
-    function showToast(msg, type='success', icon='✅'){
-        const t = $id('toast');
-        $id('toastMsg').textContent = msg;
-        $id('toastIcon').textContent = icon;
-        t.className = `toast ${type} show`;
-        clearTimeout(toastTimer);
-        toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
-    }
-
-    /* ── Date formatter ── */
-    function fmtDateTime(iso){
-        if (!iso) return '—';
-        return new Date(iso).toLocaleString('en-IN', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
-    }
-    function fmtDate(d){
-        if (!d) return '—';
-        return new Date(d+'T00:00:00').toLocaleDateString('en-IN', { day:'numeric', month:'long', year:'numeric' });
-    }
-</script>
-
-<script>
-    /* ══════════════════════════════════════════════════════
-       AUTH (identical pattern to index)
-       ══════════════════════════════════════════════════════ */
-    const ROLE_API = '/api/v1/auth/roleOfMe';
-
-    function deriveDisplayRole(apiRole, status){
-        const role = String(apiRole||'').toUpperCase();
-        if (role === 'ROLE_ADMIN') return 'ADMIN';
-        if (status === 'APPROVED')  return 'ORGANIZER';
-        return 'USER';
-    }
-    function roleLabel(dr){
-        if (dr==='ADMIN') return 'Administrator';
-        if (dr==='ORGANIZER') return 'Organizer / Host';
-        return 'Member';
-    }
-    function show(id, d='block'){ const el=$id(id); if(el) el.style.display=d; }
-    function hide(id)            { const el=$id(id); if(el) el.style.display='none'; }
-
-    function applyNav(cfg){
-        const { isLoggedIn, displayRole, userName } = __auth;
-        const isAdmin = displayRole==='ADMIN', isOrg = displayRole==='ORGANIZER';
-        if(isLoggedIn){
-            show(cfg.userCard,'block'); hide(cfg.guestCard);
-            const ne=$id(cfg.userName); if(ne) ne.textContent=userName;
-            const re=$id(cfg.userRole); if(re) re.textContent=roleLabel(displayRole);
-            show(cfg.myAccount);
-            if(isAdmin) show(cfg.admin);
-            if(isOrg||isAdmin){ show(cfg.navigation); show(cfg.host); }
-            if(cfg.logout) show(cfg.logout);
-            hide(cfg.footerGuest); show(cfg.footerUser); hide(cfg.guestNav);
-        } else {
-            hide(cfg.userCard); show(cfg.guestCard,'block');
-            hide(cfg.myAccount); hide(cfg.admin); hide(cfg.navigation); hide(cfg.host);
-            if(cfg.logout) hide(cfg.logout);
-            show(cfg.guestNav); show(cfg.footerGuest); hide(cfg.footerUser);
-        }
-    }
-
-    async function loadAuthAndApplyNav(){
-        const token = getToken();
-        if(!token){ __auth={isLoggedIn:false,displayRole:null,userName:null}; paintBothPanels(false); return; }
-        show('mnSkeleton'); hide('mnGuestCard'); show('psbSkeleton'); hide('psbGuestCard');
-        hide('guestActions'); show('userActions','flex');
-        try{
-            const res = await fetch(ROLE_API,{ headers:{ 'Authorization':`Bearer ${token}` }});
-            if(!res.ok){ localStorage.removeItem('accessToken'); __auth={isLoggedIn:false,displayRole:null,userName:null}; paintBothPanels(false); return; }
-            const data = await res.json();
-            __auth = { isLoggedIn:true, displayRole:deriveDisplayRole(data.role,data.status), userName:data.name||'User' };
-            paintBothPanels(true);
-        } catch(e){ __auth={isLoggedIn:false,displayRole:null,userName:null}; paintBothPanels(false); }
-    }
-
-    function paintBothPanels(isLoggedIn){
-        hide('mnSkeleton'); hide('psbSkeleton');
-        if(!isLoggedIn){ show('guestActions','flex'); hide('userActions'); }
-        applyNav({ userCard:'mnUserCard', guestCard:'mnGuestCard', userName:'mnUserName', userRole:'mnUserRole', myAccount:'mn-my-account', admin:'mn-admin', navigation:'mn-navigation', host:'mn-host', logout:null, guestNav:'mn-guest-nav', footerGuest:'mobileNavGuest', footerUser:'mobileNavUser' });
-        applyNav({ userCard:'psbUserCard', guestCard:'psbGuestCard', userName:'psbUserName', userRole:'psbUserRole', myAccount:'psb-my-account', admin:'psb-admin', navigation:'psb-navigation', host:'psb-host', logout:'psb-logout', guestNav:'psb-guest-nav', footerGuest:'psb-guest-nav', footerUser:'psb-logout' });
-    }
-
-    function logout(){ localStorage.removeItem('accessToken'); window.location.href='/'; }
-
-    loadAuthAndApplyNav();
-</script>
-
-<script>
-    /* ══════════════════════════════════════════════════════
-       MOBILE DRAWER & PROFILE SIDEBAR (same as index)
-       ══════════════════════════════════════════════════════ */
-    const hamburgerBtn = $id('hamburgerBtn'), mobileNav = $id('mobileNav');
-    const mobileNavOverlay = $id('mobileNavOverlay'), mobileNavClose = $id('mobileNavClose');
-    function openMobileNav(){ mobileNav.classList.add('open'); mobileNavOverlay.classList.add('open'); document.body.style.overflow='hidden'; hamburgerBtn.classList.add('open'); }
-    function closeMobileNav(){ mobileNav.classList.remove('open'); mobileNavOverlay.classList.remove('open'); document.body.style.overflow=''; hamburgerBtn.classList.remove('open'); }
-    hamburgerBtn.addEventListener('click', openMobileNav);
-    mobileNavClose.addEventListener('click', closeMobileNav);
-    mobileNavOverlay.addEventListener('click', closeMobileNav);
-    document.querySelectorAll('.mobile-nav-link').forEach(l=>l.addEventListener('click', closeMobileNav));
-
-    function openProfileSidebar(){ $id('profileSidebar').classList.add('open'); $id('profileOverlay').classList.add('open'); document.body.style.overflow='hidden'; }
-    function closeProfileSidebar(){ $id('profileSidebar').classList.remove('open'); $id('profileOverlay').classList.remove('open'); document.body.style.overflow=''; }
-    $id('profileSidebarBtn').addEventListener('click', openProfileSidebar);
-    $id('profileSidebarClose').addEventListener('click', closeProfileSidebar);
-    $id('profileOverlay').addEventListener('click', closeProfileSidebar);
-    document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeMobileNav(); closeProfileSidebar(); closeQrModal(); }});
-</script>
-
-<script>
-    /* ══════════════════════════════════════════════════════
-       AUDIENCE LIST — data + rendering
-       ══════════════════════════════════════════════════════ */
-    const EVENT_ID       = getEventId();
-    const TICKET_API     = '/api/v1/tickets';
-    const EVENT_API      = '/api/v1/event';
-    const PAGE_SIZE      = 10;
-
-    let currentPage      = 0;
-    let totalPages       = 1;
-    let totalElements    = 0;
-    let allRows          = [];        // current page rows
-    let activeFilter     = 'all';
-    let searchQuery      = '';
-
-    /* ── stat counters ── */
-    let statPresent = 0, statAbsent = 0;
-
-    function statusBadgeHTML(status){
-        if (!status) return '<span class="status-badge pending">Unknown</span>';
-        const s = status.toLowerCase();
-        if (s==='confirmed') return `<span class="status-badge confirmed">✅ Confirmed</span>`;
-        if (s==='cancelled') return `<span class="status-badge cancelled">❌ Cancelled</span>`;
-        if (s==='waitlisted')return `<span class="status-badge waitlisted">⏳ Waitlisted</span>`;
-        return `<span class="status-badge pending">🟡 ${status}</span>`;
-    }
-
-    function checkinBadgeHTML(checkedIn, checkedInAt){
-        if (checkedIn) return `<span class="checkin-badge yes">✅ Present</span>`;
-        return `<span class="checkin-badge no">— Absent</span>`;
-    }
-
-    function initials(name){
-        if (!name) return '?';
-        return name.trim().split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
-    }
-
-    function avatarColor(name){
-        const colors = [
-            'linear-gradient(135deg,#ff4d6d,#ffa500)',
-            'linear-gradient(135deg,#7c3aed,#a855f7)',
-            'linear-gradient(135deg,#0891b2,#38bdf8)',
-            'linear-gradient(135deg,#16a34a,#4ade80)',
-            'linear-gradient(135deg,#d97706,#fbbf24)',
-            'linear-gradient(135deg,#db2777,#f472b6)',
-        ];
-        let h = 0; for(let i=0;i<(name||'').length;i++) h = (h*31 + name.charCodeAt(i)) & 0xffff;
-        return colors[h % colors.length];
-    }
-
-    function renderRow(row, idx){
-        const globalIdx = currentPage * PAGE_SIZE + idx + 1;
-        const checkedAt = row.checkedIn && row.checkedInAt ? fmtDateTime(row.checkedInAt) : '—';
-        return `
-        <tr data-ticket-id="${row.ticketId}" data-checked-in="${row.checkedIn}" data-status="${(row.status||'').toLowerCase()}">
-            <td style="color:var(--muted);font-size:13px;font-weight:600;">${globalIdx}</td>
-            <td>
-                <div class="td-avatar">
-                    <div class="row-avatar" style="background:${avatarColor(row.name)}">${initials(row.name)}</div>
-                    <div>
-                        <div class="row-name">${row.name || '—'}</div>
-                        <div class="row-email">${row.email || '—'}</div>
+            <!-- Event Details Page Container -->
+            <div id="details-content-section" class="hidden space-y-lg max-w-5xl mx-auto">
+                
+                <!-- Large Event Header Banner -->
+                <section class="relative h-64 md:h-80 w-full rounded-xl overflow-hidden border border-outline-variant bg-surface-container-low shadow-xl">
+                    <img id="event-banner" class="w-full h-full object-cover" src="" alt="Event Banner">
+                    <div class="absolute inset-0 bg-gradient-to-t from-background/90 via-background/40 to-transparent flex flex-col justify-end p-lg space-y-sm">
+                        <div class="flex items-center gap-sm">
+                            <span id="event-category-badge" class="bg-primary/20 text-primary border border-primary/30 text-label-md px-sm py-xs rounded-full font-semibold uppercase">Category</span>
+                            <span id="event-status-badge" class="bg-surface-container-high text-on-surface-variant border border-outline-variant text-label-md px-sm py-xs rounded-full font-semibold uppercase">PENDING</span>
+                        </div>
+                        <h2 id="event-title" class="text-headline-md md:text-display-lg text-on-background font-bold leading-tight">Event Title</h2>
                     </div>
+                </section>
+
+                <!-- Details Grid Section -->
+                <section class="grid grid-cols-1 md:grid-cols-3 gap-lg">
+                    
+                    <!-- Left Section: Specification Cards -->
+                    <div class="md:col-span-2 space-y-lg">
+                        <!-- About event description -->
+                        <div class="glass-card rounded-xl p-lg space-y-sm">
+                            <h3 class="text-title-lg font-bold text-primary border-b border-outline-variant/30 pb-xs">About this Event</h3>
+                            <p id="event-description" class="text-body-md text-on-surface-variant whitespace-pre-wrap">Loading description...</p>
+                        </div>
+
+                        <!-- Technical information details -->
+                        <div class="glass-card rounded-xl p-lg space-y-sm">
+                            <h3 class="text-title-lg font-bold text-primary border-b border-outline-variant/30 pb-xs">Event Details</h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-md pt-xs">
+                                
+                                <!-- Mode & Venue -->
+                                <div class="flex items-start gap-sm">
+                                    <span class="material-symbols-outlined text-primary text-[24px] mt-xs">explore</span>
+                                    <div>
+                                        <h4 class="text-body-sm font-semibold text-on-surface">Event Mode & Venue</h4>
+                                        <p id="event-mode" class="text-body-sm text-on-surface-variant">—</p>
+                                        <p id="event-venue" class="text-body-sm text-outline">—</p>
+                                    </div>
+                                </div>
+
+                                <!-- Organizer club -->
+                                <div class="flex items-start gap-sm">
+                                    <span class="material-symbols-outlined text-primary text-[24px] mt-xs">groups</span>
+                                    <div>
+                                        <h4 class="text-body-sm font-semibold text-on-surface">Student Club / Organizer</h4>
+                                        <p id="event-club" class="text-body-sm text-on-surface-variant">—</p>
+                                    </div>
+                                </div>
+
+                                <!-- Date & timings -->
+                                <div class="flex items-start gap-sm">
+                                    <span class="material-symbols-outlined text-primary text-[24px] mt-xs">calendar_today</span>
+                                    <div>
+                                        <h4 class="text-body-sm font-semibold text-on-surface">Event Timing</h4>
+                                        <p id="event-date" class="text-body-sm text-on-surface-variant">—</p>
+                                        <p id="event-time" class="text-body-sm text-outline">—</p>
+                                    </div>
+                                </div>
+
+                                <!-- Registration deadline -->
+                                <div class="flex items-start gap-sm">
+                                    <span class="material-symbols-outlined text-primary text-[24px] mt-xs">hourglass_empty</span>
+                                    <div>
+                                        <h4 class="text-body-sm font-semibold text-on-surface">Registration Deadline</h4>
+                                        <p id="event-deadline" class="text-body-sm text-on-surface-variant">—</p>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Section: Booking Panel -->
+                    <div class="space-y-lg">
+                        <div class="glass-card rounded-xl p-lg space-y-md shadow-2xl sticky top-20 border border-outline-variant/60">
+                            
+                            <!-- Header pricing -->
+                            <div class="flex items-baseline justify-between border-b border-outline-variant/30 pb-sm">
+                                <span class="text-body-sm text-on-surface-variant font-medium">Ticket Price</span>
+                                <span id="ticket-price-display" class="text-headline-sm font-bold text-primary">Free</span>
+                            </div>
+
+                            <!-- Alert Box for feedback -->
+                            <div id="details-alert" class="hidden p-sm rounded text-label-md font-medium flex items-start gap-xs">
+                                <!-- filled dynamically -->
+                            </div>
+
+                            <!-- Capacity progress bar -->
+                            <div class="space-y-xs">
+                                <div class="flex items-center justify-between text-body-sm">
+                                    <span class="text-on-surface-variant">Tickets Available</span>
+                                    <span id="capacity-text" class="text-on-surface font-semibold">0 / 0</span>
+                                </div>
+                                <div class="w-full bg-surface-container h-2.5 rounded-full overflow-hidden border border-outline-variant/20">
+                                    <div id="capacity-progress" class="bg-primary h-full transition-all duration-500" style="width: 0%"></div>
+                                </div>
+                            </div>
+
+                            <!-- Dynamic Form for screenshots and bookings -->
+                            <form id="booking-form" class="space-y-md pt-xs">
+                                
+                                <!-- Payment QR Scanner section (Conditional) -->
+                                <div id="payment-qr-section" class="hidden space-y-sm bg-surface-container-low p-md border border-outline-variant rounded-lg text-center">
+                                    <h4 class="text-body-sm font-semibold text-primary">1. Scan & Pay UPI QR</h4>
+                                    <div class="w-32 h-32 mx-auto border border-outline-variant rounded-md overflow-hidden bg-white p-1">
+                                        <img id="payment-qr-image" class="w-full h-full object-contain" src="" alt="UPI Scan QR">
+                                    </div>
+                                    <p class="text-label-md text-outline">Scan with any UPI App (GPay, PhonePe, Paytm)</p>
+                                </div>
+
+                                <!-- Payment Screenshot drop zone (Conditional) -->
+                                <div id="screenshot-upload-section" class="hidden space-y-xs">
+                                    <label class="text-body-sm font-medium text-on-surface">2. Upload Payment Screenshot <span class="text-error">*</span></label>
+                                    <div class="flex items-center justify-center w-full">
+                                        <label class="flex flex-col items-center justify-center w-full h-28 border border-outline-variant border-dashed rounded-lg cursor-pointer bg-surface-container-low hover:bg-surface-container-high/40 hover:border-primary transition-all">
+                                            <div class="flex flex-col items-center justify-center pt-sm pb-sm text-center px-xs">
+                                                <span class="material-symbols-outlined text-[24px] text-on-surface-variant mb-xs">upload_file</span>
+                                                <p id="screenshot-label" class="text-body-sm text-on-surface-variant font-medium line-clamp-1">Click to attach receipt</p>
+                                                <p class="text-label-md text-outline">PNG, JPG, JPEG (max 3MB)</p>
+                                            </div>
+                                            <input type="file" id="paymentScreenShot" name="paymentScreenShot" accept="image/*" class="hidden" />
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- Submit Button -->
+                                <button type="submit" id="book-ticket-btn"
+                                        class="w-full bg-primary hover:bg-primary-fixed text-on-primary font-bold py-md px-lg rounded-lg transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-xs">
+                                    <span class="material-symbols-outlined text-[20px]">local_activity</span>
+                                    <span id="booking-btn-text">Book Ticket</span>
+                                </button>
+
+                            </form>
+                        </div>
+                    </div>
+
+                </section>
+            </div>
+
+        </main>
+
+        <!-- ---------- FOOTER ---------- -->
+        <footer class="border-t border-outline-variant px-md md:px-lg py-lg mt-2xl">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-md text-center md:text-left">
+                <p class="text-body-sm text-on-surface-variant">© 2026 CampusHive. Empowering student engagement across 100+ campuses worldwide.</p>
+                <div class="flex gap-md text-body-sm text-on-surface-variant">
+                    <a href="/aboutUs" class="hover:text-primary transition-colors">About Us</a>
+                    <a href="/contact" class="hover:text-primary transition-colors">Support</a>
+                    <a href="#" class="hover:text-primary transition-colors">Privacy</a>
                 </div>
-            </td>
-            <td>${statusBadgeHTML(row.status)}</td>
-            <td>${checkinBadgeHTML(row.checkedIn, row.checkedInAt)}</td>
-            <td style="font-size:12px;color:var(--muted);">${checkedAt}</td>
-            <td>
-                <div class="action-cell">
-                    <button class="mark-btn present" onclick="markPresent(${row.ticketId},this)" ${row.checkedIn?'disabled':''}>✅ Present</button>
-                    <button class="mark-btn absent"  onclick="markAbsent(${row.ticketId},this)"  ${!row.checkedIn?'disabled':''}>❌ Absent</button>
-                </div>
-            </td>
-        </tr>`;
-    }
+            </div>
+        </footer>
+    </div>
+</div>
 
-    function renderRows(rows){
-        const tbody = $id('audienceTbody');
-        if (!rows || rows.length === 0){
-            tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">🎟️</div><h3>No attendees found</h3><p>No students have registered for this event yet.</p></div></td></tr>`;
-            return;
-        }
-        const filter = activeFilter, q = searchQuery.toLowerCase();
-        const filtered = rows.filter(r => {
-            const matchFilter =
-                filter === 'all' ? true :
-                filter === 'present' ? r.checkedIn :
-                filter === 'absent'  ? !r.checkedIn :
-                filter === 'pending' ? (r.status||'').toLowerCase() === 'pending' || (r.status||'').toLowerCase() !== 'confirmed' :
-                true;
-            const matchSearch = !q || (r.name||'').toLowerCase().includes(q) || (r.email||'').toLowerCase().includes(q);
-            return matchFilter && matchSearch;
-        });
-        if (filtered.length === 0){
-            tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">🔍</div><h3>No results</h3><p>Try adjusting the filter or search query.</p></div></td></tr>`;
-            return;
-        }
-        tbody.innerHTML = filtered.map((r, i) => renderRow(r, i)).join('');
-    }
-
-    function renderPagination(){
-        $id('paginationInfo').textContent = `Showing page ${currentPage+1} of ${totalPages} · ${totalElements} total`;
-        const btns = $id('paginationBtns');
-        btns.innerHTML = '';
-        const addBtn = (label, page, disabled, active) => {
-            const b = document.createElement('button');
-            b.className = 'pg-btn' + (active?' active':'');
-            b.textContent = label;
-            b.disabled = disabled;
-            b.addEventListener('click', () => loadAudience(page));
-            btns.appendChild(b);
-        };
-        addBtn('‹', currentPage-1, currentPage===0, false);
-        const start = Math.max(0, currentPage-2), end = Math.min(totalPages-1, currentPage+2);
-        for(let p=start; p<=end; p++) addBtn(p+1, p, false, p===currentPage);
-        addBtn('›', currentPage+1, currentPage>=totalPages-1, false);
-    }
-
-    async function loadAudience(page=0){
-        currentPage = page;
-        try{
-            const res = await fetch(`${TICKET_API}/audienceList/${EVENT_ID}?page=${page}&size=${PAGE_SIZE}`, { headers: authHeaders() });
-            if(!res.ok) throw new Error('Failed');
-            const data = await res.json();
-            allRows       = data.content || [];
-            totalPages    = data.totalPages || 1;
-            totalElements = data.totalElements || 0;
-            // recompute stats
-            statPresent = allRows.filter(r=>r.checkedIn).length;
-            statAbsent  = allRows.filter(r=>!r.checkedIn).length;
-            $id('statTotal').textContent   = totalElements;
-            $id('statPresent').textContent = statPresent;
-            $id('statAbsent').textContent  = statAbsent;
-            $id('attendeeCount').textContent = `${totalElements} student${totalElements!==1?'s':''}`;
-            renderRows(allRows);
-            renderPagination();
-        } catch(e){
-            console.error(e);
-            $id('audienceTbody').innerHTML = `<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">⚠️</div><h3>Could not load attendees</h3><p>${e.message}</p></div></td></tr>`;
-        }
-    }
-
-    /* ── Mark present / absent ── */
-    async function markPresent(ticketId, btn){
-        btn.disabled = true;
-        try{
-            const res = await fetch(`${TICKET_API}/${ticketId}/markPresent`, { method:'POST', headers: authHeaders() });
-            if(res.status === 204 || res.ok){
-                updateRowUI(ticketId, true);
-                showToast('Marked as Present ✅', 'success', '✅');
-            } else { throw new Error('Server error '+res.status); }
-        } catch(e){ showToast('Failed: '+e.message,'error','❌'); btn.disabled=false; }
-    }
-    async function markAbsent(ticketId, btn){
-        btn.disabled = true;
-        try{
-            const res = await fetch(`${TICKET_API}/${ticketId}/markAbsent`, { method:'POST', headers: authHeaders() });
-            if(res.status === 204 || res.ok){
-                updateRowUI(ticketId, false);
-                showToast('Marked as Absent ❌', 'info', '❌');
-            } else { throw new Error('Server error '+res.status); }
-        } catch(e){ showToast('Failed: '+e.message,'error','❌'); btn.disabled=false; }
-    }
-
-    function updateRowUI(ticketId, isPresent){
-        const row = $id('audienceTbody').querySelector(`tr[data-ticket-id="${ticketId}"]`);
-        if(!row) return;
-        row.dataset.checkedIn = isPresent;
-        // update checkin cell (td index 3)
-        row.cells[3].innerHTML = isPresent ? '<span class="checkin-badge yes">✅ Present</span>' : '<span class="checkin-badge no">— Absent</span>';
-        // update time cell
-        row.cells[4].textContent = isPresent ? new Date().toLocaleString('en-IN',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—';
-        // update action buttons
-        const [presentBtn, absentBtn] = row.querySelectorAll('.mark-btn');
-        if(presentBtn) presentBtn.disabled = isPresent;
-        if(absentBtn)  absentBtn.disabled  = !isPresent;
-        // update in-memory list
-        const r = allRows.find(r=>r.ticketId===ticketId);
-        if(r){ r.checkedIn=isPresent; if(isPresent) r.checkedInAt=new Date().toISOString(); }
-        // update stat chips
-        statPresent = allRows.filter(r=>r.checkedIn).length;
-        statAbsent  = allRows.filter(r=>!r.checkedIn).length;
-        $id('statPresent').textContent = statPresent;
-        $id('statAbsent').textContent  = statAbsent;
-    }
-
-    /* ── Load event info ── */
-    async function loadEventInfo(){
-        try{
-            const res = await fetch(`${EVENT_API}/getEvent/${EVENT_ID}`, { headers: authHeaders() });
-            if(!res.ok) return;
-            const ev = await res.json();
-            $id('bcEventTitle').textContent = ev.title || 'Event';
-            $id('eventTitle').textContent   = ev.title || '—';
-            $id('eventCategory').textContent= ev.category || 'Event';
-            $id('eventDate').textContent    = fmtDate(ev.eventDate);
-            $id('eventLocation').textContent= ev.location || '—';
-            $id('eventTime').textContent    = ev.time || ev.startTime || '—';
-            if(ev.bannerUrl) $id('eventBanner').src = ev.bannerUrl;
-            document.title = `${ev.title} — Eventaura`;
-        } catch(e){ /* not critical */ }
-    }
-
-    /* ── Filter pills ── */
-    document.querySelectorAll('.filter-pill').forEach(btn=>{
-        btn.addEventListener('click', ()=>{
-            document.querySelectorAll('.filter-pill').forEach(b=>b.classList.remove('active'));
-            btn.classList.add('active');
-            activeFilter = btn.dataset.filter;
-            renderRows(allRows);
-        });
-    });
-
-    /* ── Search ── */
-    $id('attendeeSearch').addEventListener('input', e=>{
-        searchQuery = e.target.value;
-        renderRows(allRows);
-    });
-
-    /* ── Boot ── */
-    loadEventInfo();
-    loadAudience(0);
-</script>
-
-<script>
-    /* ══════════════════════════════════════════════════════
-       QR SCANNER
-       ══════════════════════════════════════════════════════ */
-    let qrStream = null;
-    let qrScanTimer = null;
-    let lastScanned = null;
-    let scanCooldown = false;
-
-    const qrModal    = $id('qrModal');
-    const qrVideo    = $id('qrVideo');
-    const qrStatus   = $id('qrStatus');
-    const qrResultCard  = $id('qrResultCard');
-    const qrResultIcon  = $id('qrResultIcon');
-    const qrResultName  = $id('qrResultName');
-    const qrResultEmail = $id('qrResultEmail');
-    const qrResultMsg   = $id('qrResultMsg');
-
-    function openQrModal(){
-        qrModal.classList.add('open');
-        document.body.style.overflow = 'hidden';
-        resetQrResult();
-        startCamera();
-    }
-
-    function closeQrModal(){
-        qrModal.classList.remove('open');
-        document.body.style.overflow = '';
-        stopCamera();
-    }
-
-    async function startCamera(){
-        qrStatus.textContent = '📡 Starting camera…';
-        try{
-            qrStream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'environment' } });
-            qrVideo.srcObject = qrStream;
-            qrVideo.play();
-            qrStatus.textContent = '🔍 Point camera at ticket QR code';
-            startScanning();
-        } catch(e){
-            qrStatus.textContent = '⚠️ Camera access denied. Please allow camera permissions.';
-            console.error(e);
-        }
-    }
-
-    function stopCamera(){
-        clearInterval(qrScanTimer);
-        if(qrStream){ qrStream.getTracks().forEach(t=>t.stop()); qrStream=null; }
-        qrVideo.srcObject = null;
-    }
-
-    function startScanning(){
-        const canvas = document.createElement('canvas');
-        const ctx    = canvas.getContext('2d');
-        qrScanTimer  = setInterval(()=>{
-            if(qrVideo.readyState !== qrVideo.HAVE_ENOUGH_DATA) return;
-            if(scanCooldown) return;
-            canvas.width  = qrVideo.videoWidth;
-            canvas.height = qrVideo.videoHeight;
-            ctx.drawImage(qrVideo, 0, 0, canvas.width, canvas.height);
-            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts:'dontInvert' });
-            if(code && code.data){
-                const scannedValue = code.data.trim();
-                if(scannedValue !== lastScanned){
-                    lastScanned = scannedValue;
-                    handleScannedCode(scannedValue);
-                }
-            }
-        }, 300);
-    }
-
-    async function handleScannedCode(raw) {
-        // QR may contain:
-        //   - a plain numeric code:           "123456789012"
-        //   - a full check-in URL:            "https://…/checkin/123456789012"
-        //   - a QR-image URL (ticketId):      "https://…/tickets/42/qr"
-        //   - the old base URL + ticketCode:  "https://eventaura-iemd.onrender.com/123456789012"
-
-        let ticketCode = null;
-
-        // 1. Try to extract from known URL patterns first
-        const urlPatterns = [
-            /\/checkin\/(\d+)/,           // .../checkin/123
-            /\/tickets\/(\d+)\/qr/,       // .../tickets/42/qr  ← ticketId, not code; skip if possible
-            /eventaura[^/]*\.onrender\.com\/(\d+)/,  // old QR URL pattern
-            /eventaura[^/]*\.onrender\.com\/.+?\/(\d+)/, // generic trailing number
-        ];
-
-        for (const pattern of urlPatterns) {
-            const m = raw.match(pattern);
-            if (m) { ticketCode = m[1]; break; }
-        }
-
-        // 2. Fall back: if the whole raw value is purely numeric, use it directly
-        if (!ticketCode && /^\d+$/.test(raw.trim())) {
-            ticketCode = raw.trim();
-        }
-
-        if (!ticketCode) {
-            qrStatus.textContent = `⚠️ Unrecognised QR: ${raw.substring(0, 60)}`;
-            return;
-        }
-
-        scanCooldown = true;
-        qrStatus.textContent = `⏳ Checking ticket #${ticketCode}…`;
-        resetQrResult();
-
-        try {
-            const res = await fetch(`${TICKET_API}/checkin/${ticketCode}`, {
-                method: 'POST',
-                headers: authHeaders()
-            });
-
-            const contentType = res.headers.get('Content-Type') || '';
-            let body = {};
-            if (contentType.includes('application/json')) body = await res.json();
-
-            if (res.ok && body.success) {
-                showQrResult('success', '✅',
-                    body.userName || body.name || 'Student',
-                    body.userEmail || body.email || '',
-                    'Checked in successfully!');
-                qrStatus.textContent = '✅ Checked in!';
-                showToast(`${body.userName || 'Student'} checked in`, 'success', '✅');
-                setTimeout(() => loadAudience(currentPage), 600);
-
-            } else if (!res.ok && res.status === 409 ||
-                       (body.message || '').toLowerCase().includes('already')) {
-                showQrResult('already', '⚠️',
-                    body.userName || body.name || 'Student',
-                    body.userEmail || body.email || '',
-                    'Already checked in!');
-                qrStatus.textContent = '⚠️ Already checked in';
-
-            } else {
-                showQrResult('error', '❌', 'Invalid Ticket', '',
-                    body.message || 'Ticket not found or invalid');
-                qrStatus.textContent = '❌ ' + (body.message || 'Invalid ticket');
-            }
-
-        } catch (e) {
-            showQrResult('error', '❌', 'Network Error', '', e.message);
-            qrStatus.textContent = '❌ Network error';
-        }
-
-        // Allow re-scan after 2.5s
-        setTimeout(() => { scanCooldown = false; lastScanned = null; }, 2500);
-    }
-
-    function showQrResult(type, icon, name, email, msg){
-        qrResultCard.className = `qr-result-card ${type}`;
-        qrResultIcon.textContent  = icon;
-        qrResultName.textContent  = name;
-        qrResultEmail.textContent = email;
-        qrResultMsg.textContent   = msg;
-    }
-
-    function resetQrResult(){
-        qrResultCard.className = 'qr-result-card';
-        qrResultName.textContent = qrResultEmail.textContent = qrResultMsg.textContent = '';
-        qrResultIcon.textContent = '';
-    }
-
-    $id('openQrBtn').addEventListener('click', openQrModal);
-    $id('qrModalClose').addEventListener('click', closeQrModal);
-    $id('qrBtnCloseModal').addEventListener('click', closeQrModal);
-    $id('qrBtnStop').addEventListener('click', ()=>{
-        stopCamera();
-        qrStatus.textContent = '⏸ Camera stopped. Close this window or restart.';
-    });
-    qrModal.addEventListener('click', e=>{ if(e.target===qrModal) closeQrModal(); });
-</script>
-
-<script th:src="@{/js/basic.js}"></script>
-
+<script src="/js/auth.js"></script>
+<script src="/js/auto-refresh.js"></script>
+<script src="/js/nav-config.js"></script>
+<script src="/js/sidebar.js"></script>
+<script src="/js/eventDetails.js"></script>
 </body>
+
 </html>

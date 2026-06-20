@@ -18,9 +18,10 @@ function authHeaders() {
  * Fetches one page of global events from the real API.
  * Returns the Spring Page object (content, number, totalPages, last, ...) or throws.
  */
-async function fetchEventsPage(page, size) {
+async function fetchEventsPage(page, size, query = "") {
+    const queryParam = query ? `&query=${encodeURIComponent(query)}` : "";
     const response = await fetch(
-        `${EVENTS_API_BASE}/global?page=${page}&size=${size}`,
+        `${EVENTS_API_BASE}/global?page=${page}&size=${size}${queryParam}`,
         { credentials: "include", headers: authHeaders() }
     );
 
@@ -62,11 +63,12 @@ function eventCardHtml(ev) {
 
     return `
     <article class="bg-surface-container border border-outline-variant rounded-xl overflow-hidden hover:border-primary/50 transition-colors group">
-        <a href="/events/${ev.eventId}" class="block h-40 event-card-img relative" style="${bannerStyle}">
+        <a href="/eventDetails/${ev.eventId}" class="block h-40 event-card-img relative" style="${bannerStyle}">
+            ${ev.logoUrl ? `<span class="absolute top-sm left-sm bg-background/80 backdrop-blur-sm p-0.5 rounded-full border border-outline-variant/30 flex items-center justify-center w-8 h-8"><img src="${ev.logoUrl}" alt="University Logo" class="w-full h-full object-contain rounded-full" /></span>` : ""}
             ${ev.category ? `<span class="absolute top-sm right-sm bg-background/80 backdrop-blur-sm text-on-background text-label-md px-sm py-xs rounded-full">${ev.category}</span>` : ""}
         </a>
         <div class="p-md space-y-sm">
-            <a href="/events/${ev.eventId}">
+            <a href="/eventDetails/${ev.eventId}">
                 <h3 class="text-title-lg font-semibold text-on-surface group-hover:text-primary transition-colors">${ev.title}</h3>
             </a>
             <div class="flex items-center gap-xs text-on-surface-variant text-body-sm">
@@ -97,7 +99,9 @@ function setLoadMoreVisible(visible, label) {
     }
 }
 
-async function loadEventsPage(page) {
+let searchQuery = "";
+
+async function loadEventsPage(page, isNewSearch = false) {
     const container = document.getElementById("event-cards");
     const emptyMsg = document.getElementById("events-empty-msg");
     const errorMsg = document.getElementById("events-error-msg");
@@ -110,14 +114,14 @@ async function loadEventsPage(page) {
     document.getElementById("load-more-btn")?.setAttribute("disabled", "true");
 
     try {
-        const pageData = await fetchEventsPage(page, PAGE_SIZE);
+        const pageData = await fetchEventsPage(page, PAGE_SIZE, searchQuery);
         const events = pageData.content || [];
 
-        if (page === 0) {
+        if (page === 0 || isNewSearch) {
             container.innerHTML = "";
         }
 
-        if (events.length === 0 && page === 0) {
+        if (events.length === 0 && (page === 0 || isNewSearch)) {
             if (emptyMsg) emptyMsg.classList.remove("hidden");
         } else {
             container.insertAdjacentHTML("beforeend", events.map(eventCardHtml).join(""));
@@ -125,14 +129,6 @@ async function loadEventsPage(page) {
 
         currentPage = Number.isInteger(pageData.number) ? pageData.number : page;
         isLastPage = pageData.last === true;
-        if (!Number.isInteger(pageData.number)) {
-            console.warn(
-                "[home.js] pageData.number was not a valid integer — got:",
-                pageData.number,
-                "Falling back to requested page:", page,
-                "Full pageData:", pageData
-            );
-        }
         setLoadMoreVisible(!isLastPage, "Load More");
     } catch (err) {
         if (errorMsg) {
@@ -144,55 +140,22 @@ async function loadEventsPage(page) {
         isLoading = false;
     }
 }
-//h
 
+// Global search bar listener
 const searchInput = document.getElementById("eventSearch");
-
 let debounceTimer;
 
-searchInput.addEventListener("input", () => {
-    clearTimeout(debounceTimer);
-
-    debounceTimer = setTimeout(() => {
-        const query = searchInput.value.trim();
-
-        loadEvents(query);
-    }, 400);
-});
-
-async function loadEvents(query = "") {
-    try {
-        const url = query
-            ? `/api/v1/event/global?query=${encodeURIComponent(query)}&page=0&size=10`
-            : `/api/v1/event/global?page=0&size=10`;
-
-        const response = await fetch(url);
-        const data = await response.json();
-
-        console.log(data.data.content);
-
-        renderEvents(data.data.content);
-
-    } catch (error) {
-        console.error("Failed to load events:", error);
-    }
-}
-
-function renderEvents(events) {
-    const container = document.getElementById("eventsContainer");
-
-    container.innerHTML = "";
-
-    events.forEach(event => {
-        container.innerHTML += `
-            <div class="event-card">
-                <h3>${event.title}</h3>
-                <p>${event.location}</p>
-            </div>
-        `;
+if (searchInput) {
+    searchInput.addEventListener("input", () => {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+            searchQuery = searchInput.value.trim();
+            currentPage = 0;
+            loadEventsPage(0, true);
+        }, 400);
     });
 }
-//h
+
 document.addEventListener("DOMContentLoaded", () => {
     loadEventsPage(0);
 

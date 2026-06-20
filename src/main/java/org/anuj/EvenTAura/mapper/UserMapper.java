@@ -27,15 +27,18 @@ public class UserMapper {
 
     public static UserResponse toResponse(User user){
         String university = null;
+        String universityDomain = null;
         if(user.getUniversity()!=null){
             university = user.getUniversity().getName();
+            universityDomain = user.getUniversity().getDomain();
         }
         return new UserResponse(user.getUserId(),
                 user.getName(),
                 user.getEmail(),
                 user.getSystemRole(),
                 university,
-                user.getProvider());
+                user.getProvider(),
+                universityDomain);
     }
 
     public static void toUpdatedEntity(User user, UserUpdateRequest request, University university){

@@ -99,14 +99,14 @@ public class EventController {
 
     // Delete Event
     @DeleteMapping("/deleteEvent/{eventId}")
-    @PreAuthorize("@eventSecur4ity.isHostOrHOD(authentication)")
+    @PreAuthorize("@eventSecurity.isHostOrHOD(authentication)")
     public ResponseEntity<ApiResponse<Void>> deleteEvent(@PathVariable Long eventId,Authentication auth) {
         return ResponseEntity.ok(ApiResponse.success("Event successfully deleted",eventService.deleteEvent(eventId,auth)));
     }
 
     // Cancel Event
     @DeleteMapping("/cancelEvent/{eventId}")
-    @PreAuthorize("@eventSecur4ity.isHostOrHOD(authentication)")
+    @PreAuthorize("@eventSecurity.isHostOrHOD(authentication)")
     public ResponseEntity<ApiResponse<Void>> cancelEvent(@PathVariable Long eventId,Authentication auth) {
         return ResponseEntity.ok(ApiResponse.success("Event successfully deleted",eventService.cancelEvent(eventId,auth)));
     }
@@ -135,11 +135,12 @@ public class EventController {
     // Get all university events
     @GetMapping("/getUniversityEvents")
     public ResponseEntity<ApiResponse<Page<EventSummaryResponse>>> getUniversityEvents(
+            @RequestParam(required = false) String query,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             Authentication authentication
     ) {
-        return ResponseEntity.ok(ApiResponse.success("University event loaded successfully", eventService.getUniversityEvents(page, size, authentication)));
+        return ResponseEntity.ok(ApiResponse.success("University event loaded successfully", eventService.getUniversityEvents(page, size, query, authentication)));
     }
 
     // Get hosted events

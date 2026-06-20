@@ -17,7 +17,7 @@ public class UniversityMapper {
         University university = new University();
         university.setName(request.getName());
         university.setDomain(request.getDomain());
-        university.setLogoUrl(university.getLogoUrl());
+        university.setLogoUrl(request.getLogoUrl());
         return university;
     }
 

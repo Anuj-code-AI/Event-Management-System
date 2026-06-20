@@ -23,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Service
@@ -46,36 +47,83 @@ public class TicketServiceImpl implements TicketService{
             MultipartFile file,
             Authentication authentication
     ) {
+
         // ================= USER =================
-        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        CustomUserDetails userDetails =
+                (CustomUserDetails) authentication.getPrincipal();
+
         User user = userRepository.findByUserId(userDetails.getId())
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+                .orElseThrow(() ->
+                        new UserNotFoundException("User not found"));
 
         // ================= EVENT =================
         Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new EventNotExistException("No event found with this id"));
+                .orElseThrow(() ->
+                        new EventNotExistException("No event found with this id"));
 
-        // ================= VALIDATION =================
-        if(event.getTicketsAvailable() <= 0)
-            throw new RuntimeException("Sold out");
+        // ================= TICKET AVAILABILITY =================
+        if (event.getTicketsAvailable() <= 0) {
+            throw new RuntimeException("Event is sold out");
+        }
 
-        boolean alreadyRegistered =
-                ticketRepository.existsByEventAndUser(event, user);
-
-        if(alreadyRegistered)
-            throw new RuntimeException("Already registered");
-
+        // ================= PAYMENT VALIDATION =================
         String paymentScreenShotUrl = null;
 
         if (event.getTicketPrice() > 0) {
+
             if (file == null || file.isEmpty()) {
-                throw new IllegalArgumentException("Payment screenshot required for paid events");
+                throw new IllegalArgumentException(
+                        "Payment screenshot required for paid events"
+                );
             }
 
-            // Optional: validate file type/size here
-            paymentScreenShotUrl = cloudinaryService.uploadImage(file, "paymentScreenShot");
+            paymentScreenShotUrl =
+                    cloudinaryService.uploadImage(file, "paymentScreenShot");
         }
 
+        // ================= EXISTING TICKET CHECK =================
+        Optional<Ticket> existingTicket =
+                ticketRepository.findByEventAndUser(event, user);
+
+        if (existingTicket.isPresent()) {
+
+            Ticket ticket = existingTicket.get();
+
+            // User already has an active ticket
+            if (ticket.getStatus() == TicketStatus.ACTIVE) {
+                throw new RuntimeException(
+                        "You are already registered for this event"
+                );
+            }
+
+            // Re-activate cancelled ticket
+            if (ticket.getStatus() == TicketStatus.CANCELLED) {
+
+                ticket.setStatus(TicketStatus.ACTIVE);
+                ticket.setIssuedAt(LocalDateTime.now());
+                ticket.setCheckedIn(false);
+                ticket.setCheckedInAt(null);
+
+                if (event.getTicketPrice() > 0) {
+                    ticket.setPaymentScreenShotUrl(paymentScreenShotUrl);
+                }
+
+                event.setTicketsAvailable(
+                        event.getTicketsAvailable() - 1
+                );
+
+                eventRepository.save(event);
+                ticketRepository.save(ticket);
+
+                return TicketMapper.toResponse(ticket);
+            }
+
+            throw new RuntimeException(
+                    "Ticket cannot be reactivated in current state"
+            );
+        }
+
+        // ================= CREATE NEW TICKET =================
         Ticket ticket = new Ticket(
                 null,
                 generateTicketCode(),
@@ -89,13 +137,16 @@ public class TicketServiceImpl implements TicketService{
         );
 
         // ================= UPDATE EVENT =================
-        event.setTicketsAvailable(event.getTicketsAvailable() - 1);
+        event.setTicketsAvailable(
+                event.getTicketsAvailable() - 1
+        );
 
         // ================= SAVE =================
+        eventRepository.save(event);
         ticketRepository.save(ticket);
+
         return TicketMapper.toResponse(ticket);
     }
-
     @Override
     public Page<TicketResponse> myTickets(int page, int size, Authentication authentication) {
 

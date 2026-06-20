@@ -35,7 +35,7 @@ function renderLoggedInSidebar(user) {
         navEl.classList.remove("hidden");
         navEl.innerHTML = navItems
             .map((item, idx) => {
-                const isActive = idx === 0; // "Home" active by default on this page
+                const isActive = window.location.pathname === item.href;
                 return `
                 <a href="${item.href}"
                    class="flex items-center gap-sm px-md py-sm rounded-lg text-body-sm font-medium transition-colors

@@ -15,11 +15,17 @@ import java.util.Optional;
 public interface EventRepository extends JpaRepository<Event,Long> {
     Optional<Event> findById(Long eventId);
     Page<Event> findByUser(User user, Pageable pageable);
-    Page<Event> findByParticipationType(ParticipationType participationType, Pageable pageable);
-    Page<Event> findByEventStatusAndUniversity(EventStatus status, University university, Pageable pageable);
+    Page<Event> findByParticipationTypeAndEventStatusInAndTitleContainingIgnoreCase(ParticipationType participationType,List<EventStatus> statuses, String title, Pageable pageable);
+    Page<Event> findByParticipationTypeAndEventStatusIn(ParticipationType participationType, List<EventStatus> statuses, Pageable pageable);
     List<Event> findByEventStatusAndUniversity(EventStatus status, University university);
-    Page<Event> findByParticipationTypeAndTitleContainingIgnoreCase(
-            ParticipationType participationType,
+    Page<Event> findByEventStatusInAndUniversity(
+            List<EventStatus> statuses,
+            University university,
+            Pageable pageable
+    );
+    Page<Event> findByUniversityAndEventStatusInAndTitleContainingIgnoreCase(
+            University university,
+            List<EventStatus> statuses,
             String title,
             Pageable pageable
     );

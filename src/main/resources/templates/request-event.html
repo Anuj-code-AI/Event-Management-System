@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Request Event | CampusHive</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+            rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-error-container": "#ffdad6",
+                        "error": "#ffb4ab",
+                        "surface-container": "#171f1c",
+                        "error-container": "#93000a",
+                        "surface-container-low": "#131a17",
+                        "surface-bright": "#313d36",
+                        "secondary": "#7fc9a0",
+                        "on-secondary": "#08311c",
+                        "primary-fixed-dim": "#4edea3",
+                        "outline-variant": "#33453c",
+                        "surface-tint": "#4edea3",
+                        "on-tertiary-fixed-variant": "#0b513d",
+                        "on-tertiary-container": "#004231",
+                        "background": "#0a1310",
+                        "on-secondary-container": "#c2ecd4",
+                        "tertiary": "#95d3ba",
+                        "primary": "#4edea3",
+                        "surface-container-high": "#212a26",
+                        "outline": "#86948a",
+                        "secondary-fixed": "#c2ecd4",
+                        "on-primary-container": "#00422b",
+                        "inverse-primary": "#006c49",
+                        "tertiary-container": "#1f5b41",
+                        "surface-container-highest": "#2c3631",
+                        "on-tertiary": "#003829",
+                        "surface-container-lowest": "#05100c",
+                        "tertiary-fixed-dim": "#95d3ba",
+                        "surface-dim": "#0a1310",
+                        "on-secondary-fixed-variant": "#1d5235",
+                        "inverse-on-surface": "#22302a",
+                        "on-secondary-fixed": "#03210f",
+                        "inverse-surface": "#dcebe0",
+                        "secondary-container": "#1d5235",
+                        "surface": "#0a1310",
+                        "on-primary": "#003824",
+                        "on-error": "#690005",
+                        "on-surface": "#dcebe0",
+                        "primary-fixed": "#6ffbbe",
+                        "on-surface-variant": "#bbcabf",
+                        "secondary-fixed-dim": "#7fc9a0",
+                        "on-primary-fixed": "#002113",
+                        "on-tertiary-fixed": "#002117",
+                        "primary-container": "#10b981",
+                        "tertiary-fixed": "#b0f0d6",
+                        "on-background": "#dcebe0"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.5rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "24px",
+                        "xl": "40px",
+                        "2xl": "64px",
+                        "container-max": "1280px",
+                        "xs": "4px",
+                        "sm": "8px",
+                        "md": "16px",
+                        "margin-mobile": "16px",
+                        "base": "8px",
+                        "lg": "24px",
+                        "sidebar-w": "272px"
+                    },
+                    "fontFamily": {
+                        "body-sm": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "display-lg-mobile": ["Inter"],
+                        "title-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "headline-sm": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-md": ["30px", { "lineHeight": "38px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "display-lg-mobile": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "title-lg": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }]
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        body {
+            background-color: #0a1310;
+            color: #dcebe0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .hero-mesh {
+            background-image: radial-gradient(at 0% 0%, hsla(158, 64%, 52%, 0.10) 0, transparent 50%),
+            radial-gradient(at 100% 0%, hsla(158, 64%, 52%, 0.08) 0, transparent 50%);
+        }
+
+        /* Glassmorphism styling */
+        .glass-card {
+            background: rgba(23, 31, 28, 0.45);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(51, 69, 60, 0.5);
+        }
+    </style>
+</head>
+
+<body class="dark overflow-x-hidden">
+
+<!-- Mobile backdrop -->
+<div id="sidebar-overlay" class="hidden fixed inset-0 bg-black/60 z-30 md:hidden"></div>
+
+<div class="flex min-h-screen">
+
+    <!-- ===================== SIDEBAR ===================== -->
+    <aside id="sidebar"
+           class="flex flex-col w-sidebar-w h-screen fixed left-0 top-0 bg-surface-container-lowest border-r border-outline-variant z-40
+           -translate-x-full md:translate-x-0 transition-transform duration-200">
+        <button id="sidebar-close" aria-label="Close menu"
+                class="md:hidden absolute top-md right-md text-on-surface-variant hover:text-on-surface">
+            <span class="material-symbols-outlined">close</span>
+        </button>
+
+        <div class="flex flex-col items-center text-center pt-xl pb-lg px-md border-b border-outline-variant">
+            <a href="/profile" aria-label="Go to profile"
+               class="w-20 h-20 rounded-full bg-surface-container-high border-2 border-primary/40 hover:border-primary transition-colors flex items-center justify-center overflow-hidden mb-md">
+                <span class="material-symbols-outlined text-on-surface-variant text-[44px]">person</span>
+            </a>
+            <p id="sidebar-username" class="text-title-lg font-semibold text-on-background">—</p>
+            <p id="sidebar-role" class="text-label-md text-primary uppercase tracking-wide mt-xs">—</p>
+        </div>
+
+        <nav id="sidebar-nav" class="flex-1 overflow-y-auto px-sm py-md space-y-xs">
+            <!-- populated by sidebar.js -->
+        </nav>
+
+        <div id="sidebar-auth-actions" class="hidden flex-1 flex flex-col gap-sm px-md py-md">
+            <a href="/login" class="w-full text-center bg-primary hover:bg-primary-fixed text-on-primary font-bold px-lg py-sm rounded-lg transition-all">
+                Log In
+            </a>
+            <a href="/register" class="w-full text-center border border-outline-variant hover:bg-surface-container-high text-on-surface font-bold px-lg py-sm rounded-lg transition-all">
+                Sign Up
+            </a>
+        </div>
+
+        <div id="sidebar-logout-wrap" class="px-sm py-md border-t border-outline-variant">
+            <button id="logout-btn"
+                    class="w-full flex items-center gap-sm px-md py-sm rounded-lg text-body-sm font-medium text-error hover:bg-error-container/20 transition-colors">
+                <span class="material-symbols-outlined text-[22px]">logout</span>
+                <span>Log Out</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- ===================== MAIN COLUMN ===================== -->
+    <div class="flex-1 md:ml-sidebar-w flex flex-col min-w-0">
+
+        <!-- ---------- HEADER ---------- -->
+        <header class="sticky top-0 z-20 h-16 bg-background/90 backdrop-blur-md border-b border-outline-variant">
+            <div class="h-full flex items-center gap-md px-md md:px-lg">
+                <button id="sidebar-open" class="md:hidden text-on-surface-variant hover:text-on-surface" aria-label="Open menu">
+                    <span class="material-symbols-outlined">menu</span>
+                </button>
+
+                <a href="/home" class="flex md:hidden items-center gap-2">
+                    <img src="/images/logo.png" alt="CampusHive Logo" class="w-7 h-7 object-contain" />
+                    <span class="text-title-lg font-bold tracking-tight whitespace-nowrap">
+                        <span class="text-white">Campus</span><span class="text-primary">Hive</span>
+                    </span>
+                </a>
+
+                <h1 id="page-action-title" class="hidden md:block text-title-lg font-bold text-on-background">Request Event</h1>
+
+                <a href="/home" class="hidden md:flex items-center gap-2 ml-auto">
+                    <img src="/images/logo.png" alt="CampusHive Logo" class="w-7 h-7 object-contain" />
+                    <span class="text-title-lg font-bold tracking-tight whitespace-nowrap">
+                        <span class="text-white">Campus</span><span class="text-primary">Hive</span>
+                    </span>
+                </a>
+            </div>
+        </header>
+
+        <!-- ---------- MAIN CONTENT ---------- -->
+        <main class="flex-1 px-md md:px-lg py-lg space-y-xl hero-mesh">
+
+            <div class="max-w-3xl mx-auto space-y-md">
+                <!-- Back Link -->
+                <div class="flex items-center">
+                    <a href="/event-management" class="inline-flex items-center gap-xs text-body-sm text-primary hover:underline font-medium">
+                        <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                        Back to Event Management
+                    </a>
+                </div>
+
+                <!-- Main Glass Card Form -->
+                <div class="glass-card rounded-xl p-lg md:p-xl shadow-2xl">
+                    <div class="mb-lg">
+                        <h2 id="form-heading" class="text-headline-sm font-bold text-on-background">Create New Event Request</h2>
+                        <p class="text-body-sm text-on-surface-variant mt-xs">Fill out the form below to propose a campus event. HOD approval is required before the event goes public.</p>
+                    </div>
+
+                    <!-- Global Alert Messages -->
+                    <div id="alert-box" class="hidden p-md rounded-lg mb-lg text-body-sm font-medium flex items-start gap-sm">
+                        <!-- Filled by JS -->
+                    </div>
+
+                    <form id="event-form" class="space-y-lg" novalidate>
+                        <!-- Basic Information -->
+                        <div>
+                            <h3 class="text-body-lg font-semibold text-primary border-b border-outline-variant/30 pb-xs mb-md">1. Basic Information</h3>
+                            <div class="grid grid-cols-1 gap-md">
+                                <div class="space-y-xs">
+                                    <label for="title" class="text-body-sm font-medium text-on-surface">Event Title <span class="text-error">*</span></label>
+                                    <input type="text" id="title" name="title" required placeholder="e.g. Annual Hackathon 2026"
+                                           class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-md py-sm text-body-sm text-on-surface focus:border-primary focus:outline-none transition-colors" />
+                                    <p class="error-msg text-label-md text-error hidden"></p>
+                                </div>
+
+                                <div class="space-y-xs">
+                                    <label for="description" class="text-body-sm font-medium text-on-surface">Description</label>
+                                    <textarea id="description" name="description" rows="4" placeholder="Describe the details, goals, agenda, and guidelines of your event..."
+                                              class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-md py-sm text-body-sm text-on-surface focus:border-primary focus:outline-none transition-colors"></textarea>
+                                    <p class="error-msg text-label-md text-error hidden"></p>
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-md">
+                                    <div class="space-y-xs">
+                                        <label for="category" class="text-body-sm font-medium text-on-surface">Category</label>
+                                        <select id="category" name="category"
+                                                class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-md py-sm text-body-sm text-on-surface focus:border-primary focus:outline-none transition-colors">
+                                            <option value="">Select Category</option>
+                                            <option value="Technical">Technical</option>
+                                            <option value="Cultural">Cultural</option>
+                                            <option value="Sports">Sports</option>
+                                            <option value="Workshop">Workshop</option>
+                                            <option value="Seminar">Seminar</option>
+                                            <option value="Gaming">Gaming</option>
+                                            <option value="Social">Social</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                        <p class="error-msg text-label-md text-error hidden"></p>
+                                    </div>
+
+                                    <div class="space-y-xs">
+                                        <label for="club" class="text-body-sm font-medium text-on-surface">Student Club / Organizer Name</label>
+                                        <input type="text" id="club" name="club" placeholder="e.g. Coding Club"
+                                               class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-md py-sm text-body-sm text-on-surface focus:border-primary focus:outline-none transition-colors" />
+                                        <p class="error-msg text-label-md text-error hidden"></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Date & Timing -->
+                        <div>
+                            <h3 class="text-body-lg font-semibold text-primary border-b border-outline-variant/30 pb-xs mb-md">2. Date & Timings</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-md">
+                                <div class="space-y-xs">
+                                    <label for="eventDate" class="text-body-sm font-medium text-on-surface">Event Date <span class="text-error">*</span></label>
+                                    <input type="date" id="eventDate" name="eventDate" required
+                                           class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-md py-sm text-body-sm text-on-surface focus:border-primary focus:outline-none transition-colors" />
+                                    <p class="error-msg text-label-md text-error hidden"></p>
+                                </div>
+
+                                <div class="space-y-xs">
+                                    <label for="eventTime" class="text-body-sm font-medium text-on-surface">Event Start Time <span class="text-error">*</span></label>
+                                    <input type="time" id="eventTime" name="eventTime" required
+                                           class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-md py-sm text-body-sm text-on-surface focus:border-primary focus:outline-none transition-colors" />
+                                    <p class="error-msg text-label-md text-error hidden"></p>
+                                </div>
+
+                                <div class="space-y-xs">
+                                    <label for="lastRegistrationDate" class="text-body-sm font-medium text-on-surface">Registration Deadline <span class="text-error">*</span></label>
+                                    <input type="date" id="lastRegistrationDate" name="lastRegistrationDate" required
+                                           class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-md py-sm text-body-sm text-on-surface focus:border-primary focus:outline-none transition-colors" />
+                                    <p class="error-msg text-label-md text-error hidden"></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Mode & Location -->
+                        <div>
+                            <h3 class="text-body-lg font-semibold text-primary border-b border-outline-variant/30 pb-xs mb-md">3. Mode & Venue</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-md">
+                                <div class="space-y-xs">
+                                    <label for="eventMode" class="text-body-sm font-medium text-on-surface">Event Mode <span class="text-error">*</span></label>
+                                    <select id="eventMode" name="eventMode" required
+                                            class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-md py-sm text-body-sm text-on-surface focus:border-primary focus:outline-none transition-colors">
+                                        <option value="OFFLINE">Offline (On Campus)</option>
+                                        <option value="ONLINE">Online</option>
+                                        <option value="HYBRID">Hybrid</option>
+                                    </select>
+                                    <p class="error-msg text-label-md text-error hidden"></p>
+                                </div>
+
+                                <div class="space-y-xs">
+                                    <label for="city" class="text-body-sm font-medium text-on-surface">City / Campus <span class="text-error">*</span></label>
+                                    <input type="text" id="city" name="city" required placeholder="e.g. New York or Online Mode"
+                                           class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-md py-sm text-body-sm text-on-surface focus:border-primary focus:outline-none transition-colors" />
+                                    <p class="error-msg text-label-md text-error hidden"></p>
+                                </div>
+
+                                <div class="space-y-xs">
+                                    <label for="location" class="text-body-sm font-medium text-on-surface">Venue / Link <span class="text-error">*</span></label>
+                                    <input type="text" id="location" name="location" required placeholder="e.g. Auditorium A or Zoom Link"
+                                           class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-md py-sm text-body-sm text-on-surface focus:border-primary focus:outline-none transition-colors" />
+                                    <p class="error-msg text-label-md text-error hidden"></p>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 mt-md">
+                                <div class="space-y-xs">
+                                    <label for="participationType" class="text-body-sm font-medium text-on-surface">Participation Access <span class="text-error">*</span></label>
+                                    <select id="participationType" name="participationType" required
+                                            class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-md py-sm text-body-sm text-on-surface focus:border-primary focus:outline-none transition-colors">
+                                        <option value="UNIVERSITY_ONLY">University Only (Exclusive to student members)</option>
+                                        <option value="PUBLIC">Public (Open for everyone)</option>
+                                    </select>
+                                    <p class="error-msg text-label-md text-error hidden"></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Ticket Details & Pricing -->
+                        <div>
+                            <h3 class="text-body-lg font-semibold text-primary border-b border-outline-variant/30 pb-xs mb-md">4. Ticket & Capacity Configuration</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-md">
+                                <div class="space-y-xs">
+                                    <label for="ticketPrice" class="text-body-sm font-medium text-on-surface">Ticket Price ($) <span class="text-error">*</span></label>
+                                    <input type="number" id="ticketPrice" name="ticketPrice" step="0.01" min="0" required value="0"
+                                           class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-md py-sm text-body-sm text-on-surface focus:border-primary focus:outline-none transition-colors" />
+                                    <p class="error-msg text-label-md text-error hidden"></p>
+                                </div>
+
+                                <div class="space-y-xs">
+                                    <label for="totalTickets" class="text-body-sm font-medium text-on-surface">Total Ticket Capacity <span class="text-error">*</span></label>
+                                    <input type="number" id="totalTickets" name="totalTickets" min="1" required placeholder="e.g. 200"
+                                           class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-md py-sm text-body-sm text-on-surface focus:border-primary focus:outline-none transition-colors" />
+                                    <p class="error-msg text-label-md text-error hidden"></p>
+                                </div>
+
+                                <div class="space-y-xs">
+                                    <label for="ticketsAvailable" class="text-body-sm font-medium text-on-surface">Tickets Available <span class="text-error">*</span></label>
+                                    <input type="number" id="ticketsAvailable" name="ticketsAvailable" min="0" required placeholder="e.g. 200"
+                                           class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-md py-sm text-body-sm text-on-surface focus:border-primary focus:outline-none transition-colors" />
+                                    <p class="error-msg text-label-md text-error hidden"></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Media & Uploads -->
+                        <div>
+                            <h3 class="text-body-lg font-semibold text-primary border-b border-outline-variant/30 pb-xs mb-md">5. Media & Artwork</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-md">
+                                <!-- Banner File Input -->
+                                <div class="space-y-xs">
+                                    <label class="text-body-sm font-medium text-on-surface">Event Banner Image <span id="banner-required-star" class="text-error">*</span></label>
+                                    <div class="flex items-center justify-center w-full">
+                                        <label class="flex flex-col items-center justify-center w-full h-36 border-2 border-outline-variant border-dashed rounded-lg cursor-pointer bg-surface-container-low hover:bg-surface-container-high/40 hover:border-primary transition-all">
+                                            <div class="flex flex-col items-center justify-center pt-md pb-md">
+                                                <span class="material-symbols-outlined text-[32px] text-on-surface-variant mb-xs">add_photo_alternate</span>
+                                                <p id="banner-file-name" class="text-body-sm text-on-surface-variant font-medium text-center px-sm">Click to upload banner</p>
+                                                <p class="text-label-md text-outline">SVG, PNG, JPG (max. 800x400px)</p>
+                                            </div>
+                                            <input type="file" id="banner" name="banner" accept="image/*" class="hidden" />
+                                        </label>
+                                    </div>
+                                    <p id="banner-error" class="error-msg text-label-md text-error hidden"></p>
+                                    <!-- Current Image Preview -->
+                                    <div id="banner-preview-container" class="hidden mt-xs relative rounded-lg overflow-hidden border border-outline-variant h-20 w-44 bg-surface-container">
+                                        <img id="banner-preview" class="w-full h-full object-cover" src="" alt="Banner Preview">
+                                    </div>
+                                </div>
+
+                                <!-- Ticket Design File Input -->
+                                <div class="space-y-xs">
+                                    <label class="text-body-sm font-medium text-on-surface">Ticket Cover Design <span id="ticket-required-star" class="text-error">*</span></label>
+                                    <div class="flex items-center justify-center w-full">
+                                        <label class="flex flex-col items-center justify-center w-full h-36 border-2 border-outline-variant border-dashed rounded-lg cursor-pointer bg-surface-container-low hover:bg-surface-container-high/40 hover:border-primary transition-all">
+                                            <div class="flex flex-col items-center justify-center pt-md pb-md">
+                                                <span class="material-symbols-outlined text-[32px] text-on-surface-variant mb-xs">local_activity</span>
+                                                <p id="ticket-file-name" class="text-body-sm text-on-surface-variant font-medium text-center px-sm">Click to upload ticket card design</p>
+                                                <p class="text-label-md text-outline">Recommended: 3:2 ratio (PNG, JPG)</p>
+                                            </div>
+                                            <input type="file" id="ticket" name="ticket" accept="image/*" class="hidden" />
+                                        </label>
+                                    </div>
+                                    <p id="ticket-error" class="error-msg text-label-md text-error hidden"></p>
+                                    <!-- Current Image Preview -->
+                                    <div id="ticket-preview-container" class="hidden mt-xs relative rounded-lg overflow-hidden border border-outline-variant h-20 w-44 bg-surface-container">
+                                        <img id="ticket-preview" class="w-full h-full object-cover" src="" alt="Ticket Preview">
+                                    </div>
+                                </div>
+
+                                <!-- Payment QR Code File Input (Conditional) -->
+                                <div id="payment-qr-container" class="hidden space-y-xs md:col-span-2">
+                                    <label class="text-body-sm font-medium text-on-surface">Payment QR Code <span class="text-error">*</span></label>
+                                    <div class="flex items-center justify-center w-full">
+                                        <label class="flex flex-col items-center justify-center w-full h-36 border-2 border-outline-variant border-dashed rounded-lg cursor-pointer bg-surface-container-low hover:bg-surface-container-high/40 hover:border-primary transition-all">
+                                            <div class="flex flex-col items-center justify-center pt-md pb-md">
+                                                <span class="material-symbols-outlined text-[32px] text-on-surface-variant mb-xs">qr_code_2</span>
+                                                <p id="paymentQr-file-name" class="text-body-sm text-on-surface-variant font-medium text-center px-sm">Click to upload UPI / Payment QR code</p>
+                                                <p class="text-label-md text-outline">Required for paid tickets (JPG, PNG)</p>
+                                            </div>
+                                            <input type="file" id="paymentQr" name="paymentQr" accept="image/*" class="hidden" />
+                                        </label>
+                                    </div>
+                                    <p id="paymentQr-error" class="error-msg text-label-md text-error hidden"></p>
+                                    <!-- Current Image Preview -->
+                                    <div id="paymentQr-preview-container" class="hidden mt-xs relative rounded-lg overflow-hidden border border-outline-variant h-20 w-20 bg-surface-container">
+                                        <img id="paymentQr-preview" class="w-full h-full object-cover" src="" alt="Payment QR Preview">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="flex items-center justify-end gap-md pt-lg border-t border-outline-variant/30">
+                            <a href="/event-management" class="border border-outline-variant hover:bg-surface-container-high text-on-surface font-bold px-lg py-sm rounded-lg transition-all">
+                                Cancel
+                            </a>
+                            <button type="submit" id="submit-btn" class="bg-primary hover:bg-primary-fixed text-on-primary font-bold px-xl py-sm rounded-lg transition-all shadow-lg shadow-primary/20 flex items-center gap-xs">
+                                <span class="material-symbols-outlined text-[20px]">send</span>
+                                <span id="submit-btn-text">Submit Request</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- ---------- FOOTER ---------- -->
+        <footer class="border-t border-outline-variant px-md md:px-lg py-lg mt-2xl">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-md text-center md:text-left">
+                <p class="text-body-sm text-on-surface-variant">© 2026 CampusHive. Empowering student engagement across 100+ campuses worldwide.</p>
+                <div class="flex gap-md text-body-sm text-on-surface-variant">
+                    <a href="/aboutUs" class="hover:text-primary transition-colors">About Us</a>
+                    <a href="/contact" class="hover:text-primary transition-colors">Support</a>
+                    <a href="#" class="hover:text-primary transition-colors">Privacy</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+</div>
+
+<script src="/js/auth.js"></script>
+<script src="/js/auto-refresh.js"></script>
+<script src="/js/nav-config.js"></script>
+<script src="/js/sidebar.js"></script>
+<script src="/js/create-event.js"></script>
+</body>
+
+</html>

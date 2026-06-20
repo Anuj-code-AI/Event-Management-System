@@ -16,4 +16,5 @@ public class UserResponse {
     private SystemRole systemRole;
     private String university;
     private AuthProvider provider;
+    private String universityDomain;
 }

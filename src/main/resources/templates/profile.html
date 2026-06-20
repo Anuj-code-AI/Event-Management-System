@@ -1,1016 +1,423 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html class="dark" lang="en">
 
 <head>
-    <title>My Profile — Eventaura</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/css/style.css}">
-    <link rel="stylesheet" th:href="@{/css/profileSideBar.css}">
-    <link rel="stylesheet" th:href="@{/css/profile.css}">
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-3C9FCSTWY3"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', 'G-3C9FCSTWY3');
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>My Profile | CampusHive</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+            rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-error-container": "#ffdad6",
+                        "error": "#ffb4ab",
+                        "surface-container": "#171f1c",
+                        "error-container": "#93000a",
+                        "surface-container-low": "#131a17",
+                        "surface-bright": "#313d36",
+                        "secondary": "#7fc9a0",
+                        "on-secondary": "#08311c",
+                        "primary-fixed-dim": "#4edea3",
+                        "outline-variant": "#33453c",
+                        "surface-tint": "#4edea3",
+                        "on-tertiary-fixed-variant": "#0b513d",
+                        "on-tertiary-container": "#004231",
+                        "background": "#0a1310",
+                        "on-secondary-container": "#c2ecd4",
+                        "tertiary": "#95d3ba",
+                        "primary": "#4edea3",
+                        "surface-container-high": "#212a26",
+                        "outline": "#86948a",
+                        "secondary-fixed": "#c2ecd4",
+                        "on-primary-container": "#00422b",
+                        "inverse-primary": "#006c49",
+                        "tertiary-container": "#1f5b41",
+                        "surface-container-highest": "#2c3631",
+                        "on-tertiary": "#003829",
+                        "surface-container-lowest": "#05100c",
+                        "tertiary-fixed-dim": "#95d3ba",
+                        "surface-dim": "#0a1310",
+                        "on-secondary-fixed-variant": "#1d5235",
+                        "inverse-on-surface": "#22302a",
+                        "on-secondary-fixed": "#03210f",
+                        "inverse-surface": "#dcebe0",
+                        "secondary-container": "#1d5235",
+                        "surface": "#0a1310",
+                        "on-primary": "#003824",
+                        "on-error": "#690005",
+                        "on-surface": "#dcebe0",
+                        "primary-fixed": "#6ffbbe",
+                        "on-surface-variant": "#bbcabf",
+                        "secondary-fixed-dim": "#7fc9a0",
+                        "on-primary-fixed": "#002113",
+                        "on-tertiary-fixed": "#002117",
+                        "primary-container": "#10b981",
+                        "tertiary-fixed": "#b0f0d6",
+                        "on-background": "#dcebe0"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.5rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "24px",
+                        "xl": "40px",
+                        "2xl": "64px",
+                        "container-max": "1280px",
+                        "xs": "4px",
+                        "sm": "8px",
+                        "md": "16px",
+                        "margin-mobile": "16px",
+                        "base": "8px",
+                        "lg": "24px",
+                        "sidebar-w": "272px"
+                    },
+                    "fontFamily": {
+                        "body-sm": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "display-lg-mobile": ["Inter"],
+                        "title-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "headline-sm": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-md": ["30px", { "lineHeight": "38px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "display-lg-mobile": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "title-lg": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }]
+                    }
+                },
+            },
+        }
     </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        body {
+            background-color: #0a1310;
+            color: #dcebe0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .hero-mesh {
+            background-image: radial-gradient(at 0% 0%, hsla(158, 64%, 52%, 0.10) 0, transparent 50%),
+            radial-gradient(at 100% 0%, hsla(158, 64%, 52%, 0.08) 0, transparent 50%);
+        }
+
+        .glass-card {
+            background: rgba(23, 31, 28, 0.45);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(51, 69, 60, 0.5);
+        }
+    </style>
 </head>
 
-<body>
+<body class="dark overflow-x-hidden">
 
-<!-- ═══════════════════ HEADER ═══════════════════ -->
-<header class="header">
-    <div class="logo">
-        <span class="logo-text">Event<em>aura</em></span>
-    </div>
-    <nav class="nav-links">
-        <a href="/">Home</a>
-        <a href="/moments">Moments</a>
-        <a href="/tickets">Tickets</a>
-        <a href="/aboutUs">About Us</a>
-    </nav>
-    <div class="search-bar">
-        <span class="search-icon">🔍</span>
-        <input type="text" placeholder="Search events, cities...">
-    </div>
-    <div class="header-right">
-        <div class="time" id="clock"></div>
-        <button class="icon-btn" aria-label="Notifications">
-            <span>🔔</span><span class="badge">3</span>
+<!-- Mobile backdrop -->
+<div id="sidebar-overlay" class="hidden fixed inset-0 bg-black/60 z-30 md:hidden"></div>
+
+<div class="flex min-h-screen">
+
+    <!-- ===================== SIDEBAR ===================== -->
+    <aside id="sidebar"
+           class="flex flex-col w-sidebar-w h-screen fixed left-0 top-0 bg-surface-container-lowest border-r border-outline-variant z-40
+           -translate-x-full md:translate-x-0 transition-transform duration-200">
+        <button id="sidebar-close" aria-label="Close menu"
+                class="md:hidden absolute top-md right-md text-on-surface-variant hover:text-on-surface">
+            <span class="material-symbols-outlined">close</span>
         </button>
-        <div id="guestActions">
-            <a href="/login"    class="btn primary">Login</a>
-            <a href="/register" class="btn primary">Sign Up</a>
+
+        <div class="flex flex-col items-center text-center pt-xl pb-lg px-md border-b border-outline-variant">
+            <a href="/profile" aria-label="Go to profile"
+               class="w-20 h-20 rounded-full bg-surface-container-high border-2 border-primary/40 hover:border-primary transition-colors flex items-center justify-center overflow-hidden mb-md">
+                <span class="material-symbols-outlined text-on-surface-variant text-[44px]">person</span>
+            </a>
+            <p id="sidebar-username" class="text-title-lg font-semibold text-on-background">—</p>
+            <p id="sidebar-role" class="text-label-md text-primary uppercase tracking-wide mt-xs">—</p>
         </div>
-        <div id="userActions" style="display:none;">
-            <button class="icon-btn profile-btn" id="profileSidebarBtn" aria-label="Open profile menu" aria-expanded="false">
-                <span>👤</span>
+
+        <nav id="sidebar-nav" class="flex-1 overflow-y-auto px-sm py-md space-y-xs">
+            <!-- populated by sidebar.js -->
+        </nav>
+
+        <div id="sidebar-auth-actions" class="hidden flex-1 flex flex-col gap-sm px-md py-md">
+            <a href="/login" class="w-full text-center bg-primary hover:bg-primary-fixed text-on-primary font-bold px-lg py-sm rounded-lg transition-all">
+                Log In
+            </a>
+            <a href="/register" class="w-full text-center border border-outline-variant hover:bg-surface-container-high text-on-surface font-bold px-lg py-sm rounded-lg transition-all">
+                Sign Up
+            </a>
+        </div>
+
+        <div id="sidebar-logout-wrap" class="px-sm py-md border-t border-outline-variant">
+            <button id="logout-btn"
+                    class="w-full flex items-center gap-sm px-md py-sm rounded-lg text-body-sm font-medium text-error hover:bg-error-container/20 transition-colors">
+                <span class="material-symbols-outlined text-[22px]">logout</span>
+                <span>Log Out</span>
             </button>
         </div>
-        <button class="hamburger" id="hamburgerBtn" aria-label="Open menu" aria-expanded="false">
-            <span></span><span></span><span></span>
-        </button>
-    </div>
-</header>
-
-<!-- ── Mobile nav overlay ── -->
-<div class="mobile-nav-overlay" id="mobileNavOverlay"></div>
-
-<!-- ═══════════════════════════════════════════════════════
-     MOBILE DRAWER
-     ═══════════════════════════════════════════════════════ -->
-<nav class="mobile-nav" id="mobileNav" aria-label="Mobile navigation">
-
-    <div class="mobile-nav-header">
-        <span class="logo-text">Event<em>aura</em></span>
-        <button class="mobile-nav-close" id="mobileNavClose" aria-label="Close menu">✕</button>
-    </div>
-
-    <div class="mobile-search">
-        <span>🔍</span>
-        <input type="text" placeholder="Search events, cities...">
-    </div>
-
-    <!-- skeleton shown while API call is in-flight -->
-    <div id="mnSkeleton" style="display:none; margin:8px 10px 0;">
-        <div class="psb-skeleton">
-            <div class="psb-skeleton-avatar"></div>
-            <div class="psb-skeleton-lines">
-                <div class="psb-skeleton-line"></div>
-                <div class="psb-skeleton-line short"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- user card (all logged-in roles) -->
-    <div id="mnUserCard" style="display:none; margin:8px 10px 0;">
-        <div class="psb-user-card">
-            <div class="psb-avatar">👤</div>
-            <div class="psb-user-info">
-                <div class="psb-user-name" id="mnUserName">User</div>
-                <div class="psb-user-role" id="mnUserRole">Member</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- guest card -->
-    <div id="mnGuestCard" style="margin:8px 10px 0;">
-        <div class="psb-guest-card">
-            <p>Sign in to access your events, tickets and profile.</p>
-            <div class="psb-guest-btns">
-                <a href="/login"    class="psb-btn-login">Login</a>
-                <a href="/register" class="psb-btn-signup">Sign Up</a>
-            </div>
-        </div>
-    </div>
-
-    <!-- MY ACCOUNT — USER · ORGANIZER · ADMIN -->
-    <div id="mn-my-account" style="display:none;">
-        <div class="psb-section-label">My Account</div>
-        <div class="mobile-nav-links" style="padding-top:0;">
-            <a href="/profile"  class="mobile-nav-link"><span class="mnl-icon">👤</span>Profile</a>
-            <a href="/"         class="mobile-nav-link"><span class="mnl-icon">🏠</span>Home</a>
-            <a href="/moments"  class="mobile-nav-link"><span class="mnl-icon">📸</span>Moments</a>
-            <a href="/tickets"  class="mobile-nav-link"><span class="mnl-icon">🎟️</span>My Tickets</a>
-            <a href="/aboutUs"  class="mobile-nav-link"><span class="mnl-icon">ℹ️</span>About Us</a>
-        </div>
-    </div>
-
-    <!-- ADMIN — ADMIN only -->
-    <div id="mn-admin" style="display:none;">
-        <div class="psb-divider" style="margin:4px 16px;"></div>
-        <div class="psb-section-label">Admin</div>
-        <div class="mobile-nav-links" style="padding-top:0;">
-            <a href="/adminPage"    class="mobile-nav-link"><span class="mnl-icon">🛡️</span>Admin Page<span class="psb-admin-badge">Admin</span></a>
-            <a href="/campusEvents" class="mobile-nav-link"><span class="mnl-icon">📋</span>Campus Events<span class="psb-admin-badge">Admin</span></a>
-        </div>
-    </div>
-
-    <!-- HOST — ORGANIZER · ADMIN -->
-    <div id="mn-host" style="display:none;">
-        <div class="psb-divider" style="margin:4px 16px;"></div>
-        <div class="psb-section-label">Host</div>
-        <div class="mobile-nav-links" style="padding-top:0;">
-            <a href="/createEvent"  class="mobile-nav-link"><span class="mnl-icon">📅</span>Create Event</a>
-            <a href="/hostedEvents" class="mobile-nav-link"><span class="mnl-icon">🎪</span>Hosted Events</a>
-        </div>
-    </div>
-
-    <!-- GUEST NAV — not logged in -->
-    <div id="mn-guest-nav">
-        <div class="mobile-nav-links">
-            <a href="/"        class="mobile-nav-link"><span class="mnl-icon">🏠</span>Home</a>
-            <a href="/moments" class="mobile-nav-link"><span class="mnl-icon">📸</span>Moments</a>
-            <a href="/aboutUs" class="mobile-nav-link"><span class="mnl-icon">ℹ️</span>About Us</a>
-        </div>
-    </div>
-
-    <!-- footer -->
-    <div class="mobile-nav-footer">
-        <div id="mobileNavGuest">
-            <a href="/login"    class="btn primary" style="text-align:center;display:block;">Login</a>
-            <a href="/register" class="btn primary" style="text-align:center;display:block;margin-top:10px;">Sign Up</a>
-        </div>
-        <div id="mobileNavUser" style="display:none;">
-            <button onclick="logout()" class="btn primary" style="text-align:center;display:block;background:#ef4444;border-color:#ef4444;">Sign Out</button>
-        </div>
-    </div>
-
-</nav>
-
-<!-- ═══════════════════════════════════════════════════════
-     PROFILE SIDEBAR (desktop 👤 button)
-     ═══════════════════════════════════════════════════════ -->
-<div class="profile-overlay" id="profileOverlay"></div>
-
-<aside class="profile-sidebar" id="profileSidebar" aria-label="Profile menu">
-
-    <div class="psb-header">
-        <span class="psb-title">My Account</span>
-        <button class="psb-close" id="profileSidebarClose" aria-label="Close">✕</button>
-    </div>
-
-    <!-- skeleton -->
-    <div id="psbSkeleton" style="display:none; margin:16px 16px 0;">
-        <div class="psb-skeleton">
-            <div class="psb-skeleton-avatar"></div>
-            <div class="psb-skeleton-lines">
-                <div class="psb-skeleton-line"></div>
-                <div class="psb-skeleton-line short"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- user card -->
-    <div id="psbUserCard" style="display:none; margin:16px 16px 0;">
-        <div class="psb-user-card">
-            <div class="psb-avatar">👤</div>
-            <div class="psb-user-info">
-                <div class="psb-user-name" id="psbUserName">User</div>
-                <div class="psb-user-role" id="psbUserRole">Member</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- guest card -->
-    <div id="psbGuestCard" style="margin:16px 16px 0;">
-        <div class="psb-guest-card">
-            <p>Sign in to access your events, tickets and profile.</p>
-            <div class="psb-guest-btns">
-                <a href="/login"    class="psb-btn-login">Login</a>
-                <a href="/register" class="psb-btn-signup">Sign Up</a>
-            </div>
-        </div>
-    </div>
-
-    <!-- MY ACCOUNT -->
-    <div id="psb-my-account" style="display:none;">
-        <div class="psb-section-label">My Account</div>
-        <nav class="psb-nav" style="padding-top:0;">
-            <a href="/profile"  class="psb-nav-item"><span class="psb-nav-icon">👤</span><span>Profile</span></a>
-            <a href="/"         class="psb-nav-item"><span class="psb-nav-icon">🏠</span><span>Home</span></a>
-            <a href="/moments"  class="psb-nav-item"><span class="psb-nav-icon">📸</span><span>Moments</span></a>
-            <a href="/tickets"  class="psb-nav-item"><span class="psb-nav-icon">🎟️</span><span>My Tickets</span></a>
-            <a href="/aboutUs"  class="psb-nav-item"><span class="psb-nav-icon">ℹ️</span><span>About Us</span></a>
-        </nav>
-    </div>
-
-    <!-- ADMIN -->
-    <div id="psb-admin" style="display:none;">
-        <div class="psb-divider"></div>
-        <div class="psb-section-label">Admin</div>
-        <nav class="psb-nav" style="padding-top:0;">
-            <a href="/adminPage"    class="psb-nav-item"><span class="psb-nav-icon">🛡️</span><span>Admin Page</span><span class="psb-admin-badge">Admin</span></a>
-            <a href="/campusEvents" class="psb-nav-item"><span class="psb-nav-icon">📋</span><span>Campus Events</span><span class="psb-admin-badge">Admin</span></a>
-        </nav>
-    </div>
-
-    <!-- HOST -->
-    <div id="psb-host" style="display:none;">
-        <div class="psb-divider"></div>
-        <div class="psb-section-label">Host</div>
-        <nav class="psb-nav" style="padding-top:0;">
-            <a href="/createEvent"  class="psb-nav-item"><span class="psb-nav-icon">📅</span><span>Create Event</span></a>
-            <a href="/hostedEvents" class="psb-nav-item"><span class="psb-nav-icon">🎪</span><span>Hosted Events</span></a>
-        </nav>
-    </div>
-
-    <!-- Logout -->
-    <div id="psb-logout" style="display:none;">
-        <div class="psb-divider"></div>
-        <nav class="psb-nav" style="padding-top:0;">
-            <button onclick="logout()" class="psb-nav-item logout"><span class="psb-nav-icon">🚪</span><span>Logout</span></button>
-        </nav>
-    </div>
-
-    <!-- GUEST NAV -->
-    <div id="psb-guest-nav">
-        <div class="psb-section-label">Explore</div>
-        <nav class="psb-nav" style="padding-top:0;">
-            <a href="/myEvents" class="psb-nav-item"><span class="psb-nav-icon">🔥</span><span>Browse Events</span></a>
-            <a href="/aboutUs"  class="psb-nav-item"><span class="psb-nav-icon">ℹ️</span><span>About Us</span></a>
-        </nav>
-    </div>
-
-    <div class="psb-footer">
-        <p class="psb-footer-text">© 2026 Eventaura · Made with ❤️ in India</p>
-    </div>
-
-</aside>
-
-<!-- ═══════════════════ PROFILE HERO BANNER ═══════════════════ -->
-<section class="profile-hero">
-    <div class="hero-bg-pattern"></div>
-    <div class="hero-content">
-
-        <div class="avatar-ring">
-            <div class="avatar-inner">
-                <span id="avatarInitial" class="avatar-initial">U</span>
-            </div>
-            <div class="avatar-status"></div>
-        </div>
-
-        <div class="hero-info">
-            <h1 id="userName">User</h1>
-            <p class="hero-email">
-                <span class="email-pill">✉️ <span id="userEmail"></span></span>
-            </p>
-            <div class="hero-badges">
-                <span class="hbadge">🎟️ <span id="statTotalTickets">—</span> Tickets</span>
-                <span class="hbadge">📅 Member since <span id="statMemberYear">—</span></span>
-                <span class="hbadge verified">✅ Verified</span>
-            </div>
-        </div>
-
-        <div class="hero-stats">
-            <div class="hstat">
-                <strong id="statJoined">—</strong>
-                <span>Events Attended</span>
-            </div>
-            <div class="hstat-divider"></div>
-            <div class="hstat">
-                <strong id="statUpcoming">—</strong>
-                <span>Upcoming</span>
-            </div>
-            <div class="hstat-divider"></div>
-            <div class="hstat">
-                <strong id="statHosted">—</strong>
-                <span>Events Hosted</span>
-            </div>
-        </div>
-
-    </div>
-</section>
-
-<!-- ═══════════════════ MAIN CONTENT GRID ═══════════════════ -->
-<div class="profile-body">
-
-    <!-- ── LEFT: Settings panels ── -->
-    <aside class="profile-sidebar-tabs">
-
-        <nav class="tab-nav">
-            <button class="tab-btn active" data-tab="info">👤 Profile Info</button>
-            <button class="tab-btn" data-tab="password">🔒 Change Password</button>
-            <button class="tab-btn" data-tab="notifications">🔔 Notifications</button>
-            <button id="logoutBtn" class="tab-btn">❌ Logout</button>
-
-            <!--
-                Become Host — rendered dynamically by loadHostStatus():
-                  NONE     → "🥇 Become Host" link to /becomeOrganizer
-                  PENDING  → disabled button with amber "Pending Review" badge
-                  REJECTED → "🔄 Re-apply as Host" link with red "Rejected" badge
-                  APPROVED / ADMIN → hidden entirely
-            -->
-            <div id="becomeHostWrap"></div>
-        </nav>
-
-        <!-- ── TAB: Profile Info ── -->
-        <div class="tab-panel active" id="tab-info">
-            <div class="panel-card">
-                <div class="panel-card-header">
-                    <h3>Personal Information</h3>
-                    <p>Update your name and contact details</p>
-                </div>
-
-                <div class="alert alert-success" th:if="${successMessage}">
-                    <span>✅</span> <span th:text="${successMessage}"></span>
-                </div>
-                <div class="alert alert-error" th:if="${errorMessage}">
-                    <span>⚠️</span> <span th:text="${errorMessage}"></span>
-                </div>
-
-                <form id="changeName-form">
-                    <div class="field-row">
-                        <div class="field-group">
-                            <label for="firstName">First Name</label>
-                            <div class="input-wrap">
-                                <span class="input-icon">👤</span>
-                                <input type="text" id="firstName" name="firstName" placeholder="First name" required>
-                            </div>
-                        </div>
-                        <div class="field-group">
-                            <label for="lastName">Last Name</label>
-                            <div class="input-wrap">
-                                <span class="input-icon">👤</span>
-                                <input type="text" id="lastName" name="lastName" placeholder="Last name">
-                            </div>
-                        </div>
-                    </div>
-                    <button type="submit" id="changeName-btn" class="submit-btn">Save Changes <span class="btn-arrow">→</span></button>
-                </form>
-            </div>
-        </div>
-
-        <!-- ── TAB: Change Password ── -->
-        <div class="tab-panel" id="tab-password">
-            <div class="panel-card">
-                <div class="panel-card-header">
-                    <h3>Change Password</h3>
-                    <p>Keep your account secure with a strong password</p>
-                </div>
-                <div class="alert alert-success" th:if="${pwSuccess}">
-                    <span>✅</span> Password updated successfully!
-                </div>
-                <div class="alert alert-error" th:if="${pwError}">
-                    <span>⚠️</span> <span th:text="${pwError}">Something went wrong.</span>
-                </div>
-                <form id="pwForm">
-                    <div class="field-group">
-                        <label for="currentPassword">Current Password</label>
-                        <div class="input-wrap">
-                            <span class="input-icon">🔒</span>
-                            <input type="password" id="currentPassword" name="currentPassword" placeholder="Your current password" required>
-                            <button type="button" class="toggle-pw">👁</button>
-                        </div>
-                    </div>
-                    <div class="field-group">
-                        <label for="newPassword">New Password</label>
-                        <div class="input-wrap">
-                            <span class="input-icon">🔑</span>
-                            <input type="password" id="newPassword" name="newPassword" placeholder="Min. 4 characters" required>
-                            <button type="button" class="toggle-pw">👁</button>
-                        </div>
-                        <div class="pw-strength">
-                            <div class="pw-bar" id="pwBar"></div>
-                        </div>
-                        <span class="pw-label" id="pwLabel"></span>
-                    </div>
-                    <div class="field-group">
-                        <label for="confirmPassword">Confirm New Password</label>
-                        <div class="input-wrap">
-                            <span class="input-icon">🔑</span>
-                            <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Repeat new password" required>
-                            <button type="button" class="toggle-pw">👁</button>
-                        </div>
-                        <span class="field-error" id="pwMatchError" style="display:none">⚠️ Passwords do not match</span>
-                    </div>
-                    <ul class="pw-rules">
-                        <li id="rule-len">At least 4 characters</li>
-                        <li id="rule-upper">One uppercase letter</li>
-                        <li id="rule-num">One number</li>
-                        <li id="rule-special">One special character</li>
-                    </ul>
-                    <button type="submit" class="submit-btn danger-btn">Update Password <span class="btn-arrow">→</span></button>
-                </form>
-            </div>
-        </div>
-
-        <!-- ── TAB: Notifications ── -->
-        <div class="tab-panel" id="tab-notifications">
-            <div class="panel-card">
-                <div class="panel-card-header">
-                    <h3>Notification Preferences</h3>
-                    <p>Choose what you want to be notified about</p>
-                </div>
-                <form class="settings-form">
-                    <div class="toggle-group">
-                        <div class="toggle-item">
-                            <div class="toggle-text">
-                                <strong>Event Reminders</strong>
-                                <span>Get reminded 24h before your events</span>
-                            </div>
-                            <label class="switch">
-                                <input type="checkbox" name="eventReminders" checked>
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                        <div class="toggle-item">
-                            <div class="toggle-text">
-                                <strong>New Events Nearby</strong>
-                                <span>Discover events in your city</span>
-                            </div>
-                            <label class="switch">
-                                <input type="checkbox" name="nearbyEvents" checked>
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                        <div class="toggle-item">
-                            <div class="toggle-text">
-                                <strong>Promotional Offers</strong>
-                                <span>Discounts and early bird deals</span>
-                            </div>
-                            <label class="switch">
-                                <input type="checkbox" name="promos">
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                        <div class="toggle-item">
-                            <div class="toggle-text">
-                                <strong>Weekly Digest</strong>
-                                <span>Summary of top events every Monday</span>
-                            </div>
-                            <label class="switch">
-                                <input type="checkbox" name="digest" checked>
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                    </div>
-                    <button type="submit" class="submit-btn">Save Preferences <span class="btn-arrow">→</span></button>
-                </form>
-            </div>
-        </div>
-
     </aside>
 
-    <!-- ── RIGHT: Tickets & Events ── -->
-    <section class="profile-main">
+    <!-- ===================== MAIN COLUMN ===================== -->
+    <div class="flex-1 md:ml-sidebar-w flex flex-col min-w-0">
 
-        <!-- SECTION 1 — MY TICKETS -->
-        <div class="tickets-section">
-            <div class="tickets-header">
-                <h2>🎟️ My Tickets</h2>
-                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-                    <span class="section-count" id="ticketCount"></span>
-                    <div class="ticket-size-wrap">
-                        <span class="ticket-size-label">Show</span>
-                        <div class="ticket-size-pills" id="ticketSizePills">
-                            <button class="ts-pill" data-size="1">1</button>
-                            <button class="ts-pill" data-size="2">2</button>
-                            <button class="ts-pill" data-size="3">3</button>
-                            <button class="ts-pill" data-size="5">5</button>
-                            <button class="ts-pill active" data-size="10">10</button>
-                            <button class="ts-pill" data-size="20">20</button>
-                        </div>
+        <!-- ---------- HEADER ---------- -->
+        <header class="sticky top-0 z-20 h-16 bg-background/90 backdrop-blur-md border-b border-outline-variant">
+            <div class="h-full flex items-center gap-md px-md md:px-lg">
+                <button id="sidebar-open" class="md:hidden text-on-surface-variant hover:text-on-surface" aria-label="Open menu">
+                    <span class="material-symbols-outlined">menu</span>
+                </button>
+
+                <a href="/home" class="flex md:hidden items-center gap-2">
+                    <img src="/images/logo.png" alt="CampusHive Logo" class="w-7 h-7 object-contain" />
+                    <span class="text-title-lg font-bold tracking-tight whitespace-nowrap">
+                        <span class="text-white">Campus</span><span class="text-primary">Hive</span>
+                    </span>
+                </a>
+
+                <h1 class="hidden md:block text-title-lg font-bold text-on-background">My Profile</h1>
+
+                <a href="/home" class="hidden md:flex items-center gap-2 ml-auto">
+                    <img src="/images/logo.png" alt="CampusHive Logo" class="w-7 h-7 object-contain" />
+                    <span class="text-title-lg font-bold tracking-tight whitespace-nowrap">
+                        <span class="text-white">Campus</span><span class="text-primary">Hive</span>
+                    </span>
+                </a>
+            </div>
+        </header>
+
+        <!-- ---------- MAIN CONTENT ---------- -->
+        <main class="flex-1 px-md md:px-lg py-lg space-y-lg hero-mesh">
+
+            <!-- Profile Info Banner -->
+            <section class="relative rounded-xl overflow-hidden glass-card p-md flex flex-col sm:flex-row items-center gap-md">
+                <div class="w-24 h-24 rounded-full bg-primary/10 border-4 border-primary/30 flex items-center justify-center text-[40px] font-bold text-primary shrink-0 select-none shadow-lg shadow-primary/10" id="avatar-initial">
+                    -
+                </div>
+                <div class="text-center sm:text-left space-y-xs">
+                    <h2 class="text-headline-sm font-bold text-on-background" id="display-name">—</h2>
+                    <p class="text-body-sm text-on-surface-variant flex items-center justify-center sm:justify-start gap-xs">
+                        <span class="material-symbols-outlined text-[18px]">mail</span>
+                        <span id="display-email">—</span>
+                    </p>
+                    <div class="flex flex-wrap items-center justify-center sm:justify-start gap-sm pt-xs">
+                        <span id="role-badge" class="bg-primary/10 text-primary border border-primary/30 text-label-md px-sm py-xs rounded-full font-semibold uppercase tracking-wide">
+                            —
+                        </span>
+                        <span id="university-badge" class="bg-surface-container-high text-on-surface-variant border border-outline-variant/30 text-label-md px-sm py-xs rounded-full font-semibold">
+                            No University Selected
+                        </span>
                     </div>
                 </div>
-            </div>
-            <div class="section-loading" id="ticketsLoading">
-                <div class="skel-ticket"></div>
-                <div class="skel-ticket"></div>
-            </div>
-            <div class="section-empty" id="ticketsEmpty" style="display:none;">
-                <div class="empty-icon">🎟️</div>
-                <p>No tickets yet. Go register for an event!</p>
-                <a href="/#events" class="ticket-action-btn" style="margin-top:12px;display:inline-block;">Browse Events →</a>
-            </div>
-            <div class="ticket-strip" id="ticketStrip" style="display:none;"></div>
-            <div style="text-align:center;margin-top:18px;display:none;" id="ticketsMoreWrap">
-                <button class="load-more-btn" id="ticketsMoreBtn">Load More Tickets</button>
-            </div>
-        </div>
+            </section>
 
-        <!-- SECTION 2 — EVENTS ATTENDED -->
-        <div class="past-events-section">
-            <div class="tickets-header">
-                <h2>📅 Events Attended</h2>
-                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-                    <span class="section-count" id="joinedCount"></span>
-                    <div class="ticket-size-wrap">
-                        <span class="ticket-size-label">Show</span>
-                        <div class="ticket-size-pills" id="joinedSizePills">
-                            <button class="ts-pill" data-size="4">4</button>
-                            <button class="ts-pill active" data-size="8">8</button>
-                            <button class="ts-pill" data-size="12">12</button>
-                            <button class="ts-pill" data-size="20">20</button>
+            <!-- Alerts -->
+            <div id="profile-alert" class="hidden p-sm rounded-lg text-body-sm font-medium flex items-start gap-xs"></div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-lg items-start">
+                
+                <!-- Update Profile Details (2/3 width on large screens) -->
+                <div class="lg:col-span-2 space-y-lg">
+                    <section class="glass-card rounded-xl p-lg space-y-md">
+                        <h3 class="text-headline-sm font-bold text-on-background flex items-center gap-xs">
+                            <span class="material-symbols-outlined text-[26px] text-primary">manage_accounts</span>
+                            <span>Edit Account Details</span>
+                        </h3>
+                        <p class="text-body-sm text-on-surface-variant">Update your name, associate with your campus, or change your password.</p>
+                        
+                        <form id="profile-form" class="space-y-md" novalidate>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-md">
+                                <div>
+                                    <label for="name" class="block text-body-sm font-medium text-on-surface-variant mb-xs">Full Name</label>
+                                    <input id="name" name="name" type="text" required
+                                           class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-md py-sm text-on-surface placeholder:text-on-surface-variant/40 focus:border-primary transition-colors focus:outline-none" />
+                                </div>
+                                <div>
+                                    <label for="university" class="block text-body-sm font-medium text-on-surface-variant mb-xs">University Campus</label>
+                                    <input id="university" name="university" type="text"
+                                           class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-md py-sm text-on-surface placeholder:text-on-surface-variant/40 focus:border-primary transition-colors focus:outline-none"
+                                           placeholder="e.g. LNCT University" />
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-md pt-xs">
+                                <div>
+                                    <label for="password" class="block text-body-sm font-medium text-on-surface-variant mb-xs">New Password <span class="text-on-surface-variant/40">(optional)</span></label>
+                                    <input id="password" name="password" type="password" minlength="4"
+                                           class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-md py-sm text-on-surface placeholder:text-on-surface-variant/40 focus:border-primary transition-colors focus:outline-none"
+                                           placeholder="At least 4 characters" />
+                                </div>
+                                <div>
+                                    <label for="confirmPassword" class="block text-body-sm font-medium text-on-surface-variant mb-xs">Confirm New Password</label>
+                                    <input id="confirmPassword" name="confirmPassword" type="password" minlength="4"
+                                           class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-md py-sm text-on-surface placeholder:text-on-surface-variant/40 focus:border-primary transition-colors focus:outline-none"
+                                           placeholder="Re-enter new password" />
+                                </div>
+                            </div>
+
+                            <button type="submit" id="update-btn"
+                                    class="bg-primary hover:bg-primary-fixed text-on-primary font-bold px-lg py-sm rounded-lg transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-xs">
+                                <span class="material-symbols-outlined text-[18px]">save</span>
+                                <span>Save Changes</span>
+                            </button>
+                        </form>
+                    </section>
+
+                    <!-- Host Application Section -->
+                    <section class="glass-card rounded-xl p-lg space-y-md">
+                        <div class="flex items-center gap-xs justify-between">
+                            <h3 class="text-headline-sm font-bold text-on-background flex items-center gap-xs">
+                                <span class="material-symbols-outlined text-[26px] text-primary">campaign</span>
+                                <span>Apply for Host Profile</span>
+                            </h3>
+                            <span id="host-status-chip" class="hidden text-label-md px-sm py-xs rounded-full font-semibold uppercase"></span>
                         </div>
-                    </div>
-                </div>
-            </div>
-            <div class="section-loading" id="joinedLoading">
-                <div class="skel-grid">
-                    <div class="skel-card"></div><div class="skel-card"></div>
-                    <div class="skel-card"></div><div class="skel-card"></div>
-                </div>
-            </div>
-            <div class="section-empty" id="joinedEmpty" style="display:none;">
-                <div class="empty-icon">📅</div>
-                <p>You haven't attended any events yet.</p>
-            </div>
-            <div class="past-grid" id="joinedGrid" style="display:none;"></div>
-            <div style="text-align:center;margin-top:18px;display:none;" id="joinedMoreWrap">
-                <button class="load-more-btn" id="joinedMoreBtn">Load More</button>
-            </div>
-        </div>
+                        <p class="text-body-sm text-on-surface-variant">Hosts can create, schedule, and manage campus events after getting approved by their HOD.</p>
 
-        <!-- SECTION 3 — EVENTS HOSTED -->
-        <div class="past-events-section">
-            <div class="tickets-header">
-                <h2>🚀 Events Hosted</h2>
-                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-                    <span class="section-count" id="hostedCount"></span>
-                    <div class="ticket-size-wrap">
-                        <span class="ticket-size-label">Show</span>
-                        <div class="ticket-size-pills" id="hostedSizePills">
-                            <button class="ts-pill" data-size="4">4</button>
-                            <button class="ts-pill active" data-size="8">8</button>
-                            <button class="ts-pill" data-size="12">12</button>
-                            <button class="ts-pill" data-size="20">20</button>
+                        <!-- Host Pending Alert -->
+                        <div id="host-pending-alert" class="hidden p-md bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 rounded-lg flex items-start gap-sm">
+                            <span class="material-symbols-outlined text-[22px]">pending_actions</span>
+                            <div>
+                                <h4 class="font-bold">Application Pending Review</h4>
+                                <p class="text-body-sm text-yellow-500/80 mt-xs">Your request to become a host has been submitted. It is currently awaiting approval from your university's Head of Department (HOD).</p>
+                            </div>
                         </div>
-                    </div>
+
+                        <!-- Host Approved Alert -->
+                        <div id="host-approved-alert" class="hidden p-md bg-primary/10 border border-primary/20 text-primary rounded-lg flex items-start gap-sm">
+                            <span class="material-symbols-outlined text-[22px]">verified_user</span>
+                            <div>
+                                <h4 class="font-bold">Approved Host Profile</h4>
+                                <p class="text-body-sm text-primary/80 mt-xs">Congratulations! Your host application has been approved. You now have access to "Event Management" in your navigation sidebar where you can request and host campus events.</p>
+                            </div>
+                        </div>
+
+                        <!-- Apply Form -->
+                        <form id="host-apply-form" class="space-y-md hidden" novalidate>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-md">
+                                <div>
+                                    <label for="collegeEmail" class="block text-body-sm font-medium text-on-surface-variant mb-xs">College Email Address</label>
+                                    <input id="collegeEmail" name="collegeEmail" type="email" required
+                                           class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-md py-sm text-on-surface placeholder:text-on-surface-variant/40 focus:border-primary transition-colors focus:outline-none"
+                                           placeholder="e.g. name@university.edu" />
+                                </div>
+                                <div>
+                                    <label for="phone" class="block text-body-sm font-medium text-on-surface-variant mb-xs">Contact Phone Number</label>
+                                    <input id="phone" name="phone" type="tel" required
+                                           class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-md py-sm text-on-surface placeholder:text-on-surface-variant/40 focus:border-primary transition-colors focus:outline-none"
+                                           placeholder="e.g. +91XXXXXXXXXX" />
+                                </div>
+                            </div>
+
+                            <button type="submit" id="apply-btn"
+                                    class="bg-primary hover:bg-primary-fixed text-on-primary font-bold px-lg py-sm rounded-lg transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-xs">
+                                <span class="material-symbols-outlined text-[18px]">verified</span>
+                                <span>Submit Host Request</span>
+                            </button>
+                        </form>
+                    </section>
+                </div>
+
+                <!-- Settings / Actions Sidebar Panel (1/3 width on large screens) -->
+                <div class="space-y-lg">
+                    <section class="glass-card rounded-xl p-lg space-y-md">
+                        <h3 class="text-title-lg font-bold text-on-background flex items-center gap-xs">
+                            <span class="material-symbols-outlined text-primary">security</span>
+                            <span>Account Actions</span>
+                        </h3>
+                        <p class="text-body-sm text-on-surface-variant">General session and authorization configurations.</p>
+                        
+                        <div class="pt-sm space-y-sm">
+                            <button id="logoutBtn" class="w-full border border-outline-variant hover:bg-surface-container-high text-on-surface font-semibold px-md py-sm rounded-lg transition-all flex items-center justify-center gap-xs">
+                                <span class="material-symbols-outlined text-[18px]">logout</span>
+                                <span>Log Out Session</span>
+                            </button>
+                        </div>
+                    </section>
+
+                    <!-- Danger Zone -->
+                    <section class="glass-card rounded-xl p-lg border-red-500/30 space-y-md">
+                        <h3 class="text-title-lg font-bold text-error flex items-center gap-xs">
+                            <span class="material-symbols-outlined">dangerous</span>
+                            <span>Danger Zone</span>
+                        </h3>
+                        <p class="text-body-sm text-on-surface-variant">Deleting or deactivating your account is permanent. This cannot be undone.</p>
+                        
+                        <div class="pt-sm">
+                            <button id="deleteAccount" class="w-full bg-red-500/10 border border-red-500/30 hover:bg-red-500/20 text-red-400 font-semibold px-md py-sm rounded-lg transition-all flex items-center justify-center gap-xs">
+                                <span class="material-symbols-outlined text-[18px]">delete_forever</span>
+                                <span>Deactivate Account</span>
+                            </button>
+                        </div>
+                    </section>
+                </div>
+
+            </div>
+
+        </main>
+
+        <!-- ---------- FOOTER ---------- -->
+        <footer class="border-t border-outline-variant px-md md:px-lg py-lg mt-2xl">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-md text-center md:text-left">
+                <p class="text-body-sm text-on-surface-variant">© 2026 CampusHive. Empowering student engagement across 100+ campuses worldwide.</p>
+                <div class="flex gap-md text-body-sm text-on-surface-variant">
+                    <a href="/aboutUs" class="hover:text-primary transition-colors">About Us</a>
+                    <a href="/contact" class="hover:text-primary transition-colors">Support</a>
+                    <a href="#" class="hover:text-primary transition-colors">Privacy</a>
                 </div>
             </div>
-            <div class="section-loading" id="hostedLoading">
-                <div class="skel-grid">
-                    <div class="skel-card"></div><div class="skel-card"></div>
-                    <div class="skel-card"></div><div class="skel-card"></div>
-                </div>
-            </div>
-            <div class="section-empty" id="hostedEmpty" style="display:none;">
-                <div class="empty-icon">🚀</div>
-                <p>You haven't hosted any events yet.</p>
-                <a href="/createEvent" class="ticket-action-btn" style="margin-top:12px;display:inline-block;">Create Event →</a>
-            </div>
-            <div class="past-grid" id="hostedGrid" style="display:none;"></div>
-            <div style="text-align:center;margin-top:18px;display:none;" id="hostedMoreWrap">
-                <button class="load-more-btn" id="hostedMoreBtn">Load More</button>
-            </div>
-        </div>
-
-        <!-- DANGER ZONE -->
-        <div class="danger-zone">
-            <div class="danger-text">
-                <h4>⚠️ Danger Zone</h4>
-                <p>Permanently delete your account and all associated data. This action cannot be undone.</p>
-            </div>
-            <button id="deleteAccount" type="submit" class="delete-btn">Delete Account</button>
-        </div>
-
-    </section>
-
+        </footer>
+    </div>
 </div>
 
-<!-- ═══════════════════ FOOTER ═══════════════════ -->
-<footer class="footer">
-    <div class="footer-top">
-        <div class="footer-brand">
-            <div class="logo">
-                <span class="logo-text">Event<em>aura</em></span>
-            </div>
-            <p>India's premier event discovery platform.</p>
-            <div class="social-links">
-                <a href="#" aria-label="Twitter">𝕏</a>
-                <a href="#" aria-label="Instagram">📸</a>
-                <a href="#" aria-label="LinkedIn">in</a>
-                <a href="#" aria-label="YouTube">▶</a>
-            </div>
+<!-- Delete Account Confirmation Modal -->
+<div id="delete-modal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center px-md">
+    <div class="bg-surface-container border border-outline-variant rounded-xl shadow-2xl p-lg max-w-md w-full space-y-md animate-fade-in">
+        <div class="flex items-center gap-sm text-error">
+            <span class="material-symbols-outlined text-[36px]">warning</span>
+            <h3 class="text-headline-sm font-bold text-on-background">Deactivate Account?</h3>
         </div>
-        <div class="footer-links">
-            <div class="footer-col">
-                <h4>Explore</h4>
-                <a href="/">Trending Events</a>
-                <a href="/">Upcoming Events</a>
-                <a href="/">Categories</a>
-                <a href="#">Cities</a>
-            </div>
-            <div class="footer-col">
-                <h4>Account</h4>
-                <a href="/profile">My Profile</a>
-                <a href="/tickets">My Tickets</a>
-                <a onclick="logout()" style="cursor:pointer;">Sign Out</a>
-            </div>
-            <div class="footer-col">
-                <h4>Support</h4>
-                <a href="#">Help Center</a>
-                <a href="#">Contact Us</a>
-                <a href="#">Privacy Policy</a>
-                <a href="#">Terms of Service</a>
-            </div>
+        <p class="text-body-sm text-on-surface-variant">
+            Are you sure you want to deactivate your profile? All your active tickets will be suspended and your event registrations will be removed. This process is irreversible.
+        </p>
+        <div class="flex justify-end gap-sm pt-xs">
+            <button id="cancel-delete-btn" class="border border-outline-variant hover:bg-surface-container-high text-on-surface px-md py-sm rounded-lg font-semibold transition-all">
+                Cancel
+            </button>
+            <button id="confirm-delete-btn" class="bg-red-500 hover:bg-red-600 text-white px-md py-sm rounded-lg font-semibold transition-all">
+                Yes, Deactivate
+            </button>
         </div>
     </div>
-    <div class="footer-bottom">
-        <p>© 2026 Eventaura. All rights reserved. Made with ❤️ in India.</p>
-        <p>Delhi · Mumbai · Bangalore · Hyderabad · Chennai · Pune · Goa</p>
-    </div>
-</footer>
+</div>
 
-<script th:src="@{/js/basic.js}"></script>
-<script>
-
-    /* ════════════════════════════════════════════════════════
-       BECOME HOST — live status from /api/v1/auth/roleOfMe
-       Reuses apiFetch() from basic.js (auto token-refresh).
-
-       Status matrix:
-         NONE     → show "🥇 Become Host" link
-         PENDING  → show disabled button + amber "Pending Review" badge
-         REJECTED → show "🔄 Re-apply as Host" link + red "Rejected" badge
-         APPROVED → hide (user is already organizer; psb-host visible in sidebar)
-         ADMIN    → hide
-    ════════════════════════════════════════════════════════ */
-    async function loadHostStatus() {
-        const wrap = document.getElementById('becomeHostWrap');
-        if (!wrap) return;
-
-        const token = localStorage.getItem('accessToken');
-        if (!token) { wrap.style.display = 'none'; return; }
-
-        try {
-            const res = await apiFetch('/api/v1/auth/roleOfMe');
-            if (!res || !res.ok) { wrap.style.display = 'none'; return; }
-
-            const data   = await res.json();
-            const role   = String(data.role   || '').toUpperCase();
-            const status = String(data.status || 'NONE').toUpperCase();
-
-            // Already ADMIN or APPROVED organizer — hide the button completely
-            if (role === 'ROLE_ADMIN' || status === 'APPROVED') {
-                wrap.style.display = 'none';
-                return;
-            }
-
-            if (status === 'PENDING') {
-                wrap.innerHTML = `
-                    <button class="tab-btn" disabled
-                            title="Your host application is under review"
-                            style="opacity:1;cursor:not-allowed;display:flex;align-items:center;gap:8px;pointer-events:none;">
-                        ⏳ <span>Host Request</span>
-                        <span style="margin-left:auto;background:#fef3c7;color:#92400e;font-size:10px;
-                                     font-weight:700;padding:2px 8px;border-radius:50px;
-                                     border:1px solid #fde68a;white-space:nowrap;">
-                            Pending Review
-                        </span>
-                    </button>`;
-            } else if (status === 'REJECTED') {
-                wrap.innerHTML = `
-                    <a href="/becomeOrganizer" class="tab-btn"
-                       title="Your previous application was rejected — you may re-apply"
-                       style="display:flex;align-items:center;gap:8px;text-decoration:none;">
-                        🔄 <span>Re-apply as Host</span>
-                        <span style="margin-left:auto;background:#fef2f2;color:#991b1b;font-size:10px;
-                                     font-weight:700;padding:2px 8px;border-radius:50px;
-                                     border:1px solid #fecaca;white-space:nowrap;">
-                            Rejected
-                        </span>
-                    </a>`;
-            } else {
-                // NONE — first-time applicant
-                wrap.innerHTML = `
-                    <a href="/becomeOrganizer" class="tab-btn"
-                       style="display:flex;align-items:center;gap:8px;text-decoration:none;">
-                        🥇 <span>Become Host</span>
-                    </a>`;
-            }
-
-        } catch (err) {
-            console.error('[HostStatus] failed:', err);
-            wrap.style.display = 'none';
-        }
-    }
-
-    /* ── Tab switching (only buttons with data-tab) ── */
-    document.querySelectorAll('.tab-btn[data-tab]').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-            btn.classList.add('active');
-            const panel = document.getElementById('tab-' + btn.dataset.tab);
-            if (panel) panel.classList.add('active');
-        });
-    });
-
-    /* ── Logout button in tab nav ── */
-    const logoutBtn = document.getElementById('logoutBtn');
-    if (logoutBtn) logoutBtn.addEventListener('click', logout);
-
-    /* ── Password visibility toggles ── */
-    document.querySelectorAll('.toggle-pw').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const input = this.closest('.input-wrap').querySelector('input');
-            const isText = input.type === 'text';
-            input.type = isText ? 'password' : 'text';
-            this.textContent = isText ? '👁' : '🙈';
-        });
-    });
-
-    /* ── Password strength meter ── */
-    const newPw   = document.getElementById('newPassword');
-    const pwBar   = document.getElementById('pwBar');
-    const pwLabel = document.getElementById('pwLabel');
-    const rules   = {
-        'rule-len':     v => v.length >= 4,
-        'rule-upper':   v => /[A-Z]/.test(v),
-        'rule-num':     v => /[0-9]/.test(v),
-        'rule-special': v => /[^A-Za-z0-9]/.test(v),
-    };
-    if (newPw) {
-        newPw.addEventListener('input', function() {
-            const val = this.value;
-            let score = 0;
-            Object.entries(rules).forEach(([id, test]) => {
-                const el = document.getElementById(id);
-                if (el) { const pass = test(val); el.classList.toggle('rule-pass', pass); if (pass) score++; }
-            });
-            const levels = [
-                { label: '',       color: 'transparent', width: '0%'   },
-                { label: 'Weak',   color: '#ef4444',     width: '25%'  },
-                { label: 'Fair',   color: '#f97316',     width: '50%'  },
-                { label: 'Good',   color: '#eab308',     width: '75%'  },
-                { label: 'Strong', color: '#22c55e',     width: '100%' },
-            ];
-            const lvl = val.length === 0 ? levels[0] : (levels[score] || levels[1]);
-            pwBar.style.width      = lvl.width;
-            pwBar.style.background = lvl.color;
-            pwLabel.textContent    = lvl.label;
-            pwLabel.style.color    = lvl.color;
-        });
-    }
-
-    /* ── Confirm password match ── */
-    const confirmPw  = document.getElementById('confirmPassword');
-    const matchError = document.getElementById('pwMatchError');
-    if (confirmPw) {
-        confirmPw.addEventListener('input', function() {
-            const match = this.value === newPw.value;
-            matchError.style.display = this.value && !match ? 'block' : 'none';
-        });
-    }
-
-    /* ════════════════════════════════════════════
-       SECTION LOADERS — Tickets / Joined / Hosted
-    ════════════════════════════════════════════ */
-    const profileToken = localStorage.getItem('accessToken');
-
-    function fmtDate(d) {
-        if (!d) return '—';
-        return new Date(d + 'T00:00:00').toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' });
-    }
-    function fmtTime(t) {
-        if (!t) return '—';
-        const [h, m] = t.split(':').map(Number);
-        return (h % 12 || 12) + ':' + String(m).padStart(2,'0') + ' ' + (h >= 12 ? 'PM' : 'AM');
-    }
-    function isUpcoming(dateStr) {
-        const today = new Date(); today.setHours(0,0,0,0);
-        return new Date(dateStr + 'T00:00:00') >= today;
-    }
-
-    function buildTicketCard(t) {
-        const ev       = t.event || {};
-        const upcoming = ev.eventDate ? isUpcoming(ev.eventDate) : false;
-        const statusBadge = t.checkedIn
-            ? '<span class="ticket-status" style="background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;">✅ Checked In</span>'
-            : upcoming
-            ? '<span class="ticket-status upcoming-badge">Upcoming</span>'
-            : '<span class="ticket-status" style="background:#f8fafc;color:#64748b;border:1px solid #e2e8f0;">Past</span>';
-        return `
-        <div class="ticket-card ${upcoming ? 'upcoming' : 'past'}">
-            <div class="ticket-left">
-                <div class="ticket-event-img">
-                    <img src="${ev.bannerUrl || ''}" alt="${ev.title || 'Event'}"
-                         onerror="this.style.background='#f1f5f9';this.removeAttribute('src');">
-                </div>
-            </div>
-            <div class="ticket-body">
-                ${statusBadge}
-                <h4>${ev.title || '—'}</h4>
-                <div class="ticket-meta">
-                    <span>📅 ${fmtDate(ev.eventDate)}</span>
-                    <span>📍 ${ev.location || '—'}</span>
-                    <span>🕐 ${fmtTime(ev.eventTime)}</span>
-                </div>
-                <div class="ticket-footer">
-                    <div class="ticket-id">
-                        <span>Ticket Code</span>
-                        <strong>#${t.ticketCode || t.ticketId}</strong>
-                    </div>
-                    <a href="/registerForEvent/${ev.eventId || ''}" class="ticket-action-btn">View Event</a>
-                </div>
-            </div>
-            <div class="ticket-tear"></div>
-            <div class="ticket-right">
-                <img src="${t.qrUrl}" alt="QR Code"
-                     style="width:120px;height:120px;background:white;padding:6px;border-radius:10px;"/>
-            </div>
-        </div>`;
-    }
-
-    function buildEventCard(ev, badge) {
-        const upcoming = ev.eventDate ? isUpcoming(ev.eventDate) : false;
-        return `
-        <div class="past-card" style="cursor:pointer;" onclick="location.href='/eventDetail/${ev.eventId}'">
-            <img src="${ev.bannerUrl || ''}" alt="${ev.title}"
-                 onerror="this.style.background='#f1f5f9';this.removeAttribute('src');">
-            <div class="past-info">
-                <h5>${ev.title || '—'}</h5>
-                <span>📅 ${fmtDate(ev.eventDate)}</span>
-                <span class="past-badge" style="${upcoming ? 'background:#fff0f3;color:#ff4d6d;border-color:#fecdd3;' : ''}">${badge}</span>
-            </div>
-        </div>`;
-    }
-
-    /* ── 1. MY TICKETS ── */
-    let ticketPage = 0, ticketDone = false, ticketSize = 10;
-
-    document.querySelectorAll('#ticketSizePills .ts-pill').forEach(pill => {
-        pill.addEventListener('click', () => {
-            document.querySelectorAll('#ticketSizePills .ts-pill').forEach(p => p.classList.remove('active'));
-            pill.classList.add('active');
-            ticketSize = parseInt(pill.dataset.size); ticketPage = 0;
-            const strip = document.getElementById('ticketStrip');
-            strip.innerHTML = ''; strip.style.display = 'none';
-            document.getElementById('ticketsLoading').style.display  = 'flex';
-            document.getElementById('ticketsEmpty').style.display    = 'none';
-            document.getElementById('ticketsMoreWrap').style.display = 'none';
-            loadMyTickets(0);
-        });
-    });
-
-    async function loadMyTickets(page = 0) {
-        if (!profileToken) return;
-        try {
-            const res = await fetch(`/api/v1/tickets/myTickets?page=${page}&size=${ticketSize}`, {
-                headers: { 'Authorization': 'Bearer ' + profileToken }
-            });
-            if (!res.ok) throw new Error(res.status);
-            const data    = await res.json();
-            const tickets = data.content || [];
-            if (page === 0) document.getElementById('ticketsLoading').style.display = 'none';
-            if (!tickets.length && page === 0) {
-                document.getElementById('ticketsEmpty').style.display = 'block'; return;
-            }
-            const total = data.totalElements || tickets.length;
-            document.getElementById('ticketCount').textContent       = total + ' ticket' + (total !== 1 ? 's' : '');
-            document.getElementById('statTotalTickets').textContent  = total;
-            const firstUser = tickets[0]?.user;
-            if (firstUser?.createdAt) {
-                document.getElementById('statMemberYear').textContent = new Date(firstUser.createdAt).getFullYear();
-            }
-            const strip = document.getElementById('ticketStrip');
-            strip.style.display = 'flex';
-            strip.innerHTML += tickets.map(buildTicketCard).join('');
-            ticketDone = data.last;
-            document.getElementById('ticketsMoreWrap').style.display = ticketDone ? 'none' : 'block';
-        } catch (err) {
-            console.error('Tickets load error:', err);
-            document.getElementById('ticketsLoading').style.display = 'none';
-            document.getElementById('ticketsEmpty').style.display   = 'block';
-        }
-    }
-
-    /* ── 2. EVENTS ATTENDED ── */
-    let joinedPage = 0, joinedDone = false, joinedSize = 8;
-
-    document.querySelectorAll('#joinedSizePills .ts-pill').forEach(pill => {
-        pill.addEventListener('click', () => {
-            document.querySelectorAll('#joinedSizePills .ts-pill').forEach(p => p.classList.remove('active'));
-            pill.classList.add('active');
-            joinedSize = parseInt(pill.dataset.size); joinedPage = 0;
-            const grid = document.getElementById('joinedGrid');
-            grid.innerHTML = ''; grid.style.display = 'none';
-            document.getElementById('joinedLoading').style.display  = 'flex';
-            document.getElementById('joinedEmpty').style.display    = 'none';
-            document.getElementById('joinedMoreWrap').style.display = 'none';
-            loadJoined(0);
-        });
-    });
-
-    async function loadJoined(page = 0) {
-        if (!profileToken) return;
-        try {
-            const res = await fetch(`/api/v1/event/getJoinedEvents?page=${page}&size=${joinedSize}`, {
-                headers: { 'Authorization': 'Bearer ' + profileToken }
-            });
-            if (!res.ok) throw new Error(res.status);
-            const data   = await res.json();
-            const events = data.content || [];
-            if (page === 0) document.getElementById('joinedLoading').style.display = 'none';
-            if (!events.length && page === 0) {
-                document.getElementById('joinedEmpty').style.display = 'flex'; return;
-            }
-            const total = data.totalElements || events.length;
-            document.getElementById('joinedCount').textContent  = total + ' event' + (total !== 1 ? 's' : '');
-            document.getElementById('statJoined').textContent   = total;
-            const upcomingCount = events.filter(ev => isUpcoming(ev.eventDate)).length;
-            const prevUpcoming  = parseInt(document.getElementById('statUpcoming').textContent) || 0;
-            document.getElementById('statUpcoming').textContent = prevUpcoming + upcomingCount;
-            const grid = document.getElementById('joinedGrid');
-            grid.style.display = 'grid';
-            grid.innerHTML += events.map(ev => buildEventCard(ev, isUpcoming(ev.eventDate) ? 'Registered' : 'Attended')).join('');
-            joinedDone = data.last;
-            document.getElementById('joinedMoreWrap').style.display = joinedDone ? 'none' : 'block';
-        } catch (err) {
-            console.error('Joined events error:', err);
-            document.getElementById('joinedLoading').style.display = 'none';
-            document.getElementById('joinedEmpty').style.display   = 'flex';
-        }
-    }
-
-    /* ── 3. EVENTS HOSTED ── */
-    let hostedPage = 0, hostedDone = false, hostedSize = 8;
-
-    document.querySelectorAll('#hostedSizePills .ts-pill').forEach(pill => {
-        pill.addEventListener('click', () => {
-            document.querySelectorAll('#hostedSizePills .ts-pill').forEach(p => p.classList.remove('active'));
-            pill.classList.add('active');
-            hostedSize = parseInt(pill.dataset.size); hostedPage = 0;
-            const grid = document.getElementById('hostedGrid');
-            grid.innerHTML = ''; grid.style.display = 'none';
-            document.getElementById('hostedLoading').style.display  = 'flex';
-            document.getElementById('hostedEmpty').style.display    = 'none';
-            document.getElementById('hostedMoreWrap').style.display = 'none';
-            loadHosted(0);
-        });
-    });
-
-    async function loadHosted(page = 0) {
-        if (!profileToken) return;
-        try {
-            const res = await fetch(`/api/v1/event/getHostedEvents?page=${page}&size=${hostedSize}`, {
-                headers: { 'Authorization': 'Bearer ' + profileToken }
-            });
-            if (!res.ok) throw new Error(res.status);
-            const data   = await res.json();
-            const events = data.content || [];
-            if (page === 0) document.getElementById('hostedLoading').style.display = 'none';
-            if (!events.length && page === 0) {
-                document.getElementById('hostedEmpty').style.display = 'flex'; return;
-            }
-            const total = data.totalElements || events.length;
-            document.getElementById('hostedCount').textContent  = total + ' event' + (total !== 1 ? 's' : '');
-            document.getElementById('statHosted').textContent   = total;
-            const grid = document.getElementById('hostedGrid');
-            grid.style.display = 'grid';
-            grid.innerHTML += events.map(ev => {
-                const upcoming = isUpcoming(ev.eventDate);
-                const sold     = ev.totalTickets - ev.ticketsAvailable;
-                const badge    = upcoming ? `🟢 ${ev.ticketsAvailable} left` : `${sold}/${ev.totalTickets} attended`;
-                return buildEventCard(ev, badge);
-            }).join('');
-            hostedDone = data.last;
-            document.getElementById('hostedMoreWrap').style.display = hostedDone ? 'none' : 'block';
-        } catch (err) {
-            console.error('Hosted events error:', err);
-            document.getElementById('hostedLoading').style.display = 'none';
-            document.getElementById('hostedEmpty').style.display   = 'flex';
-        }
-    }
-
-    document.getElementById('ticketsMoreBtn').addEventListener('click', () => { ticketPage++; loadMyTickets(ticketPage); });
-    document.getElementById('joinedMoreBtn').addEventListener('click',  () => { joinedPage++;  loadJoined(joinedPage);   });
-    document.getElementById('hostedMoreBtn').addEventListener('click',  () => { hostedPage++;  loadHosted(hostedPage);   });
-
-    /* ── Boot all sections + host status ── */
-    loadMyTickets(0);
-    loadJoined(0);
-    loadHosted(0);
-    loadHostStatus();
-
-</script>
-<script th:src="@{/js/profile.js}"></script>
-
+<script src="/js/auth.js"></script>
+<script src="/js/auto-refresh.js"></script>
+<script src="/js/nav-config.js"></script>
+<script src="/js/sidebar.js"></script>
+<script src="/js/profile.js"></script>
 </body>
+
 </html>

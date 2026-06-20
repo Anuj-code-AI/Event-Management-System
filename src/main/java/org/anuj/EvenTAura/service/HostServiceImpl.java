@@ -41,15 +41,19 @@ public class HostServiceImpl implements HostService{
         if (hostApplicationRepository.existsByUserAndStatus(user, HostStatus.APPROVED)) {
             throw new RuntimeException("Already a host");
         }
+        if (user.getUniversity() == null) {
+            throw new RuntimeException("Please select your university in your profile before applying to become a host.");
+        }
         String[] domain = request.getCollegeEmail().split("@");
-        if(!domain[0].equals(user.getUniversity().getDomain())){
-            throw new RuntimeException("Login with college email");
+        if (domain.length < 2 || !domain[1].equalsIgnoreCase(user.getUniversity().getDomain())) {
+            throw new RuntimeException("College email domain must match your university domain (" + user.getUniversity().getDomain() + ")");
         }
         HostApplication application = new HostApplication();
         application.setUser(user);
         application.setCollegeEmail(request.getCollegeEmail());
         application.setPhone(request.getPhone());
         application.setStatus(HostStatus.PENDING);
+        hostApplicationRepository.save(application);
     }
 
     @Override
@@ -159,7 +163,8 @@ public class HostServiceImpl implements HostService{
                         event.getBannerUrl(),
                         event.getCategory(),
                         event.getTicketPrice(),
-                        event.getEventStatus()
+                        event.getEventStatus(),
+                        event.getUniversity() != null ? event.getUniversity().getLogoUrl() : null
                 ))
                 .toList();
     }
@@ -206,7 +211,8 @@ public class HostServiceImpl implements HostService{
                         event.getBannerUrl(),
                         event.getCategory(),
                         event.getTicketPrice(),
-                        event.getEventStatus()
+                        event.getEventStatus(),
+                        event.getUniversity() != null ? event.getUniversity().getLogoUrl() : null
                 ))
                 .toList();
     }
@@ -229,7 +235,8 @@ public class HostServiceImpl implements HostService{
                         event.getBannerUrl(),
                         event.getCategory(),
                         event.getTicketPrice(),
-                        event.getEventStatus()
+                        event.getEventStatus(),
+                        event.getUniversity() != null ? event.getUniversity().getLogoUrl() : null
                 ))
                 .toList();
     }

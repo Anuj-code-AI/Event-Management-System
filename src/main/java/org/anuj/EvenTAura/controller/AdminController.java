@@ -93,14 +93,14 @@ public class AdminController {
     // Get all universities
     @GetMapping("/university")
     public ResponseEntity<ApiResponse<Page<UniversityResponse>>> getAllUniversity(
+            @RequestParam(required = false) String query,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            Authentication authentication
+            @RequestParam(defaultValue = "10") int size
     ){
         return ResponseEntity.ok(
                 ApiResponse.success(
                         "Page loaded successfully",
-                        universityService.getAllUniversity(page, size, authentication)
+                        universityService.getAllUniversity(page, size, query)
                 )
         );
     }
@@ -109,13 +109,27 @@ public class AdminController {
     @PatchMapping("/hod/{userId}")
     public ResponseEntity<ApiResponse<UserResponse>> makeUserHod(
             @PathVariable Long userId,
-            @Valid @RequestBody RequestRole role,
+            @RequestBody RequestRole role,
             Authentication authentication
     ){
         return ResponseEntity.ok(
                 ApiResponse.success(
                         "User role upgraded to hod",
                         userService.updateRole(userId, role, authentication)
+                )
+        );
+    }
+
+    @GetMapping("/users")
+    public ResponseEntity<ApiResponse<Page<UserResponse>>> getAllUser(
+            @RequestParam(required = false) String query,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ){
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        "Users loaded successfully",
+                        userService.getAllUser(query, page, size)
                 )
         );
     }

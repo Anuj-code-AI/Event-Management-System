@@ -13,6 +13,16 @@ public class PageController {
         return "landingPage";
     }
 
+    @GetMapping("/aboutUs")
+    public String aboutUs() {
+        return "aboutUs";
+    }
+
+    @GetMapping("/contact")
+    public String contact() {
+        return "contact";
+    }
+
     @GetMapping("/login")
     public String login(){
         return "login";
@@ -28,37 +38,24 @@ public class PageController {
         return "home";
     }
 
-
-
-
-    @GetMapping("/globalEvents")
-    public String globalEvents(){
-        return "globalEvents";
+    @GetMapping("/universities")
+    public String universities() {
+        return "universities";
     }
 
-    @GetMapping("/campusEvents")
+    @GetMapping({"/campus-events","/campus-events/**"})
     public String campusEvents(){
-        return "campusEvents";
+        return "campus-events";
     }
 
-    @GetMapping("/indexTemp")
-    public String indexTemp(){
-        return "indexTemp";
+    @GetMapping("/event-management")
+    public String eventManagement() {
+        return "event-management";
     }
 
-    @GetMapping("/index")
-    public String index(){
-        return "index";
-    }
-
-    @GetMapping("/profile")
-    public String profile(){
-        return "profile";
-    }
-
-    @GetMapping("/createEvent")
-    public String createEvent(){
-        return "createEvent";
+    @GetMapping("/request-event")
+    public String requestEvent(){
+        return "request-event";
     }
 
     @GetMapping("/oauth")
@@ -66,48 +63,29 @@ public class PageController {
         return "oauth";
     }
 
-    @GetMapping("/registerForEvent/{eventId}")
-    public String registerForEvent() {
-        return "registerForEvent";
+    @GetMapping("/admin")
+    public String admin() {
+        return "admin";
     }
 
-    @GetMapping("/aboutUs")
-    public String aboutUs() {
-        return "aboutUs";
+    @GetMapping({"/eventDetails", "/eventDetails/{eventId}"})
+    public String eventDetails() {
+        return "eventDetails";
     }
 
-    @GetMapping("/tickets")
+    @GetMapping({"/tickets", "/my-tickets"})
     public String tickets() {
         return "tickets";
     }
 
-    @GetMapping("/customEvent")
-    public String customEvent() {
-        return "customEvent";
+    @GetMapping("/myEvents")
+    public String myEvents() {
+        return "myEvents";
     }
 
-    @GetMapping("/hostedEvents")
-    public String hostedEvent() {
-        return "hostedEvents";
+    @GetMapping("/profile")
+    public String profile() {
+        return "profile";
     }
 
-    @GetMapping("/becomeOrganizer")
-    public String becomeOrganizer() {
-        return "becomeOrganizer";
-    }
-
-    @GetMapping("/adminPage")
-    public String adminPage() {
-        return "adminPage";
-    }
-
-    @GetMapping("/moments")
-    public String moments() {
-        return "moments";
-    }
-
-    @GetMapping("/eventDetails/{eventId}")
-    public String eventDetails() {
-        return "eventDetails";
-    }
 }

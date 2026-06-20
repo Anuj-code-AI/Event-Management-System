@@ -15,6 +15,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class UniversityServiceImpl implements UniversityService {
@@ -25,8 +27,25 @@ public class UniversityServiceImpl implements UniversityService {
     @Override
     @Transactional
     public UniversityResponse addUniversity(UniversityRequest request, Authentication authentication) {
+
+        Optional<University> existingUniversity =
+                universityRepository.findByNameContainingIgnoreCase(request.getName());
+
+        if (existingUniversity.isPresent()) {
+            University university = existingUniversity.get();
+
+            if (!university.getActive()) {
+                university.setActive(true);
+                universityRepository.save(university);
+                return UniversityMapper.toResponse(university);
+            }
+
+            throw new RuntimeException("University already exists");
+        }
+
         University university = UniversityMapper.toEntity(request);
-        universityRepository.save(university);
+        university.setActive(true); // optional, if default is not already true
+        university = universityRepository.save(university);
         return UniversityMapper.toResponse(university);
     }
 
@@ -39,6 +58,7 @@ public class UniversityServiceImpl implements UniversityService {
             throw new UniversityNotFoundException("University not found");
         }
         UniversityMapper.toUpdateEntity(university, request);
+        university = universityRepository.save(university);
         return UniversityMapper.toResponse(university);
     }
 
@@ -51,6 +71,7 @@ public class UniversityServiceImpl implements UniversityService {
             throw new UniversityNotFoundException("University not found");
         }
         university.setActive(false);
+        universityRepository.save(university);
         return null;
     }
 
@@ -65,10 +86,17 @@ public class UniversityServiceImpl implements UniversityService {
     }
 
     @Override
-    public Page<UniversityResponse> getAllUniversity(int page, int size, Authentication authentication){
+    public Page<UniversityResponse> getAllUniversity(int page, int size, String query){
         Sort sort = Sort.by("name").ascending();
         Pageable pageable = PageRequest.of(page, size, sort);
-        return universityRepository.findByActive(true,pageable)
+        Page<University> universities;
+
+        if (query == null || query.isBlank()){
+            universities = universityRepository.findByActive(true, pageable);
+        } else {
+            universities = universityRepository.findByActiveAndNameContainingIgnoreCase(true , query, pageable);
+        }
+        return universities
                 .map(university -> new UniversityResponse(
                         university.getUniversityId(),
                         university.getName(),

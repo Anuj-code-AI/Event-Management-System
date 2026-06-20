@@ -9,6 +9,6 @@ public interface UniversityService {
     UniversityResponse addUniversity(UniversityRequest request, Authentication authentication);
     UniversityResponse updateUniversity(Long universityId, UniversityRequest request, Authentication authentication);
     UniversityResponse getUniversityById(Long universityId, Authentication authentication);
-    Page<UniversityResponse> getAllUniversity(int page, int size, Authentication authentication);
+    Page<UniversityResponse> getAllUniversity(int page, int size, String query);
     Void deleteUniversity(Long universityId, Authentication authentication);
 }

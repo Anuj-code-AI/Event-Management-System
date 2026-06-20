@@ -21,20 +21,41 @@ const HOST_STATUS = {
  * the server rejects the request) — callers must treat null as "logged out".
  */
 async function getCurrentUser() {
-    const token = localStorage.getItem("accessToken");
+    let token = localStorage.getItem("accessToken");
     if (!token) return null;
 
-    try {
-        const [meRes, roleRes] = await Promise.all([
+    async function makeRequests(tok) {
+        return Promise.all([
             fetch(`${API_USERS_BASE}/me`, {
                 credentials: "include",
-                headers: { Authorization: `Bearer ${token}` },
+                headers: { Authorization: `Bearer ${tok}` },
             }),
             fetch(`${API_USERS_BASE}/roleOfMe`, {
                 credentials: "include",
-                headers: { Authorization: `Bearer ${token}` },
+                headers: { Authorization: `Bearer ${tok}` },
             }),
         ]);
+    }
+
+    try {
+        let [meRes, roleRes] = await makeRequests(token);
+
+        // If unauthorized (expired token), try to refresh and retry once
+        if (meRes.status === 401 || roleRes.status === 401) {
+            console.log("[nav-config] Access token expired, attempting silent refresh...");
+            try {
+                if (typeof refreshAccessToken === "function") {
+                    const refreshData = await refreshAccessToken();
+                    if (refreshData && refreshData.accessToken) {
+                        token = refreshData.accessToken;
+                        [meRes, roleRes] = await makeRequests(token);
+                    }
+                }
+            } catch (refreshErr) {
+                console.warn("[nav-config] Proactive refresh failed:", refreshErr);
+                return null;
+            }
+        }
 
         if (!meRes.ok || !roleRes.ok) {
             // Log the real reason instead of swallowing it — needed to debug auth issues.
@@ -84,21 +105,14 @@ async function getCurrentUser() {
 function buildNavItems(user) {
     const base = [
         { label: "Home", icon: "home", href: "/home" },
-        { label: "Campus Events", icon: "explore", href: "/events" },
-        { label: "My Tickets", icon: "confirmation_number", href: "/my-tickets" },
-        { label: "My Events", icon: "event_available", href: "/my-events" },
+        { label: "Campus Events", icon: "explore", href: "/campus-events" },
+        { label: "My Tickets", icon: "confirmation_number", href: "/tickets" },
+        { label: "My Events", icon: "event_available", href: "/myEvents" },
         { label: "About Us", icon: "info", href: "/aboutUs" },
     ];
 
-    const hostItems = [
-        { label: "Request Event", icon: "add_circle", href: "/request-event" },
-        { label: "Hosted Events", icon: "event", href: "/hosted-events" },
-    ];
-
-    const hodItems = [
-        { label: "Event Management", icon: "admin_panel_settings", href: "/event-management" },
-        { label: "Admin Page", icon: "shield_person", href: "/admin" },
-    ];
+    const eventManagementItem = { label: "Event Management", icon: "event_note", href: "/event-management" };
+    const adminPageItem = { label: "Admin Page", icon: "shield_person", href: "/admin" };
 
     const superAdminItems = [
         { label: "Universities", icon: "account_balance", href: "/universities" },
@@ -106,14 +120,17 @@ function buildNavItems(user) {
 
     let items = [...base];
 
-    if (user.hostStatus === HOST_STATUS.APPROVED) {
-        items = items.concat(hostItems);
+    // Show Event Management if the user is an approved host OR an HOD
+    if (user.hostStatus === HOST_STATUS.APPROVED || user.systemRole === SYSTEM_ROLE.HOD) {
+        items.push(eventManagementItem);
     }
 
+    // Show Admin Page if the user is an HOD
     if (user.systemRole === SYSTEM_ROLE.HOD) {
-        items = items.concat(hodItems);
+        items.push(adminPageItem);
     }
 
+    // Show Universities admin tab if user is SUPER_ADMIN
     if (user.systemRole === SYSTEM_ROLE.SUPER_ADMIN) {
         items = items.concat(superAdminItems);
     }

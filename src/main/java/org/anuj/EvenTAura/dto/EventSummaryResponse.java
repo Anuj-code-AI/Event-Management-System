@@ -18,4 +18,5 @@ public class EventSummaryResponse {
     private String category;
     private Double ticketPrice;
     private EventStatus eventStatus;
+    private String logoUrl;
 }

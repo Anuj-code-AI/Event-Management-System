@@ -56,8 +56,13 @@ public class AuthController {
 
     // REFRESH TOKEN
     @PostMapping("/refresh")
-    public ResponseEntity<?> refresh(@CookieValue("refreshToken") String refreshToken) {
-        return ResponseEntity.ok(authService.refresh(refreshToken));
+    public ResponseEntity<?> refresh(
+            @CookieValue("refreshToken") String refreshToken,
+            HttpServletResponse response
+    ) {
+        TokenPair pair = authService.refresh(refreshToken);
+        setRefreshCookie(response, pair.getRefreshToken());
+        return ResponseEntity.ok(Map.of("accessToken", pair.getAccessToken()));
     }
 
     // LOGOUT

@@ -11,10 +11,7 @@ import org.anuj.EvenTAura.exception.AllExceptions.UnauthorizedException;
 import org.anuj.EvenTAura.exception.AllExceptions.UserNotFoundException;
 import org.anuj.EvenTAura.mapper.EventMapper;
 import org.anuj.EvenTAura.model.*;
-import org.anuj.EvenTAura.model.enums.EventStatus;
-import org.anuj.EvenTAura.model.enums.ParticipationType;
-import org.anuj.EvenTAura.model.enums.SystemRole;
-import org.anuj.EvenTAura.model.enums.HostStatus;
+import org.anuj.EvenTAura.model.enums.*;
 import org.anuj.EvenTAura.repository.EventRepository;
 import org.anuj.EvenTAura.repository.HostApplicationRepository;
 import org.anuj.EvenTAura.repository.TicketRepository;
@@ -27,6 +24,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 
 @Builder
@@ -169,16 +168,21 @@ public class EventServiceImpl implements EventService {
         Pageable pageable = PageRequest.of(page, size, sort);
 
         Page<Event> events;
-
+        List<EventStatus> statuses = List.of(
+                EventStatus.APPROVED,
+                EventStatus.FINISHED
+        );
         if (query == null || query.isBlank()) {
-            events = eventRepository.findByParticipationType(
+            events = eventRepository.findByParticipationTypeAndEventStatusIn(
                     ParticipationType.PUBLIC,
+                    statuses,
                     pageable
             );
         } else {
             events = eventRepository
-                    .findByParticipationTypeAndTitleContainingIgnoreCase(
+                    .findByParticipationTypeAndEventStatusInAndTitleContainingIgnoreCase(
                             ParticipationType.PUBLIC,
+                            statuses,
                             query,
                             pageable
                     );
@@ -192,29 +196,52 @@ public class EventServiceImpl implements EventService {
                 event.getBannerUrl(),
                 event.getCategory(),
                 event.getTicketPrice(),
-                event.getEventStatus()
+                event.getEventStatus(),
+                event.getUniversity() != null ? event.getUniversity().getLogoUrl() : null
         ));
     }
 
     // Get all university events
     @Override
-    public Page<EventSummaryResponse> getUniversityEvents(int page, int size, Authentication authentication) {
+    public Page<EventSummaryResponse> getUniversityEvents(int page, int size, String query, Authentication authentication) {
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
         User user = userRepository.findByUserId(userDetails.getId())
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
         Sort sort = Sort.by("eventDate").ascending();
         Pageable pageable = PageRequest.of(page, size, sort);
-        return eventRepository.findByEventStatusAndUniversity(EventStatus.APPROVED, user.getUniversity(), pageable)
-                .map(event -> new EventSummaryResponse(
-                        event.getEventId(),
-                        event.getTitle(),
-                        event.getLocation(),
-                        event.getLastRegistrationDate(),
-                        event.getBannerUrl(),
-                        event.getCategory(),
-                        event.getTicketPrice(),
-                        event.getEventStatus()
-                ));
+
+        Page<Event> events;
+
+        List<EventStatus> statuses = List.of(
+                EventStatus.APPROVED,
+                EventStatus.FINISHED
+        );
+
+        if (query == null || query.isBlank()) {
+            events = eventRepository.findByEventStatusInAndUniversity(
+                    statuses,
+                    user.getUniversity(),
+                    pageable
+            );
+        } else {
+            events = eventRepository.findByUniversityAndEventStatusInAndTitleContainingIgnoreCase(
+                    user.getUniversity(),
+                    statuses,
+                    query,
+                    pageable
+            );
+        }
+        return events.map(event -> new EventSummaryResponse(
+                event.getEventId(),
+                event.getTitle(),
+                event.getLocation(),
+                event.getLastRegistrationDate(),
+                event.getBannerUrl(),
+                event.getCategory(),
+                event.getTicketPrice(),
+                event.getEventStatus(),
+                event.getUniversity() != null ? event.getUniversity().getLogoUrl() : null
+        ));
     }
 
 
@@ -238,7 +265,8 @@ public class EventServiceImpl implements EventService {
                         event.getBannerUrl(),
                         event.getCategory(),
                         event.getTicketPrice(),
-                        event.getEventStatus()
+                        event.getEventStatus(),
+                        event.getUniversity() != null ? event.getUniversity().getLogoUrl() : null
                 ));
     }
 
@@ -252,7 +280,11 @@ public class EventServiceImpl implements EventService {
 
         Pageable pageable = PageRequest.of(page, size);
 
-        return ticketRepository.findJoinedEvents(user, pageable)
+        return ticketRepository.findJoinedEvents(
+                        user,
+                        TicketStatus.CANCELLED,
+                        pageable
+                )
                 .map(event -> new EventSummaryResponse(
                         event.getEventId(),
                         event.getTitle(),
@@ -261,8 +293,12 @@ public class EventServiceImpl implements EventService {
                         event.getBannerUrl(),
                         event.getCategory(),
                         event.getTicketPrice(),
-                        event.getEventStatus()
+                        event.getEventStatus(),
+                        event.getUniversity() != null
+                                ? event.getUniversity().getLogoUrl()
+                                : null
                 ));
+
     }
 
 

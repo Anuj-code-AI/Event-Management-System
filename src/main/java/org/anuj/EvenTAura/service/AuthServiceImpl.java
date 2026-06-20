@@ -14,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -33,13 +34,20 @@ public class AuthServiceImpl implements AuthService{
         if(userRepository.findByEmail(request.getEmail()).isPresent()){
             throw new EmailAlreadyExistException("User with this email already registered");
         }
-        University university = null;
+        University university =  null;
         if(request.getUniversity()!=null && !request.getUniversity().isBlank()){
-            university = universityRepository.findByNameIgnoreCase(request.getName())
+            university = universityRepository.findByNameContainingIgnoreCase(request.getUniversity())
                     .orElseThrow(() ->
                             new UniversityNotSupportedException(
                                     "We are not currently serving this university. You may register without selecting a university."
                             ));
+            if (university.getDomain() != null) {
+                String email = request.getEmail();
+                String emailDomain = email.substring(email.lastIndexOf("@") + 1);
+                if (!emailDomain.equalsIgnoreCase(university.getDomain())) {
+                    throw new RuntimeException("Your email domain (" + emailDomain + ") does not match the university domain (" + university.getDomain() + ").");
+                }
+            }
         }
         request.setPassword(passwordEncoder.encode(request.getPassword()));
         User user = UserMapper.toEntity(request, university);

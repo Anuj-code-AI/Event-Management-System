@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>My Tickets | CampusHive</title>
+    <title>Event Management | CampusHive</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
@@ -124,17 +124,12 @@
             radial-gradient(at 100% 0%, hsla(158, 64%, 52%, 0.08) 0, transparent 50%);
         }
 
+        /* Glassmorphism card */
         .glass-card {
             background: rgba(23, 31, 28, 0.45);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             border: 1px solid rgba(51, 69, 60, 0.5);
-        }
-
-        /* Dash border design representing physical ticket stubs */
-        .ticket-stub-border {
-            border-style: dashed;
-            border-color: rgba(51, 69, 60, 0.5);
         }
     </style>
 </head>
@@ -203,7 +198,7 @@
                     </span>
                 </a>
 
-                <h1 class="hidden md:block text-title-lg font-bold text-on-background">My Tickets</h1>
+                <h1 id="page-title" class="hidden md:block text-title-lg font-bold text-on-background">Event Management</h1>
 
                 <a href="/home" class="hidden md:flex items-center gap-2 ml-auto">
                     <img src="/images/logo.png" alt="CampusHive Logo" class="w-7 h-7 object-contain" />
@@ -217,67 +212,87 @@
         <!-- ---------- MAIN CONTENT ---------- -->
         <main class="flex-1 px-md md:px-lg py-lg space-y-lg hero-mesh">
 
-            <!-- Title & Banner -->
-            <section class="relative rounded-xl overflow-hidden hero-mesh border border-outline-variant p-md">
-                <div class="relative z-10 max-w-xl">
-                    <h2 class="text-headline-sm font-bold text-on-background">Your Event Tickets</h2>
-                    <p class="text-body-sm text-on-surface-variant mt-xs">View your active admission passes, scan codes, or cancel bookings if you can no longer attend.</p>
+            <!-- Stats Bar -->
+            <section class="grid grid-cols-2 md:grid-cols-4 gap-md">
+                <div class="glass-card rounded-xl p-md flex flex-col justify-between">
+                    <span class="text-label-md text-on-surface-variant uppercase tracking-wider">Total Events</span>
+                    <span id="stat-total" class="text-headline-md font-bold text-on-background mt-xs">0</span>
+                </div>
+                <div class="glass-card rounded-xl p-md flex flex-col justify-between border-l-4 border-l-yellow-500">
+                    <span class="text-label-md text-on-surface-variant uppercase tracking-wider">Pending</span>
+                    <span id="stat-pending" class="text-headline-md font-bold text-yellow-500 mt-xs">0</span>
+                </div>
+                <div class="glass-card rounded-xl p-md flex flex-col justify-between border-l-4 border-l-primary">
+                    <span class="text-label-md text-on-surface-variant uppercase tracking-wider">Approved</span>
+                    <span id="stat-approved" class="text-headline-md font-bold text-primary mt-xs">0</span>
+                </div>
+                <div class="glass-card rounded-xl p-md flex flex-col justify-between border-l-4 border-l-error">
+                    <span class="text-label-md text-on-surface-variant uppercase tracking-wider">Rejected</span>
+                    <span id="stat-rejected" class="text-headline-md font-bold text-error mt-xs">0</span>
                 </div>
             </section>
 
-            <!-- Search Filters -->
+            <!-- Search, Tab Actions, Request Button -->
             <section class="flex flex-col md:flex-row items-center justify-between gap-md">
+                <!-- Search bar -->
                 <div class="w-full md:max-w-md">
                     <label class="relative block w-full">
                         <span class="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
                         <input
-                                id="ticketSearch"
+                                id="eventSearch"
                                 type="search"
-                                placeholder="Search by event title..."
+                                placeholder="Search hosted events..."
                                 class="w-full bg-surface-container-low border border-outline-variant rounded-lg pl-[40px] pr-md py-sm text-body-sm text-on-surface placeholder:text-on-surface-variant/60 focus:border-primary focus:outline-none transition-colors"
                         />
                     </label>
                 </div>
+
+                <!-- Request Event Action -->
+                <a href="/request-event" class="w-full md:w-auto inline-flex items-center justify-center gap-xs bg-primary hover:bg-primary-fixed text-on-primary font-bold px-lg py-sm rounded-lg transition-all shadow-lg shadow-primary/20">
+                    <span class="material-symbols-outlined text-[20px]">add_circle</span>
+                    <span>Request Event</span>
+                </a>
             </section>
 
             <!-- Tabs Section -->
             <section class="border-b border-outline-variant/30 flex overflow-x-auto scrollbar-none gap-sm">
-                <div id="tickets-tabs" class="flex gap-md">
-                    <!-- filled dynamically -->
+                <!-- Tabs are loaded dynamically based on HOD vs. Host status -->
+                <div id="tabs-container" class="flex gap-md">
+                    <!-- filled by event-management.js -->
                 </div>
             </section>
 
-            <!-- Loading spinner -->
-            <div id="tickets-loading" class="flex flex-col items-center justify-center py-2xl">
+            <!-- Loading State -->
+            <div id="loading-state" class="flex flex-col items-center justify-center py-2xl">
                 <div class="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-md"></div>
-                <p class="text-body-sm text-on-surface-variant">Loading your tickets...</p>
+                <p class="text-body-sm text-on-surface-variant">Loading events data...</p>
             </div>
 
             <!-- Error State -->
-            <div id="tickets-error" class="hidden flex flex-col items-center justify-center py-2xl text-center space-y-md">
+            <div id="error-state" class="hidden flex flex-col items-center justify-center py-2xl text-center space-y-md">
                 <span class="material-symbols-outlined text-[64px] text-error">error</span>
-                <h2 class="text-headline-sm text-on-surface font-bold">Failed to load tickets</h2>
-                <p id="tickets-error-text" class="text-body-md text-on-surface-variant max-w-md">Network issue loading tickets list.</p>
-                <button onclick="fetchTicketsData()" class="bg-surface-container hover:bg-surface-container-high border border-outline-variant px-lg py-sm rounded-lg font-bold transition-all">
+                <h2 class="text-headline-sm text-on-surface font-bold">Something went wrong</h2>
+                <p id="error-message" class="text-body-md text-on-surface-variant max-w-md">Failed to load events. Please try again later.</p>
+                <button onclick="fetchEventsData()" class="bg-surface-container hover:bg-surface-container-high border border-outline-variant px-lg py-sm rounded-lg font-bold transition-all">
                     Retry
                 </button>
             </div>
 
-            <!-- Main Tickets View Area -->
-            <div id="tickets-content-section" class="hidden space-y-lg">
-                <!-- Tickets Stack List (Horizontal cards) -->
-                <div id="tickets-list" class="space-y-md max-w-4xl mx-auto">
-                    <!-- dynamically populated horizontal cards -->
+            <!-- Main Content Container (Grid / Empty State / Pagination) -->
+            <div id="events-content-section" class="hidden space-y-lg">
+                <!-- Events Grid -->
+                <div id="events-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-lg">
+                    <!-- Dynamically populated cards -->
                 </div>
 
-                <!-- Empty Message -->
-                <div id="tickets-empty-msg" class="hidden flex flex-col items-center justify-center py-2xl text-center space-y-sm bg-surface-container border border-outline-variant rounded-xl p-lg max-w-lg mx-auto">
-                    <span class="material-symbols-outlined text-[48px] text-on-surface-variant/40">confirmation_number</span>
-                    <p id="tickets-empty-text" class="text-body-md text-on-surface-variant font-medium">You don't have any tickets in this category.</p>
+                <!-- Empty State -->
+                <div id="events-empty-msg" class="hidden flex flex-col items-center justify-center py-2xl text-center space-y-sm bg-surface-container border border-outline-variant rounded-xl p-lg">
+                    <span class="material-symbols-outlined text-[48px] text-on-surface-variant/40">event_busy</span>
+                    <p id="empty-message-text" class="text-body-md text-on-surface-variant font-medium">No events found in this category.</p>
                 </div>
 
-                <!-- Pagination controls -->
-                <div id="tickets-pagination" class="hidden flex items-center justify-between pt-md border-t border-outline-variant/30 max-w-4xl mx-auto">
+                <!-- Pagination -->
+                <div id="events-pagination" class="hidden flex items-center justify-between pt-md border-t border-outline-variant/30">
                     <span id="pagination-info" class="text-body-sm text-on-surface-variant">Showing page 1 of 1</span>
                     <div class="flex gap-2">
                         <button id="prev-page-btn" class="border border-outline-variant hover:bg-surface-container text-on-surface px-md py-xs rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed">
@@ -306,22 +321,87 @@
     </div>
 </div>
 
-<!-- Cancel Ticket Confirmation Modal -->
+<!-- ===================== MODALS ===================== -->
+
+<!-- HOD Approve Confirmation Modal -->
+<div id="approve-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-md bg-black/75 backdrop-blur-sm">
+    <div class="glass-card rounded-xl max-w-md w-full p-lg space-y-md shadow-2xl animate-fade-in">
+        <div class="flex items-center gap-sm text-primary">
+            <span class="material-symbols-outlined text-[32px]">check_circle</span>
+            <h3 class="text-headline-sm font-bold">Approve Event</h3>
+        </div>
+        <p class="text-body-md text-on-surface-variant">
+            Are you sure you want to approve "<span id="approve-event-title" class="text-on-surface font-semibold"></span>"? This will publish the event to the campus directory and make it visible to university members.
+        </p>
+        <div class="flex items-center justify-end gap-sm pt-sm border-t border-outline-variant/30">
+            <button onclick="closeModal('approve-modal')" class="border border-outline-variant hover:bg-surface-container-high text-on-surface font-bold px-md py-sm rounded-lg transition-all">
+                Cancel
+            </button>
+            <button id="confirm-approve-btn" class="bg-primary hover:bg-primary-fixed text-on-primary font-bold px-md py-sm rounded-lg transition-all shadow-lg shadow-primary/20">
+                Confirm Approve
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- HOD Reject Modal -->
+<div id="reject-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-md bg-black/75 backdrop-blur-sm">
+    <div class="glass-card rounded-xl max-w-md w-full p-lg space-y-md shadow-2xl animate-fade-in">
+        <div class="flex items-center gap-sm text-error">
+            <span class="material-symbols-outlined text-[32px]">cancel</span>
+            <h3 class="text-headline-sm font-bold">Reject Event</h3>
+        </div>
+        <p class="text-body-md text-on-surface-variant">
+            Are you sure you want to reject "<span id="reject-event-title" class="text-on-surface font-semibold"></span>"? The event host will be notified of the rejection status.
+        </p>
+        <div class="flex items-center justify-end gap-sm pt-sm border-t border-outline-variant/30">
+            <button onclick="closeModal('reject-modal')" class="border border-outline-variant hover:bg-surface-container-high text-on-surface font-bold px-md py-sm rounded-lg transition-all">
+                Cancel
+            </button>
+            <button id="confirm-reject-btn" class="bg-error hover:bg-error-container text-on-error font-bold px-md py-sm rounded-lg transition-all shadow-lg">
+                Confirm Reject
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Cancel Event Modal -->
 <div id="cancel-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-md bg-black/75 backdrop-blur-sm">
     <div class="glass-card rounded-xl max-w-md w-full p-lg space-y-md shadow-2xl animate-fade-in">
         <div class="flex items-center gap-sm text-error">
             <span class="material-symbols-outlined text-[32px]">warning</span>
-            <h3 class="text-headline-sm font-bold">Cancel Ticket Booking</h3>
+            <h3 class="text-headline-sm font-bold">Cancel Event</h3>
         </div>
         <p class="text-body-md text-on-surface-variant">
-            Are you sure you want to cancel your ticket for "<span id="cancel-event-title" class="text-on-surface font-semibold"></span>"? This will void the entry QR code and free up the ticket slot for other students.
+            Are you sure you want to cancel "<span id="cancel-event-title" class="text-on-surface font-semibold"></span>"? This will mark the event as CANCELLED, stop new registrations, and keep the event visible as cancelled.
         </p>
         <div class="flex items-center justify-end gap-sm pt-sm border-t border-outline-variant/30">
             <button onclick="closeModal('cancel-modal')" class="border border-outline-variant hover:bg-surface-container-high text-on-surface font-bold px-md py-sm rounded-lg transition-all">
                 Close
             </button>
             <button id="confirm-cancel-btn" class="bg-error hover:bg-error-container text-on-error font-bold px-md py-sm rounded-lg transition-all shadow-lg">
-                Cancel Registration
+                Cancel Event
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Event Modal -->
+<div id="delete-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-md bg-black/75 backdrop-blur-sm">
+    <div class="glass-card rounded-xl max-w-md w-full p-lg space-y-md shadow-2xl animate-fade-in">
+        <div class="flex items-center gap-sm text-error font-semibold">
+            <span class="material-symbols-outlined text-[32px]">delete_forever</span>
+            <h3 class="text-headline-sm font-bold">Delete Event</h3>
+        </div>
+        <p class="text-body-md text-on-surface-variant">
+            Are you sure you want to permanently delete "<span id="delete-event-title" class="text-on-surface font-semibold"></span>"? This action is irreversible and will remove all tickets and registrations for this event.
+        </p>
+        <div class="flex items-center justify-end gap-sm pt-sm border-t border-outline-variant/30">
+            <button onclick="closeModal('delete-modal')" class="border border-outline-variant hover:bg-surface-container-high text-on-surface font-bold px-md py-sm rounded-lg transition-all">
+                Cancel
+            </button>
+            <button id="confirm-delete-btn" class="bg-error hover:bg-error-container text-on-error font-bold px-md py-sm rounded-lg transition-all shadow-lg">
+                Delete Permanently
             </button>
         </div>
     </div>
@@ -331,7 +411,7 @@
 <script src="/js/auto-refresh.js"></script>
 <script src="/js/nav-config.js"></script>
 <script src="/js/sidebar.js"></script>
-<script src="/js/tickets.js"></script>
+<script src="/js/event-management.js"></script>
 </body>
 
 </html>
