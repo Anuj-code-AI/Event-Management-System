@@ -361,7 +361,7 @@ public class TicketServiceImpl implements TicketService{
             AudienceResponse res = new AudienceResponse();
             res.setTicketId(ticket.getTicketId());
             res.setName(ticket.getUser().getName());
-            res.setEmail(ticket.getUser().getEmail());
+            res.setEmail(ticket.getUser().getPrimaryEmail());
             res.setStatus(ticket.getStatus());
             res.setCheckedIn(ticket.isCheckedIn());
             res.setCheckedInAt(ticket.getCheckedInAt());

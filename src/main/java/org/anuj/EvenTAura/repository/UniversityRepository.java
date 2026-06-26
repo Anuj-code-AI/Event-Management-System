@@ -13,4 +13,5 @@ public interface UniversityRepository extends JpaRepository<University,Long> {
     Page<University> findByActive(boolean active, Pageable pageable);
     Optional<University> findByNameContainingIgnoreCase(String name);
     Page<University> findByActiveAndNameContainingIgnoreCase(boolean Active, String query, Pageable pageable);
+    Optional<University> findByDomainIgnoreCase(String domain);
 }

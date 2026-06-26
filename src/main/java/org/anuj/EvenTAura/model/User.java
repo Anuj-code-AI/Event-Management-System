@@ -18,8 +18,11 @@ public class User {
 
     private String name;
 
-    @Column(unique = true,nullable = false)
-    private String email;
+    @Column(name = "email", unique = true, nullable = false)
+    private String primaryEmail;
+
+    @Column(name = "secondary_email")
+    private String secondaryEmail;
 
     private String password;
 

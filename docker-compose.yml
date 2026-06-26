@@ -1,0 +1,45 @@
+version: "3.9"
+
+services:
+
+  mysql:
+    image: mysql:8.4
+
+    container_name: campus-mysql
+
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: event_db
+
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-ppassword"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+    ports:
+      - "3307:3306"
+
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+  backend:
+    build: .
+
+    image: anuj/campushive-backend:latest
+
+    container_name: campus-backend
+
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+    ports:
+      - "8080:8080"
+
+    env_file:
+      - .env
+
+volumes:
+  mysql-data:

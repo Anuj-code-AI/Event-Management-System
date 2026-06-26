@@ -61,7 +61,7 @@ public class SecurityConfig {
                                 "/campus-events" , "/event-management" , "/oauth" , "/request-event" , "/admin" , "/eventDetails/**" ,
                                 "/eventDetails" , "/tickets" , "/myEvents" , "/profile" ,
 
-                                "/api/v1/auth/**" ,"/api/v1/event/global/**").permitAll()
+                                "/api/v1/auth/**" ,"/api/v1/event/global/**", "/api/v1/tickets/*/qr").permitAll()
                     .anyRequest().authenticated()
 
                 )
@@ -103,11 +103,11 @@ public class SecurityConfig {
         String provider = token.getAuthorizedClientRegistrationId();
         AuthProvider authProvider = AuthProvider.valueOf(provider.toUpperCase());
 
-        User user = userRepository.findByEmail(email)
+        User user = userRepository.findByPrimaryEmail(email)
                 .orElseGet(() -> {
                     User newUser = new User();
                     newUser.setName(name);
-                    newUser.setEmail(email);
+                    newUser.setPrimaryEmail(email);
                     newUser.setPassword(""); // OAuth users don’t use password
                     newUser.setSystemRole(SystemRole.USER);
                     newUser.setProvider(authProvider);
@@ -116,7 +116,7 @@ public class SecurityConfig {
         if (!user.getProvider().equals(authProvider)) {
             throw new RuntimeException("Account exists with different provider");
         }
-        String access = jwtUtil.generateAccessToken(user.getUserId(),user.getEmail(),user.getSystemRole());
+        String access = jwtUtil.generateAccessToken(user.getUserId(),user.getPrimaryEmail(),user.getSystemRole());
         String refresh = jwtUtil.generateRefreshToken(user.getUserId());
 
 

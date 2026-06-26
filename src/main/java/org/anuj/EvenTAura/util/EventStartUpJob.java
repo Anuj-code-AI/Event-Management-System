@@ -24,7 +24,7 @@ public class EventStartUpJob {
         User user = new User();
         user.setName("Admin");
         user.setIsActive(true);
-        user.setEmail("admin@gmail.com");
+        user.setPrimaryEmail("admin@gmail.com");
         user.setPassword(passwordEncoder.encode("admin@1234"));
         user.setSystemRole(SystemRole.SUPER_ADMIN);
         user.setProvider(AuthProvider.LOCAL);
@@ -34,10 +34,10 @@ public class EventStartUpJob {
 
     @EventListener(ApplicationReadyEvent.class)
     public void runAfterStartup(){
-        User user = userRepository.findByEmail("admin@gmail.com")
+        User user = userRepository.findByPrimaryEmail("admin@gmail.com")
                 .orElseGet(this::createUser);
         System.out.println("Name: " + user.getName());
-        System.out.println("Email: " + user.getEmail());
+        System.out.println("Email: " + user.getPrimaryEmail());
         System.out.println("Password: admin@1234");
     }
 

@@ -48,6 +48,12 @@ public class HostServiceImpl implements HostService{
         if (domain.length < 2 || !domain[1].equalsIgnoreCase(user.getUniversity().getDomain())) {
             throw new RuntimeException("College email domain must match your university domain (" + user.getUniversity().getDomain() + ")");
         }
+
+        if (!request.getCollegeEmail().equalsIgnoreCase(user.getPrimaryEmail())) {
+            user.setSecondaryEmail(request.getCollegeEmail());
+            userRepository.save(user);
+        }
+
         HostApplication application = new HostApplication();
         application.setUser(user);
         application.setCollegeEmail(request.getCollegeEmail());
@@ -139,10 +145,10 @@ public class HostServiceImpl implements HostService{
                 .orElseThrow(()->new EventNotExistException("Event not found"));
         if(!event.getUniversity().equals(hod.getUniversity())){
             throw new AccessDeniedException(
-                    "You cannot approve events from another university"
+                    "You cannot reject events from another university"
             );
         }
-        event.setEventStatus(EventStatus.APPROVED);
+        event.setEventStatus(EventStatus.REJECTED);
     }
 
     @Override

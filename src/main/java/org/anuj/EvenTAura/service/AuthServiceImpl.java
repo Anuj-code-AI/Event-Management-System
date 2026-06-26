@@ -31,7 +31,7 @@ public class AuthServiceImpl implements AuthService{
     @Override
     @Transactional
     public TokenPair register(RegisterRequest request) {
-        if(userRepository.findByEmail(request.getEmail()).isPresent()){
+        if(userRepository.findByPrimaryEmail(request.getEmail()).isPresent() || userRepository.findBySecondaryEmail(request.getEmail()).isPresent()){
             throw new EmailAlreadyExistException("User with this email already registered");
         }
         University university =  null;
@@ -58,7 +58,7 @@ public class AuthServiceImpl implements AuthService{
     // LOGIN SERVICE
     @Override
     public TokenPair login(LoginRequest req){
-        User user = userRepository.findByEmail(req.getEmail())
+        User user = userRepository.findByPrimaryEmail(req.getEmail())
                 .orElseThrow(()-> new UserNotFoundException("No account with this email"));
         if(!passwordEncoder.matches(req.getPassword(), user.getPassword()))
             throw new InvalidPasswordException("Incorrect password");
@@ -94,7 +94,7 @@ public class AuthServiceImpl implements AuthService{
         }
 
         User user = stored.getUser();
-        String newAccess  = jwtUtil.generateAccessToken(user.getUserId(), user.getEmail(),user.getSystemRole());
+        String newAccess  = jwtUtil.generateAccessToken(user.getUserId(), user.getPrimaryEmail(),user.getSystemRole());
         String newRefresh = jwtUtil.generateRefreshToken(user.getUserId());
 
         // Rotate in the same DB row (no extra insert)
@@ -118,7 +118,7 @@ public class AuthServiceImpl implements AuthService{
     // ── private helpers ──────────────────────────────────────────
 
     private TokenPair issueTokenPair(User user) {
-        String access = jwtUtil.generateAccessToken(user.getUserId(), user.getEmail(), user.getSystemRole());
+        String access = jwtUtil.generateAccessToken(user.getUserId(), user.getPrimaryEmail(), user.getSystemRole());
         String refresh = jwtUtil.generateRefreshToken(user.getUserId());
 
         RefreshToken token = new RefreshToken();

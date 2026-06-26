@@ -19,6 +19,7 @@ const profileForm = document.getElementById("profile-form");
 const updateBtn = document.getElementById("update-btn");
 const nameInput = document.getElementById("name");
 const universityInput = document.getElementById("university");
+const secondaryEmailInput = document.getElementById("secondaryEmail");
 const passwordInput = document.getElementById("password");
 const confirmPasswordInput = document.getElementById("confirmPassword");
 
@@ -149,6 +150,7 @@ function populateFields(user, role) {
     // Input fields
     if (nameInput) nameInput.value = user.name || "";
     if (universityInput) universityInput.value = user.university || "";
+    if (secondaryEmailInput) secondaryEmailInput.value = user.secondaryEmail || "";
 
     // Clear password inputs
     if (passwordInput) passwordInput.value = "";
@@ -180,9 +182,9 @@ function renderHostStatusSection(role, user) {
 
     if (status === "NONE" || status === "REJECTED") {
         hostApplyForm.classList.remove("hidden");
-        // Preset college email if user email domain matches
+        // Preset college email if user secondaryEmail is present, otherwise fall back to primary email if it matches university domain
         if (collegeEmailInput && !collegeEmailInput.value) {
-            collegeEmailInput.value = user.email || "";
+            collegeEmailInput.value = user.secondaryEmail || user.email || "";
         }
     } else if (status === "PENDING") {
         hostPendingAlert.classList.remove("hidden");
@@ -201,6 +203,7 @@ async function handleProfileUpdate(e) {
 
     const name = nameInput.value.trim();
     const university = universityInput.value.trim();
+    const secondaryEmail = secondaryEmailInput ? secondaryEmailInput.value.trim() : "";
     const password = passwordInput.value;
     const confirmPassword = confirmPasswordInput.value;
 
@@ -222,14 +225,19 @@ async function handleProfileUpdate(e) {
 
     // Client-side domain check if university is entered and domain is loaded
     if (university && currentUser && currentUser.universityDomain) {
-        const email = currentUser.email;
-        const emailDomain = email.substring(email.lastIndexOf("@") + 1).toLowerCase();
-        // Skip checking if user doesn't change university name to something new
-        if (university.toLowerCase() !== (currentUser.university || "").toLowerCase()) {
-            // Note: Exact match checks happen on server side, but if we already know the current domain:
-            if (currentUser.universityDomain && emailDomain !== currentUser.universityDomain.toLowerCase()) {
-                // Show warning that changing to another university requires email match
-                console.log("[profile] Checking domain matching client-side...");
+        const primaryDomain = currentUser.email.substring(currentUser.email.lastIndexOf("@") + 1).toLowerCase();
+        const secondaryDomain = secondaryEmail ? secondaryEmail.substring(secondaryEmail.lastIndexOf("@") + 1).toLowerCase() : "";
+        
+        const primaryMatches = primaryDomain === currentUser.universityDomain.toLowerCase();
+        const secondaryMatches = secondaryDomain === currentUser.universityDomain.toLowerCase();
+        
+        // Only enforce check client-side if the university name hasn't changed (since currentUser.universityDomain belongs to the current university)
+        if (university.toLowerCase() === (currentUser.university || "").toLowerCase()) {
+            if (secondaryEmail !== (currentUser.secondaryEmail || "")) {
+                if (!primaryMatches && !secondaryMatches) {
+                    showAlert("error", `To associate with this university, either your primary email or secondary email must match the university domain (${currentUser.universityDomain.toLowerCase()}).`);
+                    return;
+                }
             }
         }
     }
@@ -237,7 +245,7 @@ async function handleProfileUpdate(e) {
     updateBtn.disabled = true;
     updateBtn.classList.add("opacity-60", "cursor-not-allowed");
 
-    const payload = { name, university };
+    const payload = { name, university, secondaryEmail };
     if (password) {
         payload.password = password;
     }

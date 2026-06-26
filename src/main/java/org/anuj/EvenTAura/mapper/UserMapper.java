@@ -17,7 +17,7 @@ public class UserMapper {
     public static User toEntity(RegisterRequest request, University university){
         User user = new User();
         user.setName(request.getName());
-        user.setEmail(request.getEmail());
+        user.setPrimaryEmail(request.getEmail());
         user.setPassword(request.getPassword());
         user.setProvider(AuthProvider.LOCAL);
         user.setUniversity(university);
@@ -34,11 +34,12 @@ public class UserMapper {
         }
         return new UserResponse(user.getUserId(),
                 user.getName(),
-                user.getEmail(),
+                user.getPrimaryEmail(),
                 user.getSystemRole(),
                 university,
                 user.getProvider(),
-                universityDomain);
+                universityDomain,
+                user.getSecondaryEmail());
     }
 
     public static void toUpdatedEntity(User user, UserUpdateRequest request, University university){
@@ -50,6 +51,9 @@ public class UserMapper {
         }
         if (request.getPassword() != null) {
             user.setPassword(request.getPassword());
+        }
+        if (request.getSecondaryEmail() != null) {
+            user.setSecondaryEmail(request.getSecondaryEmail().isBlank() ? null : request.getSecondaryEmail().trim());
         }
     }
 
