@@ -1,26 +1,23 @@
-# 🐝 CampusHive (EvenTAura)
+# 🐝 CampusHive
 
 > An immersive, feature-rich Event Management and Live Attendance Ticketing Platform designed for university campuses. Moderate requests, manage events, track attendance manually, or check-in guests automatically using a live QR code scanner.
 
 ---
 
 ## 📸 Website Gallery
-
-Showcase of CampusHive's premium design elements and modern layouts. Place your application screenshots in `/docs/images/` and link them below!
-
-| **Landing & Event Discovery** | **Host & Event Creation** |
-|:---:|:---:|
-| ![Landing Page Placeholder](https://placehold.co/600x400/171f1c/4edea3?text=Landing+Page) | ![Event Request Placeholder](https://placehold.co/600x400/171f1c/4edea3?text=Host+Dashboard) |
+|                                  **Landing & Event Discovery**                                  |                           **Host & Event Creation**                           |
+|:-----------------------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------:|
+|                                 ![Landing Page Placeholder](/src/main/resources/static/images/LandingPage.png)                                  |                        ![Event Request Placeholder](/src/main/resources/static/images/AttendeeManager.png)                        |
 | Discover global and university-exclusive events with high-contrast cards and smooth categories. | Build rich event banners, pricing configurations, and registration deadlines. |
 
-| **Attendee Management** | **Live QR Code Scanner** |
-|:---:|:---:|
-| ![Attendee List Placeholder](https://placehold.co/600x400/171f1c/4edea3?text=Attendee+Manager) | ![Scanner Modal Placeholder](https://placehold.co/600x400/171f1c/4edea3?text=QR+Code+Scanner) |
-| Manage attendees in real-time. Manually toggle status between `PRESENT` or `ABSENT`. | Auto check-in guests at the venue using a camera-based ticket scanning overlay. |
+|                               **Attendee Management**                                |                             **Live QR Code Scanner**                              |
+|:------------------------------------------------------------------------------------:|:---------------------------------------------------------------------------------:|
+| ![Attendee List Placeholder](src/main/resources/static/images/list.png)  | ![Scanner Modal Placeholder](/src/main/resources/static/images/QrCodeScanner.png) |
+| Manage attendees in real-time. Manually toggle status between `PRESENT` or `ABSENT`. |  Auto check-in guests at the venue using a camera-based ticket scanning overlay.  |
 
-| **HOD Moderation Dashboard** | **Profile & Multi-Email Integration** |
-|:---:|:---:|
-| ![HOD Dashboard Placeholder](https://placehold.co/600x400/171f1c/4edea3?text=HOD+Dashboard) | ![Profile Details Placeholder](https://placehold.co/600x400/171f1c/4edea3?text=Profile+Settings) |
+|                              **HOD Moderation Dashboard**                              |                              **Profile & Multi-Email Integration**                               |
+|:--------------------------------------------------------------------------------------:|:------------------------------------------------------------------------------------------------:|
+|   ![HOD Dashboard Placeholder](/src/main/resources/static/images/HostDashboard.png)    |                                ![Profile Details Placeholder](/src/main/resources/static/images/Profile.png)                                 |
 | Accept or reject host privileges and approve, cancel, or reactivate university events. | Connect a primary email and verify your college email domain to unlock campus-exclusive portals. |
 
 ---
@@ -63,7 +60,7 @@ Docker sets up both the database and the backend application automatically with 
 
 1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/your-username/Event-Management-System.git
+   git clone https://github.com/Anuj-code-AI/Event-Management-System.git
    cd Event-Management-System
    ```
 
