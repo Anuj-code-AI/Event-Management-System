@@ -18,6 +18,7 @@ public interface EventRepository extends JpaRepository<Event,Long> {
     Page<Event> findByParticipationTypeAndEventStatusInAndTitleContainingIgnoreCase(ParticipationType participationType,List<EventStatus> statuses, String title, Pageable pageable);
     Page<Event> findByParticipationTypeAndEventStatusIn(ParticipationType participationType, List<EventStatus> statuses, Pageable pageable);
     List<Event> findByEventStatusAndUniversity(EventStatus status, University university);
+    List<Event> findByEventStatusInAndUniversity(List<EventStatus> statuses, University university);
     Page<Event> findByEventStatusInAndUniversity(
             List<EventStatus> statuses,
             University university,

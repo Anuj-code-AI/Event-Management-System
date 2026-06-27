@@ -113,9 +113,17 @@ public class EventServiceImpl implements EventService {
         boolean isHOD = authentication.getAuthorities().stream()
                 .anyMatch(auth -> auth.getAuthority().equals("ROLE_HOD"));
 
-        // OWNER CHECK
-        if (!userDetails.getId().equals(event.getUser().getUserId()) && !isHOD) {
-            throw new UnauthorizedException("You cannot delete this event");
+        // OWNER CHECK OR HOD OF SAME UNIVERSITY
+        if (!userDetails.getId().equals(event.getUser().getUserId())) {
+            if (isHOD) {
+                User hod = userRepository.findById(userDetails.getId())
+                        .orElseThrow(() -> new UserNotFoundException("User not found"));
+                if (hod.getUniversity() == null || event.getUniversity() == null || !hod.getUniversity().equals(event.getUniversity())) {
+                    throw new UnauthorizedException("You can only delete events within your own university.");
+                }
+            } else {
+                throw new UnauthorizedException("You cannot delete this event");
+            }
         }
 
         long ticketCount = ticketRepository.countByEventEventId(eventId);
@@ -141,12 +149,50 @@ public class EventServiceImpl implements EventService {
         boolean isHOD = authentication.getAuthorities().stream()
                 .anyMatch(auth -> auth.getAuthority().equals("ROLE_HOD"));
 
-        // OWNER CHECK
-        if (!userDetails.getId().equals(event.getUser().getUserId()) && !isHOD) {
-            throw new UnauthorizedException("You cannot delete this event");
+        // OWNER CHECK OR HOD OF SAME UNIVERSITY
+        if (!userDetails.getId().equals(event.getUser().getUserId())) {
+            if (isHOD) {
+                User hod = userRepository.findById(userDetails.getId())
+                        .orElseThrow(() -> new UserNotFoundException("User not found"));
+                if (hod.getUniversity() == null || event.getUniversity() == null || !hod.getUniversity().equals(event.getUniversity())) {
+                    throw new UnauthorizedException("You can only cancel events within your own university.");
+                }
+            } else {
+                throw new UnauthorizedException("You cannot cancel this event");
+            }
         }
 
         event.setEventStatus(EventStatus.CANCELLED);
+        return null;
+    }
+
+    // Uncancel event service
+    @Override
+    @Transactional
+    public Void uncancelEvent(Long eventId, Authentication authentication) {
+
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new EventNotExistException("No event found with this id"));
+
+        boolean isHOD = authentication.getAuthorities().stream()
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_HOD"));
+
+        // OWNER CHECK OR HOD OF SAME UNIVERSITY
+        if (!userDetails.getId().equals(event.getUser().getUserId())) {
+            if (isHOD) {
+                User hod = userRepository.findById(userDetails.getId())
+                        .orElseThrow(() -> new UserNotFoundException("User not found"));
+                if (hod.getUniversity() == null || event.getUniversity() == null || !hod.getUniversity().equals(event.getUniversity())) {
+                    throw new UnauthorizedException("You can only reactivate events within your own university.");
+                }
+            } else {
+                throw new UnauthorizedException("You cannot reactivate this event");
+            }
+        }
+
+        event.setEventStatus(EventStatus.APPROVED);
         return null;
     }
 

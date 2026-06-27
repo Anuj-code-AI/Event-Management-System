@@ -108,7 +108,14 @@ public class EventController {
     @DeleteMapping("/cancelEvent/{eventId}")
     @PreAuthorize("@eventSecurity.isHostOrHOD(authentication)")
     public ResponseEntity<ApiResponse<Void>> cancelEvent(@PathVariable Long eventId,Authentication auth) {
-        return ResponseEntity.ok(ApiResponse.success("Event successfully deleted",eventService.cancelEvent(eventId,auth)));
+        return ResponseEntity.ok(ApiResponse.success("Event successfully cancelled",eventService.cancelEvent(eventId,auth)));
+    }
+
+    // Uncancel Event
+    @PostMapping("/uncancelEvent/{eventId}")
+    @PreAuthorize("@eventSecurity.isHostOrHOD(authentication)")
+    public ResponseEntity<ApiResponse<Void>> uncancelEvent(@PathVariable Long eventId, Authentication auth) {
+        return ResponseEntity.ok(ApiResponse.success("Event reactivated successfully", eventService.uncancelEvent(eventId, auth)));
     }
 
     // Get event by id

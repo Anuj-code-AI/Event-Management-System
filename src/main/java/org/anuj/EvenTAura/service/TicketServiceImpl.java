@@ -173,8 +173,16 @@ public class TicketServiceImpl implements TicketService{
                 .orElseThrow(()-> new EventNotExistException("No event found with this id"));
         boolean isHod = authentication.getAuthorities().stream()
                 .anyMatch(auth -> auth.getAuthority().equals("ROLE_HOD"));
-        if(!userDetails.getId().equals(event.getUser().getUserId()) && !isHod){
-            throw new UnauthorizedException("You cannot check tickets");
+        if (!userDetails.getId().equals(event.getUser().getUserId())) {
+            if (isHod) {
+                User hod = userRepository.findByUserId(userDetails.getId())
+                        .orElseThrow(() -> new UserNotFoundException("User not found"));
+                if (hod.getUniversity() == null || event.getUniversity() == null || !hod.getUniversity().equals(event.getUniversity())) {
+                    throw new UnauthorizedException("You can only check tickets within your own university.");
+                }
+            } else {
+                throw new UnauthorizedException("You cannot check tickets");
+            }
         }
         return ticketRepository.findAllByEvent(event);
     }
@@ -195,8 +203,16 @@ public class TicketServiceImpl implements TicketService{
                 .anyMatch(auth -> auth.getAuthority().equals("ROLE_HOD"));
 
         // Only the event organizer or HOD may check in tickets
-        if (!userDetails.getId().equals(event.getUser().getUserId()) && !isHOD) {
-            throw new RuntimeException("You are not allowed to check in tickets for this event");
+        if (!userDetails.getId().equals(event.getUser().getUserId())) {
+            if (isHOD) {
+                User hod = userRepository.findByUserId(userDetails.getId())
+                        .orElseThrow(() -> new UserNotFoundException("User not found"));
+                if (hod.getUniversity() == null || event.getUniversity() == null || !hod.getUniversity().equals(event.getUniversity())) {
+                    throw new UnauthorizedException("You can only check in tickets within your own university.");
+                }
+            } else {
+                throw new UnauthorizedException("You are not allowed to check in tickets for this event");
+            }
         }
 
         // Already checked in
@@ -246,8 +262,16 @@ public class TicketServiceImpl implements TicketService{
                 .anyMatch(auth -> auth.getAuthority().equals("ROLE_HOD"));
 
         // Only the event organizer or HOD may check in tickets
-        if (!userDetails.getId().equals(event.getUser().getUserId()) && !isHOD) {
-            throw new RuntimeException("You are not allowed to verify tickets for this event");
+        if (!userDetails.getId().equals(event.getUser().getUserId())) {
+            if (isHOD) {
+                User hod = userRepository.findByUserId(userDetails.getId())
+                        .orElseThrow(() -> new UserNotFoundException("User not found"));
+                if (hod.getUniversity() == null || event.getUniversity() == null || !hod.getUniversity().equals(event.getUniversity())) {
+                    throw new UnauthorizedException("You can only verify tickets within your own university.");
+                }
+            } else {
+                throw new UnauthorizedException("You are not allowed to verify tickets for this event");
+            }
         }
 
         if (ticket.isCheckedIn()) {
@@ -351,8 +375,16 @@ public class TicketServiceImpl implements TicketService{
                 .anyMatch(auth -> auth.getAuthority().equals("ROLE_HOD"));
 
 
-        if (!isOwner && !isHOD) {
-            throw new RuntimeException("You are not allowed to verify tickets for this event");
+        if (!isOwner) {
+            if (isHOD) {
+                User hod = userRepository.findByUserId(userDetails.getId())
+                        .orElseThrow(() -> new UserNotFoundException("User not found"));
+                if (hod.getUniversity() == null || event.getUniversity() == null || !hod.getUniversity().equals(event.getUniversity())) {
+                    throw new UnauthorizedException("You can only manage attendance within your own university.");
+                }
+            } else {
+                throw new UnauthorizedException("You are not allowed to verify tickets for this event");
+            }
         }
 
         Page<Ticket> tickets = ticketRepository.findByEvent(event, pageable);
@@ -385,8 +417,16 @@ public class TicketServiceImpl implements TicketService{
         boolean isHOD = authentication.getAuthorities().stream()
                 .anyMatch(auth -> auth.getAuthority().equals("ROLE_HOD"));
 
-        if (!isOwner && !isHOD) {
-            throw new RuntimeException("You are not allowed to verify tickets for this event");
+        if (!isOwner) {
+            if (isHOD) {
+                User hod = userRepository.findByUserId(userDetails.getId())
+                        .orElseThrow(() -> new UserNotFoundException("User not found"));
+                if (hod.getUniversity() == null || event.getUniversity() == null || !hod.getUniversity().equals(event.getUniversity())) {
+                    throw new UnauthorizedException("You can only manage attendance within your own university.");
+                }
+            } else {
+                throw new UnauthorizedException("You are not allowed to verify tickets for this event");
+            }
         }
         if (ticket.isCheckedIn()) {
             throw new RuntimeException("Ticket already marked present");
@@ -414,8 +454,16 @@ public class TicketServiceImpl implements TicketService{
         boolean isHOD = authentication.getAuthorities().stream()
                 .anyMatch(auth -> auth.getAuthority().equals("ROLE_HOD"));
 
-        if (!isOwner && !isHOD) {
-            throw new RuntimeException("You are not allowed to verify tickets for this event");
+        if (!isOwner) {
+            if (isHOD) {
+                User hod = userRepository.findByUserId(userDetails.getId())
+                        .orElseThrow(() -> new UserNotFoundException("User not found"));
+                if (hod.getUniversity() == null || event.getUniversity() == null || !hod.getUniversity().equals(event.getUniversity())) {
+                    throw new UnauthorizedException("You can only manage attendance within your own university.");
+                }
+            } else {
+                throw new UnauthorizedException("You are not allowed to verify tickets for this event");
+            }
         }
 
         // must already be checked in

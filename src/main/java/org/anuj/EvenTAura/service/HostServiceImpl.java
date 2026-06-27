@@ -207,7 +207,10 @@ public class HostServiceImpl implements HostService{
         if(!hod.getSystemRole().equals(SystemRole.HOD)){
             throw new AccessDeniedException("Restricted Feature");
         }
-        List<Event> events = eventRepository.findByEventStatusAndUniversity(EventStatus.APPROVED, hod.getUniversity());
+        List<Event> events = eventRepository.findByEventStatusInAndUniversity(
+                List.of(org.anuj.EvenTAura.model.enums.EventStatus.APPROVED, org.anuj.EvenTAura.model.enums.EventStatus.CANCELLED),
+                hod.getUniversity()
+        );
         return events.stream()
                 .map(event -> new EventSummaryResponse(
                         event.getEventId(),

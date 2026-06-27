@@ -88,6 +88,40 @@ async function initPage() {
     document.getElementById("confirm-reject-event-btn").addEventListener("click", confirmRejectEvent);
     document.getElementById("confirm-approve-host-btn").addEventListener("click", confirmApproveHost);
     document.getElementById("confirm-reject-host-btn").addEventListener("click", confirmRejectHost);
+
+    // Cancel & Uncancel confirms
+    document.getElementById("confirm-cancel-btn").addEventListener("click", confirmCancel);
+    document.getElementById("confirm-uncancel-btn").addEventListener("click", confirmUncancel);
+
+    // Attendee search & pagination
+    const attendeeSearch = document.getElementById("attendeeSearch");
+    if (attendeeSearch) {
+        attendeeSearch.addEventListener("input", (e) => {
+            attendeeSearchQuery = e.target.value;
+            attendeesPage = 0;
+            filterAndRenderAttendees();
+        });
+    }
+
+    const attendeesPrevBtn = document.getElementById("attendees-prev-btn");
+    const attendeesNextBtn = document.getElementById("attendees-next-btn");
+    if (attendeesPrevBtn) {
+        attendeesPrevBtn.addEventListener("click", () => {
+            if (attendeesPage > 0) {
+                attendeesPage--;
+                filterAndRenderAttendees();
+            }
+        });
+    }
+    if (attendeesNextBtn) {
+        attendeesNextBtn.addEventListener("click", () => {
+            const totalPages = Math.ceil(filteredAttendees.length / attendeesPageSize) || 1;
+            if (attendeesPage < totalPages - 1) {
+                attendeesPage++;
+                filterAndRenderAttendees();
+            }
+        });
+    }
 }
 
 // Render tabs list
@@ -310,26 +344,62 @@ function renderEventCard(event) {
     if (event.eventStatus === "PENDING") badgeClass = "bg-yellow-500/10 text-yellow-500 border border-yellow-500/30";
     else if (event.eventStatus === "APPROVED") badgeClass = "bg-primary/10 text-primary border border-primary/30";
     else if (event.eventStatus === "REJECTED") badgeClass = "bg-error/10 text-error border border-error/30";
+    else if (event.eventStatus === "CANCELLED") badgeClass = "bg-surface-container-high text-outline border border-outline-variant";
 
     const banner = event.bannerUrl || "/images/banner-placeholder.png";
     const priceDisplay = event.ticketPrice > 0 ? `$${event.ticketPrice.toFixed(2)}` : "Free";
 
-    // Moderation controls are only displayed in the Pending tab
+    // Moderation controls for HOD
     const showModeration = currentTab === "pending-events";
-    const actionButtons = showModeration ? `
-        <button onclick="openApproveEventModal(${event.eventId}, '${event.title.replace(/'/g, "\\'")}')" 
-            class="flex-1 bg-primary hover:bg-primary-fixed text-on-primary font-bold py-xs px-sm rounded text-body-sm transition-all flex items-center justify-center gap-xs"
-        >
-            <span class="material-symbols-outlined text-[18px]">check</span>
-            <span>Approve</span>
-        </button>
-        <button onclick="openRejectEventModal(${event.eventId}, '${event.title.replace(/'/g, "\\'")}')" 
-            class="flex-1 border border-error hover:bg-error/10 text-error font-bold py-xs px-sm rounded text-body-sm transition-all flex items-center justify-center gap-xs"
-        >
-            <span class="material-symbols-outlined text-[18px]">close</span>
-            <span>Reject</span>
-        </button>
-    ` : `<span class="text-label-md text-outline italic w-full text-center py-xs">No moderation needed</span>`;
+    const isApprovedOrCancelled = currentTab === "approved-events";
+    
+    let actionButtons = "";
+    if (showModeration) {
+        actionButtons = `
+            <button onclick="openApproveEventModal(${event.eventId}, '${event.title.replace(/'/g, "\\'")}')" 
+                class="flex-1 bg-primary hover:bg-primary-fixed text-on-primary font-bold py-xs px-sm rounded text-body-sm transition-all flex items-center justify-center gap-xs"
+            >
+                <span class="material-symbols-outlined text-[18px]">check</span>
+                <span>Approve</span>
+            </button>
+            <button onclick="openRejectEventModal(${event.eventId}, '${event.title.replace(/'/g, "\\'")}')" 
+                class="flex-1 border border-error hover:bg-error/10 text-error font-bold py-xs px-sm rounded text-body-sm transition-all flex items-center justify-center gap-xs"
+            >
+                <span class="material-symbols-outlined text-[18px]">close</span>
+                <span>Reject</span>
+            </button>
+        `;
+    } else if (isApprovedOrCancelled) {
+        actionButtons = `
+            <div class="flex flex-col gap-xs w-full">
+                <div class="flex gap-sm w-full">
+                    ${event.eventStatus === "APPROVED" ? `
+                        <button onclick="openCancelModal(${event.eventId}, '${event.title.replace(/'/g, "\\'")}')" 
+                            class="flex-1 border border-yellow-500/50 hover:bg-yellow-500/10 text-yellow-500 font-bold py-xs px-sm rounded text-body-sm transition-all flex items-center justify-center gap-xs"
+                        >
+                            <span class="material-symbols-outlined text-[18px]">block</span>
+                            <span>Cancel Event</span>
+                        </button>
+                    ` : `
+                        <button onclick="openUncancelModal(${event.eventId}, '${event.title.replace(/'/g, "\\'")}')" 
+                            class="flex-1 bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-500 border border-yellow-500/30 font-bold py-xs px-sm rounded text-body-sm transition-all flex items-center justify-center gap-xs"
+                        >
+                            <span class="material-symbols-outlined text-[18px]">event_available</span>
+                            <span>Uncancel Event</span>
+                        </button>
+                    `}
+                </div>
+                <button onclick="showAttendeesView(${event.eventId}, '${event.title.replace(/'/g, "\\'")}')" 
+                    class="w-full bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 font-semibold py-xs px-sm rounded text-body-sm transition-all flex items-center justify-center gap-xs mt-xs"
+                >
+                    <span class="material-symbols-outlined text-[18px]">group</span>
+                    <span>Manage Attendance</span>
+                </button>
+            </div>
+        `;
+    } else {
+        actionButtons = `<span class="text-label-md text-outline italic w-full text-center py-xs">No moderation needed</span>`;
+    }
 
     return `
         <div class="glass-card rounded-xl overflow-hidden flex flex-col justify-between hover:shadow-primary/5 hover:border-primary/30 transition-all duration-300">
@@ -536,6 +606,293 @@ async function confirmRejectHost() {
         console.error("Reject host error:", err);
         alert("Network error rejecting host.");
     }
+}
+
+// HOD Cancel/Uncancel event functionality
+function openCancelModal(id, title) {
+    activeId = id;
+    document.getElementById("cancel-event-title").textContent = title;
+    openModal("cancel-modal");
+}
+
+function openUncancelModal(id, title) {
+    activeId = id;
+    document.getElementById("uncancel-event-title").textContent = title;
+    openModal("uncancel-modal");
+}
+
+async function confirmCancel() {
+    if (!activeId) return;
+    const token = localStorage.getItem("accessToken");
+    try {
+        const res = await fetch(`/api/v1/event/cancelEvent/${activeId}`, {
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+            closeModal("cancel-modal");
+            await fetchAdminData();
+        } else {
+            alert("Failed to cancel event.");
+        }
+    } catch (err) {
+        console.error("Cancel error:", err);
+        alert("Network error cancelling event.");
+    }
+}
+
+async function confirmUncancel() {
+    if (!activeId) return;
+    const token = localStorage.getItem("accessToken");
+    try {
+        const res = await fetch(`/api/v1/event/uncancelEvent/${activeId}`, {
+            method: "POST",
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+            closeModal("uncancel-modal");
+            await fetchAdminData();
+        } else {
+            alert("Failed to reactivate event.");
+        }
+    } catch (err) {
+        console.error("Uncancel error:", err);
+        alert("Network error reactivating event.");
+    }
+}
+
+// Attendee & QR Scanner management for HOD
+let activeEventForAttendees = null;
+let allAttendeesList = [];
+let filteredAttendees = [];
+let attendeesPage = 0;
+const attendeesPageSize = 8;
+let attendeeSearchQuery = "";
+let html5QrCode = null;
+
+function showAttendeesView(eventId, eventTitle) {
+    activeEventForAttendees = { eventId, title: eventTitle };
+    attendeesPage = 0;
+    attendeeSearchQuery = "";
+
+    const searchInput = document.getElementById("attendeeSearch");
+    if (searchInput) searchInput.value = "";
+
+    // Set header details
+    document.getElementById("attendees-event-title").textContent = eventTitle;
+
+    // Toggle views
+    document.getElementById("admin-dashboard-view").classList.add("hidden");
+    document.getElementById("attendees-view").classList.remove("hidden");
+
+    // Fetch and populate data
+    fetchAttendeesData();
+}
+
+function hideAttendeesView() {
+    activeEventForAttendees = null;
+    closeScanner();
+    document.getElementById("attendees-view").classList.add("hidden");
+    document.getElementById("admin-dashboard-view").classList.remove("hidden");
+}
+
+async function fetchAttendeesData() {
+    if (!activeEventForAttendees) return;
+    const token = localStorage.getItem("accessToken");
+    const tableBody = document.getElementById("attendees-table-body");
+    const emptyMsg = document.getElementById("attendees-empty-msg");
+    const paginationSection = document.getElementById("attendees-pagination");
+
+    try {
+        const res = await fetch(`/api/v1/tickets/audienceList/${activeEventForAttendees.eventId}?page=0&size=200`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        const body = await res.json();
+        if (res.ok && body.success) {
+            allAttendeesList = body.data.content || [];
+            filterAndRenderAttendees();
+        } else {
+            throw new Error(body.message || "Failed to load attendees list");
+        }
+    } catch (err) {
+        console.error("fetchAttendeesData error:", err);
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="5" class="p-lg text-center text-body-sm text-error">
+                    Failed to fetch attendees: ${err.message || "Network issue"}
+                </td>
+            </tr>
+        `;
+    }
+}
+
+function filterAndRenderAttendees() {
+    const tableBody = document.getElementById("attendees-table-body");
+    const emptyMsg = document.getElementById("attendees-empty-msg");
+    const paginationSection = document.getElementById("attendees-pagination");
+    const paginationInfo = document.getElementById("attendees-pagination-info");
+
+    const query = attendeeSearchQuery.toLowerCase().trim();
+    if (query) {
+        filteredAttendees = allAttendeesList.filter(a => 
+            (a.name && a.name.toLowerCase().includes(query)) ||
+            (a.email && a.email.toLowerCase().includes(query)) ||
+            (a.ticketId && String(a.ticketId).includes(query))
+        );
+    } else {
+        filteredAttendees = [...allAttendeesList];
+    }
+
+    const totalElements = filteredAttendees.length;
+    const totalPages = Math.ceil(totalElements / attendeesPageSize) || 1;
+
+    if (attendeesPage >= totalPages) attendeesPage = totalPages - 1;
+    if (attendeesPage < 0) attendeesPage = 0;
+
+    const startIdx = attendeesPage * attendeesPageSize;
+    const endIdx = Math.min(startIdx + attendeesPageSize, totalElements);
+    const paginatedList = filteredAttendees.slice(startIdx, endIdx);
+
+    if (totalElements === 0) {
+        tableBody.innerHTML = "";
+        emptyMsg.classList.remove("hidden");
+        paginationSection.classList.add("hidden");
+        return;
+    }
+
+    emptyMsg.classList.add("hidden");
+    paginationSection.classList.remove("hidden");
+
+    paginationInfo.textContent = `Showing ${startIdx + 1}-${endIdx} of ${totalElements}`;
+    document.getElementById("attendees-prev-btn").disabled = attendeesPage === 0;
+    document.getElementById("attendees-next-btn").disabled = attendeesPage === totalPages - 1;
+
+    tableBody.innerHTML = paginatedList.map(a => {
+        let statusBadge = "";
+        if (a.checkedIn) {
+            statusBadge = `<span class="bg-primary/10 text-primary border border-primary/20 text-label-md px-sm py-xs rounded-full font-semibold uppercase">PRESENT</span>`;
+        } else {
+            statusBadge = `<span class="bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 text-label-md px-sm py-xs rounded-full font-semibold uppercase">ABSENT</span>`;
+        }
+
+        const actionBtn = a.checkedIn ? `
+            <button onclick="toggleAttendance(${a.ticketId}, 'absent')" class="border border-error/50 hover:bg-error/10 text-error font-bold py-xs px-sm rounded text-body-sm transition-all flex items-center gap-xs ml-auto">
+                <span class="material-symbols-outlined text-[16px]">close</span>
+                <span>Mark Absent</span>
+            </button>
+        ` : `
+            <button onclick="toggleAttendance(${a.ticketId}, 'present')" class="bg-primary/20 hover:bg-primary/30 text-primary border border-primary/30 font-bold py-xs px-sm rounded text-body-sm transition-all flex items-center gap-xs ml-auto">
+                <span class="material-symbols-outlined text-[16px]">check</span>
+                <span>Mark Present</span>
+            </button>
+        `;
+
+        return `
+            <tr class="hover:bg-surface-container/30 transition-colors border-b border-outline-variant/10">
+                <td class="p-md text-body-sm font-semibold text-on-background">${a.name || "—"}</td>
+                <td class="p-md text-body-sm text-on-surface-variant">${a.email || "—"}</td>
+                <td class="p-md text-body-sm text-on-surface-variant font-mono">${a.ticketId || "—"}</td>
+                <td class="p-md">${statusBadge}</td>
+                <td class="p-md text-right">${actionBtn}</td>
+            </tr>
+        `;
+    }).join("");
+}
+
+async function toggleAttendance(ticketId, action) {
+    const token = localStorage.getItem("accessToken");
+    const url = `/api/v1/tickets/${ticketId}/${action === 'present' ? 'markPresent' : 'markAbsent'}`;
+
+    try {
+        const res = await fetch(url, {
+            method: "POST",
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+            await fetchAttendeesData();
+        } else {
+            const body = await res.json().catch(() => ({}));
+            alert(body.message || `Failed to mark attendee ${action}.`);
+        }
+    } catch (err) {
+        console.error("toggleAttendance error:", err);
+        alert("Network error toggling attendance.");
+    }
+}
+
+// Scanner Management
+function openScanner() {
+    openModal("scanner-modal");
+    document.getElementById("scanner-status").className = "text-body-sm font-semibold text-yellow-500 text-center animate-pulse";
+    document.getElementById("scanner-status").textContent = "Requesting camera permissions...";
+
+    html5QrCode = new Html5Qrcode("scanner-preview");
+    html5QrCode.start(
+        { facingMode: "environment" },
+        {
+            fps: 10,
+            qrbox: { width: 200, height: 200 }
+        },
+        onScanSuccess,
+        onScanError
+    ).then(() => {
+        document.getElementById("scanner-status").className = "text-body-sm font-semibold text-primary text-center";
+        document.getElementById("scanner-status").textContent = "Camera active. Scan QR code...";
+    }).catch(err => {
+        console.error("Scanner start error:", err);
+        document.getElementById("scanner-status").className = "text-body-sm font-semibold text-error text-center";
+        document.getElementById("scanner-status").textContent = "Error opening camera. Please check permissions.";
+    });
+}
+
+async function closeScanner() {
+    closeModal("scanner-modal");
+    if (html5QrCode) {
+        try {
+            await html5QrCode.stop();
+            html5QrCode = null;
+        } catch (err) {
+            console.error("Scanner stop error:", err);
+        }
+    }
+}
+
+async function onScanSuccess(decodedText, decodedResult) {
+    await closeScanner();
+
+    const urlParts = decodedText.split("/");
+    const ticketCode = urlParts[urlParts.length - 1];
+
+    if (!ticketCode || isNaN(ticketCode)) {
+        alert("Invalid QR Code content scanned.");
+        openScanner();
+        return;
+    }
+
+    const token = localStorage.getItem("accessToken");
+    try {
+        const res = await fetch(`/api/v1/tickets/checkin/${ticketCode}`, {
+            method: "POST",
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        const body = await res.json();
+
+        if (res.ok && body.success) {
+            alert(`SUCCESS: Guest checked in successfully!`);
+            await fetchAttendeesData();
+        } else {
+            alert(`ERROR: ${body.message || "Failed to check in ticket."}`);
+        }
+    } catch (err) {
+        console.error("Checkin API error:", err);
+        alert("Network error checking in ticket.");
+    }
+
+    openScanner();
+}
+
+function onScanError(errorMessage) {
+    // Quietly ignore frame read failures
 }
 
 // Run initialization

@@ -212,8 +212,10 @@
         <!-- ---------- MAIN CONTENT ---------- -->
         <main class="flex-1 px-md md:px-lg py-lg space-y-lg hero-mesh">
 
-            <!-- Stats Bar -->
-            <section class="grid grid-cols-2 md:grid-cols-4 gap-md">
+            <!-- Events Dashboard View Container -->
+            <div id="events-dashboard-view" class="space-y-lg">
+                <!-- Stats Bar -->
+                <section class="grid grid-cols-2 md:grid-cols-4 gap-md">
                 <div class="glass-card rounded-xl p-md flex flex-col justify-between">
                     <span class="text-label-md text-on-surface-variant uppercase tracking-wider">Total Events</span>
                     <span id="stat-total" class="text-headline-md font-bold text-on-background mt-xs">0</span>
@@ -299,6 +301,85 @@
                             Previous
                         </button>
                         <button id="next-page-btn" class="border border-outline-variant hover:bg-surface-container text-on-surface px-md py-xs rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+                            Next
+                        </button>
+                    </div>
+                </div>
+            </div>
+            </div>
+
+            <!-- Attendees View Section (Hidden by default) -->
+            <div id="attendees-view" class="hidden space-y-lg">
+                <!-- Header Card -->
+                <div class="glass-card rounded-xl p-md flex flex-col sm:flex-row sm:items-center justify-between gap-md">
+                    <div class="space-y-xs">
+                        <div class="flex items-center gap-xs text-primary">
+                            <span class="material-symbols-outlined text-[28px]">group</span>
+                            <h2 class="text-headline-sm font-bold text-on-background">Attendance Management</h2>
+                        </div>
+                        <p class="text-body-sm text-on-surface-variant">
+                            Event: <span id="attendees-event-title" class="text-on-surface font-semibold">—</span>
+                        </p>
+                    </div>
+                    <button onclick="hideAttendeesView()" class="border border-outline-variant hover:bg-surface-container-high text-on-surface font-semibold py-sm px-md rounded-lg transition-all flex items-center justify-center gap-xs">
+                        <span class="material-symbols-outlined text-[20px]">arrow_back</span>
+                        <span>Back to Events</span>
+                    </button>
+                </div>
+
+                <!-- Search and Scan controls -->
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-md">
+                    <div class="w-full sm:max-w-md">
+                        <label class="relative block w-full">
+                            <span class="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
+                            <input
+                                    id="attendeeSearch"
+                                    type="search"
+                                    placeholder="Search attendees by name or email..."
+                                    class="w-full bg-surface-container-low border border-outline-variant rounded-lg pl-[40px] pr-md py-sm text-body-sm text-on-surface placeholder:text-on-surface-variant/60 focus:border-primary focus:outline-none transition-colors"
+                            />
+                        </label>
+                    </div>
+                    <button onclick="openScanner()" class="w-full sm:w-auto inline-flex items-center justify-center gap-xs bg-primary hover:bg-primary-fixed text-on-primary font-bold px-lg py-sm rounded-lg transition-all shadow-lg shadow-primary/20">
+                        <span class="material-symbols-outlined text-[20px]">qr_code_scanner</span>
+                        <span>Scan Ticket QR</span>
+                    </button>
+                </div>
+
+                <!-- Attendees Table -->
+                <div class="glass-card rounded-xl overflow-hidden border border-outline-variant/30">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-surface-container-high/60 border-b border-outline-variant/30">
+                                    <th class="p-md text-label-md text-on-surface-variant uppercase tracking-wider">Attendee</th>
+                                    <th class="p-md text-label-md text-on-surface-variant uppercase tracking-wider">Email</th>
+                                    <th class="p-md text-label-md text-on-surface-variant uppercase tracking-wider">Ticket Code</th>
+                                    <th class="p-md text-label-md text-on-surface-variant uppercase tracking-wider">Status</th>
+                                    <th class="p-md text-label-md text-on-surface-variant uppercase tracking-wider text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="attendees-table-body" class="divide-y divide-outline-variant/20">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Attendees Empty State -->
+                <div id="attendees-empty-msg" class="hidden flex flex-col items-center justify-center py-2xl text-center space-y-sm bg-surface-container border border-outline-variant rounded-xl p-lg">
+                    <span class="material-symbols-outlined text-[48px] text-on-surface-variant/40">group_off</span>
+                    <p class="text-body-md text-on-surface-variant font-medium">No attendees found for this event.</p>
+                </div>
+
+                <!-- Attendees Pagination -->
+                <div id="attendees-pagination" class="flex items-center justify-between pt-md border-t border-outline-variant/30">
+                    <span id="attendees-pagination-info" class="text-body-sm text-on-surface-variant">Showing page 1 of 1</span>
+                    <div class="flex gap-2">
+                        <button id="attendees-prev-btn" class="border border-outline-variant hover:bg-surface-container text-on-surface px-md py-xs rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+                            Previous
+                        </button>
+                        <button id="attendees-next-btn" class="border border-outline-variant hover:bg-surface-container text-on-surface px-md py-xs rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed">
                             Next
                         </button>
                     </div>
@@ -407,10 +488,47 @@
     </div>
 </div>
 
+<!-- Scanner Modal -->
+<div id="scanner-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-md bg-black/85 backdrop-blur-sm">
+    <div class="glass-card rounded-xl max-w-md w-full p-lg space-y-md shadow-2xl animate-fade-in flex flex-col items-center">
+        <div class="w-full flex items-center justify-between border-b border-outline-variant/30 pb-sm">
+            <div class="flex items-center gap-xs text-primary">
+                <span class="material-symbols-outlined text-[28px]">qr_code_scanner</span>
+                <h3 class="text-headline-sm font-bold">Scan Ticket QR</h3>
+            </div>
+            <button onclick="closeScanner()" class="text-on-surface-variant hover:text-on-surface">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        
+        <p class="text-body-sm text-on-surface-variant text-center">
+            Point your camera at the ticket's QR code.
+        </p>
+
+        <!-- Scanner area -->
+        <div class="w-full aspect-square max-w-[280px] bg-black rounded-lg overflow-hidden relative border border-outline-variant/50">
+            <div id="scanner-preview" class="w-full h-full"></div>
+            <!-- Scan line effect -->
+            <div class="absolute inset-x-0 h-0.5 bg-primary/80 top-0 animate-[bounce_3s_infinite] shadow-[0_0_8px_#4edea3]"></div>
+        </div>
+
+        <div id="scanner-status" class="text-body-sm font-semibold text-yellow-500 text-center animate-pulse">
+            Initializing camera...
+        </div>
+
+        <div class="w-full flex justify-center pt-sm border-t border-outline-variant/30">
+            <button onclick="closeScanner()" class="border border-outline-variant hover:bg-surface-container-high text-on-surface font-bold px-lg py-sm rounded-lg transition-all">
+                Cancel / Stop Scanning
+            </button>
+        </div>
+    </div>
+</div>
+
 <script src="/js/auth.js"></script>
 <script src="/js/auto-refresh.js"></script>
 <script src="/js/nav-config.js"></script>
 <script src="/js/sidebar.js"></script>
+<script src="https://unpkg.com/html5-qrcode"></script>
 <script src="/js/event-management.js"></script>
 </body>
 

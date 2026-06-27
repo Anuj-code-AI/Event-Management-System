@@ -12,6 +12,7 @@ public interface EventService {
     EventResponse updateEvent(Long eventId, EventUpdateRequest req, Authentication auth);
     Void deleteEvent(Long eventId, Authentication auth);
     Void cancelEvent(Long eventId, Authentication auth);
+    Void uncancelEvent(Long eventId, Authentication auth);
 
     EventResponse getEvent(Long eventId);
     Page<EventSummaryResponse> getGlobalEvents(String query, int page, int size);
