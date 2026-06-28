@@ -22,6 +22,9 @@ jobs:
       - name: Build
         run: mvn clean package -DskipTests
 
+      - name: Sonar analysis
+        run: org.sonarsource.scanner.maven:sonar-maven-plugin:3.10.0.2594:sonar -Dsonar.projectKey=Anuj-code-AI_Event-Management-System -Dsonar.organization=anuj-code-ai -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
@@ -32,10 +35,11 @@ jobs:
         run: docker build -t anuj4containers/campushive:latest .
 
       - name: Push Docker Image
-        run: docker push anuj4containers/campushive:latest
+        run: docker push anuj4containers/campushive:v.0.1
 
       - name: Upload JAR
         uses: actions/upload-artifact@v4
         with:
           name: campushive-jar
           path: target/*.jar
+
