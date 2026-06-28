@@ -17,7 +17,13 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
-
+          cache: maven
 
       - name: Build
         run: mvn clean package -DskipTests
+
+      - name: Upload JAR
+        uses: action/upload-artifact@v4
+        with:
+          name: campushive-jar
+          path: target/*.jar
