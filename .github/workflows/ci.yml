@@ -31,6 +31,9 @@ jobs:
       - name: Build Docker Image
         run: docker build -t anuj4containers/campushive:latest .
 
+      - name: Push Docker Image
+        run: docker push anuj4containers/campushive:latest
+
       - name: Upload JAR
         uses: actions/upload-artifact@v4
         with:
