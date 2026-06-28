@@ -38,7 +38,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build Docker Image
-        run: docker build -t anuj4containers/campushive:latest .
+        run: docker build -t anuj4containers/campushive:v.0.1 .
 
       - name: Push Docker Image
         run: docker push anuj4containers/campushive:v.0.1
