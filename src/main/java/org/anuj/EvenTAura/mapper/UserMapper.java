@@ -10,6 +10,8 @@ import org.anuj.EvenTAura.model.enums.AuthProvider;
 import org.anuj.EvenTAura.model.enums.SystemRole;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
+
 @Component
 @RequiredArgsConstructor
 public class UserMapper {

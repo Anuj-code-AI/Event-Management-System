@@ -6,6 +6,8 @@ import lombok.*;
 import org.anuj.EvenTAura.model.enums.AuthProvider;
 import org.anuj.EvenTAura.model.enums.SystemRole;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name="users")
 @AllArgsConstructor @NoArgsConstructor
@@ -37,8 +39,12 @@ public class User {
     @Column(nullable = false)
     private Boolean isActive = true;
 
+    @Column(nullable = false)
+    private Boolean emailVerified = false;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private AuthProvider provider;
+
 
 }

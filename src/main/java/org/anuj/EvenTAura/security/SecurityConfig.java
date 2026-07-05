@@ -57,11 +57,11 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/favicon.ico","/favicon.ico/**","/css/**","/js/**","/images/**","/webjars/**",
 
-                                "/" , "/aboutUs" , "/contact" , "/login" , "/register" , "/home" , "/universities" ,
+                                "/" , "/aboutUs" , "/contact" , "/login" , "/register" , "/verify-email" , "/home" , "/universities" ,
                                 "/campus-events" , "/event-management" , "/oauth" , "/request-event" , "/admin" , "/eventDetails/**" ,
                                 "/eventDetails" , "/tickets" , "/myEvents" , "/profile" ,
 
-                                "/api/v1/auth/**" ,"/api/v1/event/global/**", "/api/v1/tickets/*/qr").permitAll()
+                                "/api/v1/auth/**" ,"/api/v1/event/global/**", "/api/v1/event/getEvent/**", "/api/v1/tickets/*/qr").permitAll()
                     .anyRequest().authenticated()
 
                 )

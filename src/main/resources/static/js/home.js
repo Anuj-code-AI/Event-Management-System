@@ -167,3 +167,15 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 });
+
+// ---------------------------------------------------------------------
+// Exposed for other scripts on this page (currently: the hero slideshow
+// in home.html) so nobody has to duplicate the fetch URL, the auth header
+// logic, or the formatting rules. If you add more consumers, extend this
+// object instead of re-implementing fetchEventsPage elsewhere.
+// ---------------------------------------------------------------------
+window.CampusHiveEvents = {
+    fetchEventsPage,
+    formatRegistrationDeadline,
+    formatPrice,
+};

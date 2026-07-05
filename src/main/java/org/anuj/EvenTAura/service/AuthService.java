@@ -3,7 +3,9 @@ package org.anuj.EvenTAura.service;
 import org.anuj.EvenTAura.dto.*;
 
 public interface AuthService {
-    TokenPair register(RegisterRequest req);
+    void register(RegisterRequest req);
+    void resendOtp(String email);
+    TokenPair verifyOtp(VerifyOtpRequest request);
     TokenPair login(LoginRequest req);
     TokenPair refresh(String refreshToken);
     void revoke(String refreshToken);

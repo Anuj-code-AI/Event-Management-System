@@ -18,6 +18,12 @@ const categoryBadge = document.getElementById("event-category-badge");
 const statusBadge = document.getElementById("event-status-badge");
 const eventTitle = document.getElementById("event-title");
 
+// Banner lightbox elements
+const bannerBtn = document.getElementById("event-banner-btn");
+const bannerLightbox = document.getElementById("banner-lightbox");
+const bannerLightboxImg = document.getElementById("banner-lightbox-img");
+const bannerLightboxClose = document.getElementById("banner-lightbox-close");
+
 // Details card elements
 const eventDescription = document.getElementById("event-description");
 const eventMode = document.getElementById("event-mode");
@@ -71,10 +77,48 @@ function showAlert(type, message) {
     }
 }
 
+// ---------------------------------------------------------------------
+// Banner lightbox: click the banner (or press Enter/Space on it, since
+// it's a real <button>) to see the full, uncropped image. object-cover
+// on the inline banner already crops it to fill the box, so without this
+// there was no way to see the full frame at all.
+// ---------------------------------------------------------------------
+function openBannerLightbox() {
+    if (!eventBanner.src) return; // nothing loaded yet, nothing to show
+    bannerLightboxImg.src = eventBanner.src;
+    bannerLightbox.dataset.open = "true";
+    document.body.style.overflow = "hidden"; // stop background scroll while open
+    bannerLightboxClose.focus();
+}
+
+function closeBannerLightbox() {
+    bannerLightbox.dataset.open = "false";
+    document.body.style.overflow = "";
+    bannerBtn.focus();
+}
+
+if (bannerBtn) {
+    bannerBtn.addEventListener("click", openBannerLightbox);
+}
+if (bannerLightboxClose) {
+    bannerLightboxClose.addEventListener("click", closeBannerLightbox);
+}
+if (bannerLightbox) {
+    // Click on the dark backdrop (not the image itself) also closes it
+    bannerLightbox.addEventListener("click", (e) => {
+        if (e.target === bannerLightbox) closeBannerLightbox();
+    });
+}
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && bannerLightbox.dataset.open === "true") {
+        closeBannerLightbox();
+    }
+});
+
 // Check session, parse ID and initialize
 async function initPage() {
     const user = await getCurrentUser();
-    
+
     // Sidebar render
     if (user && typeof renderLoggedInSidebar === "function") {
         renderLoggedInSidebar(user);
@@ -159,11 +203,11 @@ function populateEventDetails(event) {
     eventTitle.textContent = event.title || "Untitled Event";
     eventBanner.src = event.bannerUrl || "/images/banner-placeholder.png";
     eventDescription.textContent = event.description || "No description provided.";
-    
+
     // Category & Status Badge
     categoryBadge.textContent = event.category || "General";
     statusBadge.textContent = event.eventStatus || "PENDING";
-    
+
     let statusClass = "bg-surface-container text-on-surface-variant border border-outline-variant";
     if (event.eventStatus === "PENDING") statusClass = "bg-yellow-500/10 text-yellow-500 border border-yellow-500/30";
     else if (event.eventStatus === "APPROVED") statusClass = "bg-primary/10 text-primary border border-primary/30";
@@ -209,7 +253,7 @@ function populateEventDetails(event) {
 function validateRegistrationState(event) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
+
     const deadlineDate = new Date(event.lastRegisterDate);
     const available = event.ticketsAvailable || 0;
 
@@ -233,6 +277,13 @@ function validateRegistrationState(event) {
         bookingBtn.classList.add("bg-surface-container-high", "text-outline", "cursor-not-allowed", "opacity-60");
         bookingBtnText.textContent = closedReason;
         showAlert("error", `Ticket booking is currently unavailable: ${closedReason}`);
+    } else {
+        const token = localStorage.getItem("accessToken");
+        if (!token) {
+            bookingBtnText.textContent = "Login to Book Ticket";
+        } else {
+            bookingBtnText.textContent = "Book Ticket";
+        }
     }
 }
 
@@ -249,7 +300,7 @@ async function handleBookingSubmit(e) {
     }
 
     const price = eventDetails.ticketPrice || 0;
-    
+
     // Screenshot validation for paid event
     if (price > 0) {
         if (!screenshotInput.files || screenshotInput.files.length === 0) {

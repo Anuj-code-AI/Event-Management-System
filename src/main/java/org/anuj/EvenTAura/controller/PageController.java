@@ -33,6 +33,11 @@ public class PageController {
         return "register";
     }
 
+    @GetMapping("/verify-email")
+    public String verifyEmail(){
+        return "verify-email";
+    }
+
     @GetMapping("/home")
     public String home(){
         return "home";

@@ -29,17 +29,45 @@ public class AuthController {
     @Operation(summary = "Register user", description = "Register a new user with user details like:- name, email, password, university(Optional)")
     @PostMapping("/register")
     public ResponseEntity<?> register(
-            @Valid @RequestBody RegisterRequest req,
-            HttpServletResponse response
+            @Valid @RequestBody RegisterRequest req
     ){
         if(!req.getPassword().equals(req.getConfirmPassword())){
             throw new RuntimeException("Passwords do not match");
         }
-        TokenPair pair = authService.register(req);
-        setRefreshCookie(response, pair.getRefreshToken());
-
+        authService.register(req);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(Map.of("accessToken",pair.getAccessToken()));
+                .body(Map.of(
+                        "message",
+                        "Registration successful. Please verify your email."
+                ));
+
+    }
+
+    // VERIFY MAIL USING OTP
+    @PostMapping("/verify-email")
+    public ResponseEntity<?> verifyOtp(
+            @RequestBody VerifyOtpRequest request,
+            HttpServletResponse response){
+
+        TokenPair pair =
+                authService.verifyOtp(request);
+
+        setRefreshCookie(response,
+                pair.getRefreshToken());
+
+        return ResponseEntity.ok(
+                Map.of(
+                        "accessToken",
+                        pair.getAccessToken()
+                ));
+    }
+
+    @PostMapping("/resend-otp")
+    public ResponseEntity<?> resendOtp(@RequestBody String email){
+        authService.resendOtp(email);
+        return ResponseEntity.ok(
+                "OTP send"
+        );
     }
 
     // LOGIN USER

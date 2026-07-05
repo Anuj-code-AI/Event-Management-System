@@ -1,0 +1,28 @@
+spring:
+
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.security.reactive.ReactiveUserDetailsServiceAutoConfiguration,org.springframework.boot.autoconfigure.security.reactive.ReactiveSecurityAutoConfiguration
+
+  application:
+    name: CampusHive
+
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE}
+
+  jpa:
+    properties:
+      hibernate:
+        format_sql: true
+
+app:
+  secret-key: ${APP_SECRET_KEY}
+
+server:
+  port: ${PORT:8080}
+
+jwt:
+  access:
+    expiration: ${ACCESS_EXPIRY}
+
+  refresh:
+    expiration: ${REFRESH_EXPIRY}

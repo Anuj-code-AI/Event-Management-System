@@ -63,10 +63,6 @@ async function registerUser({ name, email, password, confirmPassword, university
         method: "POST",
         body: JSON.stringify({ name, email, password, confirmPassword, university: university || null }),
     });
-    if (!data || !data.accessToken) {
-        throw new Error("Registration succeeded but no access token was returned.");
-    }
-    localStorage.setItem("accessToken", data.accessToken);
     return data;
 }
 
@@ -83,6 +79,41 @@ async function loginUser({ email, password }) {
     }
     localStorage.setItem("accessToken", data.accessToken);
     return data;
+}
+
+/**
+ * Verifies email with OTP.
+ */
+async function verifyEmailOtp({ email, otp }) {
+    const data = await authFetch("/verify-email", {
+        method: "POST",
+        body: JSON.stringify({ email, otp }),
+    });
+    if (!data || !data.accessToken) {
+        throw new Error("Verification succeeded but no access token was returned.");
+    }
+    localStorage.setItem("accessToken", data.accessToken);
+    return data;
+}
+
+/**
+ * Resends OTP code.
+ */
+async function resendEmailOtp(email) {
+    const response = await fetch(`${API_BASE}/resend-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain" },
+        body: email
+    });
+    if (!response.ok) {
+        let errMsg = "Failed to resend OTP.";
+        try {
+            const body = await response.json();
+            errMsg = body.message || errMsg;
+        } catch {}
+        throw new Error(errMsg);
+    }
+    return response;
 }
 
 /**
@@ -122,7 +153,9 @@ function bindAuthForm({ formEl, errorEl, buttonEl, buttonDefaultText, onSubmit, 
 
         try {
             await onSubmit();
-            window.location.href = redirectTo;
+            if (redirectTo) {
+                window.location.href = redirectTo;
+            }
         } catch (err) {
             errorEl.textContent = err.message || "Something went wrong. Please try again.";
             errorEl.classList.remove("hidden");

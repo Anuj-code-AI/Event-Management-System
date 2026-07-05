@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>Register | CampusHive</title>
+    <title>Verify Email | CampusHive</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
@@ -142,7 +142,6 @@
         <div class="hidden md:flex gap-lg ml-auto items-center">
             <a class="text-on-surface-variant hover:text-primary transition-colors text-body-sm" href="/contact">Contact</a>
             <a class="text-on-surface-variant hover:text-primary transition-colors text-body-sm" href="/aboutUs">About Us</a>
-            <a class="text-primary font-semibold text-body-sm" href="/login">Sign In</a>
         </div>
     </div>
 </header>
@@ -151,71 +150,45 @@
     <div class="w-full max-w-md">
         <div class="bg-surface-container border border-outline-variant rounded-xl shadow-2xl p-xl">
             <div class="text-center mb-lg">
-                <h1 class="text-headline-md text-on-background mb-xs">Create your account</h1>
-                <p class="text-body-sm text-on-surface-variant">Join CampusHive and start managing campus events.</p>
+                <span class="material-symbols-outlined text-primary text-[48px] mb-xs animate-bounce">mail</span>
+                <h1 class="text-headline-md text-on-background mb-xs font-bold font-sans">Verify Your Email</h1>
+                <p class="text-body-sm text-on-surface-variant">We have sent a verification code to <span id="display-email" class="text-on-surface font-semibold">—</span></p>
             </div>
 
-            <!-- Error banner -->
+            <!-- Messages banner -->
+            <div id="info-banner" class="hidden mb-md p-sm rounded-lg bg-primary/10 border border-primary/30 text-primary text-body-sm"></div>
             <div id="error-banner" class="hidden mb-md p-sm rounded-lg bg-error-container border border-error/30 text-on-error-container text-body-sm"></div>
 
-            <a href="/oauth2/authorization/google"
-               class="w-full flex items-center justify-center gap-sm border border-outline-variant hover:bg-surface-container-high text-on-surface font-semibold px-lg py-sm rounded-lg transition-all mb-md">
-                <svg class="w-5 h-5" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-                    <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.5 6 29.5 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.5z"/>
-                    <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 16 19 13 24 13c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.5 6 29.5 4 24 4c-7.7 0-14.4 4.3-17.7 10.7z"/>
-                    <path fill="#4CAF50" d="M24 44c5.4 0 10.3-1.9 14.1-5.1l-6.5-5.5C29.5 35.4 26.9 36 24 36c-5.3 0-9.7-3.3-11.3-8l-6.6 5.1C9.5 39.6 16.2 44 24 44z"/>
-                    <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.2-4.2 5.6l6.5 5.5C40.9 36.5 44 30.9 44 24c0-1.3-.1-2.7-.4-3.5z"/>
-                </svg>
-                <span>Continue with Google</span>
-            </a>
-
-            <div class="flex items-center gap-sm mb-md">
-                <div class="flex-1 h-px bg-outline-variant"></div>
-                <span class="text-label-md text-on-surface-variant">OR</span>
-                <div class="flex-1 h-px bg-outline-variant"></div>
-            </div>
-
-            <form id="register-form" class="space-y-md" novalidate>
+            <form id="verify-form" class="space-y-md" novalidate>
                 <div>
-                    <label for="name" class="block text-body-sm font-medium text-on-surface-variant mb-xs">Full Name</label>
-                    <input id="name" name="name" type="text" required autocomplete="name"
-                           class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-md py-sm text-on-surface placeholder:text-on-surface-variant/50 focus:border-primary transition-colors"
-                           placeholder="Jane Doe" />
-                </div>
-                <div>
-                    <label for="email" class="block text-body-sm font-medium text-on-surface-variant mb-xs">Email</label>
-                    <input id="email" name="email" type="email" required autocomplete="email"
-                           class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-md py-sm text-on-surface placeholder:text-on-surface-variant/50 focus:border-primary transition-colors"
-                           placeholder="abc@gmail.com" />
-                </div>
-                <div>
-                    <label for="university" class="block text-body-sm font-medium text-on-surface-variant mb-xs">University <span class="text-on-surface-variant/60">(optional)</span></label>
-                    <input id="university" name="university" type="text" autocomplete="organization"
-                           class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-md py-sm text-on-surface placeholder:text-on-surface-variant/50 focus:border-primary transition-colors"
-                           placeholder="State University" />
-                </div>
-                <div>
-                    <label for="password" class="block text-body-sm font-medium text-on-surface-variant mb-xs">Password</label>
-                    <input id="password" name="password" type="password" required minlength="4" autocomplete="new-password"
-                           class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-md py-sm text-on-surface placeholder:text-on-surface-variant/50 focus:border-primary transition-colors"
-                           placeholder="At least 4 characters" />
-                </div>
-                <div>
-                    <label for="confirmPassword" class="block text-body-sm font-medium text-on-surface-variant mb-xs">Confirm Password</label>
-                    <input id="confirmPassword" name="confirmPassword" type="password" required minlength="4" autocomplete="new-password"
-                           class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-md py-sm text-on-surface placeholder:text-on-surface-variant/50 focus:border-primary transition-colors"
-                           placeholder="Re-enter your password" />
+                    <label for="otp" class="block text-body-sm font-medium text-on-surface-variant mb-xs">Verification Code</label>
+                    <input id="otp" name="otp" type="text" required maxlength="6" autocomplete="one-time-code"
+                           class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-md py-sm text-on-surface text-center tracking-[0.75em] text-title-lg placeholder:tracking-normal placeholder:text-body-sm focus:border-primary transition-colors"
+                           placeholder="Enter 6-digit OTP" />
                 </div>
 
-                <button id="submit-btn" type="submit"
+                <button id="verify-btn" type="submit"
                         class="w-full bg-primary hover:bg-primary-fixed text-on-primary font-bold px-lg py-sm rounded-lg transition-all transform hover:scale-[1.01] shadow-lg shadow-primary/20 mt-sm">
-                    Create Account
+                    Verify Code
                 </button>
             </form>
 
-            <p class="text-center text-body-sm text-on-surface-variant mt-lg">
-                Already have an account?
-                <a href="/login" class="text-primary font-semibold hover:underline">Sign in</a>
+            <div class="mt-lg text-center space-y-sm">
+                <p class="text-body-sm text-on-surface-variant">
+                    Didn't receive the code?
+                </p>
+                <button id="resend-btn"
+                        class="text-primary font-semibold hover:underline text-body-sm focus:outline-none disabled:text-on-surface-variant/40 disabled:no-underline">
+                    Resend Code
+                </button>
+                <p id="timer-text" class="hidden text-body-sm text-on-surface-variant/60"></p>
+            </div>
+            
+            <p class="text-center text-body-sm text-on-surface-variant mt-lg border-t border-outline-variant/30 pt-md">
+                <a href="/login" class="text-primary font-semibold hover:underline flex items-center justify-center gap-xs">
+                    <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                    <span>Back to Sign In</span>
+                </a>
             </p>
         </div>
     </div>
@@ -223,31 +196,99 @@
 
 <script src="/js/auth.js"></script>
 <script>
-    const form = document.getElementById("register-form");
+    const form = document.getElementById("verify-form");
+    const displayEmail = document.getElementById("display-email");
+    const infoBanner = document.getElementById("info-banner");
     const errorBanner = document.getElementById("error-banner");
-    const submitBtn = document.getElementById("submit-btn");
+    const verifyBtn = document.getElementById("verify-btn");
+    const resendBtn = document.getElementById("resend-btn");
+    const timerText = document.getElementById("timer-text");
 
-    // Auto-login: if a valid session already exists (existing token + working refresh
-    // cookie), skip this page entirely and go straight to /home.
-    checkExistingSessionAndRedirect("/home");
+    // Extract email from URL params
+    const urlParams = new URLSearchParams(window.location.search);
+    const email = urlParams.get("email");
 
-    bindAuthForm({
-        formEl: form,
-        errorEl: errorBanner,
-        buttonEl: submitBtn,
-        buttonDefaultText: "Create Account",
-        onSubmit: async () => {
-            const formData = new FormData(form);
-            const email = formData.get("email").trim();
-            await registerUser({
-                name: formData.get("name").trim(),
-                email: email,
-                password: formData.get("password"),
-                confirmPassword: formData.get("confirmPassword"),
-                university: formData.get("university").trim(),
-            });
-            window.location.href = `/verify-email?email=${encodeURIComponent(email)}`;
-        },
+    if (!email) {
+        window.location.href = "/login";
+    } else {
+        displayEmail.textContent = email;
+    }
+
+    // Cooldown logic for resending OTP
+    let cooldownSeconds = 0;
+    let cooldownInterval = null;
+
+    function startCooldown(seconds) {
+        cooldownSeconds = seconds;
+        resendBtn.disabled = true;
+        timerText.classList.remove("hidden");
+        updateCooldownText();
+
+        cooldownInterval = setInterval(() => {
+            cooldownSeconds--;
+            if (cooldownSeconds <= 0) {
+                clearInterval(cooldownInterval);
+                resendBtn.disabled = false;
+                timerText.classList.add("hidden");
+            } else {
+                updateCooldownText();
+            }
+        }, 1000);
+    }
+
+    function updateCooldownText() {
+        timerText.textContent = `You can request a new code in ${cooldownSeconds}s`;
+    }
+
+    // Handle verification submission
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        errorBanner.classList.add("hidden");
+        infoBanner.classList.add("hidden");
+        errorBanner.textContent = "";
+
+        const otp = document.getElementById("otp").value.trim();
+        if (otp.length !== 6 || isNaN(otp)) {
+            errorBanner.textContent = "Please enter a valid 6-digit number.";
+            errorBanner.classList.remove("hidden");
+            return;
+        }
+
+        verifyBtn.disabled = true;
+        verifyBtn.textContent = "Verifying...";
+
+        try {
+            await verifyEmailOtp({ email, otp });
+            infoBanner.textContent = "Verification successful! Redirecting...";
+            infoBanner.classList.remove("hidden");
+            setTimeout(() => {
+                window.location.href = "/home";
+            }, 1500);
+        } catch (err) {
+            errorBanner.textContent = err.message || "Failed to verify. Please try again.";
+            errorBanner.classList.remove("hidden");
+            verifyBtn.disabled = false;
+            verifyBtn.textContent = "Verify Code";
+        }
+    });
+
+    // Handle Resend OTP click
+    resendBtn.addEventListener("click", async () => {
+        errorBanner.classList.add("hidden");
+        infoBanner.classList.add("hidden");
+        
+        resendBtn.disabled = true;
+        
+        try {
+            await resendEmailOtp(email);
+            infoBanner.textContent = "A new verification code has been sent.";
+            infoBanner.classList.remove("hidden");
+            startCooldown(60); // 60s cooldown limit
+        } catch (err) {
+            errorBanner.textContent = err.message || "Failed to resend code.";
+            errorBanner.classList.remove("hidden");
+            resendBtn.disabled = false;
+        }
     });
 </script>
 </body>

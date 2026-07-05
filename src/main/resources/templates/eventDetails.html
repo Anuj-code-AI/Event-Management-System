@@ -130,6 +130,36 @@
             -webkit-backdrop-filter: blur(16px);
             border: 1px solid rgba(51, 69, 60, 0.5);
         }
+
+        /* ---------- Banner hover / lightbox ---------- */
+        #event-banner-btn {
+            cursor: zoom-in;
+        }
+
+        #banner-hover-hint {
+            opacity: 0;
+            transition: opacity 150ms ease;
+            background: rgba(5, 16, 12, 0.35);
+        }
+        #event-banner-btn:hover #banner-hover-hint,
+        #event-banner-btn:focus-visible #banner-hover-hint {
+            opacity: 1;
+        }
+
+        #banner-lightbox {
+            transition: opacity 150ms ease;
+        }
+        #banner-lightbox[data-open="false"] {
+            opacity: 0;
+            pointer-events: none;
+        }
+        #banner-lightbox[data-open="true"] {
+            opacity: 1;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            #banner-hover-hint, #banner-lightbox { transition: none; }
+        }
     </style>
 </head>
 
@@ -229,22 +259,38 @@
 
             <!-- Event Details Page Container -->
             <div id="details-content-section" class="hidden space-y-lg max-w-5xl mx-auto">
-                
+
                 <!-- Large Event Header Banner -->
                 <section class="relative h-64 md:h-80 w-full rounded-xl overflow-hidden border border-outline-variant bg-surface-container-low shadow-xl">
-                    <img id="event-banner" class="w-full h-full object-cover" src="" alt="Event Banner">
-                    <div class="absolute inset-0 bg-gradient-to-t from-background/90 via-background/40 to-transparent flex flex-col justify-end p-lg space-y-sm">
-                        <div class="flex items-center gap-sm">
-                            <span id="event-category-badge" class="bg-primary/20 text-primary border border-primary/30 text-label-md px-sm py-xs rounded-full font-semibold uppercase">Category</span>
-                            <span id="event-status-badge" class="bg-surface-container-high text-on-surface-variant border border-outline-variant text-label-md px-sm py-xs rounded-full font-semibold uppercase">PENDING</span>
+                    <!-- The whole banner is a <button> (not a div) so it's keyboard-focusable
+                         and screen readers announce it as an actionable control, not just an image. -->
+                    <button type="button" id="event-banner-btn"
+                            class="absolute inset-0 w-full h-full group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                            aria-label="Open full-size event banner">
+                        <img id="event-banner" class="w-full h-full object-cover" src="" alt="Event Banner">
+
+                        <!-- Existing gradient + title overlay -->
+                        <div class="absolute inset-0 bg-gradient-to-t from-background/90 via-background/40 to-transparent flex flex-col justify-end p-lg space-y-sm text-left">
+                            <div class="flex items-center gap-sm">
+                                <span id="event-category-badge" class="bg-primary/20 text-primary border border-primary/30 text-label-md px-sm py-xs rounded-full font-semibold uppercase">Category</span>
+                                <span id="event-status-badge" class="bg-surface-container-high text-on-surface-variant border border-outline-variant text-label-md px-sm py-xs rounded-full font-semibold uppercase">PENDING</span>
+                            </div>
+                            <h2 id="event-title" class="text-headline-md md:text-display-lg text-on-background font-bold leading-tight">Event Title</h2>
                         </div>
-                        <h2 id="event-title" class="text-headline-md md:text-display-lg text-on-background font-bold leading-tight">Event Title</h2>
-                    </div>
+
+                        <!-- Hover / focus hint: tells people the banner is clickable -->
+                        <div id="banner-hover-hint" class="absolute inset-0 flex items-center justify-center">
+                            <span class="inline-flex items-center gap-xs bg-surface-container-lowest/80 backdrop-blur-sm border border-outline-variant text-on-background text-body-sm font-semibold px-md py-sm rounded-full">
+                                <span class="material-symbols-outlined text-[20px]">zoom_in</span>
+                                Click to view full banner
+                            </span>
+                        </div>
+                    </button>
                 </section>
 
                 <!-- Details Grid Section -->
                 <section class="grid grid-cols-1 md:grid-cols-3 gap-lg">
-                    
+
                     <!-- Left Section: Specification Cards -->
                     <div class="md:col-span-2 space-y-lg">
                         <!-- About event description -->
@@ -257,7 +303,7 @@
                         <div class="glass-card rounded-xl p-lg space-y-sm">
                             <h3 class="text-title-lg font-bold text-primary border-b border-outline-variant/30 pb-xs">Event Details</h3>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-md pt-xs">
-                                
+
                                 <!-- Mode & Venue -->
                                 <div class="flex items-start gap-sm">
                                     <span class="material-symbols-outlined text-primary text-[24px] mt-xs">explore</span>
@@ -303,7 +349,7 @@
                     <!-- Right Section: Booking Panel -->
                     <div class="space-y-lg">
                         <div class="glass-card rounded-xl p-lg space-y-md shadow-2xl sticky top-20 border border-outline-variant/60">
-                            
+
                             <!-- Header pricing -->
                             <div class="flex items-baseline justify-between border-b border-outline-variant/30 pb-sm">
                                 <span class="text-body-sm text-on-surface-variant font-medium">Ticket Price</span>
@@ -328,7 +374,7 @@
 
                             <!-- Dynamic Form for screenshots and bookings -->
                             <form id="booking-form" class="space-y-md pt-xs">
-                                
+
                                 <!-- Payment QR Scanner section (Conditional) -->
                                 <div id="payment-qr-section" class="hidden space-y-sm bg-surface-container-low p-md border border-outline-variant rounded-lg text-center">
                                     <h4 class="text-body-sm font-semibold text-primary">1. Scan & Pay UPI QR</h4>
@@ -381,6 +427,18 @@
             </div>
         </footer>
     </div>
+</div>
+
+<!-- ===================== BANNER LIGHTBOX ===================== -->
+<!-- Sits outside the main layout, fixed, hidden by default via data-open="false" -->
+<div id="banner-lightbox" data-open="false"
+     class="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-md"
+     role="dialog" aria-modal="true" aria-label="Full-size event banner">
+    <button type="button" id="banner-lightbox-close" aria-label="Close full-size banner"
+            class="absolute top-md right-md md:top-lg md:right-lg w-11 h-11 rounded-full bg-surface-container-lowest/80 hover:bg-surface-container-high border border-outline-variant flex items-center justify-center text-on-surface transition-colors">
+        <span class="material-symbols-outlined">close</span>
+    </button>
+    <img id="banner-lightbox-img" src="" alt="Full-size event banner" class="max-w-[92vw] max-h-[88vh] object-contain rounded-lg">
 </div>
 
 <script src="/js/auth.js"></script>

@@ -132,6 +132,52 @@
             background-size: cover;
             background-position: center;
         }
+
+        /* ---------- Hero slideshow ---------- */
+        #hero-slideshow {
+            height: 320px;
+        }
+        @media (min-width: 768px) {
+            #hero-slideshow { height: 440px; }
+        }
+
+        #hero-slideshow .slide {
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 600ms ease-in-out;
+            pointer-events: none;
+        }
+        #hero-slideshow .slide.is-active {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+        }
+
+        /* Fixed-ratio, cropped, centered image so nothing scatters or stretches */
+        #hero-slideshow .slide-bg {
+            position: absolute;
+            inset: 0;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-color: #131a17; /* prevents flash/gap while an image loads */
+        }
+
+        .slide-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 9999px;
+            background-color: rgba(220, 235, 224, 0.35);
+            transition: background-color 200ms ease, width 200ms ease;
+        }
+        .slide-dot.is-active {
+            background-color: #4edea3;
+            width: 22px;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            #hero-slideshow .slide { transition: none; }
+        }
     </style>
 </head>
 
@@ -242,26 +288,44 @@
         <!-- ---------- MAIN CONTENT ---------- -->
         <main class="flex-1 px-md md:px-lg py-lg space-y-2xl">
 
-            <!-- Events banner -->
-            <section class="relative rounded-xl overflow-hidden hero-mesh border border-outline-variant">
-                <div class="relative z-10 px-lg py-xl md:py-2xl max-w-2xl">
-                    <span class="inline-flex items-center gap-xs bg-surface-container-high border border-outline-variant text-on-surface-variant text-label-md px-sm py-xs rounded-full mb-md">
-                        <span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
-                        FEATURED THIS WEEK
-                    </span>
-                    <h1 class="text-headline-md md:text-display-lg-mobile text-on-background leading-tight mb-sm">
-                        Homecoming Block Party
-                    </h1>
-                    <p class="text-body-md text-on-surface-variant mb-lg max-w-lg">
-                        Live music, food trucks, and the biggest crowd of the semester on the Main Quad. Tickets are moving fast.
-                    </p>
-                    <div class="flex items-center gap-md">
-                        <button class="bg-primary hover:bg-primary-fixed text-on-primary font-bold px-lg py-sm rounded-lg transition-all shadow-lg shadow-primary/20">
-                            Get Tickets
-                        </button>
-                        <span class="text-body-sm text-on-surface-variant">Sat, Oct 18 · Main Quad</span>
-                    </div>
+            <!-- ===== Events slideshow (replaces the static Homecoming banner) ===== -->
+            <!-- Data comes from window.CampusHiveEvents.fetchEventsPage(0, 5),
+                 exposed at the bottom of home.js. See the script block near
+                 the end of this file for the render/autoplay logic. -->
+            <section id="hero-slideshow"
+                     class="relative rounded-xl overflow-hidden border border-outline-variant group"
+                     aria-roledescription="carousel" aria-label="Featured recent events">
+
+                <!-- Slides get injected here by the script below -->
+                <div id="hero-slides" class="absolute inset-0"></div>
+
+                <!-- Loading skeleton (shown until the first slide is ready) -->
+                <div id="hero-skeleton" class="absolute inset-0 hero-mesh bg-surface-container-low flex items-center justify-center">
+                    <span class="text-body-sm text-on-surface-variant">Loading featured events…</span>
                 </div>
+
+                <!-- Empty state (no events returned) -->
+                <div id="hero-empty" class="hidden absolute inset-0 hero-mesh bg-surface-container-low flex-col items-center justify-center text-center px-lg">
+                    <span class="material-symbols-outlined text-on-surface-variant text-[32px] mb-sm">event_busy</span>
+                    <p class="text-body-md text-on-surface-variant">No events to feature right now — check back soon.</p>
+                </div>
+
+                <!-- Prev / next controls -->
+                <button id="hero-prev" type="button" aria-label="Previous event"
+                        class="hidden md:flex absolute left-md top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full
+                        bg-surface-container-lowest/70 hover:bg-surface-container-high items-center justify-center
+                        text-on-surface opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity">
+                    <span class="material-symbols-outlined">chevron_left</span>
+                </button>
+                <button id="hero-next" type="button" aria-label="Next event"
+                        class="hidden md:flex absolute right-md top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full
+                        bg-surface-container-lowest/70 hover:bg-surface-container-high items-center justify-center
+                        text-on-surface opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity">
+                    <span class="material-symbols-outlined">chevron_right</span>
+                </button>
+
+                <!-- Dot indicators -->
+                <div id="hero-dots" class="absolute bottom-md left-1/2 -translate-x-1/2 z-20 flex items-center gap-xs"></div>
             </section>
 
             <!-- Event cards grid -->
@@ -271,7 +335,7 @@
                 </div>
 
                 <div id="event-cards" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-lg">
-                    <!-- populated by home.js from getGlobalEvents API -->
+                    <!-- populated by home.js loadEventsPage() via /api/v1/event/global -->
                 </div>
 
                 <div class="flex flex-col items-center gap-sm mt-xl">
@@ -305,6 +369,172 @@
 <script src="/js/nav-config.js"></script>
 <script src="/js/sidebar.js"></script>
 <script src="/js/home.js"></script>
+
+<!-- ---------- Hero slideshow logic ---------- -->
+<!-- Uses window.CampusHiveEvents (exposed at the bottom of home.js) so there
+     is exactly ONE piece of code that knows the auth header, the envelope
+     shape, and the endpoint URL. No duplicated fetch/auth logic here. -->
+<script>
+    (function () {
+        "use strict";
+
+        var root      = document.getElementById("hero-slideshow");
+        var track     = document.getElementById("hero-slides");
+        var skeleton  = document.getElementById("hero-skeleton");
+        var emptyEl   = document.getElementById("hero-empty");
+        var dotsWrap  = document.getElementById("hero-dots");
+        var prevBtn   = document.getElementById("hero-prev");
+        var nextBtn   = document.getElementById("hero-next");
+
+        var SLIDE_COUNT  = 5;
+        var AUTOPLAY_MS  = 6000;
+        var current = 0;
+        var timer = null;
+
+        // ---- Data source -------------------------------------------------
+        // "Recent" here means "page 0 of /global, as ordered by the backend."
+        // EventSummaryResponse has no createdAt / event-date field, so there is
+        // no honest way to re-sort these client-side by recency. If the backend
+        // isn't already returning newest-first, this label is misleading and
+        // the fix belongs in the API, not here.
+        function fetchFeaturedEvents() {
+            if (!window.CampusHiveEvents || typeof window.CampusHiveEvents.fetchEventsPage !== "function") {
+                return Promise.reject(new Error("CampusHiveEvents.fetchEventsPage is not available — check home.js load order/exports."));
+            }
+            return window.CampusHiveEvents.fetchEventsPage(0, SLIDE_COUNT).then(function (pageData) {
+                return (pageData && pageData.content) || [];
+            });
+        }
+
+        function escapeHtml(str) {
+            var div = document.createElement("div");
+            div.textContent = str == null ? "" : String(str);
+            return div.innerHTML;
+        }
+
+        // ---- Rendering -----------------------------------------------------
+        function buildSlide(evt, index, total) {
+            var slide = document.createElement("div");
+            slide.className = "slide absolute inset-0" + (index === 0 ? " is-active" : "");
+            slide.setAttribute("data-index", String(index));
+            slide.setAttribute("role", "group");
+            slide.setAttribute("aria-roledescription", "slide");
+            slide.setAttribute("aria-label", (index + 1) + " of " + total);
+
+            var img = evt.bannerUrl || "";
+            var title = evt.title || "Untitled Event";
+            var location = evt.location || "Location TBA";
+            var deadline = window.CampusHiveEvents.formatRegistrationDeadline(evt.lastRegistrationDate);
+            var price = window.CampusHiveEvents.formatPrice(evt.ticketPrice);
+            var eventId = evt.eventId;
+
+            slide.innerHTML =
+                '<div class="slide-bg" style="background-image:url(\'' + escapeHtml(img) + '\')"></div>' +
+                '<div class="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent"></div>' +
+                '<div class="relative z-10 h-full flex flex-col justify-end px-lg py-lg md:py-xl max-w-2xl">' +
+                (evt.category ? '<span class="inline-flex items-center gap-xs bg-surface-container-high border border-outline-variant text-on-surface-variant text-label-md px-sm py-xs rounded-full mb-md w-fit"><span class="w-1.5 h-1.5 rounded-full bg-primary"></span> ' + escapeHtml(evt.category.toUpperCase()) + '</span>' : '') +
+                '<h1 class="text-headline-md md:text-display-lg-mobile text-on-background leading-tight mb-sm">' + escapeHtml(title) + '</h1>' +
+                '<div class="flex flex-wrap items-center gap-md">' +
+                '<a href="/eventDetails/' + encodeURIComponent(eventId) + '" class="bg-primary hover:bg-primary-fixed text-on-primary font-bold px-lg py-sm rounded-lg transition-all shadow-lg shadow-primary/20">View Event</a>' +
+                '<span class="text-body-sm text-on-surface-variant">' + escapeHtml([price, location, deadline].filter(Boolean).join(" · ")) + '</span>' +
+                '</div>' +
+                '</div>';
+
+            return slide;
+        }
+
+        function buildDot(index) {
+            var dot = document.createElement("button");
+            dot.type = "button";
+            dot.className = "slide-dot" + (index === 0 ? " is-active" : "");
+            dot.setAttribute("aria-label", "Go to slide " + (index + 1));
+            dot.addEventListener("click", function () { goTo(index); });
+            return dot;
+        }
+
+        function render(events) {
+            if (!events.length) {
+                skeleton.classList.add("hidden");
+                emptyEl.classList.remove("hidden");
+                emptyEl.classList.add("flex");
+                return;
+            }
+
+            track.innerHTML = "";
+            dotsWrap.innerHTML = "";
+
+            events.forEach(function (evt, i) {
+                track.appendChild(buildSlide(evt, i, events.length));
+                dotsWrap.appendChild(buildDot(i));
+            });
+
+            skeleton.classList.add("hidden");
+
+            if (events.length > 1) {
+                prevBtn.classList.remove("hidden");
+                nextBtn.classList.remove("hidden");
+                startAutoplay();
+            }
+        }
+
+        // ---- Controls --------------------------------------------------
+        function goTo(index) {
+            var slideEls = track.querySelectorAll(".slide");
+            var dotEls = dotsWrap.querySelectorAll(".slide-dot");
+            if (!slideEls.length) return;
+
+            current = (index + slideEls.length) % slideEls.length;
+
+            slideEls.forEach(function (el, i) {
+                el.classList.toggle("is-active", i === current);
+            });
+            dotEls.forEach(function (el, i) {
+                el.classList.toggle("is-active", i === current);
+            });
+        }
+
+        function next() { goTo(current + 1); }
+        function prev() { goTo(current - 1); }
+
+        function startAutoplay() {
+            stopAutoplay();
+            timer = window.setInterval(next, AUTOPLAY_MS);
+        }
+        function stopAutoplay() {
+            if (timer) { window.clearInterval(timer); timer = null; }
+        }
+
+        prevBtn.addEventListener("click", function () { prev(); startAutoplay(); });
+        nextBtn.addEventListener("click", function () { next(); startAutoplay(); });
+
+        root.addEventListener("mouseenter", stopAutoplay);
+        root.addEventListener("mouseleave", startAutoplay);
+        root.addEventListener("focusin", stopAutoplay);
+        root.addEventListener("focusout", startAutoplay);
+
+        // Basic swipe support for touch devices
+        var touchStartX = null;
+        root.addEventListener("touchstart", function (e) {
+            touchStartX = e.changedTouches[0].clientX;
+        }, { passive: true });
+        root.addEventListener("touchend", function (e) {
+            if (touchStartX === null) return;
+            var dx = e.changedTouches[0].clientX - touchStartX;
+            if (Math.abs(dx) > 40) { dx > 0 ? prev() : next(); startAutoplay(); }
+            touchStartX = null;
+        }, { passive: true });
+
+        // ---- Boot ------------------------------------------------------
+        fetchFeaturedEvents()
+            .then(render)
+            .catch(function (err) {
+                console.error("Hero slideshow: failed to load events:", err);
+                skeleton.classList.add("hidden");
+                emptyEl.classList.remove("hidden");
+                emptyEl.classList.add("flex");
+            });
+    })();
+</script>
 </body>
 
 </html>

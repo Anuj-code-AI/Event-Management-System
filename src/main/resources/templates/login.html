@@ -217,13 +217,23 @@
         errorEl: errorBanner,
         buttonEl: submitBtn,
         buttonDefaultText: "Sign In",
-        redirectTo: "/home",
         onSubmit: async () => {
             const formData = new FormData(form);
-            await loginUser({
-                email: formData.get("email").trim(),
-                password: formData.get("password"),
-            });
+            const email = formData.get("email").trim();
+            try {
+                await loginUser({
+                    email: email,
+                    password: formData.get("password"),
+                });
+                window.location.href = "/home";
+            } catch (err) {
+                if (err.message && err.message.toLowerCase().includes("verify your email")) {
+                    window.location.href = `/verify-email?email=${encodeURIComponent(email)}`;
+                    // return normally to avoid triggering the error banner
+                    return;
+                }
+                throw err;
+            }
         },
     });
 </script>

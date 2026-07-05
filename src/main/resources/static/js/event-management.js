@@ -398,6 +398,12 @@ function renderEventCard(event) {
                     <div class="flex gap-sm w-full">
                         ${actionButtons}
                     </div>
+                    <button onclick="shareEventLink(${event.eventId})" 
+                        class="w-full bg-secondary/10 hover:bg-secondary/20 text-secondary border border-secondary/30 font-semibold py-xs px-sm rounded text-body-sm transition-all flex items-center justify-center gap-xs mt-xs"
+                    >
+                        <span class="material-symbols-outlined text-[18px]">share</span>
+                        <span>Share Event Link</span>
+                    </button>
                     ${(event.eventStatus === "APPROVED" || event.eventStatus === "FINISHED") ? `
                         <button onclick="showAttendeesView(${event.eventId}, '${event.title.replace(/'/g, "\\'")}')" 
                             class="w-full bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 font-semibold py-xs px-sm rounded text-body-sm transition-all flex items-center justify-center gap-xs mt-xs"
@@ -721,6 +727,29 @@ async function onScanSuccess(decodedText, decodedResult) {
 
 function onScanError(errorMessage) {
     // Quietly ignore frame read failures
+}
+
+function shareEventLink(eventId) {
+    let event = fullHostedList.find(e => e.eventId === eventId);
+    if (!event) {
+        event = myEventsPage.content.find(e => e.eventId === eventId);
+    }
+    if (!event) {
+        alert("Event data not found.");
+        return;
+    }
+
+    if (event.eventStatus !== "APPROVED") {
+        alert("Wait for event to be approved before sharing.");
+        return;
+    }
+
+    const eventUrl = `${window.location.origin}/eventDetails/${eventId}`;
+    const cleanDesc = event.description ? (event.description.substring(0, 150) + (event.description.length > 150 ? "..." : "")) : "";
+    const message = `🔥 Check out this exciting event on CampusHive! 🔥\n\n📌 *${event.title}*\n📝 ${cleanDesc}\n\n👉 *Register here:* ${eventUrl}\n🖼️ *Banner:* ${event.bannerUrl || 'No image'}`;
+
+    const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, "_blank");
 }
 
 // Run initialization

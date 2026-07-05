@@ -1,0 +1,54 @@
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+
+  jpa:
+    hibernate:
+      ddl-auto: ${DDL_AUTO}
+
+    show-sql: true
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope: email,profile
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${EMAIL}
+    password: ${EMAIL_PASSWORD}
+    protocol: smtp
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+app:
+  base-url: ${BASE_URL}
+
+  cookie:
+    secure: ${COOKIE_SECURE}
+    same-site: ${COOKIE_SITE}
+
+cloudinary:
+  cloud_name: ${IMAGE_CLOUD_NAME}
+  api_key: ${IMAGE_CLOUD_API_KEY}
+  api_secret: ${IMAGE_CLOUD_SECRET}
+
+springdoc:
+  api-docs:
+    enabled: ${API_DOC}
+  swagger-ui:
+    enabled: ${SWAGGER_UI}
