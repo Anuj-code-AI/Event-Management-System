@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>CampusHive | Event Infrastructure for Universities</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link
+            href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+            rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        ink: "#0B1526",
+                        "ink-soft": "#14213B",
+                        canvas: "#FFFFFF",
+                        "canvas-sunk": "#F5F7FA",
+                        "canvas-mid": "#EEF1F6",
+                        line: "#E2E6ED",
+                        "line-strong": "#CBD2DE",
+                        muted: "#5B6B85",
+                        "muted-dim": "#8894A8",
+                        action: "#2450E8",
+                        "action-hover": "#1A3FC4",
+                        "action-tint": "#EDF1FE",
+                        signal: "#0EA5A5",
+                        "signal-tint": "#E7F8F8",
+                        amber: "#B45309",
+                    },
+                    fontFamily: {
+                        display: ["Sora", "sans-serif"],
+                        body: ["Inter", "sans-serif"],
+                        mono: ["IBM Plex Mono", "monospace"],
+                    },
+                    spacing: {
+                        gutter: "24px",
+                        xl: "40px",
+                        "2xl": "72px",
+                        "3xl": "112px",
+                        "container-max": "1240px",
+                    },
+                    borderRadius: {
+                        DEFAULT: "10px",
+                        lg: "14px",
+                        xl: "20px",
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        html { scroll-behavior: smooth; }
+        body {
+            background-color: #FFFFFF;
+            color: #0B1526;
+            font-family: 'Inter', sans-serif;
+        }
+        .eyebrow {
+            font-family: 'IBM Plex Mono', monospace;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+        .grid-fade {
+            background-image:
+                    linear-gradient(to right, #EEF1F6 1px, transparent 1px),
+                    linear-gradient(to bottom, #EEF1F6 1px, transparent 1px);
+            background-size: 56px 56px;
+            -webkit-mask-image: radial-gradient(ellipse 70% 60% at 65% 30%, black 20%, transparent 75%);
+            mask-image: radial-gradient(ellipse 70% 60% at 65% 30%, black 20%, transparent 75%);
+        }
+        .faq-accordion[open] .faq-icon { transform: rotate(45deg); }
+        .faq-icon { transition: transform 0.2s ease; }
+
+        .crest-track {
+            display: flex;
+            width: max-content;
+            animation: crest-scroll 42s linear infinite;
+        }
+        .crest-track:hover { animation-play-state: paused; }
+        @keyframes crest-scroll {
+            from { transform: translateX(0); }
+            to { transform: translateX(-50%); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .crest-track { animation: none; }
+        }
+        .crest-mask {
+            mask-image: linear-gradient(90deg, transparent 0%, black 6%, black 94%, transparent 100%);
+            -webkit-mask-image: linear-gradient(90deg, transparent 0%, black 6%, black 94%, transparent 100%);
+        }
+        .step-num {
+            font-family: 'IBM Plex Mono', monospace;
+        }
+        a:focus-visible, button:focus-visible, summary:focus-visible {
+            outline: 2px solid #2450E8;
+            outline-offset: 2px;
+        }
+    </style>
+</head>
+
+<body class="overflow-x-hidden font-body">
+
+<!-- 1. Header -->
+<header class="fixed top-0 w-full z-50 bg-canvas/90 backdrop-blur-md border-b border-line transition-shadow" id="site-header">
+    <div class="flex justify-between items-center h-16 px-5 md:px-gutter max-w-container-max mx-auto">
+        <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-md bg-ink flex items-center justify-center shrink-0">
+                <span class="text-canvas font-display font-bold text-sm">CH</span>
+            </div>
+            <span class="font-display font-bold text-lg tracking-tight text-ink">CampusHive</span>
+        </div>
+        <nav class="hidden md:flex gap-8 ml-auto items-center">
+            <a class="text-muted hover:text-ink transition-colors text-sm font-medium" href="/about-us">About</a>
+            <a class="text-muted hover:text-ink transition-colors text-sm font-medium" href="/contact">Contact</a>
+            <a class="text-muted hover:text-ink transition-colors text-sm font-medium" href="/login">Sign in</a>
+            <a href="/register">
+                <button class="bg-ink hover:bg-ink-soft text-canvas font-semibold text-sm px-5 py-2.5 rounded-lg transition-colors">
+                    Get started
+                </button>
+            </a>
+        </nav>
+    </div>
+</header>
+
+<main class="pt-16">
+
+    <!-- 2. Hero -->
+    <section class="relative overflow-hidden border-b border-line">
+        <div class="absolute inset-0 grid-fade pointer-events-none"></div>
+        <div class="relative max-w-container-max mx-auto px-5 md:px-gutter pt-2xl pb-2xl md:pt-3xl md:pb-3xl grid grid-cols-1 lg:grid-cols-12 gap-xl items-center">
+            <div class="lg:col-span-6 space-y-lg">
+                <div class="inline-flex items-center gap-2 bg-canvas-sunk border border-line rounded-full px-3 py-1.5">
+                    <span class="w-1.5 h-1.5 rounded-full bg-signal"></span>
+                    <span class="eyebrow text-[11px] text-muted">Built for multi-campus operations</span>
+                </div>
+                <h1 class="font-display font-bold text-[40px] leading-[1.08] md:text-[56px] md:leading-[1.06] tracking-tight text-ink">
+                    Run every campus event on one system of record.
+                </h1>
+                <p class="text-lg leading-relaxed text-muted max-w-lg">
+                    CampusHive gives student unions, athletics departments, and administration a single platform to schedule venues, sell tickets, and report attendance — with no double-bookings and no spreadsheets.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-3 pt-2">
+                    <a href="/register">
+                        <button class="w-full sm:w-auto bg-action hover:bg-action-hover text-white font-semibold px-6 py-3 rounded-lg transition-colors">
+                            Get started free
+                        </button>
+                    </a>
+                    <a href="/home">
+                        <button class="w-full sm:w-auto border border-line-strong hover:border-ink text-ink font-semibold px-6 py-3 rounded-lg transition-colors">
+                            Browse live events
+                        </button>
+                    </a>
+                </div>
+                <div class="flex items-center gap-6 pt-4 text-sm text-muted-dim">
+                    <span class="flex items-center gap-1.5"><i class="fa-solid fa-shield-halved text-signal"></i> SOC 2 in progress</span>
+                    <span class="flex items-center gap-1.5"><i class="fa-solid fa-circle-check text-signal"></i> No credit card required</span>
+                </div>
+            </div>
+
+            <div class="lg:col-span-6 relative">
+                <div class="relative bg-canvas rounded-xl border border-line shadow-[0_20px_60px_-15px_rgba(11,21,38,0.18)] overflow-hidden">
+                    <div class="h-11 bg-canvas-sunk border-b border-line flex items-center justify-between px-4">
+                        <span class="eyebrow text-[10px] text-muted-dim">venue-schedule.chv</span>
+                        <div class="flex gap-1.5">
+                            <div class="w-2 h-2 rounded-full bg-line-strong"></div>
+                            <div class="w-2 h-2 rounded-full bg-line-strong"></div>
+                            <div class="w-2 h-2 rounded-full bg-signal"></div>
+                        </div>
+                    </div>
+                    <div class="p-5 space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="font-display font-semibold text-ink text-sm">Fall Career Fair</p>
+                                <p class="text-xs text-muted-dim mt-0.5">Grand Hall &middot; Oct 14</p>
+                            </div>
+                            <span class="eyebrow text-[10px] bg-signal-tint text-signal px-2 py-1 rounded">confirmed</span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-3">
+                            <div class="bg-canvas-sunk border border-line rounded-lg p-3">
+                                <p class="font-mono text-xl font-semibold text-ink">2,148</p>
+                                <p class="text-[11px] text-muted-dim mt-1">Tickets sold</p>
+                            </div>
+                            <div class="bg-canvas-sunk border border-line rounded-lg p-3">
+                                <p class="font-mono text-xl font-semibold text-ink">96%</p>
+                                <p class="text-[11px] text-muted-dim mt-1">Capacity</p>
+                            </div>
+                            <div class="bg-canvas-sunk border border-line rounded-lg p-3">
+                                <p class="font-mono text-xl font-semibold text-ink">7</p>
+                                <p class="text-[11px] text-muted-dim mt-1">Departments</p>
+                            </div>
+                        </div>
+                        <div class="bg-canvas-sunk border border-line rounded-lg p-4">
+                            <p class="text-[11px] text-muted-dim mb-3 eyebrow">Check-ins this hour</p>
+                            <div class="flex items-end gap-1.5 h-20">
+                                <div class="w-full bg-action/15 rounded-t-sm" style="height:35%"></div>
+                                <div class="w-full bg-action/25 rounded-t-sm" style="height:55%"></div>
+                                <div class="w-full bg-action/40 rounded-t-sm" style="height:40%"></div>
+                                <div class="w-full bg-action/60 rounded-t-sm" style="height:70%"></div>
+                                <div class="w-full bg-action rounded-t-sm" style="height:100%"></div>
+                                <div class="w-full bg-action/80 rounded-t-sm" style="height:85%"></div>
+                                <div class="w-full bg-action/50 rounded-t-sm" style="height:60%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="absolute -bottom-5 -left-5 bg-ink text-canvas rounded-lg px-4 py-3 shadow-xl hidden md:flex items-center gap-3 border border-ink-soft">
+                    <i class="fa-solid fa-qrcode text-signal text-lg"></i>
+                    <div>
+                        <p class="text-xs font-semibold">Gate scan verified</p>
+                        <p class="text-[11px] text-canvas/60 font-mono">0.4s response</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. How it works -->
+    <section class="py-2xl px-5 md:px-gutter bg-canvas-sunk border-b border-line">
+        <div class="max-w-container-max mx-auto">
+            <div class="mb-xl max-w-xl">
+                <span class="eyebrow text-[11px] text-action">Process</span>
+                <h2 class="font-display font-semibold text-3xl text-ink mt-2">Three steps from proposal to post-event report</h2>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-canvas border border-line rounded-xl p-6 relative">
+                    <span class="step-num text-4xl font-semibold text-line-strong">01</span>
+                    <h3 class="font-display font-semibold text-lg text-ink mt-4 mb-2">Reserve the venue</h3>
+                    <p class="text-sm text-muted leading-relaxed">Check real-time availability across every room and field on campus, then lock the booking before anyone else can double-book it.</p>
+                </div>
+                <div class="bg-canvas border border-line rounded-xl p-6 relative">
+                    <span class="step-num text-4xl font-semibold text-line-strong">02</span>
+                    <h3 class="font-display font-semibold text-lg text-ink mt-4 mb-2">Open registration</h3>
+                    <p class="text-sm text-muted leading-relaxed">Publish a ticket link with tiered pricing and student ID verification, and track sales as they come in.</p>
+                </div>
+                <div class="bg-canvas border border-line rounded-xl p-6 relative">
+                    <span class="step-num text-4xl font-semibold text-line-strong">03</span>
+                    <h3 class="font-display font-semibold text-lg text-ink mt-4 mb-2">Check in and report</h3>
+                    <p class="text-sm text-muted leading-relaxed">Scan attendees at the door, then export attendance, revenue, and engagement data straight to your department head.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. Features -->
+    <section class="py-2xl px-5 md:px-gutter border-b border-line">
+        <div class="max-w-container-max mx-auto">
+            <div class="mb-xl max-w-xl">
+                <span class="eyebrow text-[11px] text-action">Platform</span>
+                <h2 class="font-display font-semibold text-3xl text-ink mt-2">Built for the specific mess of campus logistics</h2>
+                <p class="text-muted mt-3">Not a generic ticketing tool — the parts that matter for a university with dozens of departments booking the same handful of rooms.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="border border-line rounded-xl p-6 hover:border-action/40 hover:shadow-[0_8px_24px_-8px_rgba(36,80,232,0.15)] transition-all">
+                    <div class="w-10 h-10 bg-action-tint rounded-lg flex items-center justify-center mb-4">
+                        <i class="fa-solid fa-ticket text-action"></i>
+                    </div>
+                    <h3 class="font-display font-semibold text-ink mb-2">Tiered ticketing</h3>
+                    <p class="text-sm text-muted leading-relaxed">Student, faculty, and public pricing tiers with automated ID checks and QR check-in at the door.</p>
+                </div>
+                <div class="border border-line rounded-xl p-6 hover:border-action/40 hover:shadow-[0_8px_24px_-8px_rgba(36,80,232,0.15)] transition-all">
+                    <div class="w-10 h-10 bg-action-tint rounded-lg flex items-center justify-center mb-4">
+                        <i class="fa-solid fa-building-columns text-action"></i>
+                    </div>
+                    <h3 class="font-display font-semibold text-ink mb-2">Shared venue calendar</h3>
+                    <p class="text-sm text-muted leading-relaxed">One calendar across every department stops two clubs from booking the same auditorium on the same night.</p>
+                </div>
+                <div class="border border-line rounded-xl p-6 hover:border-action/40 hover:shadow-[0_8px_24px_-8px_rgba(36,80,232,0.15)] transition-all">
+                    <div class="w-10 h-10 bg-action-tint rounded-lg flex items-center justify-center mb-4">
+                        <i class="fa-solid fa-chart-line text-action"></i>
+                    </div>
+                    <h3 class="font-display font-semibold text-ink mb-2">Attendance reporting</h3>
+                    <p class="text-sm text-muted leading-relaxed">Exportable, department-ready reports on turnout, revenue, and year-over-year engagement trends.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. Trusted institutions (multi-tenant signature element) -->
+    <section class="py-xl border-b border-line bg-canvas-sunk overflow-hidden">
+        <div class="max-w-container-max mx-auto px-5 md:px-gutter mb-6 flex items-center justify-between">
+            <p class="eyebrow text-[11px] text-muted-dim">Live on 100+ campuses</p>
+            <p class="text-xs text-muted-dim hidden sm:block">Each institution keeps its own branding, calendar, and admin roles</p>
+        </div>
+        <div class="crest-mask w-full overflow-hidden">
+            <div class="crest-track gap-3 pr-3">
+                <!-- crest chip x2 sets for seamless loop -->
+                <template id="crest-template"></template>
+                <div class="flex items-center gap-2.5 shrink-0 bg-canvas border border-line rounded-lg px-4 py-3">
+                    <div class="w-7 h-7 rounded bg-ink flex items-center justify-center text-canvas text-[10px] font-mono font-semibold">SU</div>
+                    <span class="font-display font-medium text-sm text-ink whitespace-nowrap">State University</span>
+                </div>
+                <div class="flex items-center gap-2.5 shrink-0 bg-canvas border border-line rounded-lg px-4 py-3">
+                    <div class="w-7 h-7 rounded bg-amber flex items-center justify-center text-canvas text-[10px] font-mono font-semibold">RC</div>
+                    <span class="font-display font-medium text-sm text-ink whitespace-nowrap">Riverside College</span>
+                </div>
+                <div class="flex items-center gap-2.5 shrink-0 bg-canvas border border-line rounded-lg px-4 py-3">
+                    <div class="w-7 h-7 rounded bg-signal flex items-center justify-center text-canvas text-[10px] font-mono font-semibold">CI</div>
+                    <span class="font-display font-medium text-sm text-ink whitespace-nowrap">Crestmont Institute</span>
+                </div>
+                <div class="flex items-center gap-2.5 shrink-0 bg-canvas border border-line rounded-lg px-4 py-3">
+                    <div class="w-7 h-7 rounded bg-action flex items-center justify-center text-canvas text-[10px] font-mono font-semibold">HU</div>
+                    <span class="font-display font-medium text-sm text-ink whitespace-nowrap">Harborview University</span>
+                </div>
+                <div class="flex items-center gap-2.5 shrink-0 bg-canvas border border-line rounded-lg px-4 py-3">
+                    <div class="w-7 h-7 rounded bg-ink-soft flex items-center justify-center text-canvas text-[10px] font-mono font-semibold">AP</div>
+                    <span class="font-display font-medium text-sm text-ink whitespace-nowrap">Ashbridge Polytechnic</span>
+                </div>
+                <div class="flex items-center gap-2.5 shrink-0 bg-canvas border border-line rounded-lg px-4 py-3">
+                    <div class="w-7 h-7 rounded bg-amber flex items-center justify-center text-canvas text-[10px] font-mono font-semibold">NC</div>
+                    <span class="font-display font-medium text-sm text-ink whitespace-nowrap">Northfield College</span>
+                </div>
+                <div class="flex items-center gap-2.5 shrink-0 bg-canvas border border-line rounded-lg px-4 py-3">
+                    <div class="w-7 h-7 rounded bg-signal flex items-center justify-center text-canvas text-[10px] font-mono font-semibold">BU</div>
+                    <span class="font-display font-medium text-sm text-ink whitespace-nowrap">Brightwell University</span>
+                </div>
+                <div class="flex items-center gap-2.5 shrink-0 bg-canvas border border-line rounded-lg px-4 py-3">
+                    <div class="w-7 h-7 rounded bg-ink flex items-center justify-center text-canvas text-[10px] font-mono font-semibold">MG</div>
+                    <span class="font-display font-medium text-sm text-ink whitespace-nowrap">Maple Grove State</span>
+                </div>
+                <!-- duplicate set -->
+                <div class="flex items-center gap-2.5 shrink-0 bg-canvas border border-line rounded-lg px-4 py-3">
+                    <div class="w-7 h-7 rounded bg-ink flex items-center justify-center text-canvas text-[10px] font-mono font-semibold">SU</div>
+                    <span class="font-display font-medium text-sm text-ink whitespace-nowrap">State University</span>
+                </div>
+                <div class="flex items-center gap-2.5 shrink-0 bg-canvas border border-line rounded-lg px-4 py-3">
+                    <div class="w-7 h-7 rounded bg-amber flex items-center justify-center text-canvas text-[10px] font-mono font-semibold">RC</div>
+                    <span class="font-display font-medium text-sm text-ink whitespace-nowrap">Riverside College</span>
+                </div>
+                <div class="flex items-center gap-2.5 shrink-0 bg-canvas border border-line rounded-lg px-4 py-3">
+                    <div class="w-7 h-7 rounded bg-signal flex items-center justify-center text-canvas text-[10px] font-mono font-semibold">CI</div>
+                    <span class="font-display font-medium text-sm text-ink whitespace-nowrap">Crestmont Institute</span>
+                </div>
+                <div class="flex items-center gap-2.5 shrink-0 bg-canvas border border-line rounded-lg px-4 py-3">
+                    <div class="w-7 h-7 rounded bg-action flex items-center justify-center text-canvas text-[10px] font-mono font-semibold">HU</div>
+                    <span class="font-display font-medium text-sm text-ink whitespace-nowrap">Harborview University</span>
+                </div>
+                <div class="flex items-center gap-2.5 shrink-0 bg-canvas border border-line rounded-lg px-4 py-3">
+                    <div class="w-7 h-7 rounded bg-ink-soft flex items-center justify-center text-canvas text-[10px] font-mono font-semibold">AP</div>
+                    <span class="font-display font-medium text-sm text-ink whitespace-nowrap">Ashbridge Polytechnic</span>
+                </div>
+                <div class="flex items-center gap-2.5 shrink-0 bg-canvas border border-line rounded-lg px-4 py-3">
+                    <div class="w-7 h-7 rounded bg-amber flex items-center justify-center text-canvas text-[10px] font-mono font-semibold">NC</div>
+                    <span class="font-display font-medium text-sm text-ink whitespace-nowrap">Northfield College</span>
+                </div>
+                <div class="flex items-center gap-2.5 shrink-0 bg-canvas border border-line rounded-lg px-4 py-3">
+                    <div class="w-7 h-7 rounded bg-signal flex items-center justify-center text-canvas text-[10px] font-mono font-semibold">BU</div>
+                    <span class="font-display font-medium text-sm text-ink whitespace-nowrap">Brightwell University</span>
+                </div>
+                <div class="flex items-center gap-2.5 shrink-0 bg-canvas border border-line rounded-lg px-4 py-3">
+                    <div class="w-7 h-7 rounded bg-ink flex items-center justify-center text-canvas text-[10px] font-mono font-semibold">MG</div>
+                    <span class="font-display font-medium text-sm text-ink whitespace-nowrap">Maple Grove State</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 6. Stats -->
+    <section class="py-2xl px-5 md:px-gutter border-b border-line">
+        <div class="max-w-container-max mx-auto bg-ink rounded-xl p-8 md:p-12 relative overflow-hidden">
+            <div class="absolute inset-0 grid-fade opacity-10 pointer-events-none"></div>
+            <div class="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+                <div class="md:col-span-5">
+                    <span class="eyebrow text-[11px] text-signal">Scale</span>
+                    <h2 class="font-display font-semibold text-2xl md:text-3xl text-canvas mt-2 leading-snug">
+                        Trusted by 100+ colleges to run the events that fill their calendars.
+                    </h2>
+                </div>
+                <div class="md:col-span-7 grid grid-cols-3 gap-6">
+                    <div>
+                        <p class="font-mono text-3xl md:text-4xl font-semibold text-canvas">500k+</p>
+                        <p class="text-xs text-canvas/50 mt-1.5 eyebrow">Annual bookings</p>
+                    </div>
+                    <div>
+                        <p class="font-mono text-3xl md:text-4xl font-semibold text-canvas">99.9%</p>
+                        <p class="text-xs text-canvas/50 mt-1.5 eyebrow">Platform uptime</p>
+                    </div>
+                    <div>
+                        <p class="font-mono text-3xl md:text-4xl font-semibold text-canvas">100+</p>
+                        <p class="text-xs text-canvas/50 mt-1.5 eyebrow">Campuses</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 7. FAQ -->
+    <section class="py-2xl px-5 md:px-gutter">
+        <div class="max-w-3xl mx-auto">
+            <div class="mb-xl">
+                <span class="eyebrow text-[11px] text-action">Questions</span>
+                <h2 class="font-display font-semibold text-3xl text-ink mt-2">Frequently asked</h2>
+            </div>
+            <div class="space-y-3">
+                <details class="faq-accordion group border border-line rounded-lg overflow-hidden" open>
+                    <summary class="flex justify-between items-center gap-4 p-5 cursor-pointer list-none hover:bg-canvas-sunk transition-colors">
+                        <span class="font-display font-semibold text-ink">How do I create an event?</span>
+                        <i class="fa-solid fa-plus faq-icon text-muted-dim shrink-0"></i>
+                    </summary>
+                    <div class="px-5 pb-5 text-sm text-muted leading-relaxed">
+                        Go to your dashboard and select "Create event." The setup wizard walks you through venue selection, ticket tiers, and promotional assets in a few minutes — no manual configuration required.
+                    </div>
+                </details>
+                <details class="faq-accordion group border border-line rounded-lg overflow-hidden">
+                    <summary class="flex justify-between items-center gap-4 p-5 cursor-pointer list-none hover:bg-canvas-sunk transition-colors">
+                        <span class="font-display font-semibold text-ink">Can we track ticket sales in real time?</span>
+                        <i class="fa-solid fa-plus faq-icon text-muted-dim shrink-0"></i>
+                    </summary>
+                    <div class="px-5 pb-5 text-sm text-muted leading-relaxed">
+                        Yes. The live dashboard shows conversion rate, remaining capacity, and discount code usage as sales happen, with exportable financial reports for your department.
+                    </div>
+                </details>
+                <details class="faq-accordion group border border-line rounded-lg overflow-hidden">
+                    <summary class="flex justify-between items-center gap-4 p-5 cursor-pointer list-none hover:bg-canvas-sunk transition-colors">
+                        <span class="font-display font-semibold text-ink">Is support available for student attendees?</span>
+                        <i class="fa-solid fa-plus faq-icon text-muted-dim shrink-0"></i>
+                    </summary>
+                    <div class="px-5 pb-5 text-sm text-muted leading-relaxed">
+                        Support is available around the clock for both administrators and attendees — from a lost ticket to a setup question, the campus success team responds directly.
+                    </div>
+                </details>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<!-- 8. Footer -->
+<footer class="w-full bg-canvas-sunk border-t border-line">
+    <div class="flex flex-col md:flex-row justify-between items-start py-xl px-5 md:px-gutter max-w-container-max mx-auto gap-xl">
+        <div class="flex flex-col items-start gap-3 max-w-xs">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-md bg-ink flex items-center justify-center shrink-0">
+                    <span class="text-canvas font-display font-bold text-sm">CH</span>
+                </div>
+                <span class="font-display font-bold text-lg tracking-tight text-ink">CampusHive</span>
+            </div>
+            <p class="text-sm text-muted-dim">Event infrastructure for university campuses, worldwide.</p>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-10 text-left w-full md:w-auto">
+            <div class="flex flex-col gap-3">
+                <span class="eyebrow text-[11px] text-ink">Company</span>
+                <a class="text-muted hover:text-action text-sm transition-colors" href="/about-us">About us</a>
+                <a class="text-muted hover:text-action text-sm transition-colors" href="#">Careers</a>
+                <a class="text-muted hover:text-action text-sm transition-colors" href="/contact">Support</a>
+            </div>
+            <div class="flex flex-col gap-3">
+                <span class="eyebrow text-[11px] text-ink">Platform</span>
+                <a class="text-muted hover:text-action text-sm transition-colors" href="#">Services</a>
+                <a class="text-muted hover:text-action text-sm transition-colors" href="/">Events</a>
+                <a class="text-muted hover:text-action text-sm transition-colors" href="#">Institutions</a>
+            </div>
+            <div class="flex flex-col gap-3">
+                <span class="eyebrow text-[11px] text-ink">Legal</span>
+                <a class="text-muted hover:text-action text-sm transition-colors" href="#">Privacy policy</a>
+                <a class="text-muted hover:text-action text-sm transition-colors" href="#">Terms of service</a>
+            </div>
+        </div>
+        <div class="flex gap-2.5">
+            <a aria-label="Github" class="w-9 h-9 rounded-full bg-canvas border border-line flex items-center justify-center text-muted hover:text-action hover:border-action/40 transition-all" href="https://github.com/Anuj-code-AI" target="_blank" rel="noopener noreferrer">
+                <i class="fa-brands fa-github"></i>
+            </a>
+            <a aria-label="LinkedIn" class="w-9 h-9 rounded-full bg-canvas border border-line flex items-center justify-center text-muted hover:text-action hover:border-action/40 transition-all" href="https://www.linkedin.com/in/anujchourasiya" target="_blank" rel="noopener noreferrer">
+                <i class="fa-brands fa-linkedin"></i>
+            </a>
+            <a aria-label="Instagram" class="w-9 h-9 rounded-full bg-canvas border border-line flex items-center justify-center text-muted hover:text-action hover:border-action/40 transition-all" href="https://www.instagram.com/anuj_chourasiya8/" target="_blank" rel="noopener noreferrer">
+                <i class="fa-brands fa-instagram"></i>
+            </a>
+        </div>
+    </div>
+    <div class="max-w-container-max mx-auto px-5 md:px-gutter py-4 border-t border-line text-left">
+        <p class="text-xs text-muted-dim">© 2026 CampusHive. Built for the next generation of campus leaders.</p>
+    </div>
+</footer>
+
+<script>
+    document.querySelectorAll('details').forEach((el) => {
+        el.addEventListener('toggle', () => {
+            if (el.open) {
+                document.querySelectorAll('details').forEach((other) => {
+                    if (other !== el) other.removeAttribute('open');
+                });
+            }
+        });
+    });
+    window.addEventListener('scroll', () => {
+        const header = document.getElementById('site-header');
+        if (window.scrollY > 20) {
+            header.classList.add('shadow-[0_1px_0_0_rgba(11,21,38,0.06)]');
+        } else {
+            header.classList.remove('shadow-[0_1px_0_0_rgba(11,21,38,0.06)]');
+        }
+    });
+</script>
+</body>
+
+</html>

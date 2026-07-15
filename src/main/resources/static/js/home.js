@@ -1,228 +1,115 @@
-// home.js — wired to the real backend.
-// GET /api/v1/event/getGlobalEvents?page=N&size=10 returns a Spring Page<EventSummaryResponse>
-// wrapped in ApiResponse: { success, message, data: { content, number, totalPages, last, ... }, timestamp }
-
-const EVENTS_API_BASE = "/api/v1/event";
+const EVENTS_API = "/api/v1/events/public-events";
+const FORMS_API = "/api/v1/custom-forms/public-forms";
 const PAGE_SIZE = 9;
 
-let currentPage = 0;
-let isLastPage = false;
-let isLoading = false;
+const feeds = {
+    events: { page: 0, last: false, loading: false, endpoint: EVENTS_API },
+    forms: { page: 0, last: false, loading: false, endpoint: FORMS_API },
+};
+let searchQuery = "";
+let searchTimer;
 
 function authHeaders() {
     const token = localStorage.getItem("accessToken");
     return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-/**
- * Fetches one page of global events from the real API.
- * Returns the Spring Page object (content, number, totalPages, last, ...) or throws.
- */
-async function fetchEventsPage(page, size, query = "") {
-    const queryParam = query ? `&query=${encodeURIComponent(query)}` : "";
-    const response = await fetch(
-        `${EVENTS_API_BASE}/global?page=${page}&size=${size}${queryParam}`,
-        { credentials: "include", headers: authHeaders() }
-    );
+function escapeHtml(value) {
+    const element = document.createElement("div");
+    element.textContent = value == null ? "" : String(value);
+    return element.innerHTML;
+}
 
-    if (!response.ok) {
-        throw new Error(`Failed to load events (${response.status})`);
-    }
+function dateLabel(value, prefix) {
+    if (!value) return `${prefix} TBA`;
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return `${prefix} TBA`;
+    return `${prefix} ${date.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}`;
+}
 
+function priceLabel(value) {
+    if (value === null || value === undefined || Number(value) === 0) return "Free";
+    return `$${Number(value).toFixed(2).replace(/\.00$/, "")}`;
+}
+
+async function fetchPage(feedName, page) {
+    const feed = feeds[feedName];
+    const params = new URLSearchParams({ page, size: PAGE_SIZE });
+    if (searchQuery) params.set("query", searchQuery);
+    const response = await fetch(`${feed.endpoint}?${params}`, { credentials: "include", headers: authHeaders() });
+    if (!response.ok) throw new Error(`Request failed (${response.status})`);
     const body = await response.json();
-    let pageData = body.data || { content: [] };
-
-    // Fetch and merge public approved custom forms on page 0
-    if (page === 0) {
-        try {
-            const formsRes = await fetch("/api/v1/custom-forms/public");
-            const formsBody = await formsRes.json();
-            if (formsRes.ok && formsBody.success && formsBody.data) {
-                const customForms = formsBody.data;
-                customForms.forEach(f => {
-                    f.isCustomForm = true;
-                    f.eventId = f.id; // Map key ID
-                    f.eventStatus = "APPROVED";
-                });
-                pageData.content = [...customForms, ...(pageData.content || [])];
-            }
-        } catch (e) {
-            console.error("Error loading public custom forms:", e);
-        }
-    }
-
-    return pageData;
+    return body.data || { content: [], last: true, number: page };
 }
 
-/** Formats an ISO date string (lastRegistrationDate) into a short, readable label. */
-function formatRegistrationDeadline(isoDate) {
-    if (!isoDate) return "Registration date TBA";
-    try {
-        const date = new Date(isoDate);
-        const formatted = date.toLocaleDateString(undefined, {
-            weekday: "short",
-            month: "short",
-            day: "numeric",
-        });
-        return `Register by ${formatted}`;
-    } catch {
-        return "Registration date TBA";
-    }
+function imageStyle(url) {
+    return url ? `style="background-image:url('${escapeHtml(url).replace(/'/g, "%27")}')"` : "";
 }
 
-function formatPrice(ticketPrice) {
-    if (ticketPrice === null || ticketPrice === undefined || ticketPrice === 0) return "Free";
-    return `$${ticketPrice.toFixed(2).replace(/\.00$/, "")}`;
-}
-
-function eventCardHtml(ev) {
-    if (ev.isCustomForm) {
-        const bannerStyle = ev.bannerUrl
-            ? `background-image: url('${ev.bannerUrl}')`
-            : "background-color: #171f1c";
-
-        return `
-        <article class="bg-surface-container border border-outline-variant rounded-xl overflow-hidden hover:border-primary/50 transition-colors group">
-            <a href="/formDetails?formId=${ev.id}" class="block h-40 event-card-img relative" style="${bannerStyle}">
-                <span class="absolute top-sm left-sm bg-purple-500/20 text-purple-300 border border-purple-500/30 text-label-md px-sm py-xs rounded-full">
-                    Custom Form
-                </span>
-                <span class="absolute top-sm right-sm bg-primary/10 text-primary border border-primary/30 text-label-md px-sm py-xs rounded-full font-semibold uppercase">
-                    ACTIVE
-                </span>
-            </a>
-            <div class="p-md space-y-sm">
-                <a href="/formDetails?formId=${ev.id}">
-                    <h3 class="text-title-lg font-semibold text-on-surface group-hover:text-primary transition-colors line-clamp-1">${ev.title}</h3>
-                </a>
-                <p class="text-body-sm text-on-surface-variant line-clamp-2">${ev.description || "No description provided."}</p>
-                <div class="flex items-center justify-between pt-sm">
-                    <span class="text-on-surface font-bold text-body-sm">Free Questionnaire</span>
-                    <span class="text-label-md text-purple-400 font-semibold uppercase">By ${ev.username || "Hive Host"}</span>
-                </div>
-            </div>
-        </article>`;
-    }
-
-    const bannerStyle = ev.bannerUrl
-        ? `background-image: url('${ev.bannerUrl}')`
-        : "background-color: #171f1c";
-
-    return `
-    <article class="bg-surface-container border border-outline-variant rounded-xl overflow-hidden hover:border-primary/50 transition-colors group">
-        <a href="/eventDetails/${ev.eventId}" class="block h-40 event-card-img relative" style="${bannerStyle}">
-            ${ev.logoUrl ? `<span class="absolute top-sm left-sm bg-background/80 backdrop-blur-sm p-0.5 rounded-full border border-outline-variant/30 flex items-center justify-center w-8 h-8"><img src="${ev.logoUrl}" alt="University Logo" class="w-full h-full object-contain rounded-full" /></span>` : ""}
-            ${ev.category ? `<span class="absolute top-sm right-sm bg-background/80 backdrop-blur-sm text-on-background text-label-md px-sm py-xs rounded-full">${ev.category}</span>` : ""}
+function eventCard(event) {
+    const id = encodeURIComponent(event.eventId);
+    return `<article class="group overflow-hidden border border-line bg-canvas transition hover:border-action/50 hover:shadow-[0_10px_28px_-18px_rgba(11,21,38,.38)]">
+        <a href="/eventDetails/${id}" class="event-image relative block h-36" ${imageStyle(event.bannerUrl)}>
+            <span class="absolute left-3 top-3 rounded bg-canvas/95 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-ink">${escapeHtml(event.category || "Event")}</span>
         </a>
-        <div class="p-md space-y-sm">
-            <a href="/eventDetails/${ev.eventId}">
-                <h3 class="text-title-lg font-semibold text-on-surface group-hover:text-primary transition-colors">${ev.title}</h3>
-            </a>
-            <div class="flex items-center gap-xs text-on-surface-variant text-body-sm">
-                <span class="material-symbols-outlined text-[18px]">schedule</span>
-                ${formatRegistrationDeadline(ev.lastRegistrationDate)}
-            </div>
-            <div class="flex items-center gap-xs text-on-surface-variant text-body-sm">
-                <span class="material-symbols-outlined text-[18px]">location_on</span>
-                ${ev.location || "Location TBA"}
-            </div>
-            <div class="flex items-center justify-between pt-sm">
-                <span class="text-on-surface font-bold">${formatPrice(ev.ticketPrice)}</span>
-                <span class="text-label-md text-on-surface-variant uppercase">${ev.eventStatus || ""}</span>
-            </div>
-        </div>
-    </article>`;
+        <div class="p-4"><a href="/eventDetails/${id}" class="font-display text-base font-semibold text-ink group-hover:text-action">${escapeHtml(event.title || "Untitled event")}</a>
+            <div class="mt-3 space-y-1.5 text-sm text-muted"><p><i class="fa-regular fa-calendar mr-2 w-3 text-muted-dim"></i>${escapeHtml(dateLabel(event.lastRegistrationDate, "Register by"))}</p><p><i class="fa-solid fa-location-dot mr-2 w-3 text-muted-dim"></i>${escapeHtml(event.location || "Location TBA")}</p></div>
+            <div class="mt-4 flex items-center justify-between border-t border-line pt-3"><span class="font-mono text-xs font-semibold text-ink">${escapeHtml(priceLabel(event.ticketPrice))}</span><span class="text-[11px] font-medium text-signal">${escapeHtml(event.eventStatus || "OPEN")}</span></div></div></article>`;
 }
 
-function setLoadMoreVisible(visible, label) {
-    const btn = document.getElementById("load-more-btn");
-    if (!btn) return;
-    if (visible) {
-        btn.classList.remove("hidden");
-        btn.disabled = false;
-        btn.textContent = label || "Load More";
-    } else {
-        btn.classList.add("hidden");
-    }
+function formCard(form) {
+    const id = encodeURIComponent(form.id);
+    return `<article class="group overflow-hidden border border-line bg-canvas transition hover:border-signal/60 hover:shadow-[0_10px_28px_-18px_rgba(11,21,38,.38)]">
+        <a href="/formDetails?formId=${id}" class="event-image relative block h-36" ${imageStyle(form.bannerUrl)}><span class="absolute left-3 top-3 rounded bg-signal-tint px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-signal">Registration</span></a>
+        <div class="p-4"><a href="/formDetails?formId=${id}" class="font-display text-base font-semibold text-ink group-hover:text-signal">${escapeHtml(form.title || "Untitled form")}</a>
+            <p class="mt-3 text-sm text-muted"><i class="fa-regular fa-clock mr-2 w-3 text-muted-dim"></i>${escapeHtml(dateLabel(form.registrationDeadLine, "Closes"))}</p>
+            <div class="mt-4 flex items-center justify-between border-t border-line pt-3"><span class="font-mono text-xs font-semibold text-ink">Open form</span><span class="text-[11px] font-medium text-signal">${escapeHtml(form.status || "ACTIVE")}</span></div></div></article>`;
 }
 
-let searchQuery = "";
+function updateButton(feedName, label) {
+    const feed = feeds[feedName];
+    const button = document.getElementById(`load-more-${feedName}-btn`);
+    if (!button) return;
+    button.classList.toggle("hidden", feed.last && !feed.loading);
+    button.disabled = feed.loading;
+    button.textContent = feed.loading ? "Loading..." : label;
+}
 
-async function loadEventsPage(page, isNewSearch = false) {
-    const container = document.getElementById("event-cards");
-    const emptyMsg = document.getElementById("events-empty-msg");
-    const errorMsg = document.getElementById("events-error-msg");
-    if (!container) return;
-
-    isLoading = true;
-    if (errorMsg) errorMsg.classList.add("hidden");
-    if (emptyMsg) emptyMsg.classList.add("hidden");
-    setLoadMoreVisible(true, "Loading...");
-    document.getElementById("load-more-btn")?.setAttribute("disabled", "true");
-
+async function loadFeed(feedName, reset = false) {
+    const feed = feeds[feedName];
+    if (feed.loading) return;
+    if (reset) { feed.page = 0; feed.last = false; }
+    if (feed.last && !reset) return;
+    const container = document.getElementById(`${feedName === "events" ? "event" : "form"}-cards`);
+    const empty = document.getElementById(`${feedName}-empty-msg`);
+    const error = document.getElementById(`${feedName}-error-msg`);
+    const count = document.getElementById(`${feedName}-count`);
+    feed.loading = true; error.classList.add("hidden"); updateButton(feedName, `Load more ${feedName}`);
     try {
-        const pageData = await fetchEventsPage(page, PAGE_SIZE, searchQuery);
-        const events = pageData.content || [];
-
-        if (page === 0 || isNewSearch) {
-            container.innerHTML = "";
-        }
-
-        if (events.length === 0 && (page === 0 || isNewSearch)) {
-            if (emptyMsg) emptyMsg.classList.remove("hidden");
-        } else {
-            container.insertAdjacentHTML("beforeend", events.map(eventCardHtml).join(""));
-        }
-
-        currentPage = Number.isInteger(pageData.number) ? pageData.number : page;
-        isLastPage = pageData.last === true;
-        setLoadMoreVisible(!isLastPage, "Load More");
-    } catch (err) {
-        if (errorMsg) {
-            errorMsg.textContent = "Couldn't load events. " + (err.message || "");
-            errorMsg.classList.remove("hidden");
-        }
-        setLoadMoreVisible(page > 0, "Retry"); // allow retry if it wasn't the first load
-    } finally {
-        isLoading = false;
-    }
+        const data = await fetchPage(feedName, feed.page);
+        const items = data.content || [];
+        if (reset) container.innerHTML = "";
+        container.insertAdjacentHTML("beforeend", items.map(feedName === "events" ? eventCard : formCard).join(""));
+        empty.classList.toggle("hidden", container.children.length !== 0);
+        feed.page = Number.isInteger(data.number) ? data.number + 1 : feed.page + 1;
+        feed.last = data.last === true;
+        if (count && typeof data.totalElements === "number") count.textContent = `${data.totalElements} available`;
+        if (feedName === "events" && reset) renderFeatured(items[0]);
+    } catch (errorValue) {
+        error.textContent = `Couldn't load ${feedName}. ${errorValue.message || "Please try again."}`;
+        error.classList.remove("hidden");
+    } finally { feed.loading = false; updateButton(feedName, `Load more ${feedName}`); }
 }
 
-// Global search bar listener
-const searchInput = document.getElementById("eventSearch");
-let debounceTimer;
-
-if (searchInput) {
-    searchInput.addEventListener("input", () => {
-        clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(() => {
-            searchQuery = searchInput.value.trim();
-            currentPage = 0;
-            loadEventsPage(0, true);
-        }, 400);
-    });
+function renderFeatured(event) {
+    const target = document.getElementById("featured-event");
+    if (!event) { target.innerHTML = `<p class="eyebrow text-[10px] text-muted">Featured event</p><p class="mt-3 text-sm text-muted">New events will appear here as they are published.</p>`; return; }
+    target.innerHTML = `<p class="eyebrow text-[10px] text-action">Featured event</p><h2 class="mt-2 font-display text-lg font-semibold text-ink">${escapeHtml(event.title || "Untitled event")}</h2><p class="mt-2 text-sm text-muted">${escapeHtml(event.location || "Location TBA")} &middot; ${escapeHtml(dateLabel(event.lastRegistrationDate, "Register by"))}</p><a class="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-action hover:text-action-hover" href="/eventDetails/${encodeURIComponent(event.eventId)}">View details <i class="fa-solid fa-arrow-right text-xs"></i></a>`;
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-    loadEventsPage(0);
-
-    const loadMoreBtn = document.getElementById("load-more-btn");
-    if (loadMoreBtn) {
-        loadMoreBtn.addEventListener("click", () => {
-            if (isLoading || isLastPage) return;
-            loadEventsPage(currentPage + 1);
-        });
-    }
+    loadFeed("events", true); loadFeed("forms", true);
+    document.getElementById("load-more-events-btn")?.addEventListener("click", () => loadFeed("events"));
+    document.getElementById("load-more-forms-btn")?.addEventListener("click", () => loadFeed("forms"));
+    document.getElementById("eventSearch")?.addEventListener("input", (event) => { clearTimeout(searchTimer); searchTimer = setTimeout(() => { searchQuery = event.target.value.trim(); loadFeed("events", true); loadFeed("forms", true); }, 350); });
 });
-
-// ---------------------------------------------------------------------
-// Exposed for other scripts on this page (currently: the hero slideshow
-// in home.html) so nobody has to duplicate the fetch URL, the auth header
-// logic, or the formatting rules. If you add more consumers, extend this
-// object instead of re-implementing fetchEventsPage elsewhere.
-// ---------------------------------------------------------------------
-window.CampusHiveEvents = {
-    fetchEventsPage,
-    formatRegistrationDeadline,
-    formatPrice,
-};

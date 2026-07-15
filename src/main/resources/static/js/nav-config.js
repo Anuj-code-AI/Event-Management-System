@@ -1,6 +1,7 @@
 // nav-config.js — maps a user's role + host status to sidebar navigation items.
-// Wired to real endpoints: GET /api/v1/users/me and GET /api/v1/users/roleOfMe
-const API_USERS_BASE = "/api/v1/users";
+// Current-user endpoints: GET /api/v1/user and GET /api/v1/user/roleOfMe
+const API_USER_BASE = "/api/v1/user";
+let tokenRestorePromise = null;
 
 const SYSTEM_ROLE = {
     SUPER_ADMIN: "SUPER_ADMIN",
@@ -22,15 +23,23 @@ const HOST_STATUS = {
  */
 async function getCurrentUser() {
     let token = localStorage.getItem("accessToken");
+
+    // An HTTP-only refresh cookie can outlive the access token. Restore the
+    // short-lived token before treating a visitor as signed out.
+    if (!token && typeof refreshAccessToken === "function") {
+        tokenRestorePromise ||= refreshAccessToken().catch(() => null);
+        const refreshData = await tokenRestorePromise;
+        token = refreshData?.accessToken || null;
+    }
     if (!token) return null;
 
     async function makeRequests(tok) {
         return Promise.all([
-            fetch(`${API_USERS_BASE}/me`, {
+            fetch(API_USER_BASE, {
                 credentials: "include",
                 headers: { Authorization: `Bearer ${tok}` },
             }),
-            fetch(`${API_USERS_BASE}/roleOfMe`, {
+            fetch(`${API_USER_BASE}/roleOfMe`, {
                 credentials: "include",
                 headers: { Authorization: `Bearer ${tok}` },
             }),
@@ -65,7 +74,7 @@ async function getCurrentUser() {
                 "| roleOfMe ->", roleRes.status, roleRes.statusText
             );
             try {
-                console.warn("[nav-config] /me body:", await meRes.clone().text());
+                console.warn("[nav-config] /user body:", await meRes.clone().text());
                 console.warn("[nav-config] /roleOfMe body:", await roleRes.clone().text());
             } catch {
                 // ignore secondary failures reading the body for logging purposes
@@ -77,6 +86,8 @@ async function getCurrentUser() {
         const roleBody = await roleRes.json();
 
         // Both endpoints wrap their payload in ApiResponse: { success, message, data, timestamp }
+        if (!meBody.success || !roleBody.success) return null;
+
         const me = meBody.data;
         const role = roleBody.data;
 
@@ -109,7 +120,7 @@ function buildNavItems(user) {
         { label: "Home", icon: "home", href: "/home" },
         { label: "Campus Events", icon: "explore", href: "/campus-events" },
         { label: "My Tickets", icon: "confirmation_number", href: "/tickets" },
-        { label: "My Events", icon: "event_available", href: "/myEvents" },
+        { label: "My Events", icon: "event_available", href: "/my-events" },
         { label: "About Us", icon: "info", href: "/aboutUs" },
     ];
 

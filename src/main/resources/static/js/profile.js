@@ -1,6 +1,6 @@
 // profile.js — manages profile display, updates, and host applications
 
-const API_USERS = "/api/v1/users";
+const API_USER = "/api/v1/user";
 
 // State
 let currentUser = null;
@@ -98,13 +98,13 @@ async function loadUserProfile() {
 
     try {
         // Fetch fresh User details
-        const meRes = await fetch(`${API_USERS}/me`, {
+        const meRes = await fetch(API_USER, {
             headers: { Authorization: `Bearer ${token}` }
         });
         const meBody = await meRes.json();
 
         // Fetch fresh Role details
-        const roleRes = await fetch(`${API_USERS}/roleOfMe`, {
+        const roleRes = await fetch(`${API_USER}/roleOfMe`, {
             headers: { Authorization: `Bearer ${token}` }
         });
         const roleBody = await roleRes.json();
@@ -251,7 +251,7 @@ async function handleProfileUpdate(e) {
     }
 
     try {
-        const res = await fetch(`${API_USERS}/me`, {
+        const res = await fetch(API_USER, {
             method: "PATCH",
             headers: {
                 "Content-Type": "application/json",
@@ -314,7 +314,7 @@ async function handleHostApply(e) {
     applyBtn.classList.add("opacity-60", "cursor-not-allowed");
 
     try {
-        const res = await fetch(`${API_USERS}/host/apply`, {
+        const res = await fetch(`${API_USER}/host/apply`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -348,7 +348,7 @@ async function handleDeactivateAccount() {
     showAlert("success", "Processing account deactivation...");
 
     try {
-        const res = await fetch(`${API_USERS}/me`, {
+        const res = await fetch(API_USER, {
             method: "DELETE",
             headers: { Authorization: `Bearer ${token}` }
         });

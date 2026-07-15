@@ -1,540 +1,124 @@
 <!DOCTYPE html>
-<html class="dark" lang="en">
-
+<html lang="en">
 <head>
     <meta charset="utf-8" />
-    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Home | CampusHive</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-    <link
-            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
-            rel="stylesheet" />
-    <script id="tailwind-config">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <script>
         tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    "colors": {
-                        "on-error-container": "#ffdad6",
-                        "error": "#ffb4ab",
-                        "surface-container": "#171f1c",
-                        "error-container": "#93000a",
-                        "surface-container-low": "#131a17",
-                        "surface-bright": "#313d36",
-                        "secondary": "#7fc9a0",
-                        "on-secondary": "#08311c",
-                        "primary-fixed-dim": "#4edea3",
-                        "outline-variant": "#33453c",
-                        "surface-tint": "#4edea3",
-                        "on-tertiary-fixed-variant": "#0b513d",
-                        "on-tertiary-container": "#004231",
-                        "background": "#0a1310",
-                        "on-secondary-container": "#c2ecd4",
-                        "tertiary": "#95d3ba",
-                        "primary": "#4edea3",
-                        "surface-container-high": "#212a26",
-                        "outline": "#86948a",
-                        "secondary-fixed": "#c2ecd4",
-                        "on-primary-container": "#00422b",
-                        "inverse-primary": "#006c49",
-                        "tertiary-container": "#1f5b41",
-                        "surface-container-highest": "#2c3631",
-                        "on-tertiary": "#003829",
-                        "surface-container-lowest": "#05100c",
-                        "tertiary-fixed-dim": "#95d3ba",
-                        "surface-dim": "#0a1310",
-                        "on-secondary-fixed-variant": "#1d5235",
-                        "inverse-on-surface": "#22302a",
-                        "on-secondary-fixed": "#03210f",
-                        "inverse-surface": "#dcebe0",
-                        "secondary-container": "#1d5235",
-                        "surface": "#0a1310",
-                        "on-primary": "#003824",
-                        "on-error": "#690005",
-                        "on-surface": "#dcebe0",
-                        "primary-fixed": "#6ffbbe",
-                        "on-surface-variant": "#bbcabf",
-                        "secondary-fixed-dim": "#7fc9a0",
-                        "on-primary-fixed": "#002113",
-                        "on-tertiary-fixed": "#002117",
-                        "primary-container": "#10b981",
-                        "tertiary-fixed": "#b0f0d6",
-                        "on-background": "#dcebe0"
-                    },
-                    "borderRadius": {
-                        "DEFAULT": "0.5rem",
-                        "lg": "0.5rem",
-                        "xl": "0.75rem",
-                        "full": "9999px"
-                    },
-                    "spacing": {
-                        "gutter": "24px",
-                        "xl": "40px",
-                        "2xl": "64px",
-                        "container-max": "1280px",
-                        "xs": "4px",
-                        "sm": "8px",
-                        "md": "16px",
-                        "margin-mobile": "16px",
-                        "base": "8px",
-                        "lg": "24px",
-                        "sidebar-w": "272px"
-                    },
-                    "fontFamily": {
-                        "body-sm": ["Inter"],
-                        "display-lg": ["Inter"],
-                        "label-md": ["Inter"],
-                        "headline-sm": ["Inter"],
-                        "headline-md": ["Inter"],
-                        "display-lg-mobile": ["Inter"],
-                        "title-lg": ["Inter"],
-                        "body-md": ["Inter"],
-                        "body-lg": ["Inter"]
-                    },
-                    "fontSize": {
-                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
-                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
-                        "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
-                        "headline-sm": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
-                        "headline-md": ["30px", { "lineHeight": "38px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
-                        "display-lg-mobile": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
-                        "title-lg": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
-                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
-                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }]
-                    }
-                },
-            },
-        }
+            theme: { extend: {
+                colors: { ink: "#0B1526", "ink-soft": "#14213B", canvas: "#FFFFFF", "canvas-sunk": "#F5F7FA", "canvas-mid": "#EEF1F6", line: "#E2E6ED", "line-strong": "#CBD2DE", muted: "#5B6B85", "muted-dim": "#8894A8", action: "#2450E8", "action-hover": "#1A3FC4", "action-tint": "#EDF1FE", signal: "#0EA5A5", "signal-tint": "#E7F8F8", amber: "#B45309", danger: "#B42318" },
+                fontFamily: { display: ["Sora", "sans-serif"], body: ["Inter", "sans-serif"], mono: ["IBM Plex Mono", "monospace"] },
+                spacing: { "sidebar-w": "256px", "container-max": "1360px" },
+                borderRadius: { DEFAULT: "8px", lg: "10px", xl: "14px" }
+            }}
+        };
     </script>
     <style>
-        .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-        }
-
-        body {
-            background-color: #0a1310;
-            color: #dcebe0;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .hero-mesh {
-            background-image: radial-gradient(at 0% 0%, hsla(158, 64%, 52%, 0.10) 0, transparent 50%),
-            radial-gradient(at 100% 0%, hsla(158, 64%, 52%, 0.08) 0, transparent 50%);
-        }
-
-        /* thin scrollbar for the sidebar nav list on overflow */
+        body { background: #F5F7FA; color: #0B1526; font-family: Inter, sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .eyebrow { font-family: 'IBM Plex Mono', monospace; letter-spacing: .08em; text-transform: uppercase; }
+        .grid-fade { background-image: linear-gradient(to right, #E2E6ED 1px, transparent 1px), linear-gradient(to bottom, #E2E6ED 1px, transparent 1px); background-size: 52px 52px; mask-image: linear-gradient(to bottom, black, transparent); }
+        .event-image { background-position: center; background-size: cover; background-color: #14213B; }
+        #sidebar-nav a { display: flex; align-items: center; gap: .75rem; border: 1px solid transparent; border-radius: 8px; padding: .625rem .75rem; color: #5B6B85; font-size: 14px; font-weight: 500; }
+        #sidebar-nav a:hover { background: #F5F7FA; color: #0B1526; }
+        #sidebar-nav a.bg-primary\/10 { background: #EDF1FE; border-color: #C8D4FD; color: #2450E8; }
+        #sidebar-nav a .material-symbols-outlined { font-size: 20px; }
+        #sidebar-auth-actions a:first-child { background: #2450E8; color: #fff; }
+        #sidebar-auth-actions a:last-child { border: 1px solid #CBD2DE; color: #0B1526; }
+        #sidebar-logout-wrap button { color: #B42318; }
         #sidebar-nav::-webkit-scrollbar { width: 4px; }
-        #sidebar-nav::-webkit-scrollbar-thumb { background: #33453c; border-radius: 4px; }
-
-        .event-card-img {
-            background-size: cover;
-            background-position: center;
-        }
-
-        /* ---------- Hero slideshow ---------- */
-        #hero-slideshow {
-            height: 320px;
-        }
-        @media (min-width: 768px) {
-            #hero-slideshow { height: 440px; }
-        }
-
-        #hero-slideshow .slide {
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 600ms ease-in-out;
-            pointer-events: none;
-        }
-        #hero-slideshow .slide.is-active {
-            opacity: 1;
-            visibility: visible;
-            pointer-events: auto;
-        }
-
-        /* Fixed-ratio, cropped, centered image so nothing scatters or stretches */
-        #hero-slideshow .slide-bg {
-            position: absolute;
-            inset: 0;
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-color: #131a17; /* prevents flash/gap while an image loads */
-        }
-
-        .slide-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 9999px;
-            background-color: rgba(220, 235, 224, 0.35);
-            transition: background-color 200ms ease, width 200ms ease;
-        }
-        .slide-dot.is-active {
-            background-color: #4edea3;
-            width: 22px;
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-            #hero-slideshow .slide { transition: none; }
-        }
+        #sidebar-nav::-webkit-scrollbar-thumb { background: #CBD2DE; }
+        .skeleton { animation: pulse 1.4s ease-in-out infinite; }
+        @keyframes pulse { 50% { opacity: .48; } }
     </style>
 </head>
+<body class="min-h-screen overflow-x-hidden font-body">
+<div id="sidebar-overlay" class="hidden fixed inset-0 z-30 bg-ink/40 md:hidden"></div>
 
-<body class="dark overflow-x-hidden">
-
-<!-- Mobile backdrop, shown only when sidebar drawer is open -->
-<div id="sidebar-overlay" class="hidden fixed inset-0 bg-black/60 z-30 md:hidden"></div>
-
-<div class="flex min-h-screen">
-
-    <!-- ===================== SIDEBAR ===================== -->
-    <!-- Desktop: always visible, fixed, no toggle (per spec).
-         Mobile: off-canvas drawer, translated out of view by default, slides in via #sidebar-open class. -->
-    <aside id="sidebar"
-           class="flex flex-col w-sidebar-w h-screen fixed left-0 top-0 bg-surface-container-lowest border-r border-outline-variant z-40
-           -translate-x-full md:translate-x-0 transition-transform duration-200">
-        <!-- Mobile-only close button -->
-        <button id="sidebar-close" aria-label="Close menu"
-                class="md:hidden absolute top-md right-md text-on-surface-variant hover:text-on-surface">
-            <span class="material-symbols-outlined">close</span>
-        </button>
-
-        <!-- Profile block -->
-        <div class="flex flex-col items-center text-center pt-xl pb-lg px-md border-b border-outline-variant">
-            <a href="/profile" aria-label="Go to profile"
-               class="w-20 h-20 rounded-full bg-surface-container-high border-2 border-primary/40 hover:border-primary transition-colors flex items-center justify-center overflow-hidden mb-md">
-                <span class="material-symbols-outlined text-on-surface-variant text-[44px]">person</span>
-            </a>
-            <p id="sidebar-username" class="text-title-lg font-semibold text-on-background">—</p>
-            <p id="sidebar-role" class="text-label-md text-primary uppercase tracking-wide mt-xs">—</p>
-        </div>
-
-        <!-- Nav items (signed-in) -->
-        <nav id="sidebar-nav" class="flex-1 overflow-y-auto px-sm py-md space-y-xs">
-            <!-- populated by sidebar.js -->
-        </nav>
-
-        <!-- Signed-out auth buttons (shown instead of nav+logout when not logged in) -->
-        <div id="sidebar-auth-actions" class="hidden flex-1 flex flex-col gap-sm px-md py-md">
-            <a href="/login" class="w-full text-center bg-primary hover:bg-primary-fixed text-on-primary font-bold px-lg py-sm rounded-lg transition-all">
-                Log In
-            </a>
-            <a href="/register" class="w-full text-center border border-outline-variant hover:bg-surface-container-high text-on-surface font-bold px-lg py-sm rounded-lg transition-all">
-                Sign Up
-            </a>
-        </div>
-
-        <!-- Logout (signed-in only) -->
-        <div id="sidebar-logout-wrap" class="px-sm py-md border-t border-outline-variant">
-            <button id="logout-btn"
-                    class="w-full flex items-center gap-sm px-md py-sm rounded-lg text-body-sm font-medium text-error hover:bg-error-container/20 transition-colors">
-                <span class="material-symbols-outlined text-[22px]">logout</span>
-                <span>Log Out</span>
-            </button>
-        </div>
-    </aside>
-
-    <!-- ===================== MAIN COLUMN (header + content) ===================== -->
-    <div class="flex-1 md:ml-sidebar-w flex flex-col min-w-0">
-
-        <!-- ---------- HEADER ---------- -->
-        <header class="sticky top-0 z-20 h-16 bg-background/90 backdrop-blur-md border-b border-outline-variant">
-            <div class="h-full flex items-center gap-md px-md md:px-lg">
-
-                <!-- Mobile: hamburger + brand only, nothing else -->
-                <button id="sidebar-open" class="md:hidden text-on-surface-variant hover:text-on-surface" aria-label="Open menu">
-                    <span class="material-symbols-outlined">menu</span>
-                </button>
-
-                <a href="/home" class="flex md:hidden items-center gap-2">
-                    <img src="/images/logo.png" alt="CampusHive Logo" class="w-7 h-7 object-contain" />
-                    <span class="text-title-lg font-bold tracking-tight whitespace-nowrap">
-                        <span class="text-white">Campus</span><span class="text-primary">Hive</span>
-                    </span>
-                </a>
-
-                <!-- Desktop-only: search + notifications + settings + brand -->
-                <div class="hidden md:flex flex-1 max-w-xl">
-                    <label class="relative block w-full">
-                        <span class="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
-                        <input
-                                id="eventSearch"
-                                type="search"
-                                placeholder="Search events, venues, organizers..."
-                                class="w-full bg-surface-container-low border border-outline-variant rounded-full pl-[40px] pr-md py-sm text-body-sm text-on-surface placeholder:text-on-surface-variant/60 focus:border-primary focus:outline-none transition-colors"
-                        /></label>
-                </div>
-
-                <div class="hidden md:flex items-center gap-xs ml-auto">
-                    <button aria-label="Notifications" class="relative w-10 h-10 rounded-full hover:bg-surface-container-high flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors">
-                        <span class="material-symbols-outlined">notifications</span>
-                        <span class="absolute top-2 right-2 w-2 h-2 rounded-full bg-error"></span>
-                    </button>
-                    <button aria-label="Settings" class="w-10 h-10 rounded-full hover:bg-surface-container-high flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors">
-                        <span class="material-symbols-outlined">settings</span>
-                    </button>
-                </div>
-
-                <a href="/home" class="hidden md:flex items-center gap-2 pl-md border-l border-outline-variant">
-                    <img src="/images/logo.png" alt="CampusHive Logo" class="w-7 h-7 object-contain" />
-                    <span class="text-title-lg font-bold tracking-tight whitespace-nowrap">
-                        <span class="text-white">Campus</span><span class="text-primary">Hive</span>
-                    </span>
-                </a>
-            </div>
-        </header>
-
-        <!-- ---------- MAIN CONTENT ---------- -->
-        <main class="flex-1 px-md md:px-lg py-lg space-y-2xl">
-
-            <!-- ===== Events slideshow (replaces the static Homecoming banner) ===== -->
-            <!-- Data comes from window.CampusHiveEvents.fetchEventsPage(0, 5),
-                 exposed at the bottom of home.js. See the script block near
-                 the end of this file for the render/autoplay logic. -->
-            <section id="hero-slideshow"
-                     class="relative rounded-xl overflow-hidden border border-outline-variant group"
-                     aria-roledescription="carousel" aria-label="Featured recent events">
-
-                <!-- Slides get injected here by the script below -->
-                <div id="hero-slides" class="absolute inset-0"></div>
-
-                <!-- Loading skeleton (shown until the first slide is ready) -->
-                <div id="hero-skeleton" class="absolute inset-0 hero-mesh bg-surface-container-low flex items-center justify-center">
-                    <span class="text-body-sm text-on-surface-variant">Loading featured events…</span>
-                </div>
-
-                <!-- Empty state (no events returned) -->
-                <div id="hero-empty" class="hidden absolute inset-0 hero-mesh bg-surface-container-low flex-col items-center justify-center text-center px-lg">
-                    <span class="material-symbols-outlined text-on-surface-variant text-[32px] mb-sm">event_busy</span>
-                    <p class="text-body-md text-on-surface-variant">No events to feature right now — check back soon.</p>
-                </div>
-
-                <!-- Prev / next controls -->
-                <button id="hero-prev" type="button" aria-label="Previous event"
-                        class="hidden md:flex absolute left-md top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full
-                        bg-surface-container-lowest/70 hover:bg-surface-container-high items-center justify-center
-                        text-on-surface opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity">
-                    <span class="material-symbols-outlined">chevron_left</span>
-                </button>
-                <button id="hero-next" type="button" aria-label="Next event"
-                        class="hidden md:flex absolute right-md top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full
-                        bg-surface-container-lowest/70 hover:bg-surface-container-high items-center justify-center
-                        text-on-surface opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity">
-                    <span class="material-symbols-outlined">chevron_right</span>
-                </button>
-
-                <!-- Dot indicators -->
-                <div id="hero-dots" class="absolute bottom-md left-1/2 -translate-x-1/2 z-20 flex items-center gap-xs"></div>
-            </section>
-
-            <!-- Event cards grid -->
-            <section>
-                <div class="flex items-center justify-between mb-lg">
-                    <h2 class="text-headline-sm text-on-surface">Happening on campus</h2>
-                </div>
-
-                <div id="event-cards" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-lg">
-                    <!-- populated by home.js loadEventsPage() via /api/v1/event/global -->
-                </div>
-
-                <div class="flex flex-col items-center gap-sm mt-xl">
-                    <p id="events-empty-msg" class="hidden text-body-sm text-on-surface-variant">No events to show yet.</p>
-                    <p id="events-error-msg" class="hidden text-body-sm text-error"></p>
-                    <button id="load-more-btn"
-                            class="hidden border border-outline-variant hover:bg-surface-container-high text-on-surface font-semibold px-lg py-sm rounded-lg transition-all">
-                        Load More
-                    </button>
-                </div>
-            </section>
-
-        </main>
-
-        <!-- ---------- FOOTER ---------- -->
-        <footer class="border-t border-outline-variant px-md md:px-lg py-lg">
-            <div class="flex flex-col md:flex-row justify-between items-center gap-md text-center md:text-left">
-                <p class="text-body-sm text-on-surface-variant">© 2026 CampusHive. Empowering student engagement across 100+ campuses worldwide.</p>
-                <div class="flex gap-md text-body-sm text-on-surface-variant">
-                    <a href="/aboutUs" class="hover:text-primary transition-colors">About Us</a>
-                    <a href="/contact" class="hover:text-primary transition-colors">Support</a>
-                    <a href="#" class="hover:text-primary transition-colors">Privacy</a>
-                </div>
-            </div>
-        </footer>
+<aside id="sidebar" class="fixed inset-y-0 left-0 z-40 flex w-sidebar-w -translate-x-full flex-col border-r border-line bg-canvas transition-transform duration-200 md:translate-x-0">
+    <div class="flex h-16 items-center border-b border-line px-5">
+        <a href="/home" class="flex items-center gap-2.5">
+            <span class="flex h-8 w-8 items-center justify-center rounded-md bg-ink font-display text-sm font-bold text-white">CH</span>
+            <span class="font-display text-lg font-bold tracking-tight text-ink">CampusHive</span>
+        </a>
+        <button id="sidebar-close" class="ml-auto p-2 text-muted md:hidden" aria-label="Close menu"><span class="material-symbols-outlined">close</span></button>
     </div>
+    <div class="border-b border-line px-5 py-5">
+        <a href="/profile" class="flex items-center gap-3">
+            <span class="flex h-10 w-10 items-center justify-center rounded-lg bg-action-tint text-action"><span class="material-symbols-outlined">person</span></span>
+            <span class="min-w-0">
+                <span id="sidebar-username" class="block truncate text-sm font-semibold text-ink">Loading...</span>
+                <span id="sidebar-role" class="eyebrow mt-0.5 block truncate text-[10px] text-muted">Account</span>
+            </span>
+        </a>
+    </div>
+    <nav id="sidebar-nav" class="flex-1 space-y-1 overflow-y-auto px-3 py-4"></nav>
+    <div id="sidebar-auth-actions" class="hidden flex-1 flex-col gap-2 px-4 py-4 text-center text-sm font-semibold">
+        <a href="/login" class="rounded-lg px-4 py-2.5">Sign in</a>
+        <a href="/register" class="rounded-lg px-4 py-2.5">Create account</a>
+    </div>
+    <div id="sidebar-logout-wrap" class="border-t border-line p-3">
+        <button id="logout-btn" class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-red-50"><span class="material-symbols-outlined text-[20px]">logout</span>Sign out</button>
+    </div>
+</aside>
+
+<div class="min-h-screen md:ml-sidebar-w">
+    <header class="sticky top-0 z-20 h-16 border-b border-line bg-canvas/95 backdrop-blur">
+        <div class="flex h-full max-w-container-max items-center gap-3 px-4 md:px-8">
+            <button id="sidebar-open" class="p-2 text-muted md:hidden" aria-label="Open menu"><span class="material-symbols-outlined">menu</span></button>
+            <div class="hidden min-w-0 md:block"><p class="eyebrow text-[10px] text-muted-dim">Discover</p><p class="font-display text-sm font-semibold text-ink">Campus activity</p></div>
+            <label class="relative ml-auto block w-full max-w-xl">
+                <i class="fa-solid fa-magnifying-glass pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-xs text-muted"></i>
+                <input id="eventSearch" type="search" placeholder="Search events and registrations" class="w-full rounded-lg border-line bg-canvas-sunk py-2.5 pl-9 pr-4 text-sm text-ink placeholder:text-muted-dim focus:border-action focus:ring-action" />
+            </label>
+            <a href="/profile" class="hidden h-9 w-9 items-center justify-center rounded-lg border border-line text-muted hover:border-action hover:text-action sm:flex" aria-label="Profile"><span class="material-symbols-outlined text-[20px]">account_circle</span></a>
+        </div>
+    </header>
+
+    <main class="mx-auto max-w-container-max px-4 py-7 md:px-8 md:py-10">
+        <section class="relative overflow-hidden border border-line bg-canvas px-5 py-7 md:px-8 md:py-10">
+            <div class="grid-fade pointer-events-none absolute inset-0 opacity-70"></div>
+            <div class="relative grid gap-7 lg:grid-cols-[1fr_360px] lg:items-end">
+                <div>
+                    <p class="eyebrow text-[11px] text-action">Public campus board</p>
+                    <h1 class="mt-2 max-w-2xl font-display text-3xl font-bold leading-tight text-ink md:text-4xl">Find the things worth showing up for.</h1>
+                    <p class="mt-3 max-w-xl text-sm leading-6 text-muted md:text-base">Browse open events and active registrations from communities across campus.</p>
+                    <div class="mt-6 flex flex-wrap gap-3">
+                        <a href="#events" class="rounded-lg bg-action px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-action-hover">Explore events</a>
+                        <a href="#forms" class="rounded-lg border border-line-strong bg-canvas px-4 py-2.5 text-sm font-semibold text-ink hover:border-ink">Open registrations</a>
+                    </div>
+                </div>
+                <section id="featured-event" class="min-h-[164px] border border-line bg-canvas p-4" aria-live="polite">
+                    <div class="skeleton h-3 w-24 bg-canvas-mid"></div><div class="skeleton mt-4 h-5 w-4/5 bg-canvas-mid"></div><div class="skeleton mt-3 h-3 w-3/5 bg-canvas-mid"></div>
+                </section>
+            </div>
+        </section>
+
+        <section id="events" class="scroll-mt-24 pt-10">
+            <div class="mb-5 flex items-end justify-between gap-4">
+                <div><p class="eyebrow text-[11px] text-action">Events</p><h2 class="mt-1 font-display text-2xl font-semibold text-ink">Upcoming public events</h2></div>
+                <span id="events-count" class="font-mono text-xs text-muted"></span>
+            </div>
+            <div id="event-cards" class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3"></div>
+            <p id="events-empty-msg" class="hidden border border-dashed border-line-strong bg-canvas px-5 py-8 text-center text-sm text-muted">No public events match this search.</p>
+            <p id="events-error-msg" class="hidden mt-4 text-sm text-danger"></p>
+            <div class="mt-6 text-center"><button id="load-more-events-btn" class="hidden rounded-lg border border-line-strong bg-canvas px-4 py-2.5 text-sm font-semibold text-ink hover:border-ink">Load more events</button></div>
+        </section>
+
+        <section id="forms" class="scroll-mt-24 border-t border-line pt-10 mt-12">
+            <div class="mb-5 flex items-end justify-between gap-4"><div><p class="eyebrow text-[11px] text-signal">Registrations</p><h2 class="mt-1 font-display text-2xl font-semibold text-ink">Open custom forms</h2></div><span id="forms-count" class="font-mono text-xs text-muted"></span></div>
+            <div id="form-cards" class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3"></div>
+            <p id="forms-empty-msg" class="hidden border border-dashed border-line-strong bg-canvas px-5 py-8 text-center text-sm text-muted">No active registrations match this search.</p>
+            <p id="forms-error-msg" class="hidden mt-4 text-sm text-danger"></p>
+            <div class="mt-6 text-center"><button id="load-more-forms-btn" class="hidden rounded-lg border border-line-strong bg-canvas px-4 py-2.5 text-sm font-semibold text-ink hover:border-ink">Load more registrations</button></div>
+        </section>
+    </main>
+    <footer class="border-t border-line bg-canvas px-4 py-6 md:px-8"><div class="mx-auto flex max-w-container-max flex-col justify-between gap-3 text-sm text-muted sm:flex-row"><p>Copyright 2026 CampusHive</p><div class="flex gap-5"><a href="/about-us" class="hover:text-ink">About</a><a href="/contact" class="hover:text-ink">Support</a></div></div></footer>
 </div>
-
-<script src="/js/auth.js"></script>
-<script src="/js/auto-refresh.js"></script>
-<script src="/js/nav-config.js"></script>
-<script src="/js/sidebar.js"></script>
-<script src="/js/home.js"></script>
-
-<!-- ---------- Hero slideshow logic ---------- -->
-<!-- Uses window.CampusHiveEvents (exposed at the bottom of home.js) so there
-     is exactly ONE piece of code that knows the auth header, the envelope
-     shape, and the endpoint URL. No duplicated fetch/auth logic here. -->
-<script>
-    (function () {
-        "use strict";
-
-        var root      = document.getElementById("hero-slideshow");
-        var track     = document.getElementById("hero-slides");
-        var skeleton  = document.getElementById("hero-skeleton");
-        var emptyEl   = document.getElementById("hero-empty");
-        var dotsWrap  = document.getElementById("hero-dots");
-        var prevBtn   = document.getElementById("hero-prev");
-        var nextBtn   = document.getElementById("hero-next");
-
-        var SLIDE_COUNT  = 5;
-        var AUTOPLAY_MS  = 6000;
-        var current = 0;
-        var timer = null;
-
-        // ---- Data source -------------------------------------------------
-        // "Recent" here means "page 0 of /global, as ordered by the backend."
-        // EventSummaryResponse has no createdAt / event-date field, so there is
-        // no honest way to re-sort these client-side by recency. If the backend
-        // isn't already returning newest-first, this label is misleading and
-        // the fix belongs in the API, not here.
-        function fetchFeaturedEvents() {
-            if (!window.CampusHiveEvents || typeof window.CampusHiveEvents.fetchEventsPage !== "function") {
-                return Promise.reject(new Error("CampusHiveEvents.fetchEventsPage is not available — check home.js load order/exports."));
-            }
-            return window.CampusHiveEvents.fetchEventsPage(0, SLIDE_COUNT).then(function (pageData) {
-                return (pageData && pageData.content) || [];
-            });
-        }
-
-        function escapeHtml(str) {
-            var div = document.createElement("div");
-            div.textContent = str == null ? "" : String(str);
-            return div.innerHTML;
-        }
-
-        // ---- Rendering -----------------------------------------------------
-        function buildSlide(evt, index, total) {
-            var slide = document.createElement("div");
-            slide.className = "slide absolute inset-0" + (index === 0 ? " is-active" : "");
-            slide.setAttribute("data-index", String(index));
-            slide.setAttribute("role", "group");
-            slide.setAttribute("aria-roledescription", "slide");
-            slide.setAttribute("aria-label", (index + 1) + " of " + total);
-
-            var img = evt.bannerUrl || "";
-            var title = evt.title || "Untitled Event";
-            var location = evt.location || "Location TBA";
-            var deadline = window.CampusHiveEvents.formatRegistrationDeadline(evt.lastRegistrationDate);
-            var price = window.CampusHiveEvents.formatPrice(evt.ticketPrice);
-            var eventId = evt.eventId;
-
-            slide.innerHTML =
-                '<div class="slide-bg" style="background-image:url(\'' + escapeHtml(img) + '\')"></div>' +
-                '<div class="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent"></div>' +
-                '<div class="relative z-10 h-full flex flex-col justify-end px-lg py-lg md:py-xl max-w-2xl">' +
-                (evt.category ? '<span class="inline-flex items-center gap-xs bg-surface-container-high border border-outline-variant text-on-surface-variant text-label-md px-sm py-xs rounded-full mb-md w-fit"><span class="w-1.5 h-1.5 rounded-full bg-primary"></span> ' + escapeHtml(evt.category.toUpperCase()) + '</span>' : '') +
-                '<h1 class="text-headline-md md:text-display-lg-mobile text-on-background leading-tight mb-sm">' + escapeHtml(title) + '</h1>' +
-                '<div class="flex flex-wrap items-center gap-md">' +
-                '<a href="/eventDetails/' + encodeURIComponent(eventId) + '" class="bg-primary hover:bg-primary-fixed text-on-primary font-bold px-lg py-sm rounded-lg transition-all shadow-lg shadow-primary/20">View Event</a>' +
-                '<span class="text-body-sm text-on-surface-variant">' + escapeHtml([price, location, deadline].filter(Boolean).join(" · ")) + '</span>' +
-                '</div>' +
-                '</div>';
-
-            return slide;
-        }
-
-        function buildDot(index) {
-            var dot = document.createElement("button");
-            dot.type = "button";
-            dot.className = "slide-dot" + (index === 0 ? " is-active" : "");
-            dot.setAttribute("aria-label", "Go to slide " + (index + 1));
-            dot.addEventListener("click", function () { goTo(index); });
-            return dot;
-        }
-
-        function render(events) {
-            if (!events.length) {
-                skeleton.classList.add("hidden");
-                emptyEl.classList.remove("hidden");
-                emptyEl.classList.add("flex");
-                return;
-            }
-
-            track.innerHTML = "";
-            dotsWrap.innerHTML = "";
-
-            events.forEach(function (evt, i) {
-                track.appendChild(buildSlide(evt, i, events.length));
-                dotsWrap.appendChild(buildDot(i));
-            });
-
-            skeleton.classList.add("hidden");
-
-            if (events.length > 1) {
-                prevBtn.classList.remove("hidden");
-                nextBtn.classList.remove("hidden");
-                startAutoplay();
-            }
-        }
-
-        // ---- Controls --------------------------------------------------
-        function goTo(index) {
-            var slideEls = track.querySelectorAll(".slide");
-            var dotEls = dotsWrap.querySelectorAll(".slide-dot");
-            if (!slideEls.length) return;
-
-            current = (index + slideEls.length) % slideEls.length;
-
-            slideEls.forEach(function (el, i) {
-                el.classList.toggle("is-active", i === current);
-            });
-            dotEls.forEach(function (el, i) {
-                el.classList.toggle("is-active", i === current);
-            });
-        }
-
-        function next() { goTo(current + 1); }
-        function prev() { goTo(current - 1); }
-
-        function startAutoplay() {
-            stopAutoplay();
-            timer = window.setInterval(next, AUTOPLAY_MS);
-        }
-        function stopAutoplay() {
-            if (timer) { window.clearInterval(timer); timer = null; }
-        }
-
-        prevBtn.addEventListener("click", function () { prev(); startAutoplay(); });
-        nextBtn.addEventListener("click", function () { next(); startAutoplay(); });
-
-        root.addEventListener("mouseenter", stopAutoplay);
-        root.addEventListener("mouseleave", startAutoplay);
-        root.addEventListener("focusin", stopAutoplay);
-        root.addEventListener("focusout", startAutoplay);
-
-        // Basic swipe support for touch devices
-        var touchStartX = null;
-        root.addEventListener("touchstart", function (e) {
-            touchStartX = e.changedTouches[0].clientX;
-        }, { passive: true });
-        root.addEventListener("touchend", function (e) {
-            if (touchStartX === null) return;
-            var dx = e.changedTouches[0].clientX - touchStartX;
-            if (Math.abs(dx) > 40) { dx > 0 ? prev() : next(); startAutoplay(); }
-            touchStartX = null;
-        }, { passive: true });
-
-        // ---- Boot ------------------------------------------------------
-        fetchFeaturedEvents()
-            .then(render)
-            .catch(function (err) {
-                console.error("Hero slideshow: failed to load events:", err);
-                skeleton.classList.add("hidden");
-                emptyEl.classList.remove("hidden");
-                emptyEl.classList.add("flex");
-            });
-    })();
-</script>
+<script src="/js/auth.js"></script><script src="/js/auto-refresh.js"></script><script src="/js/nav-config.js"></script><script src="/js/sidebar.js"></script><script src="/js/home.js"></script>
 </body>
-
 </html>

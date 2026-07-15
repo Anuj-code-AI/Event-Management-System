@@ -186,11 +186,11 @@ function bindAuthForm({ formEl, errorEl, buttonEl, buttonDefaultText, onSubmit, 
  * in this function.
  */
 async function checkExistingSessionAndRedirect(redirectTo) {
-    const existingToken = localStorage.getItem("accessToken");
-    if (!existingToken) return false;
-
     try {
-        await refreshAccessToken(); // throws on failure, already stores new token on success
+        const refreshed = await refreshAccessToken();
+        if (!refreshed || !refreshed.accessToken) {
+            throw new Error("No active session");
+        }
         window.location.href = redirectTo;
         return true;
     } catch (err) {

@@ -20,25 +20,37 @@ public class EventStartUpJob {
     private final PasswordEncoder passwordEncoder;
 
     @Transactional
-    public User createUser(){
+    public User createUser(SystemRole role, String name){
         User user = new User();
-        user.setName("Admin");
+        user.setName(name);
         user.setIsActive(true);
-        user.setPrimaryEmail("admin@gmail.com");
-        user.setPassword(passwordEncoder.encode("admin@1234"));
-        user.setSystemRole(SystemRole.SUPER_ADMIN);
+        user.setPrimaryEmail(name+"@gmail.com");
+        user.setPassword(passwordEncoder.encode("1234"));
+        user.setSystemRole(role);
         user.setProvider(AuthProvider.LOCAL);
+        user.setEmailVerified(true);
         userRepository.save(user);
         return user;
     }
 
+
     @EventListener(ApplicationReadyEvent.class)
-    public void runAfterStartup(){
-        User user = userRepository.findByPrimaryEmail("admin@gmail.com")
-                .orElseGet(this::createUser);
-        System.out.println("Name: " + user.getName());
-        System.out.println("Email: " + user.getPrimaryEmail());
-        System.out.println("Password: admin@1234");
+    public void runAfterStartup() {
+        createIfNotExists(SystemRole.SUPER_ADMIN, "admin");
+        createIfNotExists(SystemRole.HOD, "hod");
+        createIfNotExists(SystemRole.USER, "user");
+    }
+
+    private void createIfNotExists(SystemRole role, String name) {
+
+        User user = userRepository.findByPrimaryEmail(name + "@gmail.com")
+                .orElseGet(() -> createUser(role, name));
+
+        System.out.println("----------------------------");
+        System.out.println("Role     : " + user.getSystemRole());
+        System.out.println("Name     : " + user.getName());
+        System.out.println("Email    : " + user.getPrimaryEmail());
+        System.out.println("Password : 1234");
     }
 
 }

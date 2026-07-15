@@ -57,12 +57,12 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/favicon.ico","/favicon.ico/**","/css/**","/js/**","/images/**","/webjars/**",
 
-                                "/" , "/aboutUs" , "/contact" , "/login" , "/register" , "/verify-email" , "/home" , "/universities" ,
+                                "/" , "/about-us" , "/contact" , "/login" , "/register" , "/verify-email" , "/home" , "/universities" ,
                                 "/campus-events" , "/event-management" , "/oauth" , "/request-event" , "/create-custom-form" , "/admin" , "/eventDetails/**" ,
-                                "/eventDetails" , "/tickets" , "/myEvents" , "/profile" ,"/formDetails/", "/formDetails/**", "/update-custom-form/**",
+                                "/eventDetails" , "/tickets" , "/my-events" , "/profile" ,"/formDetails/", "/formDetails/**", "/update-custom-form/**",
 
-                                "/api/v1/auth/**" ,"/api/v1/event/global/**", "/api/v1/event/getEvent/**", "/api/v1/custom-forms/form/**", "/api/v1/custom-forms/submit/**", "/api/v1/custom-forms/public", "/api/v1/tickets/*/qr",
-                                "/api/v1//universities-list"
+                                "/api/v1/auth/**", "/api/v1/event/global/**", "/api/v1/event/getEvent/**", "/api/v1/custom-forms/form/**", "/api/v1/custom-forms/submit/**", "/api/v1/custom-forms/public",
+                                "/api/v1/events/public-events", "/api/v1/custom-forms/public-forms", "/api/v1/tickets/*/qr", "/api/v1/universities-list"
                         ).permitAll()
                     .anyRequest().authenticated()
 

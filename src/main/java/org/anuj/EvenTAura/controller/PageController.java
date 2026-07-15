@@ -10,12 +10,12 @@ public class PageController {
 
     @GetMapping("/")
     public String landingPage(){
-        return "landingPage";
+        return "landing-page";
     }
 
-    @GetMapping("/aboutUs")
+    @GetMapping("/about-us")
     public String aboutUs() {
-        return "aboutUs";
+        return "about-us";
     }
 
     @GetMapping("/contact")
@@ -98,9 +98,9 @@ public class PageController {
         return "tickets";
     }
 
-    @GetMapping("/myEvents")
+    @GetMapping("/my-events")
     public String myEvents() {
-        return "myEvents";
+        return "my-events";
     }
 
     @GetMapping("/profile")
