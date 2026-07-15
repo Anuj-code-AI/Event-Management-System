@@ -1,11 +1,10 @@
 package org.anuj.EvenTAura.service;
 
-import org.anuj.EvenTAura.dto.RequestRole;
-import org.anuj.EvenTAura.dto.RoleResponse;
-import org.anuj.EvenTAura.dto.UserResponse;
-import org.anuj.EvenTAura.dto.UserUpdateRequest;
+import org.anuj.EvenTAura.dto.*;
 import org.springframework.data.domain.Page;
 import org.springframework.security.core.Authentication;
+
+import java.util.List;
 
 public interface UserService {
     UserResponse getUser(Authentication authentication);
@@ -14,6 +13,7 @@ public interface UserService {
     Void deleteUser(Authentication authentication);
     UserResponse getUserById(Long userId);
     RoleResponse roleOfMe(Authentication authentication);
-
     Page<UserResponse> getAllUser(String query, int page, int size);
+    List<UniversityListResponse> getAllUniversityList();
 }
+

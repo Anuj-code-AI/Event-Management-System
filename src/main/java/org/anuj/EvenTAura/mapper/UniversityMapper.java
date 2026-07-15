@@ -1,17 +1,15 @@
 package org.anuj.EvenTAura.mapper;
 
 import lombok.RequiredArgsConstructor;
+import org.anuj.EvenTAura.dto.UniversityListResponse;
 import org.anuj.EvenTAura.dto.UniversityRequest;
 import org.anuj.EvenTAura.dto.UniversityResponse;
 import org.anuj.EvenTAura.model.University;
-import org.anuj.EvenTAura.repository.UniversityRepository;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
 public class UniversityMapper {
-
-    private final UniversityRepository universityRepository;
 
     public static University toEntity(UniversityRequest request){
         University university = new University();
@@ -40,6 +38,13 @@ public class UniversityMapper {
         if(request.getLogoUrl()!=null){
             university.setLogoUrl(request.getLogoUrl());
         }
+    }
+
+    public static UniversityListResponse toListResponse(University university){
+        return new UniversityListResponse(
+                university.getName(),
+                university.getLogoUrl()
+        );
     }
 
 }

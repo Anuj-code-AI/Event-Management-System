@@ -16,21 +16,19 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
-@RequestMapping("/api/v1/event")
+@RequestMapping("/api/v1")
 @RequiredArgsConstructor
 public class EventController {
 
     private final EventService eventService;
-    // private final FileStorageService fileStorageService;
     private final CloudinaryService cloudinaryService;
 
     // Create event
-    @PostMapping("/addEvent")
+    @PostMapping("/events")
     @PreAuthorize("@eventSecurity.isHostOrHOD(authentication)")
     public ResponseEntity<ApiResponse<EventResponse>> createEvent(
             @ModelAttribute EventRequest request,
             @RequestParam(value = "banner") MultipartFile banner,
-            @RequestParam(value = "ticket") MultipartFile ticket,
             @RequestParam(value = "paymentQr", required = false) MultipartFile paymentQr,
             Authentication authentication
     ) {
@@ -40,10 +38,6 @@ public class EventController {
 
         if (banner == null || banner.isEmpty()) {
             return ResponseEntity.badRequest().body(ApiResponse.error("Banner image required"));
-        }
-
-        if (ticket == null || ticket.isEmpty()) {
-            return ResponseEntity.badRequest().body(ApiResponse.error("Ticket image required"));
         }
 
         if (request.getTicketPrice() > 0) {
@@ -62,70 +56,65 @@ public class EventController {
         }
 
         String bannerUrl = cloudinaryService.uploadImage(banner, "banner");
-        String ticketUrl = cloudinaryService.uploadImage(ticket, "ticket");
 
         request.setBannerUrl(bannerUrl);
-        request.setTicketUrl(ticketUrl);
         request.setPaymentQrUrl(paymentQrUrl);
 
         return ResponseEntity.ok(ApiResponse.success("Event created successfully",eventService.createEvent(request, authentication)));
     }
 
     // Update Event
-    @PatchMapping("/updateEvent/{eventId}")
+    @PatchMapping("/events/{eventId}")
     @PreAuthorize("@eventSecurity.isHostOrHOD(authentication)")
     public ResponseEntity<ApiResponse<EventResponse>> updateEvent(
             @PathVariable Long eventId,
-            @ModelAttribute EventUpdateRequest req,
+            @ModelAttribute EventUpdateRequest request,
             @RequestParam(value = "banner", required = false) MultipartFile banner,
             @RequestParam(value = "ticket", required = false) MultipartFile ticket,
             @RequestParam(value = "paymentQr", required = false) MultipartFile paymentQr,
-            Authentication auth
+            Authentication authentication
     ) {
         if (banner != null && !banner.isEmpty()) {
-            //req.setBannerUrl(fileStorageService.saveImage(banner, "Banner"));
-            req.setBannerUrl(cloudinaryService.uploadImage(banner, "Banner"));
+            request.setBannerUrl(cloudinaryService.uploadImage(banner, "banner"));
         }
         if (ticket != null && !ticket.isEmpty()) {
-            //req.setTicketUrl(fileStorageService.saveImage(ticket, "Ticket"));
-            req.setTicketUrl(cloudinaryService.uploadImage(ticket, "Ticket"));
+            request.setTicketUrl(cloudinaryService.uploadImage(ticket, "ticket"));
         }
         if (paymentQr != null && !paymentQr.isEmpty()) {
-            //req.setTicketUrl(fileStorageService.saveImage(paymentQr, "PaymentQr"));
-            req.setTicketUrl(cloudinaryService.uploadImage(paymentQr, "PaymentQr"));
+            request.setPaymentQrUrl(cloudinaryService.uploadImage(paymentQr, "paymentQr"));
         }
-        return ResponseEntity.ok(ApiResponse.success("Event update successfully", eventService.updateEvent(eventId, req, auth)));
+        return ResponseEntity.ok(ApiResponse.success("Event update successfully", eventService.updateEvent(eventId, request, authentication)));
     }
 
     // Delete Event
-    @DeleteMapping("/deleteEvent/{eventId}")
+    @DeleteMapping("/events/{eventId}")
     @PreAuthorize("@eventSecurity.isHostOrHOD(authentication)")
-    public ResponseEntity<ApiResponse<Void>> deleteEvent(@PathVariable Long eventId,Authentication auth) {
-        return ResponseEntity.ok(ApiResponse.success("Event successfully deleted",eventService.deleteEvent(eventId,auth)));
+    public ResponseEntity<ApiResponse<Void>> deleteEvent(@PathVariable Long eventId,Authentication authentication) {
+        return ResponseEntity.ok(ApiResponse.success("Event successfully deleted",eventService.deleteEvent(eventId,authentication)));
     }
 
     // Cancel Event
-    @DeleteMapping("/cancelEvent/{eventId}")
+    @DeleteMapping("/events/{eventId}/cancel")
     @PreAuthorize("@eventSecurity.isHostOrHOD(authentication)")
-    public ResponseEntity<ApiResponse<Void>> cancelEvent(@PathVariable Long eventId,Authentication auth) {
-        return ResponseEntity.ok(ApiResponse.success("Event successfully cancelled",eventService.cancelEvent(eventId,auth)));
+    public ResponseEntity<ApiResponse<Void>> cancelEvent(@PathVariable Long eventId,Authentication authentication) {
+        return ResponseEntity.ok(ApiResponse.success("Event successfully cancelled",eventService.cancelEvent(eventId,authentication)));
     }
 
     // Uncancel Event
-    @PostMapping("/uncancelEvent/{eventId}")
+    @PostMapping("/events/{eventId}/restore")
     @PreAuthorize("@eventSecurity.isHostOrHOD(authentication)")
     public ResponseEntity<ApiResponse<Void>> uncancelEvent(@PathVariable Long eventId, Authentication auth) {
         return ResponseEntity.ok(ApiResponse.success("Event reactivated successfully", eventService.uncancelEvent(eventId, auth)));
     }
 
     // Get event by id
-    @GetMapping("/getEvent/{eventId}")
+    @GetMapping("/events/{eventId}")
     public ResponseEntity<ApiResponse<EventResponse>> getEvent(@PathVariable Long eventId) {
         return ResponseEntity.ok(ApiResponse.success("Event loaded successfully", eventService.getEvent(eventId)));
     }
 
     // Get all global events
-    @GetMapping("/global")
+    @GetMapping("/events/public-events")
     public ResponseEntity<ApiResponse<Page<EventSummaryResponse>>> getGlobalEvents(
             @RequestParam(required = false) String query,
             @RequestParam(defaultValue = "0") int page,
@@ -140,7 +129,7 @@ public class EventController {
     }
 
     // Get all university events
-    @GetMapping("/getUniversityEvents")
+    @GetMapping("/events/university-events")
     public ResponseEntity<ApiResponse<Page<EventSummaryResponse>>> getUniversityEvents(
             @RequestParam(required = false) String query,
             @RequestParam(defaultValue = "0") int page,
@@ -151,17 +140,18 @@ public class EventController {
     }
 
     // Get hosted events
-    @GetMapping("/getHostedEvents")
+    @GetMapping("/events/hosted-events")
+    @PreAuthorize("@eventSecurity.isHostOrHOD(authentication)")
     public ResponseEntity<ApiResponse<Page<EventSummaryResponse>>> getHostedEvents(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            Authentication auth
+            Authentication authentication
     ){
-        return ResponseEntity.ok(ApiResponse.success("Events loaded successfully", eventService.getHostedEvents(page,size,auth)));
+        return ResponseEntity.ok(ApiResponse.success("Events loaded successfully", eventService.getHostedEvents(page,size,authentication)));
     }
 
     // Get joined events
-    @GetMapping("/getJoinedEvents")
+    @GetMapping("/events/joined-events")
     public ResponseEntity<ApiResponse<Page<EventSummaryResponse>>> getJoinedEvents(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,

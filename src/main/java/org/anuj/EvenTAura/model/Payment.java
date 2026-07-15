@@ -21,7 +21,7 @@ public class Payment {
     @Enumerated(EnumType.STRING)
     private PaymentStatus status;
 
-    private String paymentMethod;   // UPI / CARD / NETBANKING
+    private String paymentMethod;   // UPI / CARD / NET BANKING
 
     private String transactionId;   // gateway transaction id
 

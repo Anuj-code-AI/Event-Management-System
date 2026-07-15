@@ -63,6 +63,21 @@ public class PageController {
         return "request-event";
     }
 
+    @GetMapping("/create-custom-form")
+    public String createCustomForm(){
+        return "create-custom-form";
+    }
+
+    @GetMapping("/update-custom-form")
+    public String updateCustomForm(){
+        return "update-custom-form";
+    }
+
+    @GetMapping({"/formDetails", "/formDetails/{formId}"})
+    public String formDetails(){
+        return "formDetails";
+    }
+
     @GetMapping("/oauth")
     public String oauth() {
         return "oauth";

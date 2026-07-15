@@ -42,7 +42,6 @@ public class EventRequest {
     private Integer ticketsAvailable;
 
     private String bannerUrl;
-    private String ticketUrl;
     private String paymentQrUrl;
     private String category;
     private String club;

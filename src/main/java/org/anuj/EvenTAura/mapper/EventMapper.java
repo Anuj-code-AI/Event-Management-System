@@ -12,7 +12,6 @@ public class EventMapper {
     public static Event toEntity(EventRequest req, User user) {
 
         Event event = new Event();
-
         event.setTitle(req.getTitle());
         event.setDescription(req.getDescription());
         event.setLocation(req.getLocation());
@@ -23,7 +22,6 @@ public class EventMapper {
         event.setTotalTickets(req.getTotalTickets());
         event.setTicketsAvailable(req.getTicketsAvailable());
         event.setBannerUrl(req.getBannerUrl());
-        event.setTicketUrl(req.getTicketUrl());
         event.setPaymentQrUrl(req.getPaymentQrUrl());
         event.setCategory(req.getCategory());
         event.setClub(req.getClub());
@@ -50,7 +48,6 @@ public class EventMapper {
                 event.getTotalTickets(),
                 event.getTicketsAvailable(),
                 event.getBannerUrl(),
-                event.getTicketUrl(),
                 event.getPaymentQrUrl(),
                 event.getTicketPrice(),
                 event.getCategory(),
@@ -93,9 +90,6 @@ public class EventMapper {
         }
         if(req.getBannerUrl() != null){
             event.setBannerUrl(req.getBannerUrl());
-        }
-        if(req.getTicketUrl() != null){
-            event.setTicketUrl(req.getTicketUrl());
         }
         if(req.getPaymentQrUrl() != null){
             event.setPaymentQrUrl(req.getPaymentQrUrl());

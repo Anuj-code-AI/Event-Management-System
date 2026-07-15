@@ -40,12 +40,33 @@ async function loadCampusEvents(page, query = "") {
         }
 
         const body = await response.json();
-        const pageData = body.data;
+        const pageData = body.data || { content: [] };
 
         loadingState.classList.add("hidden");
         campusSection.classList.remove("hidden");
 
-        const list = pageData.content || [];
+        let list = pageData.content || [];
+
+        // Fetch and prepend campus-only custom forms on page 0
+        if (pageNum === 0) {
+            try {
+                const formsRes = await fetch("/api/v1/custom-forms/campus", {
+                    headers: authHeaders()
+                });
+                const formsBody = await formsRes.json();
+                if (formsRes.ok && formsBody.success && formsBody.data) {
+                    const customForms = formsBody.data;
+                    customForms.forEach(f => {
+                        f.isCustomForm = true;
+                        f.eventId = f.id; // Map key ID
+                        f.eventStatus = "APPROVED";
+                    });
+                    list = [...customForms, ...list];
+                }
+            } catch (e) {
+                console.error("Error loading campus custom forms:", e);
+            }
+        }
         if (list.length > 0 && list[0].logoUrl) {
             const logoContainer = document.getElementById("banner-logo-container");
             if (logoContainer) {
@@ -62,6 +83,41 @@ async function loadCampusEvents(page, query = "") {
 
         // Render event cards
         list.forEach(event => {
+            if (event.isCustomForm) {
+                const bannerUrl = event.bannerUrl || "/images/event-placeholder.jpg";
+                eventsGrid.insertAdjacentHTML("beforeend", `
+                    <div class="bg-surface-container border border-outline-variant rounded-xl overflow-hidden hover:border-primary/30 transition-all group flex flex-col h-full animate-fade-in">
+                        <a href="/formDetails?formId=${event.id}" class="block relative pt-[56.25%] overflow-hidden bg-surface-container-low shrink-0">
+                            <img src="${bannerUrl}" alt="${event.title} Banner" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                            <span class="absolute top-sm left-sm bg-purple-500/20 text-purple-300 border border-purple-500/30 text-label-md px-sm py-xs rounded-full z-10">
+                                Custom Form
+                            </span>
+                            <span class="absolute top-sm right-sm bg-primary/10 text-primary border border-primary/30 text-label-md px-sm py-xs rounded-full font-semibold uppercase tracking-wide">
+                                ACTIVE
+                            </span>
+                        </a>
+                        <div class="p-md flex flex-col flex-1 space-y-md">
+                            <div class="space-y-xs flex-1">
+                                <h3 class="text-title-lg font-bold text-on-surface group-hover:text-primary transition-colors line-clamp-2">
+                                    <a href="/formDetails?formId=${event.id}">${event.title}</a>
+                                </h3>
+                                <p class="text-body-sm text-on-surface-variant flex items-center gap-xs mt-xs line-clamp-2">
+                                    ${event.description || "No description provided."}
+                                </p>
+                            </div>
+                            <div class="flex items-center justify-between pt-sm border-t border-outline-variant/30 text-body-sm text-on-surface-variant">
+                                <span class="flex items-center gap-xs">
+                                    <span class="material-symbols-outlined text-[16px] text-purple-400">shield_person</span>
+                                    Campus Only Access
+                                </span>
+                                <span class="font-bold text-primary">Free</span>
+                            </div>
+                        </div>
+                    </div>
+                `);
+                return;
+            }
+
             const dateText = event.lastRegistrationDate
                 ? new Date(event.lastRegistrationDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
                 : "TBA";

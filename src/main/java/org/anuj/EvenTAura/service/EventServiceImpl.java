@@ -303,17 +303,20 @@ public class EventServiceImpl implements EventService {
         Pageable pageable = PageRequest.of(page, size, sort);
 
         return eventRepository.findByUser(user, pageable)
-                .map(event -> new EventSummaryResponse(
-                        event.getEventId(),
-                        event.getTitle(),
-                        event.getLocation(),
-                        event.getLastRegistrationDate(),
-                        event.getBannerUrl(),
-                        event.getCategory(),
-                        event.getTicketPrice(),
-                        event.getEventStatus(),
-                        event.getUniversity() != null ? event.getUniversity().getLogoUrl() : null
-                ));
+                .map(event -> {
+                    EventSummaryResponse response = new EventSummaryResponse(
+                            event.getEventId(),
+                            event.getTitle(),
+                            event.getLocation(),
+                            event.getLastRegistrationDate(),
+                            event.getBannerUrl(),
+                            event.getCategory(),
+                            event.getTicketPrice(),
+                            event.getEventStatus(),
+                            event.getUniversity() != null ? event.getUniversity().getLogoUrl() : null
+                    );
+                    return response;
+                });
     }
 
     // Get joined events

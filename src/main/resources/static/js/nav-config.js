@@ -83,6 +83,8 @@ async function getCurrentUser() {
         if (!me || !role) return null;
 
         return {
+            id: me.userId,
+            userId: me.userId,
             name: me.name,
             email: me.email,
             university: me.university,

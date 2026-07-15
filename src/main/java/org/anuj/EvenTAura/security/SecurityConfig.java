@@ -58,10 +58,12 @@ public class SecurityConfig {
                         .requestMatchers("/favicon.ico","/favicon.ico/**","/css/**","/js/**","/images/**","/webjars/**",
 
                                 "/" , "/aboutUs" , "/contact" , "/login" , "/register" , "/verify-email" , "/home" , "/universities" ,
-                                "/campus-events" , "/event-management" , "/oauth" , "/request-event" , "/admin" , "/eventDetails/**" ,
-                                "/eventDetails" , "/tickets" , "/myEvents" , "/profile" ,
+                                "/campus-events" , "/event-management" , "/oauth" , "/request-event" , "/create-custom-form" , "/admin" , "/eventDetails/**" ,
+                                "/eventDetails" , "/tickets" , "/myEvents" , "/profile" ,"/formDetails/", "/formDetails/**", "/update-custom-form/**",
 
-                                "/api/v1/auth/**" ,"/api/v1/event/global/**", "/api/v1/event/getEvent/**", "/api/v1/tickets/*/qr").permitAll()
+                                "/api/v1/auth/**" ,"/api/v1/event/global/**", "/api/v1/event/getEvent/**", "/api/v1/custom-forms/form/**", "/api/v1/custom-forms/submit/**", "/api/v1/custom-forms/public", "/api/v1/tickets/*/qr",
+                                "/api/v1//universities-list"
+                        ).permitAll()
                     .anyRequest().authenticated()
 
                 )

@@ -30,9 +30,28 @@ async function fetchEventsPage(page, size, query = "") {
     }
 
     const body = await response.json();
-    console.log("[home.js] raw getGlobalEvents response:", body);
-    // ApiResponse envelope -> body.data is the actual Spring Page
-    return body.data;
+    let pageData = body.data || { content: [] };
+
+    // Fetch and merge public approved custom forms on page 0
+    if (page === 0) {
+        try {
+            const formsRes = await fetch("/api/v1/custom-forms/public");
+            const formsBody = await formsRes.json();
+            if (formsRes.ok && formsBody.success && formsBody.data) {
+                const customForms = formsBody.data;
+                customForms.forEach(f => {
+                    f.isCustomForm = true;
+                    f.eventId = f.id; // Map key ID
+                    f.eventStatus = "APPROVED";
+                });
+                pageData.content = [...customForms, ...(pageData.content || [])];
+            }
+        } catch (e) {
+            console.error("Error loading public custom forms:", e);
+        }
+    }
+
+    return pageData;
 }
 
 /** Formats an ISO date string (lastRegistrationDate) into a short, readable label. */
@@ -57,6 +76,34 @@ function formatPrice(ticketPrice) {
 }
 
 function eventCardHtml(ev) {
+    if (ev.isCustomForm) {
+        const bannerStyle = ev.bannerUrl
+            ? `background-image: url('${ev.bannerUrl}')`
+            : "background-color: #171f1c";
+
+        return `
+        <article class="bg-surface-container border border-outline-variant rounded-xl overflow-hidden hover:border-primary/50 transition-colors group">
+            <a href="/formDetails?formId=${ev.id}" class="block h-40 event-card-img relative" style="${bannerStyle}">
+                <span class="absolute top-sm left-sm bg-purple-500/20 text-purple-300 border border-purple-500/30 text-label-md px-sm py-xs rounded-full">
+                    Custom Form
+                </span>
+                <span class="absolute top-sm right-sm bg-primary/10 text-primary border border-primary/30 text-label-md px-sm py-xs rounded-full font-semibold uppercase">
+                    ACTIVE
+                </span>
+            </a>
+            <div class="p-md space-y-sm">
+                <a href="/formDetails?formId=${ev.id}">
+                    <h3 class="text-title-lg font-semibold text-on-surface group-hover:text-primary transition-colors line-clamp-1">${ev.title}</h3>
+                </a>
+                <p class="text-body-sm text-on-surface-variant line-clamp-2">${ev.description || "No description provided."}</p>
+                <div class="flex items-center justify-between pt-sm">
+                    <span class="text-on-surface font-bold text-body-sm">Free Questionnaire</span>
+                    <span class="text-label-md text-purple-400 font-semibold uppercase">By ${ev.username || "Hive Host"}</span>
+                </div>
+            </div>
+        </article>`;
+    }
+
     const bannerStyle = ev.bannerUrl
         ? `background-image: url('${ev.bannerUrl}')`
         : "background-color: #171f1c";

@@ -1,5 +1,6 @@
 // event-management.js — Personal Event Management dashboard for Hosts and HODs
 const API_EVENT = "/api/v1/event";
+const API_CUSTOM_FORM_BASE = "/api/v1/custom-forms";
 
 // State variables
 let currentUser = null;
@@ -183,7 +184,10 @@ function getActiveList() {
     }
 
     if (searchQuery) {
-        return list.filter(e => e.title.toLowerCase().includes(searchQuery) || e.location.toLowerCase().includes(searchQuery));
+        return list.filter(e => 
+            (e.title && e.title.toLowerCase().includes(searchQuery)) || 
+            (e.location && e.location.toLowerCase().includes(searchQuery))
+        );
     }
     return list;
 }
@@ -198,28 +202,45 @@ async function fetchEventsData() {
     }
 
     try {
-        // Load the page size matching the current page
-        let hostedUrl = `${API_EVENT}/getHostedEvents?page=${currentPage}&size=${pageSize}`;
-        const hostedRes = await fetch(hostedUrl, {
-            headers: { Authorization: `Bearer ${token}` }
-        });
-        const hostedBody = await hostedRes.json();
-        
-        if (hostedRes.ok && hostedBody.success) {
-            myEventsPage = hostedBody.data;
-        } else {
-            throw new Error(hostedBody.message || "Failed to load hosted events");
-        }
-
-        // To populate stats and support filtering on other tabs, fetch a large list/all events for local stats
+        // Fetch all hosted events
         let allHostedUrl = `${API_EVENT}/getHostedEvents?page=0&size=1000`;
         const allRes = await fetch(allHostedUrl, {
             headers: { Authorization: `Bearer ${token}` }
         });
         const allBody = await allRes.json();
+        let eventsList = [];
         if (allRes.ok && allBody.success) {
-            fullHostedList = allBody.data.content || [];
+            eventsList = allBody.data.content || [];
         }
+
+        // Fetch hosted custom forms
+        let formsList = [];
+        try {
+            const formsRes = await fetch(`${API_CUSTOM_FORM_BASE}/hosted`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            const formsBody = await formsRes.json();
+            if (formsRes.ok && formsBody.success) {
+                formsList = formsBody.data || [];
+                formsList.forEach(f => {
+                    f.isCustomForm = true;
+                    f.eventStatus = f.status; // Map status for stats & tabs filtering
+                    f.eventId = f.id; // Map key ID for standard actions
+                });
+            }
+        } catch (e) {
+            console.error("Error loading hosted forms:", e);
+        }
+
+        fullHostedList = [...eventsList, ...formsList];
+
+        // Populate myEventsPage pagination wrapper
+        myEventsPage = {
+            content: fullHostedList,
+            totalPages: Math.ceil(fullHostedList.length / pageSize) || 1,
+            first: true,
+            last: true
+        };
 
         // Compute dashboard numbers
         calculateStats();
@@ -270,7 +291,10 @@ function filterAndRenderEvents() {
         let filtered = events;
         const searchQuery = searchInput.value.toLowerCase().trim();
         if (searchQuery) {
-            filtered = events.filter(e => e.title.toLowerCase().includes(searchQuery) || e.location.toLowerCase().includes(searchQuery));
+            filtered = events.filter(e => 
+                (e.title && e.title.toLowerCase().includes(searchQuery)) || 
+                (e.location && e.location.toLowerCase().includes(searchQuery))
+            );
         }
 
         if (filtered.length === 0) {
@@ -320,6 +344,65 @@ function formatDate(dateStr) {
 
 // HTML Generator: Single personal event card
 function renderEventCard(event) {
+    if (event.isCustomForm) {
+        let badgeClass = "bg-surface-container text-on-surface-variant border border-outline-variant";
+        if (event.status === "PENDING") badgeClass = "bg-yellow-500/10 text-yellow-500 border border-yellow-500/30";
+        else if (event.status === "APPROVED") badgeClass = "bg-primary/10 text-primary border border-primary/30";
+        else if (event.status === "REJECTED") badgeClass = "bg-error/10 text-error border border-error/30";
+
+        const banner = event.bannerUrl || "/images/banner-placeholder.png";
+
+        return `
+            <div class="glass-card rounded-xl overflow-hidden flex flex-col justify-between hover:shadow-primary/5 hover:border-primary/30 transition-all duration-300">
+                <!-- Banner area -->
+                <div class="relative h-44 w-full bg-surface-container-low overflow-hidden cursor-pointer" onclick="window.open('/formDetails?formId=${event.id}', '_blank')">
+                    <img class="w-full h-full object-cover hover:scale-105 transition-transform duration-500" src="${banner}" alt="${event.title}" onerror="this.src='/images/banner-placeholder.png'">
+                    <span class="absolute top-sm left-sm bg-purple-500/20 text-purple-300 border border-purple-500/30 text-label-md px-sm py-xs rounded-full">
+                        Custom Form
+                    </span>
+                    <span class="absolute top-sm right-sm ${badgeClass} text-label-md px-sm py-xs rounded-full font-semibold uppercase">
+                        ${event.status}
+                    </span>
+                </div>
+
+                <!-- Card Body -->
+                <div class="p-md flex-1 flex flex-col justify-between space-y-md">
+                    <div class="space-y-sm">
+                        <h3 class="text-title-lg font-bold text-on-background line-clamp-1 hover:text-primary cursor-pointer transition-colors" onclick="window.open('/formDetails?formId=${event.id}', '_blank')">${event.title}</h3>
+                        <p class="text-body-sm text-on-surface-variant line-clamp-2">${event.description || "No description provided."}</p>
+                    </div>
+
+                    <div class="flex flex-col gap-xs border-t border-outline-variant/20 pt-sm">
+                        <a href="/update-custom-form?formId=${event.id}" 
+                            class="w-full bg-surface-container-high hover:bg-surface-container-highest text-on-surface border border-outline-variant font-semibold py-xs px-sm rounded text-body-sm transition-all flex items-center justify-center gap-xs mt-xs"
+                        >
+                            <span class="material-symbols-outlined text-[18px]">edit</span>
+                            <span>Edit Form</span>
+                        </a>
+                        <button onclick="shareFormLink(${event.id})" 
+                            class="w-full bg-secondary/10 hover:bg-secondary/20 text-secondary border border-secondary/30 font-semibold py-xs px-sm rounded text-body-sm transition-all flex items-center justify-center gap-xs mt-xs"
+                        >
+                            <span class="material-symbols-outlined text-[18px]">share</span>
+                            <span>Share Form Link</span>
+                        </button>
+                        <button onclick="showResponsesView(${event.id}, '${event.title.replace(/'/g, "\\'")}')" 
+                            class="w-full bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 font-semibold py-xs px-sm rounded text-body-sm transition-all flex items-center justify-center gap-xs mt-xs"
+                        >
+                            <span class="material-symbols-outlined text-[18px]">receipt_long</span>
+                            <span>View Responses</span>
+                        </button>
+                        <button onclick="deleteCustomForm(${event.id}, '${event.title.replace(/'/g, "\\'")}')" 
+                            class="w-full border border-error hover:bg-error/10 text-error font-semibold py-xs px-sm rounded text-body-sm transition-all flex items-center justify-center gap-xs mt-xs"
+                        >
+                            <span class="material-symbols-outlined text-[18px]">delete</span>
+                            <span>Delete Form</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
     let badgeClass = "bg-surface-container text-on-surface-variant border border-outline-variant";
     if (event.eventStatus === "PENDING") badgeClass = "bg-yellow-500/10 text-yellow-500 border border-yellow-500/30";
     else if (event.eventStatus === "APPROVED") badgeClass = "bg-primary/10 text-primary border border-primary/30";
@@ -410,6 +493,14 @@ function renderEventCard(event) {
                         >
                             <span class="material-symbols-outlined text-[18px]">group</span>
                             <span>Manage Attendance</span>
+                        </button>
+                    ` : ""}
+                    ${event.hasCustomForm ? `
+                        <button onclick="showResponsesView(${event.eventId}, '${event.title.replace(/'/g, "\\'")}')" 
+                            class="w-full bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 font-semibold py-xs px-sm rounded text-body-sm transition-all flex items-center justify-center gap-xs mt-xs"
+                        >
+                            <span class="material-symbols-outlined text-[18px]">receipt_long</span>
+                            <span>View Form Responses</span>
                         </button>
                     ` : ""}
                 </div>
@@ -750,6 +841,186 @@ function shareEventLink(eventId) {
 
     const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, "_blank");
+}
+
+// ----------------------------------------------------
+// CUSTOM REGISTRATION FORM RESPONSES VIEW & EXPORT
+// ----------------------------------------------------
+let activeEventForResponses = null;
+
+function shareFormLink(formId) {
+    const formUrl = `${window.location.origin}/formDetails?formId=${formId}`;
+    navigator.clipboard.writeText(formUrl).then(() => {
+        alert("Form registration link copied to clipboard!");
+    }).catch(err => {
+        const input = document.createElement("input");
+        input.value = formUrl;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand("copy");
+        document.body.removeChild(input);
+        alert("Form registration link copied to clipboard!");
+    });
+}
+
+function showResponsesView(eventId, eventTitle) {
+    activeEventForResponses = { eventId, title: eventTitle };
+    
+    // Set header
+    document.getElementById("responses-event-title").textContent = eventTitle;
+
+    // Toggle views
+    document.getElementById("events-dashboard-view").classList.add("hidden");
+    document.getElementById("responses-view").classList.remove("hidden");
+
+    // Bind CSV export button click
+    const exportBtn = document.getElementById("export-csv-btn");
+    exportBtn.onclick = () => downloadResponsesCsv(eventId);
+
+    // Fetch and populate responses
+    fetchResponsesData(eventId);
+}
+
+function hideResponsesView() {
+    activeEventForResponses = null;
+    document.getElementById("responses-view").classList.add("hidden");
+    document.getElementById("events-dashboard-view").classList.remove("hidden");
+}
+
+async function fetchResponsesData(eventId) {
+    const token = localStorage.getItem("accessToken");
+    const headerRow = document.getElementById("responses-table-header");
+    const tableBody = document.getElementById("responses-table-body");
+    const emptyMsg = document.getElementById("responses-empty-msg");
+    const table = document.getElementById("responses-table");
+
+    headerRow.innerHTML = "";
+    tableBody.innerHTML = "";
+    emptyMsg.classList.add("hidden");
+    table.classList.remove("hidden");
+
+    try {
+        const res = await fetch(`${API_CUSTOM_FORM_BASE}/responses/${eventId}`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        const body = await res.json();
+        
+        if (res.ok && body.success) {
+            const submissions = body.data || [];
+            if (submissions.length === 0) {
+                table.classList.add("hidden");
+                emptyMsg.classList.remove("hidden");
+                return;
+            }
+
+            // Build table headers dynamically based on the questions present in the first submission
+            const sampleAnswers = submissions[0].answers || [];
+            
+            let headersHtml = `
+                <th class="p-md text-label-md text-on-surface-variant uppercase tracking-wider">Submission Code</th>
+                <th class="p-md text-label-md text-on-surface-variant uppercase tracking-wider">Attendee</th>
+                <th class="p-md text-label-md text-on-surface-variant uppercase tracking-wider">Email</th>
+                <th class="p-md text-label-md text-on-surface-variant uppercase tracking-wider">Submitted At</th>
+            `;
+
+            sampleAnswers.forEach(ans => {
+                headersHtml += `<th class="p-md text-label-md text-on-surface-variant uppercase tracking-wider">${ans.label}</th>`;
+            });
+            headerRow.innerHTML = headersHtml;
+
+            // Build rows
+            submissions.forEach(sub => {
+                const date = new Date(sub.submittedAt);
+                const dateStr = date.toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+
+                let rowHtml = `
+                    <tr class="hover:bg-surface-container/20 transition-colors">
+                        <td class="p-md text-body-sm text-primary font-semibold">${sub.submissionCode}</td>
+                        <td class="p-md text-body-sm text-on-surface font-semibold">${sub.username}</td>
+                        <td class="p-md text-body-sm text-on-surface-variant">${sub.userEmail}</td>
+                        <td class="p-md text-body-sm text-outline">${dateStr}</td>
+                `;
+
+                sub.answers.forEach(ans => {
+                    if (ans.fileUrl) {
+                        rowHtml += `
+                            <td class="p-md text-body-sm">
+                                <a href="${ans.fileUrl}" target="_blank" class="inline-flex items-center gap-xs text-primary hover:underline font-semibold">
+                                    <span class="material-symbols-outlined text-[16px]">open_in_new</span>
+                                    <span>View File</span>
+                                </a>
+                            </td>
+                        `;
+                    } else {
+                        rowHtml += `<td class="p-md text-body-sm text-on-surface-variant">${ans.value || "—"}</td>`;
+                    }
+                });
+
+                rowHtml += `</tr>`;
+                tableBody.insertAdjacentHTML("beforeend", rowHtml);
+            });
+
+        } else {
+            throw new Error(body.message || "Failed to load responses.");
+        }
+    } catch (err) {
+        console.error("fetchResponsesData error:", err);
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="4" class="p-lg text-center text-body-sm text-error">
+                    Failed to fetch responses: ${err.message || "Network issue"}
+                </td>
+            </tr>
+        `;
+    }
+}
+
+async function downloadResponsesCsv(eventId) {
+    const token = localStorage.getItem("accessToken");
+    try {
+        const res = await fetch(`${API_CUSTOM_FORM_BASE}/export/${eventId}`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+            const blob = await res.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `custom_form_${eventId}_responses.csv`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+        } else {
+            alert("Failed to export responses as CSV. Please try again.");
+        }
+    } catch (err) {
+        console.error("downloadResponsesCsv error:", err);
+        alert("A network error occurred.");
+    }
+}
+
+async function deleteCustomForm(formId, formTitle) {
+    if (!confirm(`Are you sure you want to delete the form "${formTitle}"? This will permanently delete the form, all of its fields, and all submitted responses.`)) {
+        return;
+    }
+
+    const token = localStorage.getItem("accessToken");
+    try {
+        const res = await fetch(`${API_CUSTOM_FORM_BASE}/delete/${formId}`, {
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        const body = await res.json();
+        if (res.ok && body.success) {
+            alert(`SUCCESS: Custom Form "${formTitle}" deleted successfully!`);
+            initPage();
+        } else {
+            alert(`ERROR: ${body.message || "Failed to delete custom form."}`);
+        }
+    } catch (err) {
+        console.error("Delete custom form error:", err);
+        alert("A network error occurred trying to delete the custom form.");
+    }
 }
 
 // Run initialization

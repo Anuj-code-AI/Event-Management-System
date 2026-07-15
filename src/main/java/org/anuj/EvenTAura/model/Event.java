@@ -38,7 +38,6 @@ public class Event {
     private int ticketsAvailable;
 
     private String bannerUrl;
-    private String ticketUrl;
     private String paymentQrUrl;
 
     private Double ticketPrice;
@@ -57,6 +56,7 @@ public class Event {
     private EventStatus eventStatus;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private ParticipationType participationType;
 
     @Enumerated(EnumType.STRING)

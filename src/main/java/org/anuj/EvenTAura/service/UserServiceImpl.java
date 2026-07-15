@@ -2,14 +2,12 @@ package org.anuj.EvenTAura.service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.anuj.EvenTAura.dto.RequestRole;
-import org.anuj.EvenTAura.dto.RoleResponse;
-import org.anuj.EvenTAura.dto.UserResponse;
-import org.anuj.EvenTAura.dto.UserUpdateRequest;
+import org.anuj.EvenTAura.dto.*;
 import org.anuj.EvenTAura.exception.AllExceptions.AccountIsDeactiveException;
 import org.anuj.EvenTAura.exception.AllExceptions.UniversityNotFoundException;
 import org.anuj.EvenTAura.exception.AllExceptions.UniversityNotSupportedException;
 import org.anuj.EvenTAura.exception.AllExceptions.UserNotFoundException;
+import org.anuj.EvenTAura.mapper.UniversityMapper;
 import org.anuj.EvenTAura.mapper.UserMapper;
 import org.anuj.EvenTAura.model.HostApplication;
 import org.anuj.EvenTAura.model.University;
@@ -27,7 +25,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -171,5 +171,13 @@ public class UserServiceImpl implements UserService{
             users = userRepository.findAllByIsActiveAndNameContainingIgnoreCase(true, query, pageable);
         }
         return users.map(UserMapper::toResponse);
+    }
+
+    @Override
+    public List<UniversityListResponse> getAllUniversityList() {
+        return universityRepository.findAll()
+                .stream()
+                .map(UniversityMapper::toListResponse)
+                .collect(Collectors.toList());
     }
 }

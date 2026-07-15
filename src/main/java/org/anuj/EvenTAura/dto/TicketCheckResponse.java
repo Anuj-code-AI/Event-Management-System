@@ -9,7 +9,7 @@ import lombok.*;
 @AllArgsConstructor
 public class TicketCheckResponse {
     private boolean isValid;
-    private boolean ischeckedIn;
+    private boolean checkedIn;
     private TicketStatus status;
     private String message;
 }

@@ -85,6 +85,26 @@ async function fetchJoinedEvents() {
 
         if (res.ok && body.success) {
             allJoinedEvents = body.data.content || [];
+
+            // Fetch custom form submissions
+            try {
+                const formsRes = await fetch(`/api/v1/custom-forms/mySubmissions`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                const formsBody = await formsRes.json();
+                if (formsRes.ok && formsBody.success && formsBody.data) {
+                    const submissions = formsBody.data;
+                    submissions.forEach(sub => {
+                        sub.isCustomFormSubmission = true;
+                        sub.eventId = sub.formId; // Map key form ID
+                        sub.title = sub.formTitle;
+                    });
+                    allJoinedEvents = [...allJoinedEvents, ...submissions];
+                }
+            } catch (e) {
+                console.error("Error loading custom form submissions:", e);
+            }
+
             filterAndRender();
             showLoading(false);
         } else {
@@ -164,6 +184,46 @@ function filterAndRender() {
 // Generate Card HTML
 function renderEventCard(event) {
     const bannerUrl = event.bannerUrl || "/images/banner-placeholder.png";
+
+    if (event.isCustomFormSubmission) {
+        const subDateText = event.submittedAt
+            ? new Date(event.submittedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+            : "TBA";
+        return `
+            <div class="bg-surface-container border border-outline-variant rounded-xl overflow-hidden hover:border-primary/30 transition-all group flex flex-col h-full animate-fade-in">
+                <a href="/formDetails?formId=${event.eventId}" class="block relative pt-[56.25%] overflow-hidden bg-surface-container-low shrink-0">
+                    <img src="${bannerUrl}" alt="${event.title} Banner" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" onerror="this.src='/images/banner-placeholder.png'" />
+                    <div class="absolute top-sm right-sm flex flex-col gap-xs items-end">
+                        <span class="bg-purple-500/20 text-purple-300 border border-purple-500/30 text-label-md px-sm py-xs rounded-full z-10 font-semibold uppercase tracking-wide">
+                            Custom Form
+                        </span>
+                        <span class="bg-primary/10 text-primary border border-primary/30 text-[10px] font-semibold px-sm py-[2px] rounded-full uppercase tracking-wider mt-xs">
+                            Submitted
+                        </span>
+                    </div>
+                </a>
+                <div class="p-md flex flex-col flex-1 space-y-md">
+                    <div class="space-y-xs flex-1">
+                        <h3 class="text-title-lg font-bold text-on-surface group-hover:text-primary transition-colors line-clamp-2">
+                            <a href="/formDetails?formId=${event.eventId}">${event.title}</a>
+                        </h3>
+                        <p class="text-body-sm text-on-surface-variant flex items-center gap-xs mt-xs">
+                            <span class="material-symbols-outlined text-[16px] text-primary">description</span>
+                            <span class="truncate">Submission: ${event.submissionCode}</span>
+                        </p>
+                    </div>
+                    <div class="flex items-center justify-between pt-sm border-t border-outline-variant/30 text-body-sm text-on-surface-variant">
+                        <span class="flex items-center gap-xs">
+                            <span class="material-symbols-outlined text-[16px]">calendar_month</span>
+                            Submitted: ${subDateText}
+                        </span>
+                        <span class="font-bold text-primary">Free</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
     const dateText = event.lastRegistrationDate
         ? new Date(event.lastRegistrationDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
         : "TBA";

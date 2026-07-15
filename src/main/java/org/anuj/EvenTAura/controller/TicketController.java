@@ -27,7 +27,7 @@ public class TicketController {
     private final TicketRepository ticketRepository;
 
     // buy ticket
-    @PostMapping("/buy/{eventId}")
+    @PostMapping("/{eventId}/buy")
     public ResponseEntity<ApiResponse<TicketResponse>> buyTicket(
             @PathVariable Long eventId,
             @RequestParam(value = "paymentScreenShot", required = false) MultipartFile file,
@@ -39,7 +39,7 @@ public class TicketController {
     }
 
     // Load my-tickets
-    @GetMapping("/myTickets")
+    @GetMapping("/my-tickets")
     public ResponseEntity<ApiResponse<Page<TicketResponse>>> myTickets(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -51,7 +51,7 @@ public class TicketController {
     }
 
     // Get all tickets of particular event
-    @GetMapping("/event/{eventId}")
+    @GetMapping("/{eventId}/events")
     public ResponseEntity<ApiResponse<List<Ticket>>> getTickets(@PathVariable Long eventId,Authentication auth) {
         return ResponseEntity.ok(
                 ApiResponse.success("Tickets loaded successfully", ticketService.getTickets(eventId,auth))
@@ -59,13 +59,13 @@ public class TicketController {
     }
 
     // Check ticke and mark present
-    @PostMapping("/checkin/{ticketCode}")
+    @PostMapping("/{ticketCode}/checkin")
     public ResponseEntity<ApiResponse<TicketCheckResponse>> checkTicket(@PathVariable Long ticketCode,Authentication auth){
         return ResponseEntity.ok(ApiResponse.success("Present marked", ticketService.checkin(ticketCode,auth)));
     }
 
     // Only verifies the ticket validity
-    @GetMapping("/api/tickets/verify/{ticketCode}")
+    @GetMapping("/{ticketCode}/verify")
     public ResponseEntity<TicketCheckResponse> verifyTicket(@PathVariable Long ticketCode, Authentication auth) {
         return ResponseEntity.ok(ticketService.verifyTicket(ticketCode,auth));
     }
@@ -99,7 +99,7 @@ public class TicketController {
                 .body(qrImage);
     }
 
-    @GetMapping("/audienceList/{eventId}")
+    @GetMapping("/{eventId}/audienceList")
     public ResponseEntity<ApiResponse<Page<AudienceResponse>>> audienceList(
             @PathVariable Long eventId,
             @RequestParam(defaultValue = "0") int page,

@@ -1,5 +1,6 @@
 // admin.js — HOD Moderation dashboard script
 const API_ADMIN = "/api/admin";
+const API_CUSTOM_FORM_BASE = "/api/v1/custom-forms";
 
 // State management
 let currentUser = null;
@@ -20,6 +21,7 @@ let hostsRejected = [];
 
 // Action context
 let activeId = null;
+let isActiveForm = false;
 
 // Element selections
 const tabsContainer = document.getElementById("admin-tabs");
@@ -233,13 +235,55 @@ async function fetchAdminData() {
         const aHosts = await aHostsRes.json();
         const rHosts = await rHostsRes.json();
 
+        // Fetch pending, approved, and rejected custom forms
+        let formsPendingList = [];
+        let formsApprovedList = [];
+        let formsRejectedList = [];
+        try {
+            const [pendingRes, approvedRes, rejectedRes] = await Promise.all([
+                fetch(`/api/v1/custom-forms/pending`, { headers: { Authorization: `Bearer ${token}` } }),
+                fetch(`/api/v1/custom-forms/approved`, { headers: { Authorization: `Bearer ${token}` } }),
+                fetch(`/api/v1/custom-forms/rejected`, { headers: { Authorization: `Bearer ${token}` } })
+            ]);
+
+            if (pendingRes.ok) {
+                const body = await pendingRes.json();
+                formsPendingList = body.data || [];
+                formsPendingList.forEach(f => {
+                    f.isCustomForm = true;
+                    f.eventStatus = f.status;
+                    f.eventId = f.id;
+                });
+            }
+            if (approvedRes.ok) {
+                const body = await approvedRes.json();
+                formsApprovedList = body.data || [];
+                formsApprovedList.forEach(f => {
+                    f.isCustomForm = true;
+                    f.eventStatus = f.status;
+                    f.eventId = f.id;
+                });
+            }
+            if (rejectedRes.ok) {
+                const body = await rejectedRes.json();
+                formsRejectedList = body.data || [];
+                formsRejectedList.forEach(f => {
+                    f.isCustomForm = true;
+                    f.eventStatus = f.status;
+                    f.eventId = f.id;
+                });
+            }
+        } catch (e) {
+            console.error("Error loading moderated custom forms:", e);
+        }
+
         if (
             pEventsRes.ok && aEventsRes.ok && rEventsRes.ok &&
             pHostsRes.ok && aHostsRes.ok && rHostsRes.ok
         ) {
-            eventsPending = pEvents.data || [];
-            eventsApproved = aEvents.data || [];
-            eventsRejected = rEvents.data || [];
+            eventsPending = [...(pEvents.data || []), ...formsPendingList];
+            eventsApproved = [...(aEvents.data || []), ...formsApprovedList];
+            eventsRejected = [...(rEvents.data || []), ...formsRejectedList];
 
             hostsPending = pHosts.data || [];
             hostsApproved = aHosts.data || [];
@@ -340,6 +384,80 @@ function formatDate(dateStr) {
 
 // HTML Generator: Event Card for HOD Moderation
 function renderEventCard(event) {
+    if (event.isCustomForm) {
+        let badgeClass = "bg-surface-container text-on-surface-variant border border-outline-variant";
+        if (event.status === "PENDING") badgeClass = "bg-yellow-500/10 text-yellow-500 border border-yellow-500/30";
+        else if (event.status === "APPROVED") badgeClass = "bg-primary/10 text-primary border border-primary/30";
+        else if (event.status === "REJECTED") badgeClass = "bg-error/10 text-error border border-error/30";
+
+        const banner = event.bannerUrl || "/images/banner-placeholder.png";
+        const showModeration = currentTab === "pending-events";
+
+        let actionButtons = "";
+        if (showModeration) {
+            actionButtons = `
+                <button onclick="openApproveEventModal(${event.eventId}, '${event.title.replace(/'/g, "\\'")}', true)" 
+                    class="flex-1 bg-primary hover:bg-primary-fixed text-on-primary font-bold py-xs px-sm rounded text-body-sm transition-all flex items-center justify-center gap-xs"
+                >
+                    <span class="material-symbols-outlined text-[18px]">check</span>
+                    <span>Approve Form</span>
+                </button>
+                <button onclick="openRejectEventModal(${event.eventId}, '${event.title.replace(/'/g, "\\'")}', true)" 
+                    class="flex-1 border border-error hover:bg-error/10 text-error font-bold py-xs px-sm rounded text-body-sm transition-all flex items-center justify-center gap-xs"
+                >
+                    <span class="material-symbols-outlined text-[18px]">close</span>
+                    <span>Reject Form</span>
+                </button>
+            `;
+        } else if (event.status === "APPROVED") {
+            actionButtons = `
+                <div class="flex flex-col gap-xs w-full">
+                    <a href="/update-custom-form?formId=${event.eventId}" 
+                        class="w-full bg-surface-container-high hover:bg-surface-container-highest text-on-surface border border-outline-variant font-semibold py-xs px-sm rounded text-body-sm transition-all flex items-center justify-center gap-xs mt-xs"
+                    >
+                        <span class="material-symbols-outlined text-[18px]">edit</span>
+                        <span>Edit Form</span>
+                    </a>
+                    <button onclick="showResponsesView(${event.eventId}, '${event.title.replace(/'/g, "\\'")}')" 
+                        class="w-full bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 font-semibold py-xs px-sm rounded text-body-sm transition-all flex items-center justify-center gap-xs mt-xs"
+                    >
+                        <span class="material-symbols-outlined text-[18px]">receipt_long</span>
+                        <span>View Responses</span>
+                    </button>
+                </div>
+            `;
+        }
+
+        return `
+            <div class="glass-card rounded-xl overflow-hidden flex flex-col justify-between hover:shadow-primary/5 hover:border-primary/30 transition-all duration-300">
+                <!-- Banner area -->
+                <div class="relative h-44 w-full bg-surface-container-low overflow-hidden cursor-pointer" onclick="window.open('/formDetails?formId=${event.eventId}', '_blank')">
+                    <img class="w-full h-full object-cover hover:scale-105 transition-transform duration-500" src="${banner}" alt="${event.title}" onerror="this.src='/images/banner-placeholder.png'">
+                    <span class="absolute top-sm left-sm bg-purple-500/20 text-purple-300 border border-purple-500/30 text-label-md px-sm py-xs rounded-full">
+                        Custom Form
+                    </span>
+                    <span class="absolute top-sm right-sm ${badgeClass} text-label-md px-sm py-xs rounded-full font-semibold uppercase">
+                        ${event.status}
+                    </span>
+                </div>
+
+                <!-- Card Body -->
+                <div class="p-md flex-1 flex flex-col justify-between space-y-md">
+                    <div class="space-y-sm">
+                        <h3 class="text-title-lg font-bold text-on-background line-clamp-1 hover:text-primary cursor-pointer transition-colors" onclick="window.open('/formDetails?formId=${event.eventId}', '_blank')">${event.title}</h3>
+                        <p class="text-body-sm text-on-surface-variant line-clamp-2">${event.description || "No description provided."}</p>
+                        <p class="text-label-md text-outline">Requested by: <span class="text-on-surface font-semibold">${event.username || "Organizer"}</span></p>
+                    </div>
+                    ${actionButtons ? `
+                        <div class="flex gap-sm border-t border-outline-variant/20 pt-sm">
+                            ${actionButtons}
+                        </div>
+                    ` : ""}
+                </div>
+            </div>
+        `;
+    }
+
     let badgeClass = "bg-surface-container text-on-surface-variant border border-outline-variant";
     if (event.eventStatus === "PENDING") badgeClass = "bg-yellow-500/10 text-yellow-500 border border-yellow-500/30";
     else if (event.eventStatus === "APPROVED") badgeClass = "bg-primary/10 text-primary border border-primary/30";
@@ -499,17 +617,20 @@ function openModal(id) {
 function closeModal(id) {
     document.getElementById(id).classList.add("hidden");
     activeId = null;
+    isActiveForm = false;
 }
 
 // Action modal openings
-function openApproveEventModal(id, title) {
+function openApproveEventModal(id, title, isForm = false) {
     activeId = id;
+    isActiveForm = isForm;
     document.getElementById("approve-event-title").textContent = title;
     openModal("approve-event-modal");
 }
 
-function openRejectEventModal(id, title) {
+function openRejectEventModal(id, title, isForm = false) {
     activeId = id;
+    isActiveForm = isForm;
     document.getElementById("reject-event-title").textContent = title;
     openModal("reject-event-modal");
 }
@@ -530,40 +651,50 @@ function openRejectHostModal(id, name) {
 async function confirmApproveEvent() {
     if (!activeId) return;
     const token = localStorage.getItem("accessToken");
+    const url = isActiveForm 
+        ? `/api/v1/custom-forms/approve/${activeId}`
+        : `${API_ADMIN}/event/${activeId}/approve`;
+    const method = isActiveForm ? "POST" : "PATCH";
+
     try {
-        const res = await fetch(`${API_ADMIN}/event/${activeId}/approve`, {
-            method: "PATCH",
+        const res = await fetch(url, {
+            method: method,
             headers: { Authorization: `Bearer ${token}` }
         });
         if (res.ok) {
             closeModal("approve-event-modal");
             await fetchAdminData();
         } else {
-            alert("Failed to approve event request.");
+            alert("Failed to approve request.");
         }
     } catch (err) {
-        console.error("Approve event error:", err);
-        alert("Network error approving event.");
+        console.error("Approve request error:", err);
+        alert("Network error approving request.");
     }
 }
 
 async function confirmRejectEvent() {
     if (!activeId) return;
     const token = localStorage.getItem("accessToken");
+    const url = isActiveForm 
+        ? `/api/v1/custom-forms/reject/${activeId}`
+        : `${API_ADMIN}/event/${activeId}/reject`;
+    const method = isActiveForm ? "POST" : "PATCH";
+
     try {
-        const res = await fetch(`${API_ADMIN}/event/${activeId}/reject`, {
-            method: "PATCH",
+        const res = await fetch(url, {
+            method: method,
             headers: { Authorization: `Bearer ${token}` }
         });
         if (res.ok) {
             closeModal("reject-event-modal");
             await fetchAdminData();
         } else {
-            alert("Failed to reject event request.");
+            alert("Failed to reject request.");
         }
     } catch (err) {
-        console.error("Reject event error:", err);
-        alert("Network error rejecting event.");
+        console.error("Reject request error:", err);
+        alert("Network error rejecting request.");
     }
 }
 
@@ -893,6 +1024,148 @@ async function onScanSuccess(decodedText, decodedResult) {
 
 function onScanError(errorMessage) {
     // Quietly ignore frame read failures
+}
+
+// CUSTOM REGISTRATION FORM RESPONSES VIEW & EXPORT FOR HOD
+// ----------------------------------------------------
+let activeEventForResponses = null;
+
+function showResponsesView(eventId, eventTitle) {
+    activeEventForResponses = { eventId, title: eventTitle };
+    
+    // Set header
+    document.getElementById("responses-event-title").textContent = eventTitle;
+
+    // Toggle views
+    document.getElementById("admin-dashboard-view").classList.add("hidden");
+    document.getElementById("responses-view").classList.remove("hidden");
+
+    // Bind CSV export button click
+    const exportBtn = document.getElementById("export-csv-btn");
+    exportBtn.onclick = () => downloadResponsesCsv(eventId);
+
+    // Fetch and populate responses
+    fetchResponsesData(eventId);
+}
+
+function hideResponsesView() {
+    activeEventForResponses = null;
+    document.getElementById("responses-view").classList.add("hidden");
+    document.getElementById("admin-dashboard-view").classList.remove("hidden");
+}
+
+async function fetchResponsesData(eventId) {
+    const token = localStorage.getItem("accessToken");
+    const headerRow = document.getElementById("responses-table-header");
+    const tableBody = document.getElementById("responses-table-body");
+    const emptyMsg = document.getElementById("responses-empty-msg");
+    const table = document.getElementById("responses-table");
+
+    headerRow.innerHTML = "";
+    tableBody.innerHTML = "";
+    emptyMsg.classList.add("hidden");
+    table.classList.remove("hidden");
+
+    try {
+        const res = await fetch(`${API_CUSTOM_FORM_BASE}/responses/${eventId}`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        const body = await res.json();
+        
+        if (res.ok && body.success) {
+            const submissions = body.data || [];
+            if (submissions.length === 0) {
+                table.classList.add("hidden");
+                emptyMsg.classList.remove("hidden");
+                return;
+            }
+
+            // Build table headers dynamically based on the questions present in the first submission
+            const sampleAnswers = submissions[0].answers || [];
+            
+            let headersHtml = `
+                <th class="p-md text-label-md text-on-surface-variant uppercase tracking-wider">Submission Code</th>
+                <th class="p-md text-label-md text-on-surface-variant uppercase tracking-wider">Attendee</th>
+                <th class="p-md text-label-md text-on-surface-variant uppercase tracking-wider">Email</th>
+                <th class="p-md text-label-md text-on-surface-variant uppercase tracking-wider">Submitted At</th>
+            `;
+            
+            sampleAnswers.forEach(ans => {
+                headersHtml += `<th class="p-md text-label-md text-on-surface-variant uppercase tracking-wider">${ans.fieldLabel}</th>`;
+            });
+            
+            headerRow.innerHTML = headersHtml;
+
+            // Populate rows
+            submissions.forEach(sub => {
+                const subDate = new Date(sub.submittedAt).toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+                let rowHtml = `
+                    <tr class="hover:bg-surface-container-high/30 transition-colors">
+                        <td class="p-md text-body-sm font-semibold text-primary">${sub.submissionCode}</td>
+                        <td class="p-md text-body-sm text-on-surface font-medium">${sub.username}</td>
+                        <td class="p-md text-body-sm text-on-surface-variant">${sub.userEmail}</td>
+                        <td class="p-md text-body-sm text-on-surface-variant">${subDate}</td>
+                `;
+
+                // Map field values
+                sub.answers.forEach(ans => {
+                    if (ans.fileUrl) {
+                        rowHtml += `
+                            <td class="p-md text-body-sm text-primary">
+                                <a href="${ans.fileUrl}" target="_blank" class="inline-flex items-center gap-xs hover:underline font-semibold">
+                                    <span class="material-symbols-outlined text-[16px]">attachment</span>
+                                    <span>View File</span>
+                                </a>
+                            </td>
+                        `;
+                    } else {
+                        rowHtml += `<td class="p-md text-body-sm text-on-surface-variant">${ans.value || "—"}</td>`;
+                    }
+                });
+
+                rowHtml += "</tr>";
+                tableBody.insertAdjacentHTML("beforeend", rowHtml);
+            });
+
+        } else {
+            throw new Error(body.message || "Failed to load responses data.");
+        }
+    } catch (err) {
+        console.error("fetchResponsesData error:", err);
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="4" class="p-lg text-center text-body-sm text-error font-medium">
+                    Failed to fetch custom responses: ${err.message || "Network issue"}
+                </td>
+            </tr>
+        `;
+    }
+}
+
+async function downloadResponsesCsv(eventId) {
+    const token = localStorage.getItem("accessToken");
+    try {
+        const res = await fetch(`${API_CUSTOM_FORM_BASE}/export/${eventId}`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        if (res.ok) {
+            const blob = await res.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `responses_form_${eventId}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        } else {
+            alert("Failed to export CSV file.");
+        }
+    } catch (err) {
+        console.error("CSV download error:", err);
+        alert("A network error occurred downloading responses CSV.");
+    }
 }
 
 // Run initialization

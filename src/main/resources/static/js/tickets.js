@@ -161,6 +161,32 @@ async function fetchTicketsData() {
 
         if (res.ok && body.success) {
             allTicketsList = body.data.content || [];
+
+            // Fetch custom form submissions
+            try {
+                const formsRes = await fetch(`/api/v1/custom-forms/mySubmissions`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                const formsBody = await formsRes.json();
+                if (formsRes.ok && formsBody.success && formsBody.data) {
+                    const submissions = formsBody.data;
+                    submissions.forEach(sub => {
+                        sub.isCustomFormSubmission = true;
+                        sub.status = "ACTIVE"; // Show in active passes tab
+                        sub.checkedIn = false;
+                        // Mock event structure for search filtering
+                        sub.event = {
+                            title: sub.formTitle,
+                            description: "Custom Form Submission",
+                            bannerUrl: sub.bannerUrl
+                        };
+                    });
+                    allTicketsList = [...allTicketsList, ...submissions];
+                }
+            } catch (e) {
+                console.error("Error loading custom form submissions for tickets:", e);
+            }
+
             filterAndRender();
             showLoading(false);
         } else {
@@ -238,6 +264,75 @@ function formatTime(timeStr) {
 
 // HTML Generator: Beautiful Physical ticket look with dashed border stub
 function renderTicketCard(ticket) {
+    if (ticket.isCustomFormSubmission) {
+        const banner = ticket.bannerUrl || "/images/banner-placeholder.png";
+        const submittedAtText = ticket.submittedAt
+            ? new Date(ticket.submittedAt).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })
+            : "TBA";
+        return `
+            <div class="glass-card rounded-xl overflow-hidden flex flex-col md:flex-row hover:shadow-primary/5 hover:border-primary/20 transition-all duration-300">
+                
+                <!-- Left Info Block -->
+                <div class="flex-1 p-md flex flex-col justify-between space-y-md md:border-r ticket-stub-border">
+                    <div class="flex flex-col md:flex-row md:items-start gap-md">
+                        <!-- Event Banner Miniature -->
+                        <div class="w-full md:w-32 h-20 bg-surface-container rounded-lg overflow-hidden border border-outline-variant/30 shrink-0">
+                            <img class="w-full h-full object-cover" src="${banner}" alt="${ticket.formTitle}" onerror="this.src='/images/banner-placeholder.png'">
+                        </div>
+                        
+                        <!-- Meta info details -->
+                        <div class="space-y-xs flex-1">
+                            <div class="flex items-center gap-xs">
+                                <span class="inline-block px-sm py-xs rounded text-label-md font-semibold uppercase tracking-wider bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                                    Custom Form
+                                </span>
+                                <span class="bg-primary/10 text-primary border border-primary/30 text-label-md px-sm py-xs rounded uppercase font-semibold">
+                                    Submitted
+                                </span>
+                            </div>
+                            <h3 class="text-title-lg font-bold text-on-background line-clamp-1 hover:text-primary transition-colors cursor-pointer" onclick="window.open('/formDetails?formId=${ticket.formId}', '_blank')">${ticket.formTitle}</h3>
+                            
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-md gap-y-xs text-body-sm text-on-surface-variant pt-xs">
+                                <div class="flex items-center gap-xs">
+                                    <span class="material-symbols-outlined text-primary text-[18px]">calendar_today</span>
+                                    <span>Submitted At: ${submittedAtText}</span>
+                                </div>
+                                <div class="flex items-center gap-xs">
+                                    <span class="material-symbols-outlined text-primary text-[18px]">description</span>
+                                    <span class="line-clamp-1">Receipt Code: ${ticket.submissionCode}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between border-t border-outline-variant/20 pt-sm">
+                        <div class="text-label-md text-outline">
+                            Pass Price: <span class="text-on-surface font-semibold">Free</span>
+                        </div>
+                        <a href="/formDetails?formId=${ticket.formId}" target="_blank"
+                           class="border border-primary/50 hover:bg-primary/10 text-primary font-semibold py-xs px-sm rounded text-body-sm transition-all flex items-center justify-center gap-xs"
+                        >
+                            <span class="material-symbols-outlined text-[18px]">open_in_new</span>
+                            <span>View Form Details</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Right QR Code Stub (Custom Questionnaire Icon Stub) -->
+                <div class="w-full md:w-44 bg-surface-container-low/20 shrink-0 p-md flex flex-col items-center justify-center text-center relative border-t md:border-t-0 border-outline-variant/30">
+                    <div class="w-28 h-28 border border-outline-variant/30 rounded overflow-hidden p-1 bg-surface-container-low flex items-center justify-center relative">
+                        <span class="material-symbols-outlined text-[56px] text-purple-400">task</span>
+                    </div>
+                    <div class="mt-sm space-y-xs">
+                        <p class="text-label-md text-outline tracking-wider font-mono">SUB ID: ${ticket.submissionCode}</p>
+                        <p class="text-label-md text-primary font-medium">Questionnaire Completed</p>
+                    </div>
+                </div>
+
+            </div>
+        `;
+    }
+
     const event = ticket.event || {};
     const banner = event.bannerUrl || "/images/banner-placeholder.png";
     const priceDisplay = event.ticketPrice > 0 ? `$${event.ticketPrice.toFixed(2)}` : "Free";

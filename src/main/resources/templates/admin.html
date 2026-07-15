@@ -398,6 +398,54 @@
                 </div>
             </div>
 
+            <!-- Custom Form Responses View Section (Hidden by default) -->
+            <div id="responses-view" class="hidden space-y-lg">
+                <!-- Header Card -->
+                <div class="glass-card rounded-xl p-md flex flex-col sm:flex-row sm:items-center justify-between gap-md">
+                    <div class="space-y-xs">
+                        <div class="flex items-center gap-xs text-primary">
+                            <span class="material-symbols-outlined text-[28px]">receipt_long</span>
+                            <h2 class="text-headline-sm font-bold text-on-background">Registration Responses</h2>
+                        </div>
+                        <p class="text-body-sm text-on-surface-variant">
+                            Event: <span id="responses-event-title" class="text-on-surface font-semibold">—</span>
+                        </p>
+                    </div>
+                    <div class="flex gap-sm">
+                        <button id="export-csv-btn" class="bg-primary hover:bg-primary-fixed text-on-primary font-bold py-sm px-md rounded-lg transition-all flex items-center justify-center gap-xs shadow-md shadow-primary/10">
+                            <span class="material-symbols-outlined text-[20px]">download_for_offline</span>
+                            <span>Export CSV</span>
+                        </button>
+                        <button onclick="hideResponsesView()" class="border border-outline-variant hover:bg-surface-container-high text-on-surface font-semibold py-sm px-md rounded-lg transition-all flex items-center justify-center gap-xs">
+                            <span class="material-symbols-outlined text-[20px]">arrow_back</span>
+                            <span>Back to Moderation</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Responses Table -->
+                <div class="glass-card rounded-xl overflow-hidden border border-outline-variant/30">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse" id="responses-table">
+                            <thead>
+                                <tr class="bg-surface-container-high/60 border-b border-outline-variant/30" id="responses-table-header">
+                                    <!-- Populated dynamically based on form fields -->
+                                </tr>
+                            </thead>
+                            <tbody id="responses-table-body" class="divide-y divide-outline-variant/20">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Responses Empty State -->
+                <div id="responses-empty-msg" class="hidden flex flex-col items-center justify-center py-2xl text-center space-y-sm bg-surface-container border border-outline-variant rounded-xl p-lg">
+                    <span class="material-symbols-outlined text-[48px] text-on-surface-variant/40">feedback</span>
+                    <p class="text-body-md text-on-surface-variant font-medium">No form submissions received yet.</p>
+                </div>
+            </div>
+
         </main>
 
         <!-- ---------- FOOTER ---------- -->

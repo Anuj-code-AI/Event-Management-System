@@ -439,6 +439,63 @@
         <span class="material-symbols-outlined">close</span>
     </button>
     <img id="banner-lightbox-img" src="" alt="Full-size event banner" class="max-w-[92vw] max-h-[88vh] object-contain rounded-lg">
+<!-- ===================== CUSTOM FORM MODAL ===================== -->
+<div id="custom-form-modal" class="hidden fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-md overflow-y-auto">
+    <div class="glass-card rounded-xl max-w-2xl w-full p-lg md:p-xl shadow-2xl relative border-t-8 border-t-primary my-xl max-h-[90vh] overflow-y-auto">
+        <!-- Close button -->
+        <button type="button" id="custom-form-modal-close" aria-label="Close form"
+                class="absolute top-md right-md text-on-surface-variant hover:text-on-surface p-xs flex items-center">
+            <span class="material-symbols-outlined text-[24px]">close</span>
+        </button>
+
+        <div class="space-y-md">
+            <div>
+                <h3 id="custom-form-title" class="text-headline-sm font-bold text-on-background">Event Registration Form</h3>
+                <p id="custom-form-desc" class="text-body-sm text-on-surface-variant mt-xs">Please answer the questions below to complete your registration.</p>
+            </div>
+
+            <!-- Form Alert Box -->
+            <div id="custom-form-alert" class="hidden p-sm rounded text-label-md font-medium flex items-start gap-xs">
+                <!-- Dynamic feedback -->
+            </div>
+
+            <form id="custom-answers-form" class="space-y-lg" novalidate>
+                <!-- Dynamically rendered fields will go here -->
+                <div id="custom-form-fields-container" class="space-y-md"></div>
+
+                <p class="text-label-md text-outline">⚠️ Note: File upload questions accept PNG, JPG, JPEG, and PDF formats only.</p>
+
+                <!-- Conditional payment receipt if event is paid -->
+                <div id="custom-form-payment-section" class="hidden space-y-md pt-sm border-t border-outline-variant/30">
+                    <h4 class="text-body-sm font-bold text-primary">Payment Verification</h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-md items-center">
+                        <div class="space-y-sm bg-surface-container-low p-sm border border-outline-variant rounded-lg text-center">
+                            <div class="w-24 h-24 mx-auto border border-outline-variant rounded bg-white p-1">
+                                <img id="custom-payment-qr-image" class="w-full h-full object-contain" src="" alt="UPI Scan QR">
+                            </div>
+                            <p class="text-label-md text-outline">Scan & Pay QR</p>
+                        </div>
+                        <div class="space-y-xs">
+                            <label class="text-body-sm font-medium text-on-surface">Upload Payment Receipt <span class="text-error">*</span></label>
+                            <input type="file" id="custom-paymentScreenShot" name="paymentScreenShot" accept="image/*"
+                                   class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-md py-sm text-body-sm text-on-surface focus:border-primary focus:outline-none transition-colors" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex items-center justify-end gap-md pt-md border-t border-outline-variant/20">
+                    <button type="button" id="custom-form-cancel-btn" class="border border-outline-variant hover:bg-surface-container-high text-on-surface font-bold px-lg py-sm rounded-lg transition-all">
+                        Cancel
+                    </button>
+                    <button type="submit" id="custom-form-submit-btn" class="bg-primary hover:bg-primary-fixed text-on-primary font-bold px-xl py-sm rounded-lg transition-all shadow-lg shadow-primary/20 flex items-center gap-xs">
+                        <span class="material-symbols-outlined text-[20px]">check_circle</span>
+                        <span id="custom-form-submit-text">Submit Registration</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
 <script src="/js/auth.js"></script>

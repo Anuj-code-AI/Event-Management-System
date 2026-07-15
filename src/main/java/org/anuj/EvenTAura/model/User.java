@@ -6,8 +6,6 @@ import lombok.*;
 import org.anuj.EvenTAura.model.enums.AuthProvider;
 import org.anuj.EvenTAura.model.enums.SystemRole;
 
-import java.time.LocalDateTime;
-
 @Entity
 @Table(name="users")
 @AllArgsConstructor @NoArgsConstructor
