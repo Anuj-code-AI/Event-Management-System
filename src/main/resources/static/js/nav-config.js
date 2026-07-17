@@ -121,7 +121,7 @@ function buildNavItems(user) {
         { label: "Campus Events", icon: "explore", href: "/campus-events" },
         { label: "My Tickets", icon: "confirmation_number", href: "/tickets" },
         { label: "My Events", icon: "event_available", href: "/my-events" },
-        { label: "About Us", icon: "info", href: "/aboutUs" },
+        { label: "About Us", icon: "info", href: "/about-us" },
     ];
 
     const eventManagementItem = { label: "Event Management", icon: "event_note", href: "/event-management" };

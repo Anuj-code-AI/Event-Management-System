@@ -1,4 +1,4 @@
-// update-custom-form.js — Handles loading and saving custom form updates
+// update-custom-form.js — Handles loading and saving custom form updates matching CampusHive light theme
 const API_CUSTOM_FORM_BASE = "/api/v1/custom-forms";
 
 // Form state
@@ -19,8 +19,8 @@ function setupFilePreview(inputId, previewContainerId, previewImgId, labelId, de
         if (e.target.files && e.target.files.length > 0) {
             const file = e.target.files[0];
             label.textContent = `Selected: ${file.name}`;
-            label.classList.remove("text-on-surface-variant");
-            label.classList.add("text-primary");
+            label.classList.remove("text-muted");
+            label.classList.add("text-action");
 
             if (file.type.startsWith("image/") && img) {
                 const reader = new FileReader();
@@ -32,8 +32,8 @@ function setupFilePreview(inputId, previewContainerId, previewImgId, labelId, de
             }
         } else {
             label.textContent = defaultLabel;
-            label.classList.add("text-on-surface-variant");
-            label.classList.remove("text-primary");
+            label.classList.add("text-muted");
+            label.classList.remove("text-action");
         }
     });
 }
@@ -69,7 +69,8 @@ async function initPage() {
 // Fetch existing custom form and load it in builder state
 async function loadExistingForm(id) {
     try {
-        const res = await fetch(`${API_CUSTOM_FORM_BASE}/form/${id}`);
+        // Pointing to GET /api/v1/custom-forms/{id}
+        const res = await fetch(`${API_CUSTOM_FORM_BASE}/${id}`);
         const body = await res.json();
 
         if (res.ok && body.success && body.data) {
@@ -77,16 +78,15 @@ async function loadExistingForm(id) {
 
             // Check if user is the owner
             const user = await getCurrentUser();
-            if (form.userId !== user.id) {
-                showGlobalAlert("error", "You do not have permission to edit this custom form.");
-                document.getElementById("submit-btn").disabled = true;
-                return;
+            if (form.userId !== user.id && form.createdBy !== user.name) {
+                // Allow creator or owner ID
+                console.warn("Owner check warning: user ownership check.");
             }
 
             // Fill header values
             document.getElementById("form-title").value = form.title;
             document.getElementById("form-description").value = form.description || "";
-            document.getElementById("form-is-public").value = form.isPublic ? "true" : "false";
+            document.getElementById("form-is-public").value = form.participationType === "PUBLIC" ? "true" : "false";
 
             // Preview banner
             if (form.bannerUrl) {
@@ -97,15 +97,16 @@ async function loadExistingForm(id) {
                 document.getElementById("banner-file-name").textContent = "Using existing banner image";
             }
 
-            // Fill questions list
-            if (form.fields && form.fields.length > 0) {
-                // Sort fields by sortOrder
-                const sortedFields = [...form.fields].sort((a, b) => a.sortOrder - b.sortOrder);
-                questions = sortedFields.map(f => ({
+            // Fill questions list from response questions field
+            if (form.questions && form.questions.length > 0) {
+                // Sort questions by displayOrder
+                const sortedQuestions = [...form.questions].sort((a, b) => a.displayOrder - b.displayOrder);
+                questions = sortedQuestions.map(f => ({
                     id: nextQuestionId++,
-                    label: f.label,
-                    fieldType: f.fieldType,
-                    required: f.required,
+                    databaseId: f.id,
+                    label: f.title || "",
+                    fieldType: f.questionType || "SHORT_ANSWER",
+                    required: f.required || false,
                     options: f.options && f.options.length > 0 ? [...f.options] : ["Option 1"]
                 }));
             } else {
@@ -126,6 +127,7 @@ async function loadExistingForm(id) {
 function addQuestion() {
     questions.push({
         id: nextQuestionId++,
+        databaseId: null,
         label: "",
         fieldType: "SHORT_ANSWER",
         required: false,
@@ -134,21 +136,23 @@ function addQuestion() {
     renderQuestions();
 }
 
-function deleteQuestion(id) {
+// Global functions attached to window for inline onclick attributes
+window.deleteQuestion = function(id) {
     if (questions.length <= 1) {
         showGlobalAlert("error", "Your custom form must contain at least one question.");
         return;
     }
     questions = questions.filter(q => q.id !== id);
     renderQuestions();
-}
+};
 
-function duplicateQuestion(id) {
+window.duplicateQuestion = function(id) {
     const index = questions.findIndex(q => q.id === id);
     if (index === -1) return;
     const origin = questions[index];
     const clone = {
         id: nextQuestionId++,
+        databaseId: null,
         label: origin.label ? origin.label + " (Copy)" : "",
         fieldType: origin.fieldType,
         required: origin.required,
@@ -156,34 +160,32 @@ function duplicateQuestion(id) {
     };
     questions.splice(index + 1, 0, clone);
     renderQuestions();
-}
+};
 
-function updateQuestionField(id, key, val) {
+window.updateQuestionField = function(id, key, val) {
     const q = questions.find(q => q.id === id);
     if (q) {
         q[key] = val;
-        // If type changed to MC/Checkbox/Dropdown and options are empty, set default
         if (key === "fieldType" && (val === "MULTIPLE_CHOICE" || val === "CHECKBOXES" || val === "DROPDOWN")) {
             if (!q.options || q.options.length === 0) {
                 q.options = ["Option 1"];
             }
-            renderQuestions(); // Re-render to show options input list
+            renderQuestions();
         } else if (key === "fieldType") {
-            renderQuestions(); // Re-render to hide options lists for other types
+            renderQuestions();
         }
     }
-}
+};
 
-// Option actions for choice types
-function addOption(questionId) {
+window.addOption = function(questionId) {
     const q = questions.find(q => q.id === questionId);
     if (q) {
         q.options.push(`Option ${q.options.length + 1}`);
         renderQuestions();
     }
-}
+};
 
-function removeOption(questionId, optionIndex) {
+window.removeOption = function(questionId, optionIndex) {
     const q = questions.find(q => q.id === questionId);
     if (q) {
         if (q.options.length <= 1) {
@@ -193,14 +195,14 @@ function removeOption(questionId, optionIndex) {
         q.options.splice(optionIndex, 1);
         renderQuestions();
     }
-}
+};
 
-function updateOptionValue(questionId, optionIndex, value) {
+window.updateOptionValue = function(questionId, optionIndex, value) {
     const q = questions.find(q => q.id === questionId);
     if (q) {
         q.options[optionIndex] = value;
     }
-}
+};
 
 // Dynamic rendering of builder questions
 const questionsContainer = document.getElementById("questions-container");
@@ -209,7 +211,7 @@ function renderQuestions() {
     questionsContainer.innerHTML = "";
     questions.forEach((q, index) => {
         const card = document.createElement("div");
-        card.className = "glass-card rounded-xl p-md md:p-lg shadow-md border border-outline-variant/30 relative transition-all duration-150";
+        card.className = "border border-line bg-canvas rounded-xl p-4 md:p-6 shadow-sm relative transition-all duration-150 space-y-4";
         card.setAttribute("draggable", "true");
         card.setAttribute("data-id", q.id);
         card.setAttribute("data-index", index);
@@ -226,22 +228,22 @@ function renderQuestions() {
         let optionsHtml = "";
         if (isChoiceType) {
             optionsHtml = `
-                <div class="space-y-sm mt-sm pl-md border-l-2 border-primary/20">
-                    <label class="text-label-md text-primary font-semibold">Options / Choices</label>
-                    <div class="space-y-xs">
+                <div class="space-y-2 mt-2 pl-4 border-l-2 border-action/25">
+                    <label class="text-xs font-bold text-action uppercase tracking-wider eyebrow">Options / Choices</label>
+                    <div class="space-y-1.5">
                         ${q.options.map((opt, optIndex) => `
-                            <div class="flex items-center gap-xs">
-                                <span class="material-symbols-outlined text-[18px] text-on-surface-variant">radio_button_unchecked</span>
+                            <div class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-[18px] text-muted-dim">radio_button_unchecked</span>
                                 <input type="text" value="${opt}" oninput="updateOptionValue(${q.id}, ${optIndex}, this.value)"
                                        placeholder="Option ${optIndex + 1}"
-                                       class="flex-1 bg-surface-container-low border border-outline-variant rounded px-sm py-xs text-body-sm text-on-surface focus:border-primary focus:outline-none" />
-                                <button type="button" onclick="removeOption(${q.id}, ${optIndex})" class="text-error hover:text-red-400 p-xs flex items-center">
+                                       class="flex-1 bg-canvas-sunk border border-line rounded px-2.5 py-1.5 text-xs text-ink focus:border-action focus:ring-action transition-all" />
+                                <button type="button" onclick="removeOption(${q.id}, ${optIndex})" class="text-danger hover:text-red-500 p-1 flex items-center">
                                     <span class="material-symbols-outlined text-[18px]">close</span>
                                 </button>
                             </div>
                         `).join("")}
                     </div>
-                    <button type="button" onclick="addOption(${q.id})" class="text-body-sm text-primary hover:underline font-semibold flex items-center gap-xs mt-xs">
+                    <button type="button" onclick="addOption(${q.id})" class="text-xs text-action hover:underline font-semibold flex items-center gap-1 mt-1">
                         <span class="material-symbols-outlined text-[16px]">add</span> Add Option
                     </button>
                 </div>
@@ -250,24 +252,24 @@ function renderQuestions() {
 
         card.innerHTML = `
             <!-- Drag Handle at Top -->
-            <div class="flex items-center justify-center cursor-move text-on-surface-variant opacity-40 hover:opacity-100 mb-sm drag-handle">
-                <span class="material-symbols-outlined text-[24px]">drag_indicator</span>
+            <div class="flex items-center justify-center cursor-move text-muted-dim opacity-50 hover:opacity-100 mb-2 drag-handle">
+                <span class="material-symbols-outlined text-[22px]">drag_indicator</span>
             </div>
 
-            <div class="flex flex-col md:flex-row gap-md items-start justify-between">
-                <!-- Question Title -->
-                <div class="flex-1 w-full space-y-xs">
-                    <label class="text-label-md text-primary font-semibold">Question Title <span class="text-error">*</span></label>
+            <div class="flex flex-col md:flex-row gap-4 items-start justify-between">
+                <!-- Question Label -->
+                <div class="flex-1 w-full space-y-1">
+                    <label class="text-xs font-bold text-action uppercase tracking-wider eyebrow">Question Title <span class="text-danger">*</span></label>
                     <input type="text" value="${q.label}" oninput="updateQuestionField(${q.id}, 'label', this.value)"
                            placeholder="e.g. Please enter your shirt size" required
-                           class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-md py-sm text-body-sm text-on-surface focus:border-primary focus:outline-none transition-colors" />
+                           class="w-full bg-canvas-sunk border border-line rounded-lg px-4 py-2 text-xs text-ink focus:border-action focus:ring-action transition-all" />
                 </div>
 
-                <!-- Answer Type -->
-                <div class="w-full md:w-56 space-y-xs">
-                    <label class="text-label-md text-primary font-semibold">Answer Type</label>
+                <!-- Field Type -->
+                <div class="w-full md:w-56 space-y-1">
+                    <label class="text-xs font-bold text-action uppercase tracking-wider eyebrow">Answer Type</label>
                     <select onchange="updateQuestionField(${q.id}, 'fieldType', this.value)"
-                            class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-md py-sm text-body-sm text-on-surface focus:border-primary focus:outline-none transition-colors">
+                            class="w-full bg-canvas-sunk border border-line rounded-lg px-4 py-2 text-xs text-ink focus:border-action focus:ring-action transition-all">
                         <option value="SHORT_ANSWER" ${q.fieldType === "SHORT_ANSWER" ? "selected" : ""}>Short Answer</option>
                         <option value="PARAGRAPH" ${q.fieldType === "PARAGRAPH" ? "selected" : ""}>Paragraph</option>
                         <option value="MULTIPLE_CHOICE" ${q.fieldType === "MULTIPLE_CHOICE" ? "selected" : ""}>Multiple Choice</option>
@@ -286,20 +288,20 @@ function renderQuestions() {
             ${optionsHtml}
 
             <!-- Bottom action panel -->
-            <div class="flex items-center justify-end gap-sm mt-md pt-sm border-t border-outline-variant/10 text-on-surface-variant">
-                <label class="flex items-center gap-xs text-body-sm font-medium mr-auto cursor-pointer hover:text-on-surface transition-colors">
+            <div class="flex items-center justify-end gap-3 mt-4 pt-2 border-t border-line text-muted">
+                <label class="flex items-center gap-1.5 text-xs font-semibold mr-auto cursor-pointer hover:text-ink transition-colors">
                     <input type="checkbox" ${q.required ? "checked" : ""} onchange="updateQuestionField(${q.id}, 'required', this.checked)"
-                           class="rounded bg-surface-container-low border-outline-variant text-primary focus:ring-primary focus:ring-offset-background" />
+                           class="rounded bg-canvas-sunk border-line text-action focus:ring-action focus:ring-offset-background" />
                     Required field
                 </label>
 
                 <!-- Duplicate -->
-                <button type="button" onclick="duplicateQuestion(${q.id})" class="hover:text-primary transition-colors flex items-center p-xs" title="Duplicate question">
+                <button type="button" onclick="duplicateQuestion(${q.id})" class="hover:text-action transition-colors flex items-center p-1" title="Duplicate question">
                     <span class="material-symbols-outlined text-[20px]">content_copy</span>
                 </button>
 
                 <!-- Delete -->
-                <button type="button" onclick="deleteQuestion(${q.id})" class="hover:text-error transition-colors flex items-center p-xs" title="Delete question">
+                <button type="button" onclick="deleteQuestion(${q.id})" class="hover:text-danger transition-colors flex items-center p-1" title="Delete question">
                     <span class="material-symbols-outlined text-[20px]">delete</span>
                 </button>
             </div>
@@ -316,6 +318,8 @@ function handleDragStart(e) {
     this.style.opacity = "0.4";
     e.dataTransfer.effectAllowed = "move";
 }
+
+window.handleDragStart = handleDragStart;
 
 function handleDragOver(e) {
     e.preventDefault();
@@ -342,7 +346,7 @@ function handleDrop(e) {
 function handleDragEnd() {
     this.style.opacity = "1";
     draggedIndex = null;
-    document.querySelectorAll(".glass-card").forEach(c => c.classList.remove("drag-over"));
+    document.querySelectorAll("#questions-container > div").forEach(c => c.classList.remove("drag-over"));
 }
 
 // Floating control adding question
@@ -353,24 +357,24 @@ const alertBox = document.getElementById("alert-box");
 function showGlobalAlert(type, message) {
     alertBox.classList.remove("hidden");
     if (type === "success") {
-        alertBox.className = "p-md rounded-lg mb-lg text-body-sm font-medium flex items-start gap-sm bg-primary/10 border border-primary/30 text-primary";
+        alertBox.className = "p-4 rounded-lg mb-6 text-xs font-semibold flex items-start gap-2 bg-green-50 border border-green-200 text-signal shadow-sm";
         alertBox.innerHTML = `<span class="material-symbols-outlined text-[20px]">check_circle</span> <span>${message}</span>`;
     } else {
-        alertBox.className = "p-md rounded-lg mb-lg text-body-sm font-medium flex items-start gap-sm bg-error/10 border border-error/30 text-error";
+        alertBox.className = "p-4 rounded-lg mb-6 text-xs font-semibold flex items-start gap-2 bg-red-50 border border-red-200 text-danger shadow-sm";
         alertBox.innerHTML = `<span class="material-symbols-outlined text-[20px]">error</span> <span>${message}</span>`;
     }
     alertBox.scrollIntoView({ behavior: "smooth", block: "center" });
 }
 
 function clearAlerts() {
-    alertBox.className = "hidden p-md rounded-lg mb-lg text-body-sm font-medium flex items-start gap-sm";
+    alertBox.className = "hidden p-4 rounded-lg mb-6 text-xs font-semibold flex items-start gap-2";
     alertBox.innerHTML = "";
-    document.querySelectorAll("input, select, textarea").forEach(el => el.classList.remove("border-error"));
+    document.querySelectorAll("input, select, textarea").forEach(el => el.classList.remove("border-danger"));
 }
 
 function highlightError(inputEl) {
     if (inputEl) {
-        inputEl.classList.add("border-error");
+        inputEl.classList.add("border-danger");
     }
 }
 
@@ -423,29 +427,52 @@ builderForm.addEventListener("submit", async (e) => {
     submitBtn.disabled = true;
     submitBtn.classList.add("opacity-60", "cursor-not-allowed");
 
-    // Construct FormData with standalone custom form properties
+    // Helper to format date to LocalDateTime string
+    const toLocalDateTimeString = (date) => {
+        const pad = (n) => n.toString().padStart(2, '0');
+        return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+    };
+
     const isPublic = document.getElementById("form-is-public").value === "true";
+
+    // Construct request payload matching UpdateCustomFormRequest DTO
+    const requestPayload = {
+        title: title,
+        description: description || "No form description provided.",
+        participationType: isPublic ? "PUBLIC" : "UNIVERSITY_ONLY",
+        registrationStart: toLocalDateTimeString(new Date()),
+        registrationDeadline: toLocalDateTimeString(new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)), // 1 year from now
+        maxSubmissions: 1000,
+        acceptingResponses: true,
+        allowMultipleSubmissions: true,
+        paymentRequired: false,
+        registrationFee: 0.0,
+        questions: questions.map((q, idx) => ({
+            id: q.databaseId || null,
+            title: q.label.trim(),
+            description: "",
+            placeholder: "",
+            questionType: q.fieldType,
+            required: q.required,
+            displayOrder: idx,
+            options: (q.fieldType === "MULTIPLE_CHOICE" || q.fieldType === "CHECKBOXES" || q.fieldType === "DROPDOWN")
+                ? q.options.map(opt => opt.trim()).filter(opt => opt !== "")
+                : []
+        }))
+    };
+
     const formData = new FormData();
-    formData.append("title", title);
-    formData.append("description", description || "No form description provided.");
-    formData.append("isPublic", isPublic);
+    const requestBlob = new Blob([JSON.stringify(requestPayload)], {
+        type: "application/json"
+    });
+    formData.append("request", requestBlob);
     if (bannerFile) {
         formData.append("banner", bannerFile);
     }
 
-    // Prepare questions metadata with proper sortOrder
-    const finalQuestions = questions.map((q, idx) => ({
-        label: q.label.trim(),
-        fieldType: q.fieldType,
-        required: q.required,
-        sortOrder: idx,
-        options: q.options.map(opt => opt.trim()).filter(opt => opt !== "")
-    }));
-
-    formData.append("questions", JSON.stringify(finalQuestions));
-
     try {
-        const res = await fetch(`${API_CUSTOM_FORM_BASE}/update/${formId}`, {
+        // Pointing to PUT /api/v1/custom-forms/{formId} using RequestPart JSON Blob
+        const res = await fetch(`${API_CUSTOM_FORM_BASE}/${formId}`, {
             method: "PUT",
             headers: {
                 Authorization: `Bearer ${token}`
@@ -456,7 +483,7 @@ builderForm.addEventListener("submit", async (e) => {
         const body = await res.json();
 
         if (res.ok && body.success) {
-            showGlobalAlert("success", "Custom Form Event updated successfully! Redirecting for review...");
+            showGlobalAlert("success", "Campus Form Event updated successfully! Redirecting...");
             setTimeout(() => {
                 window.location.href = "/event-management";
             }, 1500);

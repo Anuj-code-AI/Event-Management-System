@@ -35,7 +35,6 @@ public class CustomFormServiceImpl implements CustomFormService {
 
     private final CustomFormRepository customFormRepository;
     private final CustomFormQuestionRepository questionRepository;
-    private final CustomQuestionOptionRepository optionRepository;
     private final CustomFormSubmissionRepository submissionRepository;
     private final CustomFormAnswerRepository answerRepository;
     private final UserRepository userRepository;
@@ -359,20 +358,18 @@ public class CustomFormServiceImpl implements CustomFormService {
         }
         if (query != null && !query.isBlank()) {
 
-            responses = customFormRepository.searchByUniversity(
-                    query,
+            responses = customFormRepository.searchByUniversityAndStatus(
                     university,
                     FormStatus.APPROVED,
-                    ParticipationType.UNIVERSITY_ONLY,
+                    query,
                     pageable
             );
 
         } else {
 
-            responses = customFormRepository.findByUniversityAndStatusAndParticipationType(
+            responses = customFormRepository.findByUniversityAndStatus(
                     university,
                     FormStatus.APPROVED,
-                    ParticipationType.UNIVERSITY_ONLY,
                     pageable
             );
 
@@ -706,6 +703,9 @@ public class CustomFormServiceImpl implements CustomFormService {
         User user = getAuthenticatedUser(authentication);
         CustomForm form = getForm(formId);
         validateOwner(form, user);
+        if(form.getStatus() == FormStatus.REJECTED){
+            throw new BadRequestException("Rejected forms can't be cancelled");
+        }
         if (form.getStatus() == FormStatus.CANCELLED) {
             throw new BadRequestException("Form is already cancelled.");
         }
@@ -714,10 +714,14 @@ public class CustomFormServiceImpl implements CustomFormService {
     }
 
     @Override
+    @Transactional
     public void restoreCustomForm(Long formId, Authentication authentication) {
         User user = getAuthenticatedUser(authentication);
         CustomForm form = getForm(formId);
         validateOwner(form, user);
+        if(form.getStatus() == FormStatus.REJECTED){
+            throw new BadRequestException("Rejected forms can't be restore");
+        }
         if (form.getStatus() != FormStatus.CANCELLED) {
             throw new BadRequestException(
                     "Only cancelled forms can be restored."
@@ -769,23 +773,40 @@ public class CustomFormServiceImpl implements CustomFormService {
 
         Page<CustomForm> forms;
 
+        java.util.List<FormStatus> statusList = status == FormStatus.APPROVED
+                ? java.util.List.of(FormStatus.APPROVED, FormStatus.CANCELLED)
+                : java.util.List.of(status);
+
         if (query != null && !query.isBlank()) {
-
-            forms = customFormRepository.searchByUniversityAndStatus(
-                    user.getUniversity(),
-                    status,
-                    query,
-                    pageable
-            );
-
+            if (statusList.size() > 1) {
+                forms = customFormRepository.searchByUniversityAndStatusIn(
+                        user.getUniversity(),
+                        statusList,
+                        query,
+                        pageable
+                );
+            } else {
+                forms = customFormRepository.searchByUniversityAndStatus(
+                        user.getUniversity(),
+                        status,
+                        query,
+                        pageable
+                );
+            }
         } else {
-
-            forms = customFormRepository.findByUniversityAndStatus(
-                    user.getUniversity(),
-                    status,
-                    pageable
-            );
-
+            if (statusList.size() > 1) {
+                forms = customFormRepository.findByUniversityAndStatusIn(
+                        user.getUniversity(),
+                        statusList,
+                        pageable
+                );
+            } else {
+                forms = customFormRepository.findByUniversityAndStatus(
+                        user.getUniversity(),
+                        status,
+                        pageable
+                );
+            }
         }
 
         return forms.map(CustomFormMapper::toSummaryResponse);

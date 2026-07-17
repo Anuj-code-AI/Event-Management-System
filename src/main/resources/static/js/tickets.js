@@ -7,6 +7,16 @@ let currentTab = "active"; // active, used, cancelled
 let currentPage = 0;
 const pageSize = 5;
 
+function escapeHtml(value) {
+    const node = document.createElement("div");
+    node.textContent = value == null ? "" : String(value);
+    return node.innerHTML;
+}
+
+function imageStyle(url) {
+    return url ? `style="background-image:url('${escapeHtml(url).replace(/'/g, "%27")}')"` : "";
+}
+
 // Data arrays cache
 let allTicketsList = [];
 
@@ -154,44 +164,47 @@ async function fetchTicketsData() {
 
     try {
         // Fetch all tickets to do local filtering and slicing
-        const res = await fetch(`${API_TICKETS}/myTickets?page=0&size=1000`, {
+        const res = await fetch(`${API_TICKETS}/my-tickets?page=0&size=1000`, {
             headers: { Authorization: `Bearer ${token}` }
         });
-        const body = await res.json();
+        const body = await res.json().catch(() => ({}));
 
         if (res.ok && body.success) {
             allTicketsList = body.data.content || [];
-
-            // Fetch custom form submissions
-            try {
-                const formsRes = await fetch(`/api/v1/custom-forms/mySubmissions`, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-                const formsBody = await formsRes.json();
-                if (formsRes.ok && formsBody.success && formsBody.data) {
-                    const submissions = formsBody.data;
-                    submissions.forEach(sub => {
-                        sub.isCustomFormSubmission = true;
-                        sub.status = "ACTIVE"; // Show in active passes tab
-                        sub.checkedIn = false;
-                        // Mock event structure for search filtering
-                        sub.event = {
-                            title: sub.formTitle,
-                            description: "Custom Form Submission",
-                            bannerUrl: sub.bannerUrl
-                        };
-                    });
-                    allTicketsList = [...allTicketsList, ...submissions];
-                }
-            } catch (e) {
-                console.error("Error loading custom form submissions for tickets:", e);
-            }
-
-            filterAndRender();
-            showLoading(false);
+        } else if (res.status === 404 || (body && body.message && body.message.includes("joined any event yet"))) {
+            // Gracefully handle NoTicketFoundException (404) as an empty list
+            allTicketsList = [];
         } else {
             throw new Error(body.message || "Failed to load tickets");
         }
+
+        // Fetch custom form submissions
+        try {
+            const formsRes = await fetch(`/api/v1/custom-forms/my-submissions?page=0&size=1000`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            const formsBody = await formsRes.json();
+            if (formsRes.ok && formsBody.success && formsBody.data && formsBody.data.content) {
+                const submissions = formsBody.data.content;
+                submissions.forEach(sub => {
+                    sub.isCustomFormSubmission = true;
+                    sub.status = "ACTIVE"; // Show in active passes tab
+                    sub.checkedIn = false;
+                    // Mock event structure for search filtering
+                    sub.event = {
+                        title: sub.formTitle,
+                        description: "Custom Form Submission",
+                        bannerUrl: sub.bannerUrl
+                    };
+                });
+                allTicketsList = [...allTicketsList, ...submissions];
+            }
+        } catch (e) {
+            console.error("Error loading custom form submissions for tickets:", e);
+        }
+
+        filterAndRender();
+        showLoading(false);
     } catch (err) {
         console.error("fetchTicketsData error:", err);
         showLoading(false);
@@ -226,7 +239,7 @@ function filterAndRender() {
         emptyMsgBlock.classList.remove("hidden");
         paginationSection.classList.add("hidden");
         emptyText.textContent = currentTab === "active" 
-            ? "You don't have any active event passes." 
+            ? "No ticket found, join event now" 
             : currentTab === "used" 
                 ? "No checked-in passes found." 
                 : "No cancelled passes found.";
@@ -262,55 +275,55 @@ function formatTime(timeStr) {
     return `${displayHr}:${minutes} ${ampm}`;
 }
 
-// HTML Generator: Beautiful Physical ticket look with dashed border stub
+// HTML Generator: Beautiful Physical ticket look with dashed border stuff
 function renderTicketCard(ticket) {
     if (ticket.isCustomFormSubmission) {
         const banner = ticket.bannerUrl || "/images/banner-placeholder.png";
         const submittedAtText = ticket.submittedAt
-            ? new Date(ticket.submittedAt).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })
+            ? new Date(ticket.submittedAt).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })
             : "TBA";
         return `
-            <div class="glass-card rounded-xl overflow-hidden flex flex-col md:flex-row hover:shadow-primary/5 hover:border-primary/20 transition-all duration-300">
+            <div class="border border-line bg-canvas rounded-xl overflow-hidden flex flex-col md:flex-row hover:shadow-[0_10px_28px_-18px_rgba(11,21,38,.38)] hover:border-action/50 transition-all duration-300">
                 
                 <!-- Left Info Block -->
-                <div class="flex-1 p-md flex flex-col justify-between space-y-md md:border-r ticket-stub-border">
-                    <div class="flex flex-col md:flex-row md:items-start gap-md">
+                <div class="flex-1 p-4 flex flex-col justify-between space-y-4 md:border-r ticket-stub-border">
+                    <div class="flex flex-col md:flex-row md:items-start gap-4">
                         <!-- Event Banner Miniature -->
-                        <div class="w-full md:w-32 h-20 bg-surface-container rounded-lg overflow-hidden border border-outline-variant/30 shrink-0">
+                        <div class="w-full md:w-32 h-20 bg-canvas-sunk rounded-lg overflow-hidden border border-line shrink-0">
                             <img class="w-full h-full object-cover" src="${banner}" alt="${ticket.formTitle}" onerror="this.src='/images/banner-placeholder.png'">
                         </div>
                         
                         <!-- Meta info details -->
-                        <div class="space-y-xs flex-1">
-                            <div class="flex items-center gap-xs">
-                                <span class="inline-block px-sm py-xs rounded text-label-md font-semibold uppercase tracking-wider bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                        <div class="space-y-1 flex-1">
+                            <div class="flex items-center gap-2">
+                                <span class="inline-block px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider bg-purple-50 text-purple-700 border border-purple-200">
                                     Custom Form
                                 </span>
-                                <span class="bg-primary/10 text-primary border border-primary/30 text-label-md px-sm py-xs rounded uppercase font-semibold">
+                                <span class="bg-action-tint text-action border border-action/20 text-[10px] px-2 py-0.5 rounded uppercase font-semibold">
                                     Submitted
                                 </span>
                             </div>
-                            <h3 class="text-title-lg font-bold text-on-background line-clamp-1 hover:text-primary transition-colors cursor-pointer" onclick="window.open('/formDetails?formId=${ticket.formId}', '_blank')">${ticket.formTitle}</h3>
+                            <h3 class="text-base font-bold text-ink line-clamp-1 hover:text-action transition-colors cursor-pointer" onclick="window.open('/formDetails?formId=${ticket.formId}', '_blank')">${ticket.formTitle}</h3>
                             
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-md gap-y-xs text-body-sm text-on-surface-variant pt-xs">
-                                <div class="flex items-center gap-xs">
-                                    <span class="material-symbols-outlined text-primary text-[18px]">calendar_today</span>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-sm text-muted pt-1">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="material-symbols-outlined text-action text-[18px]">calendar_today</span>
                                     <span>Submitted At: ${submittedAtText}</span>
                                 </div>
-                                <div class="flex items-center gap-xs">
-                                    <span class="material-symbols-outlined text-primary text-[18px]">description</span>
+                                <div class="flex items-center gap-1.5">
+                                    <span class="material-symbols-outlined text-action text-[18px]">description</span>
                                     <span class="line-clamp-1">Receipt Code: ${ticket.submissionCode}</span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="flex items-center justify-between border-t border-outline-variant/20 pt-sm">
-                        <div class="text-label-md text-outline">
-                            Pass Price: <span class="text-on-surface font-semibold">Free</span>
+                    <div class="flex items-center justify-between border-t border-line pt-3">
+                        <div class="text-xs text-muted-dim">
+                            Pass Price: <span class="text-ink font-semibold">Free</span>
                         </div>
                         <a href="/formDetails?formId=${ticket.formId}" target="_blank"
-                           class="border border-primary/50 hover:bg-primary/10 text-primary font-semibold py-xs px-sm rounded text-body-sm transition-all flex items-center justify-center gap-xs"
+                           class="border border-action/50 hover:bg-action/10 text-action font-semibold py-1 px-3 rounded text-sm transition-all flex items-center justify-center gap-1"
                         >
                             <span class="material-symbols-outlined text-[18px]">open_in_new</span>
                             <span>View Form Details</span>
@@ -318,14 +331,14 @@ function renderTicketCard(ticket) {
                     </div>
                 </div>
 
-                <!-- Right QR Code Stub (Custom Questionnaire Icon Stub) -->
-                <div class="w-full md:w-44 bg-surface-container-low/20 shrink-0 p-md flex flex-col items-center justify-center text-center relative border-t md:border-t-0 border-outline-variant/30">
-                    <div class="w-28 h-28 border border-outline-variant/30 rounded overflow-hidden p-1 bg-surface-container-low flex items-center justify-center relative">
-                        <span class="material-symbols-outlined text-[56px] text-purple-400">task</span>
+                <!-- Right QR Code Stub -->
+                <div class="w-full md:w-44 bg-canvas-sunk shrink-0 p-4 flex flex-col items-center justify-center text-center relative border-t md:border-t-0 border-line">
+                    <div class="w-24 h-24 border border-line rounded overflow-hidden p-1 bg-canvas flex items-center justify-center relative">
+                        <span class="material-symbols-outlined text-[56px] text-purple-600">task</span>
                     </div>
-                    <div class="mt-sm space-y-xs">
-                        <p class="text-label-md text-outline tracking-wider font-mono">SUB ID: ${ticket.submissionCode}</p>
-                        <p class="text-label-md text-primary font-medium">Questionnaire Completed</p>
+                    <div class="mt-2 space-y-1">
+                        <p class="text-[10px] text-muted-dim tracking-wider font-mono">SUB ID: ${ticket.submissionCode}</p>
+                        <p class="text-[11px] text-signal font-medium">Questionnaire Completed</p>
                     </div>
                 </div>
 
@@ -342,58 +355,58 @@ function renderTicketCard(ticket) {
     const isUsed = ticket.status === "USED" || ticket.checkedIn;
     const isActive = ticket.status === "ACTIVE" && !ticket.checkedIn;
 
-    let badgeClass = "bg-primary/10 text-primary border border-primary/30";
-    if (isCancelled) badgeClass = "bg-error/10 text-error border border-error/30";
-    else if (isUsed) badgeClass = "bg-blue-500/10 text-blue-500 border border-blue-500/30";
+    let badgeClass = "bg-action-tint text-action border border-action/20";
+    if (isCancelled) badgeClass = "bg-red-50 text-danger border border-red-200";
+    else if (isUsed) badgeClass = "bg-blue-50 text-blue-600 border border-blue-200";
 
     // Overlay stamps
     let qrOverlay = "";
     if (isCancelled) {
         qrOverlay = `
             <div class="absolute inset-0 bg-black/85 flex items-center justify-center">
-                <span class="text-error border-2 border-error/60 font-bold px-sm py-xs rounded uppercase tracking-widest text-[14px] rotate-12">VOID</span>
+                <span class="text-danger border-2 border-danger/60 font-bold px-2 py-1 rounded uppercase tracking-widest text-[14px] rotate-12">VOID</span>
             </div>
         `;
     } else if (isUsed) {
         qrOverlay = `
             <div class="absolute inset-0 bg-black/80 flex items-center justify-center">
-                <span class="text-blue-400 border-2 border-blue-400/60 font-bold px-xs py-xs rounded uppercase tracking-widest text-[12px] -rotate-12">CHECKED IN</span>
+                <span class="text-blue-400 border-2 border-blue-400/60 font-bold px-1.5 py-1 rounded uppercase tracking-widest text-[12px] -rotate-12">CHECKED IN</span>
             </div>
         `;
     }
 
     return `
-        <div class="glass-card rounded-xl overflow-hidden flex flex-col md:flex-row hover:shadow-primary/5 hover:border-primary/20 transition-all duration-300">
+        <div class="border border-line bg-canvas rounded-xl overflow-hidden flex flex-col md:flex-row hover:shadow-[0_10px_28px_-18px_rgba(11,21,38,.38)] hover:border-action/50 transition-all duration-300">
             
             <!-- Left Info Block -->
-            <div class="flex-1 p-md flex flex-col justify-between space-y-md md:border-r ticket-stub-border">
-                <div class="flex flex-col md:flex-row md:items-start gap-md">
+            <div class="flex-1 p-4 flex flex-col justify-between space-y-4 md:border-r ticket-stub-border">
+                <div class="flex flex-col md:flex-row md:items-start gap-4">
                     <!-- Event Banner Miniature -->
-                    <div class="w-full md:w-32 h-20 bg-surface-container rounded-lg overflow-hidden border border-outline-variant/30 shrink-0">
+                    <div class="w-full md:w-32 h-20 bg-canvas-sunk rounded-lg overflow-hidden border border-line shrink-0">
                         <img class="w-full h-full object-cover" src="${banner}" alt="${event.title}" onerror="this.src='/images/banner-placeholder.png'">
                     </div>
                     
                     <!-- Meta info details -->
-                    <div class="space-y-xs">
-                        <div class="flex items-center gap-xs">
-                            <span class="inline-block px-sm py-xs rounded text-label-md font-semibold uppercase tracking-wider ${badgeClass}">
+                    <div class="space-y-1">
+                        <div class="flex items-center gap-2">
+                            <span class="inline-block px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider ${badgeClass}">
                                 ${ticket.status}
                             </span>
-                            ${event.category ? `<span class="bg-surface-container-high text-on-surface-variant text-label-md px-sm py-xs rounded">${event.category}</span>` : ""}
+                            ${event.category ? `<span class="bg-canvas-mid text-muted text-[10px] px-2 py-0.5 rounded">${event.category}</span>` : ""}
                         </div>
-                        <h3 class="text-title-lg font-bold text-on-background line-clamp-1">${event.title}</h3>
+                        <h3 class="text-base font-bold text-ink line-clamp-1">${event.title}</h3>
                         
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-md gap-y-xs text-body-sm text-on-surface-variant pt-xs">
-                            <div class="flex items-center gap-xs">
-                                <span class="material-symbols-outlined text-primary text-[18px]">calendar_today</span>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-sm text-muted pt-1">
+                            <div class="flex items-center gap-1.5">
+                                <span class="material-symbols-outlined text-action text-[18px]">calendar_today</span>
                                 <span>${formatDate(event.eventDate)}</span>
                             </div>
-                            <div class="flex items-center gap-xs">
-                                <span class="material-symbols-outlined text-primary text-[18px]">schedule</span>
+                            <div class="flex items-center gap-1.5">
+                                <span class="material-symbols-outlined text-action text-[18px]">schedule</span>
                                 <span>${formatTime(event.eventTime)}</span>
                             </div>
-                            <div class="flex items-center gap-xs sm:col-span-2">
-                                <span class="material-symbols-outlined text-primary text-[18px]">pin_drop</span>
+                            <div class="flex items-center gap-1.5 sm:col-span-2">
+                                <span class="material-symbols-outlined text-action text-[18px]">pin_drop</span>
                                 <span class="line-clamp-1">${event.location || "Venue TBA"}</span>
                             </div>
                         </div>
@@ -401,13 +414,13 @@ function renderTicketCard(ticket) {
                 </div>
 
                 <!-- Ticket Owner & Cancellation Row -->
-                <div class="flex items-center justify-between border-t border-outline-variant/20 pt-sm">
-                    <div class="text-label-md text-outline">
-                        Pass Price: <span class="text-on-surface font-semibold">${priceDisplay}</span>
+                <div class="flex items-center justify-between border-t border-line pt-3">
+                    <div class="text-xs text-muted-dim">
+                        Pass Price: <span class="text-ink font-semibold">${priceDisplay}</span>
                     </div>
                     ${isActive ? `
                         <button onclick="openCancelModal(${ticket.ticketId}, '${event.title.replace(/'/g, "\\'")}')"
-                            class="border border-error/50 hover:bg-error/10 text-error font-semibold py-xs px-sm rounded text-body-sm transition-all flex items-center justify-center gap-xs"
+                            class="border border-danger/50 hover:bg-red-50 text-danger font-semibold py-1 px-3 rounded text-sm transition-all flex items-center justify-center gap-1"
                         >
                             <span class="material-symbols-outlined text-[18px]">cancel</span>
                             <span>Cancel Pass</span>
@@ -417,21 +430,20 @@ function renderTicketCard(ticket) {
             </div>
 
             <!-- Right QR Code Stub -->
-            <div class="w-full md:w-44 bg-surface-container-low/20 shrink-0 p-md flex flex-col items-center justify-center text-center relative border-t md:border-t-0 border-outline-variant/30">
-                <div class="w-28 h-28 border border-outline-variant/30 rounded overflow-hidden p-1 bg-white relative">
+            <div class="w-full md:w-44 bg-canvas-sunk shrink-0 p-4 flex flex-col items-center justify-center text-center relative border-t md:border-t-0 border-line">
+                <div class="w-24 h-24 border border-line rounded overflow-hidden p-1 bg-white relative">
                     <img class="w-full h-full object-contain" src="${API_TICKETS}/${ticket.ticketId}/qr" alt="Ticket QR Entry Pass">
                     ${qrOverlay}
                 </div>
-                <div class="mt-sm space-y-xs">
-                    <p class="text-label-md text-outline tracking-wider font-mono">CODE: ${ticket.ticketCode}</p>
-                    <p class="text-label-md text-primary font-medium">Verify Entry Pass</p>
+                <div class="mt-2 space-y-1">
+                    <p class="text-[10px] text-muted-dim tracking-wider font-mono">CODE: ${ticket.ticketCode}</p>
+                    <p class="text-[11px] text-signal font-medium">Verify Entry Pass</p>
                 </div>
             </div>
 
         </div>
     `;
 }
-
 // Modal management
 function openModal(id) {
     document.getElementById(id).classList.remove("hidden");
@@ -461,13 +473,57 @@ async function confirmCancelTicket() {
         if (res.ok && body.success) {
             closeModal("cancel-modal");
             await fetchTicketsData();
+            showToast("Pass cancelled successfully!", "success");
         } else {
-            alert(body.message || "Failed to cancel ticket pass.");
+            showToast(body.message || "Failed to cancel ticket pass.", "error");
         }
     } catch (err) {
         console.error("Cancel ticket error:", err);
-        alert("Network error cancelling entry pass.");
+        showToast("Network error cancelling entry pass.", "error");
     }
+}
+
+// Toast notification system
+function showToast(message, type = "success") {
+    let container = document.getElementById("toast-container");
+    if (!container) {
+        container = document.createElement("div");
+        container.id = "toast-container";
+        container.className = "fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none max-w-sm w-full";
+        document.body.appendChild(container);
+    }
+    
+    const toast = document.createElement("div");
+    toast.className = "flex items-center gap-2 px-4 py-3 rounded-lg shadow-lg border transition-all duration-300 pointer-events-auto transform translate-y-[-1rem] opacity-0";
+    
+    if (type === "success") {
+        toast.classList.add("bg-green-50", "text-emerald-500", "border-green-200");
+    } else if (type === "error") {
+        toast.classList.add("bg-red-50", "text-red-500", "border-red-200");
+    } else {
+        toast.classList.add("bg-blue-50", "text-blue-500", "border-blue-200");
+    }
+    
+    const icon = type === "success" ? "check_circle" : type === "error" ? "error" : "info";
+    toast.innerHTML = `
+        <span class="material-symbols-outlined text-[20px]">${icon}</span>
+        <span class="text-xs font-semibold">${message}</span>
+    `;
+    
+    container.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.classList.remove("translate-y-[-1rem]", "opacity-0");
+        toast.classList.add("translate-y-0", "opacity-100");
+    }, 10);
+    
+    setTimeout(() => {
+        toast.classList.remove("translate-y-0", "opacity-100");
+        toast.classList.add("translate-y-[-1rem]", "opacity-0");
+        setTimeout(() => {
+            toast.remove();
+        }, 300);
+    }, 4000);
 }
 
 // Run initialization

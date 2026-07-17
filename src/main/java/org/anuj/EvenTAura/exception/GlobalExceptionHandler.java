@@ -167,4 +167,12 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error(ex.getMessage()));
     }
 
+    // Otp resend Exception
+    @ExceptionHandler(OtpResentException.class)
+    public ResponseEntity<ApiResponse<Void>> handleOtpResentException(OtpResentException ex){
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error(ex.getMessage()));
+    }
+
 }

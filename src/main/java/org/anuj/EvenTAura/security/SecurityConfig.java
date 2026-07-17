@@ -58,8 +58,9 @@ public class SecurityConfig {
                         .requestMatchers("/favicon.ico","/favicon.ico/**","/css/**","/js/**","/images/**","/webjars/**",
 
                                 "/" , "/about-us" , "/contact" , "/login" , "/register" , "/verify-email" , "/home" , "/universities" ,
-                                "/campus-events" , "/event-management" , "/oauth" , "/request-event" , "/create-custom-form" , "/admin" , "/eventDetails/**" ,
-                                "/eventDetails" , "/tickets" , "/my-events" , "/profile" ,"/formDetails/", "/formDetails/**", "/update-custom-form/**",
+                                "/campus-events" , "/event-management" , "/oauth" , "/request-event" , "/create-custom-form" , "/admin" , "/event-details/**" ,
+                                "/event-details" , "/tickets" , "/my-events" , "/profile" ,"/formDetails/", "/formDetails/**", "/update-custom-form/**",
+                                "/event-management/**", "/update-event/**", "/form-details/**", "/form-responses/**",
 
                                 "/api/v1/auth/**", "/api/v1/event/global/**", "/api/v1/event/getEvent/**", "/api/v1/custom-forms/form/**", "/api/v1/custom-forms/submit/**", "/api/v1/custom-forms/public",
                                 "/api/v1/events/public-events", "/api/v1/custom-forms/public-forms", "/api/v1/tickets/*/qr", "/api/v1/universities-list"

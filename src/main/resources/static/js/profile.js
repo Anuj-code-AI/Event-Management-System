@@ -78,10 +78,10 @@ function showAlert(type, message) {
     if (!profileAlert) return;
     profileAlert.classList.remove("hidden");
     if (type === "success") {
-        profileAlert.className = "p-sm rounded-lg text-body-sm font-medium flex items-start gap-xs bg-primary/10 border border-primary/20 text-primary";
+        profileAlert.className = "p-4 rounded-lg text-xs font-semibold flex items-start gap-2 bg-green-50 border border-green-200 text-signal shadow-sm";
         profileAlert.innerHTML = `<span class="material-symbols-outlined text-[18px]">check_circle</span> <span>${message}</span>`;
     } else {
-        profileAlert.className = "p-sm rounded-lg text-body-sm font-medium flex items-start gap-xs bg-error/10 border border-error/20 text-error";
+        profileAlert.className = "p-4 rounded-lg text-xs font-semibold flex items-start gap-2 bg-red-50 border border-red-200 text-danger shadow-sm";
         profileAlert.innerHTML = `<span class="material-symbols-outlined text-[18px]">error</span> <span>${message}</span>`;
     }
 }
@@ -140,10 +140,10 @@ function populateFields(user, role) {
     if (universityBadge) {
         if (user.university) {
             universityBadge.textContent = user.university;
-            universityBadge.className = "bg-primary/10 text-primary border border-primary/30 text-label-md px-sm py-xs rounded-full font-semibold";
+            universityBadge.className = "bg-action-tint text-action border border-action/25 text-[10px] px-2.5 py-0.5 rounded-full font-semibold";
         } else {
             universityBadge.textContent = "No University Selected";
-            universityBadge.className = "bg-surface-container-high text-on-surface-variant border border-outline-variant/30 text-label-md px-sm py-xs rounded-full font-semibold";
+            universityBadge.className = "bg-canvas-sunk text-ink border border-line text-[10px] px-2.5 py-0.5 rounded-full font-semibold";
         }
     }
 
@@ -168,11 +168,11 @@ function renderHostStatusSection(role, user) {
 
     // Set Status chip text & style
     hostStatusChip.classList.remove("hidden");
-    let chipClass = "bg-surface-container text-on-surface-variant border border-outline-variant";
-    if (status === "PENDING") chipClass = "bg-yellow-500/10 text-yellow-500 border border-yellow-500/30";
-    else if (status === "APPROVED") chipClass = "bg-primary/10 text-primary border border-primary/30";
-    else if (status === "REJECTED") chipClass = "bg-error/10 text-error border border-error/30";
-    hostStatusChip.className = `${chipClass} text-label-md px-sm py-xs rounded-full font-semibold uppercase`;
+    let chipClass = "bg-canvas-sunk text-ink border border-line";
+    if (status === "PENDING") chipClass = "bg-amber-50 text-amber-700 border border-amber-200";
+    else if (status === "APPROVED") chipClass = "bg-green-50 text-signal border border-green-200";
+    else if (status === "REJECTED") chipClass = "bg-red-50 text-danger border border-red-200";
+    hostStatusChip.className = `${chipClass} text-[10px] px-2.5 py-0.5 rounded-full font-semibold uppercase tracking-wider eyebrow`;
     hostStatusChip.textContent = `Host Status: ${status}`;
 
     // Reset visibility states

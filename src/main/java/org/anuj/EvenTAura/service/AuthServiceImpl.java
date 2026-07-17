@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -39,18 +40,68 @@ public class AuthServiceImpl implements AuthService{
                 SECURE_RANDOM.nextInt(1_000_000));
     }
 
+    private University resolveUniversity(String universityName) {
+
+        if (universityName == null || universityName.isBlank()) {
+            return null;
+        }
+
+        return universityRepository
+                .findByNameContainingIgnoreCase(universityName)
+                .orElseThrow(() ->
+                        new UniversityNotSupportedException(
+                                "We are not currently serving this university."
+                        ));
+    }
+
+    private void validateUniversity(RegisterRequest request) {
+
+        if (request.getUniversity() == null ||
+                request.getUniversity().isBlank()) {
+            return;
+        }
+
+        University university = resolveUniversity(request.getUniversity());
+
+        if (university.getDomain() == null) {
+            return;
+        }
+
+        String emailDomain =
+                request.getEmail()
+                        .substring(request.getEmail().lastIndexOf("@") + 1);
+
+        if (!emailDomain.equalsIgnoreCase(university.getDomain())) {
+            throw new RuntimeException(
+                    "Email domain does not match university."
+            );
+        }
+    }
+
     private void createAndSendOtp(User user) {
-        otpRepository.deleteByUser(user);
 
-        String otp = generateOtp();
+        EmailOtp otp = otpRepository.findByUser(user)
+                .orElse(null);
 
-        EmailOtp emailOtp = new EmailOtp();
-        emailOtp.setOtp(otp);
-        emailOtp.setUser(user);
-        emailOtp.setExpiryTime(LocalDateTime.now().plusMinutes(5));
-        emailOtp.setCreatedAt(LocalDateTime.now());
-        otpRepository.save(emailOtp);
-        sendMail(user.getPrimaryEmail(), otp);
+        if (otp == null) {
+            otp = new EmailOtp();
+            otp.setUser(user);
+
+        }
+        String generatedOtp = generateOtp();
+
+        log.info("Generated OTP: {}", generatedOtp);
+
+        otp.setOtp(generatedOtp);
+        otp.setAttempts(0);
+
+        LocalDateTime now = LocalDateTime.now();
+        otp.setCreatedAt(now);
+        otp.setExpiryTime(now.plusMinutes(5));
+
+        otpRepository.save(otp);
+
+        sendMail(user.getPrimaryEmail(), otp.getOtp());
     }
 
     private void sendMail(String email, String otp) {
@@ -108,93 +159,183 @@ public class AuthServiceImpl implements AuthService{
         }
     }
 
-
     @Override
     @Transactional
     public void register(RegisterRequest request) {
-        if(userRepository.findByPrimaryEmail(request.getEmail()).isPresent() || userRepository.findBySecondaryEmail(request.getEmail()).isPresent()){
-            throw new EmailAlreadyExistException("User with this email already registered");
-        }
-        University university =  null;
-        if(request.getUniversity()!=null && !request.getUniversity().isBlank()){
-            university = universityRepository.findByNameContainingIgnoreCase(request.getUniversity())
-                    .orElseThrow(() ->
-                            new UniversityNotSupportedException(
-                                    "We are not currently serving this university. You may register without selecting a university."
-                            ));
-            if (university.getDomain() != null) {
-                String email = request.getEmail();
-                String emailDomain = email.substring(email.lastIndexOf("@") + 1);
-                if (!emailDomain.equalsIgnoreCase(university.getDomain())) {
-                    throw new RuntimeException("Your email domain (" + emailDomain + ") does not match the university domain (" + university.getDomain() + ").");
-                }
+
+        validateUniversity(request);
+
+        University university = resolveUniversity(request.getUniversity());
+
+        Optional<User> existing =
+                userRepository.findByPrimaryEmailOrSecondaryEmail(
+                        request.getEmail(),
+                        request.getEmail()
+                );
+
+        if (existing.isPresent()) {
+
+            User user = existing.get();
+
+            if (Boolean.TRUE.equals(user.getEmailVerified())) {
+                throw new EmailAlreadyExistException(
+                        "User with this email already exists."
+                );
             }
+
+            user.setName(request.getName());
+
+            if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+                user.setPassword(passwordEncoder.encode(request.getPassword()));
+            }
+
+            user.setUniversity(university);
+
+            createAndSendOtp(user);
+            return;
         }
+
         request.setPassword(passwordEncoder.encode(request.getPassword()));
+
         User user = UserMapper.toEntity(request, university);
+
         userRepository.save(user);
+
         createAndSendOtp(user);
     }
 
     @Override
+    @Transactional
     public void resendOtp(String email) {
+
         User user = userRepository.findByPrimaryEmail(email)
-                .orElseThrow(()-> new UserNotFoundException("User not found"));
-        EmailOtp emailOtp = otpRepository.findByUser(user)
-                .orElseThrow(()->new RuntimeException("Otp not found"));
+                .orElseThrow(() ->
+                        new UserNotFoundException("User not found."));
 
-        if(emailOtp.getCreatedAt().plusSeconds(60)
-                .isAfter(LocalDateTime.now())) {
-
+        if (Boolean.TRUE.equals(user.getEmailVerified())) {
             throw new RuntimeException(
-                    "Please wait before requesting another OTP."
+                    "Email already verified."
             );
         }
+
+        otpRepository.findByUser(user).ifPresent(otp -> {
+
+            if (otp.getCreatedAt()
+                    .plusSeconds(60)
+                    .isAfter(LocalDateTime.now())) {
+
+                throw new RuntimeException(
+                        "Please wait before requesting another OTP."
+                );
+            }
+        });
+
         createAndSendOtp(user);
     }
 
     @Override
-    @Transactional(noRollbackFor = InvalidOtpException.class)
+    @Transactional(noRollbackFor = {
+            InvalidOtpException.class,
+            OtpResentException.class
+    })
     public TokenPair verifyOtp(VerifyOtpRequest request) {
-        User user = userRepository.findByPrimaryEmail(request.getEmail())
-                .orElseThrow(()-> new UserNotFoundException("User not found"));
-        if(user.getEmailVerified()){
-            throw new RuntimeException("Email already verified");
-        }
-        EmailOtp otp = otpRepository.findByUser(user)
-                .orElseThrow(()->new UserNotFoundException("User not found"));
-        if(otp.getAttempts()>=5){
-            otpRepository.delete(otp);
-            throw new RuntimeException("Maximum verification attempts exceeded.\n" +
-                    "Please request a new OTP.");
-        }
-        if(otp.getExpiryTime().isBefore(LocalDateTime.now())){
-            otpRepository.delete(otp);
-            throw new RuntimeException("Otp is expired");
+
+        User user = userRepository
+                .findByPrimaryEmail(request.getEmail())
+                .orElseThrow(() ->
+                        new UserNotFoundException("User not found."));
+
+        if (user.getEmailVerified()) {
+            throw new RuntimeException(
+                    "Email already verified."
+            );
         }
 
-        if(!otp.getOtp().equals(request.getOtp())){
-            otp.setAttempts(otp.getAttempts()+1);
-            throw new InvalidOtpException("Invalid Otp");
+        EmailOtp otp = otpRepository
+                .findByUser(user)
+                .orElse(null);
+
+        if (otp == null) {
+
+            createAndSendOtp(user);
+
+            throw new RuntimeException(
+                    "OTP expired. A new OTP has been sent."
+            );
         }
-        user.setEmailVerified(true);
-        otpRepository.delete(otp);
-        return issueTokenPair(user);
+
+        if (otp.getExpiryTime().isBefore(LocalDateTime.now())) {
+
+            otpRepository.delete(otp);
+
+            createAndSendOtp(user);
+
+            throw new RuntimeException(
+                    "OTP expired. A new OTP has been sent."
+            );
+        }
+
+        log.info("Stored OTP  : {}", otp.getOtp());
+        log.info("Entered OTP : {}", request.getOtp());
+        log.info("Attempts    : {}", otp.getAttempts());
+        if (otp.getOtp().equals(request.getOtp())) {
+
+            user.setEmailVerified(true);
+            otpRepository.delete(otp);
+
+            return issueTokenPair(user);
+        }
+
+        // Wrong OTP
+        otp.setAttempts(otp.getAttempts() + 1);
+
+        if (otp.getAttempts() >= 5) {
+
+            createAndSendOtp(user);
+
+            throw new OtpResentException(
+                    "Maximum attempts exceeded. A new OTP has been sent."
+            );
+        }
+
+        throw new InvalidOtpException("Invalid OTP.");
     }
 
     // LOGIN SERVICE
     @Override
-    public TokenPair login(LoginRequest req){
-        User user = userRepository.findByPrimaryEmail(req.getEmail())
-                .orElseThrow(()-> new UserNotFoundException("No account with this email"));
-        if(!passwordEncoder.matches(req.getPassword(), user.getPassword()))
-            throw new InvalidPasswordException("Incorrect password");
-        if(!user.getIsActive()){
-            throw new AccountIsDeactiveException("User account is deactivated");
+    @Transactional
+    public TokenPair login(LoginRequest req) {
+
+        User user = userRepository.findByPrimaryEmailOrSecondaryEmail(req.getEmail(), req.getEmail())
+                .orElseThrow(() ->
+                        new UserNotFoundException(
+                                "No account with this email."
+                        ));
+
+        if (!passwordEncoder.matches(
+                req.getPassword(),
+                user.getPassword())) {
+
+            throw new InvalidPasswordException(
+                    "Incorrect password."
+            );
         }
-        if(!user.getEmailVerified()){
-            throw new EmailNotVerifiedException("Please verify your email");
+
+        if (!user.getIsActive()) {
+            throw new AccountIsDeactiveException(
+                    "Account is deactivated."
+            );
         }
+
+        if (!user.getEmailVerified()) {
+
+            createAndSendOtp(user);
+
+            throw new EmailNotVerifiedException(
+                    "Email not verified. A new OTP has been sent."
+            );
+        }
+
         return issueTokenPair(user);
     }
 

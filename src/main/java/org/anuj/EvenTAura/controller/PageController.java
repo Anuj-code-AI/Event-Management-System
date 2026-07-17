@@ -3,6 +3,7 @@ package org.anuj.EvenTAura.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 @Controller
 @RequiredArgsConstructor
@@ -73,10 +74,7 @@ public class PageController {
         return "update-custom-form";
     }
 
-    @GetMapping({"/formDetails", "/formDetails/{formId}"})
-    public String formDetails(){
-        return "formDetails";
-    }
+
 
     @GetMapping("/oauth")
     public String oauth() {
@@ -88,9 +86,14 @@ public class PageController {
         return "admin";
     }
 
-    @GetMapping({"/eventDetails", "/eventDetails/{eventId}"})
+    @GetMapping({"/event-details", "/eventDetails", "/event-details/{eventId}", "/eventDetails/{eventId}"})
     public String eventDetails() {
-        return "eventDetails";
+        return "event-details";
+    }
+
+    @GetMapping({"/form-details", "/formDetails", "/form-details/{formId}", "/formDetails/{formId}", "/form-details/{formId}/preview", "/formDetails/{formId}/preview"})
+    public String formDetails() {
+        return "form-details";
     }
 
     @GetMapping({"/tickets", "/my-tickets"})
@@ -108,4 +111,24 @@ public class PageController {
         return "profile";
     }
 
+    // HOD dynamic action redirects
+    @GetMapping("/update-event/{eventId}")
+    public String updateEventRedirect(@PathVariable Long eventId) {
+        return "redirect:/request-event?id=" + eventId;
+    }
+
+    @GetMapping("/event-management/{eventId}")
+    public String eventManagementRedirect(@PathVariable Long eventId) {
+        return "redirect:/event-management?manageAttendance=" + eventId;
+    }
+
+    @GetMapping("/update-custom-form/{formId}")
+    public String updateCustomFormRedirect(@PathVariable Long formId) {
+        return "redirect:/update-custom-form?formId=" + formId;
+    }
+
+    @GetMapping("/form-responses/{formId}")
+    public String formResponses() {
+        return "form-responses";
+    }
 }

@@ -1,94 +1,97 @@
-// event-management.js — Personal Event Management dashboard for Hosts and HODs
-const API_EVENT = "/api/v1/event";
-const API_CUSTOM_FORM_BASE = "/api/v1/custom-forms";
+// event-management.js — Personal Event & Campus Forms Management dashboard for Hosts and HODs
+const API_EVENTS = "/api/v1/events";
+const API_CUSTOM_FORMS = "/api/v1/custom-forms";
 
 // State variables
 let currentUser = null;
-let currentTab = "all-hosted"; // default tab
+let activeDashboard = "events"; // events or forms
+let eventTab = "PENDING"; // PENDING, APPROVED, REJECTED, CANCELLED
+let formTab = "ALL"; // ALL, PENDING, APPROVED, REJECTED, CANCELLED
 let currentPage = 0;
 const pageSize = 9;
 
 // Data caches
-let myEventsPage = { content: [], totalPages: 1, totalElements: 0 }; // Server-paginated page cache
-let fullHostedList = []; // All events cached for local status filtering
+let hostedEventsList = [];
+let hostedFormsList = [];
 
-// Modal action state
-let activeEventId = null;
+// Confirm Modal action state
+let activeId = null;
+let activeTitle = "";
+let actionType = ""; // "cancel-event", "cancel-form", "delete-event", "delete-form", "restore-event", "restore-form"
 
 // Element selections
-const tabsContainer = document.getElementById("tabs-container");
+const eventsPanel = document.getElementById("events-panel");
+const formsPanel = document.getElementById("forms-panel");
+const eventsGrid = document.getElementById("events-grid");
+const formsGrid = document.getElementById("forms-grid");
+const searchInput = document.getElementById("dashboardSearch");
+
 const loadingState = document.getElementById("loading-state");
 const errorState = document.getElementById("error-state");
-const eventsContentSection = document.getElementById("events-content-section");
-const eventsGrid = document.getElementById("events-grid");
-const eventsEmptyMsg = document.getElementById("events-empty-msg");
+const emptyMsgBlock = document.getElementById("dashboard-empty-msg");
 const emptyMessageText = document.getElementById("empty-message-text");
-const searchInput = document.getElementById("eventSearch");
 
 // Pagination elements
-const paginationSection = document.getElementById("events-pagination");
+const paginationSection = document.getElementById("dashboard-pagination");
 const paginationInfo = document.getElementById("pagination-info");
 const prevPageBtn = document.getElementById("prev-page-btn");
 const nextPageBtn = document.getElementById("next-page-btn");
 
-// Check authorization and initialize page
+// Initialize page
 async function initPage() {
     currentUser = await getCurrentUser();
     if (!currentUser || (currentUser.systemRole !== "HOD" && currentUser.hostStatus !== "APPROVED")) {
-        console.warn("[hostedEvents] Unauthorized user. Redirecting to home...");
+        console.warn("[hostedConsole] Unauthorized access. Redirecting to home...");
         window.location.href = "/home";
         return;
     }
 
-    // Set layout headings
-    document.title = "Event Management | CampusHive";
-    document.getElementById("page-title").textContent = "Event Management";
+    // Set sidebar
+    if (typeof renderLoggedInSidebar === "function") {
+        renderLoggedInSidebar(currentUser);
+    }
 
-    // Build personal dashboard tabs
+    // Render tabs list
     renderTabs();
 
-    // Fetch initial data
-    await fetchEventsData();
+    // Fetch initial datasets
+    await fetchData();
+
+    // Check manageAttendance query parameter to auto-open attendance panel
+    const urlParams = new URLSearchParams(window.location.search);
+    const manageAttendanceId = urlParams.get('manageAttendance');
+    if (manageAttendanceId) {
+        showAttendeesView(manageAttendanceId, "Event Management");
+    }
 
     // Bind event search
     searchInput.addEventListener("input", () => {
         currentPage = 0;
-        filterAndRenderEvents();
+        filterAndRender();
     });
 
     // Bind pagination buttons
     prevPageBtn.addEventListener("click", () => {
         if (currentPage > 0) {
             currentPage--;
-            if (currentTab === "all-hosted") {
-                fetchEventsData();
-            } else {
-                filterAndRenderEvents();
-            }
+            filterAndRender();
         }
     });
 
     nextPageBtn.addEventListener("click", () => {
-        if (currentTab === "all-hosted") {
-            if (currentPage < myEventsPage.totalPages - 1) {
-                currentPage++;
-                fetchEventsData();
-            }
-        } else {
-            const list = getActiveList();
-            const totalPages = Math.ceil(list.length / pageSize);
-            if (currentPage < totalPages - 1) {
-                currentPage++;
-                filterAndRenderEvents();
-            }
+        const totalPages = getActiveTotalPages();
+        if (currentPage < totalPages - 1) {
+            currentPage++;
+            filterAndRender();
         }
     });
 
     // Wire up modal confirm buttons
     document.getElementById("confirm-cancel-btn").addEventListener("click", confirmCancel);
     document.getElementById("confirm-delete-btn").addEventListener("click", confirmDelete);
+    document.getElementById("confirm-restore-btn").addEventListener("click", confirmRestore);
 
-    // Bind attendee search
+    // Bind attendee search & pagination
     const attendeeSearch = document.getElementById("attendeeSearch");
     if (attendeeSearch) {
         attendeeSearch.addEventListener("input", (e) => {
@@ -98,7 +101,6 @@ async function initPage() {
         });
     }
 
-    // Bind attendee pagination buttons
     const attendeesPrevBtn = document.getElementById("attendees-prev-btn");
     const attendeesNextBtn = document.getElementById("attendees-next-btn");
     if (attendeesPrevBtn) {
@@ -120,80 +122,127 @@ async function initPage() {
     }
 }
 
-// Render personal event tabs
-function renderTabs() {
-    const tabs = [
-        { id: "all-hosted", label: "All My Events", icon: "event_note" },
-        { id: "pending-approval", label: "Under Request", icon: "hourglass_empty" },
-        { id: "approved-events", label: "Accepted", icon: "thumb_up" },
-        { id: "rejected-events", label: "Rejected", icon: "thumb_down" }
-    ];
-
-    tabsContainer.innerHTML = tabs.map(tab => {
-        const isActive = tab.id === currentTab;
-        return `
-            <button onclick="switchTab('${tab.id}')" id="tab-btn-${tab.id}"
-                class="flex items-center gap-xs px-md py-sm border-b-2 font-medium text-body-sm transition-all whitespace-nowrap
-                ${isActive 
-                    ? "border-primary text-primary" 
-                    : "border-transparent text-on-surface-variant hover:text-on-surface hover:border-outline-variant/50"}"
-            >
-                <span class="material-symbols-outlined text-[20px]">${tab.icon}</span>
-                <span>${tab.label}</span>
-            </button>
-        `;
-    }).join("");
-}
-
-// Switch Tab logic
-function switchTab(tabId) {
-    if (currentTab === tabId) return;
-    currentTab = tabId;
+// Switch between Events and Campus Forms dashboard views with sliding/fading transition
+function switchDashboard(section) {
+    if (activeDashboard === section) return;
+    activeDashboard = section;
     currentPage = 0;
+    searchInput.value = "";
 
-    // Update active tab visual classes
-    document.querySelectorAll("#tabs-container button").forEach(btn => {
-        btn.className = btn.className
-            .replace("border-primary text-primary", "border-transparent text-on-surface-variant hover:text-on-surface hover:border-outline-variant/50");
-    });
+    const highlight = document.getElementById("switcher-highlight");
+    const btnEvents = document.getElementById("switch-btn-events");
+    const btnForms = document.getElementById("switch-btn-forms");
+    const titleLabel = document.getElementById("header-dashboard-title");
 
-    const activeBtn = document.getElementById(`tab-btn-${tabId}`);
-    if (activeBtn) {
-        activeBtn.className = "flex items-center gap-xs px-md py-sm border-b-2 font-medium text-body-sm transition-all whitespace-nowrap border-primary text-primary";
-    }
+    if (section === "events") {
+        highlight.style.transform = "translateX(0%)";
+        btnEvents.classList.add("text-action");
+        btnEvents.classList.remove("text-muted");
+        btnForms.classList.remove("text-action");
+        btnForms.classList.add("text-muted");
+        if (titleLabel) titleLabel.textContent = "Events Console";
 
-    // Refresh display
-    if (tabId === "all-hosted") {
-        fetchEventsData();
+        // Slide/fade transition
+        formsPanel.classList.add("translate-x-8", "opacity-0");
+        setTimeout(() => {
+            formsPanel.classList.add("hidden");
+            eventsPanel.classList.remove("hidden");
+            eventsPanel.offsetHeight; // Force reflow
+            eventsPanel.classList.remove("translate-x-8", "opacity-0");
+            renderTabs();
+            filterAndRender();
+        }, 200);
     } else {
-        filterAndRenderEvents();
+        highlight.style.transform = "translateX(100%)";
+        btnForms.classList.add("text-action");
+        btnForms.classList.remove("text-muted");
+        btnEvents.classList.remove("text-action");
+        btnEvents.classList.add("text-muted");
+        if (titleLabel) titleLabel.textContent = "Forms Console";
+
+        // Slide/fade transition
+        eventsPanel.classList.add("translate-x-8", "opacity-0");
+        setTimeout(() => {
+            eventsPanel.classList.add("hidden");
+            formsPanel.classList.remove("hidden");
+            formsPanel.offsetHeight; // Force reflow
+            formsPanel.classList.remove("translate-x-8", "opacity-0");
+            renderTabs();
+            filterAndRender();
+        }, 200);
     }
 }
 
-// Retrieve active list of events based on tab and search keyword
-function getActiveList() {
-    const searchQuery = searchInput.value.toLowerCase().trim();
-    let list = fullHostedList;
+// Render sub-tabs for the active view
+function renderTabs() {
+    if (activeDashboard === "events") {
+        const tabs = [
+            { id: "ALL", label: "All Hosted", icon: "folder_open" },
+            { id: "PENDING", label: "Pending Requests", icon: "pending_actions" },
+            { id: "APPROVED", label: "Approved", icon: "check_circle" },
+            { id: "REJECTED", label: "Rejected Requests", icon: "cancel" },
+            { id: "CANCELLED", label: "Cancelled Events", icon: "warning" }
+        ];
 
-    if (currentTab === "pending-approval") {
-        list = list.filter(e => e.eventStatus === "PENDING");
-    } else if (currentTab === "approved-events") {
-        list = list.filter(e => e.eventStatus === "APPROVED");
-    } else if (currentTab === "rejected-events") {
-        list = list.filter(e => e.eventStatus === "REJECTED");
-    }
+        document.getElementById("events-tabs").innerHTML = tabs.map(tab => {
+            const isActive = tab.id === eventTab;
+            return `
+                <button onclick="switchEventTab('${tab.id}')" id="tab-event-${tab.id}"
+                    class="flex items-center gap-1.5 px-3 py-2.5 border-b-2 font-semibold text-sm transition-all whitespace-nowrap
+                    ${isActive 
+                        ? "border-action text-action" 
+                        : "border-transparent text-muted hover:text-ink hover:border-line-strong"}"
+                >
+                    <span class="material-symbols-outlined text-[18px]">${tab.icon}</span>
+                    <span>${tab.label}</span>
+                </button>
+            `;
+        }).join("");
+    } else {
+        const tabs = [
+            { id: "ALL", label: "All Hosted", icon: "folder_open" },
+            { id: "PENDING", label: "Pending Forms", icon: "hourglass_empty" },
+            { id: "APPROVED", label: "Approved", icon: "check_circle" },
+            { id: "REJECTED", label: "Rejected Forms", icon: "cancel" },
+            { id: "CANCELLED", label: "Cancelled Forms", icon: "warning" }
+        ];
 
-    if (searchQuery) {
-        return list.filter(e => 
-            (e.title && e.title.toLowerCase().includes(searchQuery)) || 
-            (e.location && e.location.toLowerCase().includes(searchQuery))
-        );
+        document.getElementById("forms-tabs").innerHTML = tabs.map(tab => {
+            const isActive = tab.id === formTab;
+            return `
+                <button onclick="switchFormTab('${tab.id}')" id="tab-form-${tab.id}"
+                    class="flex items-center gap-1.5 px-3 py-2.5 border-b-2 font-semibold text-sm transition-all whitespace-nowrap
+                    ${isActive 
+                        ? "border-action text-action" 
+                        : "border-transparent text-muted hover:text-ink hover:border-line-strong"}"
+                >
+                    <span class="material-symbols-outlined text-[18px]">${tab.icon}</span>
+                    <span>${tab.label}</span>
+                </button>
+            `;
+        }).join("");
     }
-    return list;
 }
 
-// Fetch events from backend
-async function fetchEventsData() {
+// Subtabs click triggers
+function switchEventTab(tabId) {
+    if (eventTab === tabId) return;
+    eventTab = tabId;
+    currentPage = 0;
+    renderTabs();
+    filterAndRender();
+}
+
+function switchFormTab(tabId) {
+    if (formTab === tabId) return;
+    formTab = tabId;
+    currentPage = 0;
+    renderTabs();
+    filterAndRender();
+}
+
+// Fetch console data
+async function fetchData() {
     showLoading(true);
     const token = localStorage.getItem("accessToken");
     if (!token) {
@@ -202,400 +251,630 @@ async function fetchEventsData() {
     }
 
     try {
-        // Fetch all hosted events
-        let allHostedUrl = `${API_EVENT}/getHostedEvents?page=0&size=1000`;
-        const allRes = await fetch(allHostedUrl, {
-            headers: { Authorization: `Bearer ${token}` }
-        });
-        const allBody = await allRes.json();
-        let eventsList = [];
-        if (allRes.ok && allBody.success) {
-            eventsList = allBody.data.content || [];
+        // Fetch hosted events & hosted custom forms in parallel
+        const [eventsRes, formsRes] = await Promise.all([
+            fetch(`${API_EVENTS}/hosted-events?page=0&size=1000`, { headers: { Authorization: `Bearer ${token}` } }),
+            fetch(`${API_CUSTOM_FORMS}/my-forms?page=0&size=1000`, { headers: { Authorization: `Bearer ${token}` } })
+        ]);
+
+        const eventsBody = await eventsRes.json();
+        const formsBody = await formsRes.json();
+
+        if (eventsRes.ok && eventsBody.success) {
+            hostedEventsList = eventsBody.data.content || [];
+        } else {
+            throw new Error(eventsBody.message || "Failed to load events");
         }
 
-        // Fetch hosted custom forms
-        let formsList = [];
-        try {
-            const formsRes = await fetch(`${API_CUSTOM_FORM_BASE}/hosted`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            const formsBody = await formsRes.json();
-            if (formsRes.ok && formsBody.success) {
-                formsList = formsBody.data || [];
-                formsList.forEach(f => {
-                    f.isCustomForm = true;
-                    f.eventStatus = f.status; // Map status for stats & tabs filtering
-                    f.eventId = f.id; // Map key ID for standard actions
-                });
-            }
-        } catch (e) {
-            console.error("Error loading hosted forms:", e);
+        if (formsRes.ok && formsBody.success) {
+            hostedFormsList = formsBody.data.content || [];
+        } else {
+            throw new Error(formsBody.message || "Failed to load custom forms");
         }
 
-        fullHostedList = [...eventsList, ...formsList];
-
-        // Populate myEventsPage pagination wrapper
-        myEventsPage = {
-            content: fullHostedList,
-            totalPages: Math.ceil(fullHostedList.length / pageSize) || 1,
-            first: true,
-            last: true
-        };
-
-        // Compute dashboard numbers
-        calculateStats();
-
-        // Render Active Events
-        filterAndRenderEvents();
+        filterAndRender();
         showLoading(false);
     } catch (err) {
-        console.error("fetchEventsData error:", err);
+        console.error("fetchData error:", err);
         showLoading(false);
-        eventsContentSection.classList.add("hidden");
+        eventsPanel.classList.add("hidden");
+        formsPanel.classList.add("hidden");
         errorState.classList.remove("hidden");
-        document.getElementById("error-message").textContent = err.message || "Network error loading events. Please try again.";
+        document.getElementById("error-message").textContent = err.message || "Network issue loading dashboard console.";
     }
 }
 
-// Compute dashboard stats from local array
-function calculateStats() {
-    const pending = fullHostedList.filter(e => e.eventStatus === "PENDING").length;
-    const approved = fullHostedList.filter(e => e.eventStatus === "APPROVED").length;
-    const rejected = fullHostedList.filter(e => e.eventStatus === "REJECTED").length;
-
-    document.getElementById("stat-total").textContent = fullHostedList.length;
-    document.getElementById("stat-pending").textContent = pending;
-    document.getElementById("stat-approved").textContent = approved;
-    document.getElementById("stat-rejected").textContent = rejected;
-}
-
-// Toggle loading spinner
+// Show/Hide loading indicators
 function showLoading(show) {
     if (show) {
         loadingState.classList.remove("hidden");
-        eventsContentSection.classList.add("hidden");
+        eventsPanel.classList.add("hidden");
+        formsPanel.classList.add("hidden");
         errorState.classList.add("hidden");
+        emptyMsgBlock.classList.add("hidden");
+        paginationSection.classList.add("hidden");
     } else {
         loadingState.classList.add("hidden");
-        eventsContentSection.classList.remove("hidden");
+        if (activeDashboard === "events") {
+            eventsPanel.classList.remove("hidden");
+        } else {
+            formsPanel.classList.remove("hidden");
+        }
     }
 }
 
-// Filter and render list of events
-function filterAndRenderEvents() {
-    const isServerPaginated = currentTab === "all-hosted";
-    eventsGrid.innerHTML = "";
+// Calculate active total pages for local pagination
+function getActiveTotalPages() {
+    const list = getFilteredList();
+    return Math.ceil(list.length / pageSize) || 1;
+}
 
-    if (isServerPaginated) {
-        const events = myEventsPage.content || [];
-        let filtered = events;
-        const searchQuery = searchInput.value.toLowerCase().trim();
-        if (searchQuery) {
-            filtered = events.filter(e => 
-                (e.title && e.title.toLowerCase().includes(searchQuery)) || 
-                (e.location && e.location.toLowerCase().includes(searchQuery))
+// Filter lists locally
+function getFilteredList() {
+    const query = searchInput.value.toLowerCase().trim();
+    if (activeDashboard === "events") {
+        let list = hostedEventsList;
+        // Filter by tab status
+        if (eventTab === "ALL") {
+            // Keep full list
+        } else if (eventTab === "CANCELLED") {
+            list = list.filter(e => e.cancelled === true || e.eventStatus === "CANCELLED");
+        } else if (eventTab === "APPROVED") {
+            list = list.filter(e => e.eventStatus === "APPROVED" && !e.cancelled);
+        } else {
+            list = list.filter(e => e.eventStatus === eventTab && !e.cancelled);
+        }
+        // Filter by query
+        if (query) {
+            list = list.filter(e => 
+                (e.title && e.title.toLowerCase().includes(query)) ||
+                (e.location && e.location.toLowerCase().includes(query))
             );
         }
-
-        if (filtered.length === 0) {
-            showEmptyState(true, "You haven't requested any events yet.");
-            paginationSection.classList.add("hidden");
-        } else {
-            showEmptyState(false);
-            eventsGrid.innerHTML = filtered.map(e => renderEventCard(e)).join("");
-            renderPagination(myEventsPage.totalPages, myEventsPage.first, myEventsPage.last);
-        }
+        return list;
     } else {
-        const fullList = getActiveList();
-        const totalItems = fullList.length;
-        const totalPages = Math.ceil(totalItems / pageSize) || 1;
-
-        if (totalItems === 0) {
-            showEmptyState(true, "No events match this filter.");
-            paginationSection.classList.add("hidden");
-        } else {
-            showEmptyState(false);
-            const startIndex = currentPage * pageSize;
-            const slice = fullList.slice(startIndex, startIndex + pageSize);
-            eventsGrid.innerHTML = slice.map(e => renderEventCard(e)).join("");
-            renderPagination(totalPages, currentPage === 0, currentPage === totalPages - 1);
+        let list = hostedFormsList;
+        // Filter by tab status
+        if (formTab !== "ALL") {
+            list = list.filter(f => f.status === formTab);
         }
+        // Filter by query
+        if (query) {
+            list = list.filter(f => 
+                (f.title && f.title.toLowerCase().includes(query))
+            );
+        }
+        return list;
     }
 }
 
-// Show/Hide empty message block
-function showEmptyState(show, msg) {
-    if (show) {
-        eventsGrid.classList.add("hidden");
-        eventsEmptyMsg.classList.remove("hidden");
-        emptyMessageText.textContent = msg;
+// Render active grid list
+function filterAndRender() {
+    eventsGrid.innerHTML = "";
+    formsGrid.innerHTML = "";
+    emptyMsgBlock.classList.add("hidden");
+    paginationSection.classList.add("hidden");
+
+    const filtered = getFilteredList();
+    const totalItems = filtered.length;
+    const totalPages = Math.ceil(totalItems / pageSize) || 1;
+
+    if (currentPage >= totalPages) currentPage = totalPages - 1;
+    if (currentPage < 0) currentPage = 0;
+
+    const startIdx = currentPage * pageSize;
+    const slice = filtered.slice(startIdx, startIdx + pageSize);
+
+    if (totalItems === 0) {
+        emptyMsgBlock.classList.remove("hidden");
+        emptyMessageText.textContent = activeDashboard === "events"
+            ? "No events found under this category filter."
+            : "No Campus Forms found under this category filter.";
+        return;
+    }
+
+    if (activeDashboard === "events") {
+        eventsGrid.innerHTML = slice.map(event => renderEventCard(event)).join("");
     } else {
-        eventsGrid.classList.remove("hidden");
-        eventsEmptyMsg.classList.add("hidden");
+        formsGrid.innerHTML = slice.map(form => renderFormCard(form)).join("");
+        // Fire async fetches for Campus Forms visibility & submission counts
+        slice.forEach(form => {
+            fetchSubmissionsCount(form.id);
+            fetchFormVisibility(form.id);
+        });
+    }
+
+    // Set pagination controls
+    paginationSection.classList.remove("hidden");
+    paginationInfo.textContent = `Showing ${startIdx + 1}-${Math.min(startIdx + pageSize, totalItems)} of ${totalItems}`;
+    prevPageBtn.disabled = currentPage === 0;
+    nextPageBtn.disabled = currentPage === totalPages - 1;
+}
+
+// Async fetches for Campus Form card properties (Submissions and Visibility Type)
+async function fetchSubmissionsCount(formId) {
+    const token = localStorage.getItem("accessToken");
+    try {
+        const res = await fetch(`${API_CUSTOM_FORMS}/${formId}/responses`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        const body = await res.json();
+        if (res.ok && body.success && body.data) {
+            const count = body.data.length;
+            const badge = document.getElementById(`form-submissions-${formId}`);
+            if (badge) {
+                badge.textContent = `${count} submission${count !== 1 ? 's' : ''}`;
+                badge.classList.remove("hidden");
+            }
+        }
+    } catch (e) {
+        console.error("Error fetching form responses count:", e);
     }
 }
 
-// Date formatter
+async function fetchFormVisibility(formId) {
+    const token = localStorage.getItem("accessToken");
+    try {
+        const res = await fetch(`${API_CUSTOM_FORMS}/${formId}`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        const body = await res.json();
+        if (res.ok && body.success && body.data) {
+            const type = body.data.participationType; // PUBLIC or UNIVERSITY
+            const badge = document.getElementById(`form-visibility-${formId}`);
+            if (badge) {
+                badge.textContent = type === "PUBLIC" ? "Public" : "University Only";
+                badge.classList.remove("hidden");
+            }
+        }
+    } catch (e) {
+        console.error("Error fetching form details:", e);
+    }
+}
+
+// Helpers: escape HTML and JS strings
+function escapeHtml(value) {
+    const node = document.createElement("div");
+    node.textContent = value == null ? "" : String(value);
+    return node.innerHTML;
+}
+
+function escapeJs(value) {
+    return (value || "").replace(/'/g, "\\'").replace(/"/g, '\\"');
+}
+
+// Format Date string
 function formatDate(dateStr) {
     if (!dateStr) return "N/A";
     const date = new Date(dateStr);
-    return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    return date.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
 }
 
-// HTML Generator: Single personal event card
+// Format Time string
+function formatTime(timeStr) {
+    if (!timeStr) return "TBA";
+    const parts = timeStr.split(":");
+    if (parts.length < 2) return timeStr;
+    const hr = parseInt(parts[0], 10);
+    const minutes = parts[1];
+    const ampm = hr >= 12 ? "PM" : "AM";
+    const displayHr = hr % 12 || 12;
+    return `${displayHr}:${minutes} ${ampm}`;
+}
+
+// Render individual event cards
 function renderEventCard(event) {
-    if (event.isCustomForm) {
-        let badgeClass = "bg-surface-container text-on-surface-variant border border-outline-variant";
-        if (event.status === "PENDING") badgeClass = "bg-yellow-500/10 text-yellow-500 border border-yellow-500/30";
-        else if (event.status === "APPROVED") badgeClass = "bg-primary/10 text-primary border border-primary/30";
-        else if (event.status === "REJECTED") badgeClass = "bg-error/10 text-error border border-error/30";
-
-        const banner = event.bannerUrl || "/images/banner-placeholder.png";
-
-        return `
-            <div class="glass-card rounded-xl overflow-hidden flex flex-col justify-between hover:shadow-primary/5 hover:border-primary/30 transition-all duration-300">
-                <!-- Banner area -->
-                <div class="relative h-44 w-full bg-surface-container-low overflow-hidden cursor-pointer" onclick="window.open('/formDetails?formId=${event.id}', '_blank')">
-                    <img class="w-full h-full object-cover hover:scale-105 transition-transform duration-500" src="${banner}" alt="${event.title}" onerror="this.src='/images/banner-placeholder.png'">
-                    <span class="absolute top-sm left-sm bg-purple-500/20 text-purple-300 border border-purple-500/30 text-label-md px-sm py-xs rounded-full">
-                        Custom Form
-                    </span>
-                    <span class="absolute top-sm right-sm ${badgeClass} text-label-md px-sm py-xs rounded-full font-semibold uppercase">
-                        ${event.status}
-                    </span>
-                </div>
-
-                <!-- Card Body -->
-                <div class="p-md flex-1 flex flex-col justify-between space-y-md">
-                    <div class="space-y-sm">
-                        <h3 class="text-title-lg font-bold text-on-background line-clamp-1 hover:text-primary cursor-pointer transition-colors" onclick="window.open('/formDetails?formId=${event.id}', '_blank')">${event.title}</h3>
-                        <p class="text-body-sm text-on-surface-variant line-clamp-2">${event.description || "No description provided."}</p>
-                    </div>
-
-                    <div class="flex flex-col gap-xs border-t border-outline-variant/20 pt-sm">
-                        <a href="/update-custom-form?formId=${event.id}" 
-                            class="w-full bg-surface-container-high hover:bg-surface-container-highest text-on-surface border border-outline-variant font-semibold py-xs px-sm rounded text-body-sm transition-all flex items-center justify-center gap-xs mt-xs"
-                        >
-                            <span class="material-symbols-outlined text-[18px]">edit</span>
-                            <span>Edit Form</span>
-                        </a>
-                        <button onclick="shareFormLink(${event.id})" 
-                            class="w-full bg-secondary/10 hover:bg-secondary/20 text-secondary border border-secondary/30 font-semibold py-xs px-sm rounded text-body-sm transition-all flex items-center justify-center gap-xs mt-xs"
-                        >
-                            <span class="material-symbols-outlined text-[18px]">share</span>
-                            <span>Share Form Link</span>
-                        </button>
-                        <button onclick="showResponsesView(${event.id}, '${event.title.replace(/'/g, "\\'")}')" 
-                            class="w-full bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 font-semibold py-xs px-sm rounded text-body-sm transition-all flex items-center justify-center gap-xs mt-xs"
-                        >
-                            <span class="material-symbols-outlined text-[18px]">receipt_long</span>
-                            <span>View Responses</span>
-                        </button>
-                        <button onclick="deleteCustomForm(${event.id}, '${event.title.replace(/'/g, "\\'")}')" 
-                            class="w-full border border-error hover:bg-error/10 text-error font-semibold py-xs px-sm rounded text-body-sm transition-all flex items-center justify-center gap-xs mt-xs"
-                        >
-                            <span class="material-symbols-outlined text-[18px]">delete</span>
-                            <span>Delete Form</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `;
-    }
-
-    let badgeClass = "bg-surface-container text-on-surface-variant border border-outline-variant";
-    if (event.eventStatus === "PENDING") badgeClass = "bg-yellow-500/10 text-yellow-500 border border-yellow-500/30";
-    else if (event.eventStatus === "APPROVED") badgeClass = "bg-primary/10 text-primary border border-primary/30";
-    else if (event.eventStatus === "REJECTED") badgeClass = "bg-error/10 text-error border border-error/30";
-    else if (event.eventStatus === "CANCELLED") badgeClass = "bg-surface-container-high text-outline border border-outline-variant";
-    else if (event.eventStatus === "FINISHED") badgeClass = "bg-blue-500/10 text-blue-500 border border-blue-500/30";
-
     const banner = event.bannerUrl || "/images/banner-placeholder.png";
     const priceDisplay = event.ticketPrice > 0 ? `$${event.ticketPrice.toFixed(2)}` : "Free";
-
-    const showCancel = event.eventStatus === "APPROVED";
-    const showEdit = event.eventStatus === "PENDING" || event.eventStatus === "APPROVED";
     
+    // Status Badge
+    let statusBadge = "";
+    if (event.cancelled) {
+        statusBadge = `<span class="bg-red-50 text-danger border border-red-200 text-[10px] px-2.5 py-0.5 rounded-full font-semibold uppercase">Cancelled</span>`;
+    } else if (event.eventStatus === "PENDING") {
+        statusBadge = `<span class="bg-amber-50 text-amber-700 border border-amber-200 text-[10px] px-2.5 py-0.5 rounded-full font-semibold uppercase">Pending</span>`;
+    } else if (event.eventStatus === "APPROVED") {
+        statusBadge = `<span class="bg-green-50 text-signal border border-green-200 text-[10px] px-2.5 py-0.5 rounded-full font-semibold uppercase">Approved</span>`;
+    } else if (event.eventStatus === "REJECTED") {
+        statusBadge = `<span class="bg-red-50 text-danger border border-red-200 text-[10px] px-2.5 py-0.5 rounded-full font-semibold uppercase">Rejected</span>`;
+    }
+
     const actionButtons = `
-        ${showEdit ? `
-            <a href="/request-event?id=${event.eventId}" 
-                class="flex-1 bg-surface-container hover:bg-surface-container-high border border-outline-variant text-on-surface font-bold py-xs px-sm rounded text-body-sm text-center transition-all flex items-center justify-center gap-xs"
-            >
-                <span class="material-symbols-outlined text-[18px]">edit</span>
-                <span>Edit</span>
-            </a>
-        ` : ""}
-        ${showCancel ? `
-            <button onclick="openCancelModal(${event.eventId}, '${event.title.replace(/'/g, "\\'")}')" 
-                class="flex-1 border border-yellow-500/50 hover:bg-yellow-500/10 text-yellow-500 font-bold py-xs px-sm rounded text-body-sm transition-all flex items-center justify-center gap-xs"
-            >
-                <span class="material-symbols-outlined text-[18px]">block</span>
-                <span>Cancel</span>
+        <div class="flex flex-col gap-1.5 border-t border-line pt-3 mt-3">
+            <div class="flex gap-1.5">
+                <button onclick="window.location.href='/update-event/${event.eventId}'" class="flex-1 border border-line text-ink text-[11px] font-semibold py-1.5 rounded flex items-center justify-center gap-0.5 hover:bg-canvas-sunk">
+                    <span class="material-symbols-outlined text-[14px]">edit</span> Edit
+                </button>
+                <button onclick="window.open('/event-details/${event.eventId}', '_blank')" class="flex-1 border border-line text-ink text-[11px] font-semibold py-1.5 rounded flex items-center justify-center gap-0.5 hover:bg-canvas-sunk">
+                    <span class="material-symbols-outlined text-[14px]">visibility</span> Details
+                </button>
+            </div>
+            <div class="flex gap-1.5">
+                ${(event.eventStatus === 'CANCELLED' || event.cancelled) ? `
+                    <button onclick="openRestoreModal(${event.eventId}, '${escapeJs(event.title)}', 'restore-event')" class="flex-1 border border-action/30 text-action text-[11px] font-semibold py-1.5 rounded flex items-center justify-center gap-0.5 hover:bg-action-tint">
+                        <span class="material-symbols-outlined text-[14px]">restore</span> Restore
+                    </button>
+                ` : `
+                    <button onclick="openCancelModal(${event.eventId}, '${escapeJs(event.title)}', 'cancel-event')" class="flex-1 border border-danger/30 text-danger text-[11px] font-semibold py-1.5 rounded flex items-center justify-center gap-0.5 hover:bg-red-50">
+                        <span class="material-symbols-outlined text-[14px]">cancel</span> Cancel
+                    </button>
+                `}
+                <button onclick="showAttendeesView(${event.eventId}, '${escapeJs(event.title)}')" class="flex-1 bg-action-tint text-action text-[11px] font-semibold py-1.5 rounded flex items-center justify-center gap-0.5 hover:bg-action/20">
+                    <span class="material-symbols-outlined text-[14px]">group</span> Attendance
+                </button>
+            </div>
+            <button onclick="shareEventLink(${event.eventId})" class="w-full border border-line text-muted text-[11px] font-semibold py-1.5 rounded flex items-center justify-center gap-0.5 hover:bg-canvas-sunk">
+                <span class="material-symbols-outlined text-[14px]">share</span> Share Link
             </button>
-        ` : ""}
-        <button onclick="openDeleteModal(${event.eventId}, '${event.title.replace(/'/g, "\\'")}')" 
-            class="flex-1 border border-error/50 hover:bg-error/10 text-error font-bold py-xs px-sm rounded text-body-sm transition-all flex items-center justify-center gap-xs"
-        >
-            <span class="material-symbols-outlined text-[18px]">delete</span>
-            <span>Delete</span>
-        </button>
+        </div>
     `;
 
     return `
-        <div class="glass-card rounded-xl overflow-hidden flex flex-col justify-between hover:shadow-primary/5 hover:border-primary/30 transition-all duration-300">
-            <!-- Banner area -->
-            <div class="relative h-44 w-full bg-surface-container-low overflow-hidden">
-                <img class="w-full h-full object-cover hover:scale-105 transition-transform duration-500" src="${banner}" alt="${event.title}" onerror="this.src='/images/banner-placeholder.png'">
-                ${event.category ? `
-                    <span class="absolute top-sm left-sm bg-background/80 backdrop-blur-md text-primary border border-primary/20 text-label-md px-sm py-xs rounded-full">
-                        ${event.category}
-                    </span>
-                ` : ""}
-                <span class="absolute top-sm right-sm ${badgeClass} text-label-md px-sm py-xs rounded-full font-semibold uppercase">
-                    ${event.eventStatus}
-                </span>
+        <div class="border border-line bg-canvas rounded-xl overflow-hidden flex flex-col justify-between hover:shadow-[0_10px_28px_-18px_rgba(11,21,38,.38)] hover:border-action/30 transition-all duration-300">
+            <div>
+                <!-- Banner Image -->
+                <div class="h-44 bg-canvas-sunk border-b border-line relative overflow-hidden" onclick="window.open('/event-details/${event.eventId}', '_blank')">
+                    <img class="w-full h-full object-cover hover:scale-105 transition-transform duration-500 cursor-pointer" src="${banner}" alt="${event.title}" onerror="this.src='/images/banner-placeholder.png'">
+                    <div class="absolute top-3 right-3">
+                        <span class="bg-white/95 text-ink font-semibold text-xs px-2.5 py-1 rounded shadow-sm">
+                            ${priceDisplay}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Body Content -->
+                <div class="p-4 space-y-2">
+                    <div class="flex items-center justify-between">
+                        ${statusBadge}
+                        ${event.category ? `<span class="bg-canvas-mid text-muted text-[10px] px-2 py-0.5 rounded">${escapeHtml(event.category)}</span>` : ""}
+                    </div>
+                    <h3 class="font-display text-base font-bold text-ink line-clamp-1 hover:text-action cursor-pointer transition-colors" onclick="window.open('/event-details/${event.eventId}', '_blank')">${escapeHtml(event.title)}</h3>
+                    
+                    <div class="space-y-1 text-xs text-muted">
+                        <p class="flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-[16px] text-action">calendar_today</span>
+                            <span>${formatDate(event.eventDate || event.lastRegistrationDate)}</span>
+                        </p>
+                        <p class="flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-[16px] text-action">pin_drop</span>
+                            <span class="line-clamp-1">${escapeHtml(event.location || "Venue TBA")}</span>
+                        </p>
+                    </div>
+                </div>
             </div>
 
-            <!-- Card Body -->
-            <div class="p-md flex-1 flex flex-col justify-between space-y-md">
-                <div class="space-y-sm">
-                    <h3 class="text-title-lg font-bold text-on-background line-clamp-1">${event.title}</h3>
-                    
-                    <div class="space-y-xs text-body-sm text-on-surface-variant">
-                        <div class="flex items-center gap-xs">
-                            <span class="material-symbols-outlined text-[18px] text-primary">calendar_today</span>
-                            <span>Reg Deadline: ${formatDate(event.lastRegistrationDate)}</span>
-                        </div>
-                        <div class="flex items-center gap-xs">
-                            <span class="material-symbols-outlined text-[18px] text-primary">pin_drop</span>
-                            <span class="line-clamp-1">${event.location}</span>
-                        </div>
-                        <div class="flex items-center gap-xs">
-                            <span class="material-symbols-outlined text-[18px] text-primary">payments</span>
-                            <span>Ticket Price: <span class="text-on-surface font-semibold">${priceDisplay}</span></span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="flex flex-col gap-xs border-t border-outline-variant/20 pt-sm">
-                    <div class="flex gap-sm w-full">
-                        ${actionButtons}
-                    </div>
-                    <button onclick="shareEventLink(${event.eventId})" 
-                        class="w-full bg-secondary/10 hover:bg-secondary/20 text-secondary border border-secondary/30 font-semibold py-xs px-sm rounded text-body-sm transition-all flex items-center justify-center gap-xs mt-xs"
-                    >
-                        <span class="material-symbols-outlined text-[18px]">share</span>
-                        <span>Share Event Link</span>
-                    </button>
-                    ${(event.eventStatus === "APPROVED" || event.eventStatus === "FINISHED") ? `
-                        <button onclick="showAttendeesView(${event.eventId}, '${event.title.replace(/'/g, "\\'")}')" 
-                            class="w-full bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 font-semibold py-xs px-sm rounded text-body-sm transition-all flex items-center justify-center gap-xs mt-xs"
-                        >
-                            <span class="material-symbols-outlined text-[18px]">group</span>
-                            <span>Manage Attendance</span>
-                        </button>
-                    ` : ""}
-                    ${event.hasCustomForm ? `
-                        <button onclick="showResponsesView(${event.eventId}, '${event.title.replace(/'/g, "\\'")}')" 
-                            class="w-full bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 font-semibold py-xs px-sm rounded text-body-sm transition-all flex items-center justify-center gap-xs mt-xs"
-                        >
-                            <span class="material-symbols-outlined text-[18px]">receipt_long</span>
-                            <span>View Form Responses</span>
-                        </button>
-                    ` : ""}
-                </div>
+            <!-- Card Actions -->
+            <div class="p-4 pt-0">
+                ${actionButtons}
             </div>
         </div>
     `;
 }
 
-// Render pagination info
-function renderPagination(totalPages, isFirst, isLast) {
-    paginationSection.classList.remove("hidden");
-    paginationInfo.textContent = `Showing page ${currentPage + 1} of ${totalPages || 1}`;
+// Render individual Campus Forms cards
+function renderFormCard(form) {
+    const banner = form.bannerUrl || "/images/banner-placeholder.png";
+    
+    // Status Badge
+    let statusBadge = "";
+    if (form.status === "PENDING") {
+        statusBadge = `<span class="bg-amber-50 text-amber-700 border border-amber-200 text-[10px] px-2.5 py-0.5 rounded-full font-semibold uppercase">Pending</span>`;
+    } else if (form.status === "APPROVED") {
+        statusBadge = `<span class="bg-green-50 text-signal border border-green-200 text-[10px] px-2.5 py-0.5 rounded-full font-semibold uppercase">Approved</span>`;
+    } else if (form.status === "REJECTED") {
+        statusBadge = `<span class="bg-red-50 text-danger border border-red-200 text-[10px] px-2.5 py-0.5 rounded-full font-semibold uppercase">Rejected</span>`;
+    } else if (form.status === "CANCELLED") {
+        statusBadge = `<span class="bg-red-50 text-danger border border-red-200 text-[10px] px-2.5 py-0.5 rounded-full font-semibold uppercase">Cancelled</span>`;
+    }
 
-    prevPageBtn.disabled = isFirst;
-    nextPageBtn.disabled = isLast;
+    let hostedActions = "";
+    if (form.status === "APPROVED" || form.status === "HOSTED") {
+        const toggleLabel = form.acceptingResponses ? "Disable Submissions" : "Enable Submissions";
+        hostedActions = `
+            <button onclick="toggleResponses(${form.id}, ${form.acceptingResponses})" class="w-full mb-2 bg-canvas-sunk border border-line hover:bg-canvas-mid text-ink text-[11px] font-semibold py-1.5 rounded flex items-center justify-center gap-0.5">
+                <span class="material-symbols-outlined text-[14px]">${form.acceptingResponses ? 'do_not_disturb_on' : 'check_circle'}</span> ${toggleLabel}
+            </button>
+        `;
+    }
+
+    const actionButtons = `
+        <div class="flex flex-col gap-1.5 border-t border-line pt-3 mt-3">
+            ${hostedActions}
+            <div class="flex gap-1.5">
+                <button onclick="window.location.href='/update-custom-form/${form.id}'" class="flex-1 border border-line text-ink text-[11px] font-semibold py-1.5 rounded flex items-center justify-center gap-0.5 hover:bg-canvas-sunk">
+                    <span class="material-symbols-outlined text-[14px]">edit</span> Edit
+                </button>
+                <button onclick="window.open('/form-details/${form.id}', '_blank')" class="flex-1 border border-line text-ink text-[11px] font-semibold py-1.5 rounded flex items-center justify-center gap-0.5 hover:bg-canvas-sunk">
+                    <span class="material-symbols-outlined text-[14px]">visibility</span> Details
+                </button>
+            </div>
+            <div class="flex gap-1.5">
+                ${form.status === 'CANCELLED' ? `
+                    <button onclick="openRestoreModal(${form.id}, '${escapeJs(form.title)}', 'restore-form')" class="flex-1 border border-action/30 text-action text-[11px] font-semibold py-1.5 rounded flex items-center justify-center gap-0.5 hover:bg-action-tint">
+                        <span class="material-symbols-outlined text-[14px]">restore</span> Restore
+                    </button>
+                ` : `
+                    <button onclick="openCancelModal(${form.id}, '${escapeJs(form.title)}', 'cancel-form')" class="flex-1 border border-danger/30 text-danger text-[11px] font-semibold py-1.5 rounded flex items-center justify-center gap-0.5 hover:bg-red-50">
+                        <span class="material-symbols-outlined text-[14px]">cancel</span> Cancel
+                    </button>
+                `}
+                <button onclick="window.location.href='/form-responses/${form.id}'" class="flex-1 bg-action-tint text-action text-[11px] font-semibold py-1.5 rounded flex items-center justify-center gap-0.5 hover:bg-action/20">
+                    <span class="material-symbols-outlined text-[14px]">group</span> Attendance
+                </button>
+            </div>
+            <button onclick="shareFormLink(${form.id})" class="w-full border border-line text-muted text-[11px] font-semibold py-1.5 rounded flex items-center justify-center gap-0.5 hover:bg-canvas-sunk">
+                <span class="material-symbols-outlined text-[14px]">share</span> Share Link
+            </button>
+        </div>
+    `;
+
+    return `
+        <div class="border border-line bg-canvas rounded-xl overflow-hidden flex flex-col justify-between hover:shadow-[0_10px_28px_-18px_rgba(11,21,38,.38)] hover:border-action/30 transition-all duration-300">
+            <div>
+                <!-- Banner Image -->
+                <div class="h-44 bg-canvas-sunk border-b border-line relative overflow-hidden" onclick="window.open('/form-details/${form.id}', '_blank')">
+                    <img class="w-full h-full object-cover hover:scale-105 transition-transform duration-500 cursor-pointer" src="${banner}" alt="${form.title}" onerror="this.src='/images/banner-placeholder.png'">
+                    
+                    <!-- Dynamic properties fetched asynchronously -->
+                    <div class="absolute top-3 left-3 flex flex-col gap-1">
+                        <span id="form-visibility-${form.id}" class="hidden bg-white/95 text-ink font-semibold text-[10px] px-2 py-0.5 rounded shadow-sm">
+                            Loading...
+                        </span>
+                        <span id="form-submissions-${form.id}" class="hidden bg-purple-50 text-purple-700 border border-purple-200 font-semibold text-[10px] px-2 py-0.5 rounded shadow-sm">
+                            Loading...
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Body Content -->
+                <div class="p-4 space-y-2">
+                    <div class="flex items-center justify-between">
+                        ${statusBadge}
+                        <span class="bg-purple-50 text-purple-700 border border-purple-200 text-[10px] px-2.5 py-0.5 rounded-full font-semibold uppercase">Campus Form</span>
+                    </div>
+                    <h3 class="font-display text-base font-bold text-ink line-clamp-1 hover:text-action cursor-pointer transition-colors" onclick="window.open('/form-details/${form.id}', '_blank')">${escapeHtml(form.title)}</h3>
+                    
+                    <div class="space-y-1 text-xs text-muted">
+                        <p class="flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-[16px] text-action">calendar_today</span>
+                            <span>Deadline: ${formatDate(form.registrationDeadLine || form.registrationDeadline)}</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card Actions -->
+            <div class="p-4 pt-0">
+                ${actionButtons}
+            </div>
+        </div>
+    `;
 }
 
-// Modals toggling
-function openModal(id) {
-    document.getElementById(id).classList.remove("hidden");
+// Modal open/close helpers
+function openModal(modalId) {
+    const m = document.getElementById(modalId);
+    if (m) m.classList.remove("hidden");
 }
 
-function closeModal(id) {
-    document.getElementById(id).classList.add("hidden");
-    activeEventId = null;
+function closeModal(modalId) {
+    const m = document.getElementById(modalId);
+    if (m) m.classList.add("hidden");
+    activeId = null;
+    actionType = "";
 }
 
-function openCancelModal(id, title) {
-    activeEventId = id;
-    document.getElementById("cancel-event-title").textContent = title;
+// Dialog open triggers
+function openCancelModal(id, title, type) {
+    activeId = id;
+    activeTitle = title;
+    actionType = type;
+    document.getElementById("cancel-title").textContent = title;
     openModal("cancel-modal");
 }
 
-function openDeleteModal(id, title) {
-    activeEventId = id;
-    document.getElementById("delete-event-title").textContent = title;
+function openRestoreModal(id, title, type) {
+    activeId = id;
+    activeTitle = title;
+    actionType = type;
+    document.getElementById("restore-title").textContent = title;
+    openModal("restore-modal");
+}
+
+function openDeleteModal(id, title, type) {
+    activeId = id;
+    activeTitle = title;
+    actionType = type;
+    document.getElementById("delete-title").textContent = title;
     openModal("delete-modal");
 }
 
-// Confirm actions
+// Dialog confirm action triggers
 async function confirmCancel() {
-    if (!activeEventId) return;
+    if (!activeId) return;
     const token = localStorage.getItem("accessToken");
+
     try {
-        const res = await fetch(`${API_EVENT}/cancelEvent/${activeEventId}`, {
-            method: "DELETE",
-            headers: { Authorization: `Bearer ${token}` }
-        });
-        if (res.ok) {
-            closeModal("cancel-modal");
-            await fetchEventsData();
+        let res;
+        if (actionType === "cancel-event") {
+            res = await fetch(`${API_EVENTS}/${activeId}/cancel`, {
+                method: "DELETE",
+                headers: { Authorization: `Bearer ${token}` }
+            });
         } else {
-            alert("Failed to cancel event.");
+            res = await fetch(`${API_CUSTOM_FORMS}/${activeId}/cancel`, {
+                method: "PATCH",
+                headers: { Authorization: `Bearer ${token}` }
+            });
         }
-    } catch (err) {
-        console.error("Cancel error:", err);
-        alert("Network error cancelling event.");
+
+        const body = await res.json();
+        if (res.ok && body.success) {
+            closeModal("cancel-modal");
+            showToast(`"${activeTitle}" cancelled successfully!`, "success");
+            await fetchData();
+        } else {
+            showToast(body.message || "Failed to cancel request.", "error");
+        }
+    } catch (e) {
+        console.error("Cancel error:", e);
+        showToast("Network error occurred during cancellation.", "error");
+    }
+}
+
+async function confirmRestore() {
+    if (!activeId) return;
+    const token = localStorage.getItem("accessToken");
+
+    try {
+        let res;
+        if (actionType === "restore-event") {
+            res = await fetch(`${API_EVENTS}/${activeId}/restore`, {
+                method: "POST",
+                headers: { Authorization: `Bearer ${token}` }
+            });
+        } else {
+            res = await fetch(`${API_CUSTOM_FORMS}/${activeId}/restore`, {
+                method: "PATCH",
+                headers: { Authorization: `Bearer ${token}` }
+            });
+        }
+
+        const body = await res.json();
+        if (res.ok && body.success) {
+            closeModal("restore-modal");
+            showToast(`"${activeTitle}" restored successfully!`, "success");
+            await fetchData();
+        } else {
+            showToast(body.message || "Failed to restore request.", "error");
+        }
+    } catch (e) {
+        console.error("Restore error:", e);
+        showToast("Network error occurred during restore.", "error");
     }
 }
 
 async function confirmDelete() {
-    if (!activeEventId) return;
+    if (!activeId) return;
     const token = localStorage.getItem("accessToken");
+
     try {
-        const res = await fetch(`${API_EVENT}/deleteEvent/${activeEventId}`, {
-            method: "DELETE",
-            headers: { Authorization: `Bearer ${token}` }
-        });
-        if (res.ok) {
-            closeModal("delete-modal");
-            await fetchEventsData();
+        let res;
+        if (actionType === "delete-event") {
+            res = await fetch(`${API_EVENTS}/${activeId}`, {
+                method: "DELETE",
+                headers: { Authorization: `Bearer ${token}` }
+            });
         } else {
-            alert("Failed to delete event.");
+            res = await fetch(`${API_CUSTOM_FORMS}/${activeId}`, {
+                method: "DELETE",
+                headers: { Authorization: `Bearer ${token}` }
+            });
         }
-    } catch (err) {
-        console.error("Delete error:", err);
-        alert("Network error deleting event.");
+
+        const body = await res.json();
+        if (res.ok && body.success) {
+            closeModal("delete-modal");
+            showToast(`"${activeTitle}" deleted successfully!`, "success");
+            await fetchData();
+        } else {
+            showToast(body.message || "Failed to delete request.", "error");
+        }
+    } catch (e) {
+        console.error("Delete error:", e);
+        showToast("Network error occurred during deletion.", "error");
     }
 }
 
-// ===================== ATTENDEE & QR SCANNER MANAGEMENT =====================
+// Toast Feedback Notification System
+function showToast(message, type = "success") {
+    const container = document.getElementById("toast-container");
+    if (!container) return;
+
+    const toast = document.createElement("div");
+    toast.className = `flex items-center gap-2 px-4 py-3 rounded-lg shadow-lg border transition-all duration-300 pointer-events-auto toast-enter ${
+        type === "success" 
+            ? "bg-green-50 text-signal border-green-200" 
+            : "bg-red-50 text-danger border-red-200"
+    }`;
+    
+    const icon = type === "success" ? "check_circle" : "error";
+    toast.innerHTML = `
+        <span class="material-symbols-outlined text-[20px]">${icon}</span>
+        <span class="text-sm font-semibold">${message}</span>
+    `;
+
+    container.appendChild(toast);
+
+    // Force reflow and slide in
+    toast.offsetHeight;
+    toast.classList.remove("toast-enter");
+    toast.classList.add("toast-active");
+
+    // Remove toast after delay
+    setTimeout(() => {
+        toast.classList.remove("toast-active");
+        toast.classList.add("toast-enter");
+        setTimeout(() => {
+            toast.remove();
+        }, 300);
+    }, 4000);
+}
+
+
+// WhatsApp Event Sharing Link Utility
+function shareEventLink(eventId) {
+    const event = hostedEventsList.find(e => e.eventId === eventId);
+    if (!event) {
+        showToast("Event details not found.", "error");
+        return;
+    }
+
+    if (event.eventStatus !== "APPROVED") {
+        showToast("Event must be approved before sharing.", "error");
+        return;
+    }
+
+    const eventUrl = `${window.location.origin}/event-details/${eventId}`;
+    const cleanDesc = event.description ? (event.description.substring(0, 150) + (event.description.length > 150 ? "..." : "")) : "";
+    const message = `🔥 Check out this exciting event on CampusHive! 🔥\n\n📌 *${event.title}*\n📝 ${cleanDesc}\n\n👉 *Register here:* ${eventUrl}`;
+
+    const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, "_blank");
+}
+
+// Copy Campus Form URL Link to Clipboard
+function shareFormLink(formId) {
+    const formUrl = `${window.location.origin}/formDetails?formId=${formId}`;
+    navigator.clipboard.writeText(formUrl).then(() => {
+        showToast("Campus Form registration link copied to clipboard!", "success");
+    }).catch(err => {
+        const input = document.createElement("input");
+        input.value = formUrl;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand("copy");
+        input.remove();
+        showToast("Campus Form registration link copied to clipboard!", "success");
+    });
+}
+
+
+// ATTENDANCE & AUDIENCE MANAGEMENT (For Approved Events)
+// ----------------------------------------------------
+const attendeesPageSize = 8;
+let attendeeSearchQuery = "";
+let html5QrCode = null;
 let activeEventForAttendees = null;
 let allAttendeesList = [];
 let filteredAttendees = [];
 let attendeesPage = 0;
-const attendeesPageSize = 8;
-let attendeeSearchQuery = "";
-let html5QrCode = null;
 
-// Show Attendees sub-view
 function showAttendeesView(eventId, eventTitle) {
     activeEventForAttendees = { eventId, title: eventTitle };
     attendeesPage = 0;
     attendeeSearchQuery = "";
-    
+
     const searchInput = document.getElementById("attendeeSearch");
     if (searchInput) searchInput.value = "";
 
@@ -603,22 +882,20 @@ function showAttendeesView(eventId, eventTitle) {
     document.getElementById("attendees-event-title").textContent = eventTitle;
 
     // Toggle views
-    document.getElementById("events-dashboard-view").classList.add("hidden");
+    document.getElementById("dashboard-view").classList.add("hidden");
     document.getElementById("attendees-view").classList.remove("hidden");
 
     // Fetch and populate data
     fetchAttendeesData();
 }
 
-// Hide Attendees sub-view
 function hideAttendeesView() {
     activeEventForAttendees = null;
     closeScanner();
     document.getElementById("attendees-view").classList.add("hidden");
-    document.getElementById("events-dashboard-view").classList.remove("hidden");
+    document.getElementById("dashboard-view").classList.remove("hidden");
 }
 
-// Fetch attendees list from API
 async function fetchAttendeesData() {
     if (!activeEventForAttendees) return;
     const token = localStorage.getItem("accessToken");
@@ -627,8 +904,7 @@ async function fetchAttendeesData() {
     const paginationSection = document.getElementById("attendees-pagination");
 
     try {
-        // Fetch up to 200 attendees to handle client-side search/pagination easily
-        const res = await fetch(`/api/v1/tickets/audienceList/${activeEventForAttendees.eventId}?page=0&size=200`, {
+        const res = await fetch(`/api/v1/tickets/${activeEventForAttendees.eventId}/audienceList?page=0&size=200`, {
             headers: { Authorization: `Bearer ${token}` }
         });
         const body = await res.json();
@@ -642,7 +918,7 @@ async function fetchAttendeesData() {
         console.error("fetchAttendeesData error:", err);
         tableBody.innerHTML = `
             <tr>
-                <td colspan="5" class="p-lg text-center text-body-sm text-error">
+                <td colspan="5" class="p-4 text-center text-sm text-danger">
                     Failed to fetch attendees: ${err.message || "Network issue"}
                 </td>
             </tr>
@@ -670,7 +946,6 @@ function filterAndRenderAttendees() {
     const totalElements = filteredAttendees.length;
     const totalPages = Math.ceil(totalElements / attendeesPageSize) || 1;
 
-    // Boundary check
     if (attendeesPage >= totalPages) attendeesPage = totalPages - 1;
     if (attendeesPage < 0) attendeesPage = 0;
 
@@ -695,30 +970,30 @@ function filterAndRenderAttendees() {
     tableBody.innerHTML = paginatedList.map(a => {
         let statusBadge = "";
         if (a.checkedIn) {
-            statusBadge = `<span class="bg-primary/10 text-primary border border-primary/20 text-label-md px-sm py-xs rounded-full font-semibold uppercase">PRESENT</span>`;
+            statusBadge = `<span class="bg-green-50 text-signal border border-green-200 text-[10px] px-2.5 py-0.5 rounded-full font-semibold uppercase">PRESENT</span>`;
         } else {
-            statusBadge = `<span class="bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 text-label-md px-sm py-xs rounded-full font-semibold uppercase">ABSENT</span>`;
+            statusBadge = `<span class="bg-amber-50 text-amber-600 border border-amber-200 text-[10px] px-2.5 py-0.5 rounded-full font-semibold uppercase">ABSENT</span>`;
         }
 
         const actionBtn = a.checkedIn ? `
-            <button onclick="toggleAttendance(${a.ticketId}, 'absent')" class="border border-error/50 hover:bg-error/10 text-error font-bold py-xs px-sm rounded text-body-sm transition-all flex items-center gap-xs ml-auto">
+            <button onclick="toggleAttendance(${a.ticketId}, 'absent')" class="border border-danger/50 hover:bg-red-50 text-danger font-semibold py-1 px-3 rounded text-sm transition-all flex items-center gap-1 ml-auto">
                 <span class="material-symbols-outlined text-[16px]">close</span>
                 <span>Mark Absent</span>
             </button>
         ` : `
-            <button onclick="toggleAttendance(${a.ticketId}, 'present')" class="bg-primary/20 hover:bg-primary/30 text-primary border border-primary/30 font-bold py-xs px-sm rounded text-body-sm transition-all flex items-center gap-xs ml-auto">
+            <button onclick="toggleAttendance(${a.ticketId}, 'present')" class="bg-action-tint hover:bg-action/20 text-action border border-action/20 font-semibold py-1 px-3 rounded text-sm transition-all flex items-center gap-1 ml-auto">
                 <span class="material-symbols-outlined text-[16px]">check</span>
                 <span>Mark Present</span>
             </button>
         `;
 
         return `
-            <tr class="hover:bg-surface-container/30 transition-colors border-b border-outline-variant/10">
-                <td class="p-md text-body-sm font-semibold text-on-background">${a.name || "—"}</td>
-                <td class="p-md text-body-sm text-on-surface-variant">${a.email || "—"}</td>
-                <td class="p-md text-body-sm text-on-surface-variant font-mono">${a.ticketId || "—"}</td>
-                <td class="p-md">${statusBadge}</td>
-                <td class="p-md text-right">${actionBtn}</td>
+            <tr class="hover:bg-canvas-sunk transition-colors">
+                <td class="p-3 font-semibold text-ink">${escapeHtml(a.name || "—")}</td>
+                <td class="p-3 text-muted">${escapeHtml(a.email || "—")}</td>
+                <td class="p-3 text-muted font-mono text-xs">${a.ticketId || "—"}</td>
+                <td class="p-3">${statusBadge}</td>
+                <td class="p-3 text-right">${actionBtn}</td>
             </tr>
         `;
     }).join("");
@@ -727,7 +1002,7 @@ function filterAndRenderAttendees() {
 async function toggleAttendance(ticketId, action) {
     const token = localStorage.getItem("accessToken");
     const url = `/api/v1/tickets/${ticketId}/${action === 'present' ? 'markPresent' : 'markAbsent'}`;
-    
+
     try {
         const res = await fetch(url, {
             method: "POST",
@@ -737,18 +1012,18 @@ async function toggleAttendance(ticketId, action) {
             await fetchAttendeesData();
         } else {
             const body = await res.json().catch(() => ({}));
-            alert(body.message || `Failed to mark attendee ${action}.`);
+            showToast(body.message || `Failed to mark attendee ${action}.`, "error");
         }
     } catch (err) {
         console.error("toggleAttendance error:", err);
-        alert("Network error toggling attendance.");
+        showToast("Network error toggling attendance.", "error");
     }
 }
 
 // Scanner Management
 function openScanner() {
     openModal("scanner-modal");
-    document.getElementById("scanner-status").className = "text-body-sm font-semibold text-yellow-500 text-center animate-pulse";
+    document.getElementById("scanner-status").className = "text-xs font-semibold text-amber-500 text-center animate-pulse";
     document.getElementById("scanner-status").textContent = "Requesting camera permissions...";
 
     html5QrCode = new Html5Qrcode("scanner-preview");
@@ -761,11 +1036,11 @@ function openScanner() {
         onScanSuccess,
         onScanError
     ).then(() => {
-        document.getElementById("scanner-status").className = "text-body-sm font-semibold text-primary text-center";
+        document.getElementById("scanner-status").className = "text-xs font-semibold text-signal text-center";
         document.getElementById("scanner-status").textContent = "Camera active. Scan QR code...";
     }).catch(err => {
         console.error("Scanner start error:", err);
-        document.getElementById("scanner-status").className = "text-body-sm font-semibold text-error text-center";
+        document.getElementById("scanner-status").className = "text-xs font-semibold text-danger text-center";
         document.getElementById("scanner-status").textContent = "Error opening camera. Please check permissions.";
     });
 }
@@ -789,28 +1064,28 @@ async function onScanSuccess(decodedText, decodedResult) {
     const ticketCode = urlParts[urlParts.length - 1];
 
     if (!ticketCode || isNaN(ticketCode)) {
-        alert("Invalid QR Code content scanned.");
+        showToast("Invalid QR Code content scanned.", "error");
         openScanner();
         return;
     }
 
     const token = localStorage.getItem("accessToken");
     try {
-        const res = await fetch(`/api/v1/tickets/checkin/${ticketCode}`, {
+        const res = await fetch(`/api/v1/tickets/${ticketCode}/checkin`, {
             method: "POST",
             headers: { Authorization: `Bearer ${token}` }
         });
         const body = await res.json();
-        
+
         if (res.ok && body.success) {
-            alert(`SUCCESS: Guest checked in successfully!`);
+            showToast(`Guest checked in successfully!`, "success");
             await fetchAttendeesData();
         } else {
-            alert(`ERROR: ${body.message || "Failed to check in ticket."}`);
+            showToast(body.message || "Failed to check in ticket.", "error");
         }
     } catch (err) {
         console.error("Checkin API error:", err);
-        alert("Network error checking in ticket.");
+        showToast("Network error checking in ticket.", "error");
     }
 
     openScanner();
@@ -820,74 +1095,36 @@ function onScanError(errorMessage) {
     // Quietly ignore frame read failures
 }
 
-function shareEventLink(eventId) {
-    let event = fullHostedList.find(e => e.eventId === eventId);
-    if (!event) {
-        event = myEventsPage.content.find(e => e.eventId === eventId);
-    }
-    if (!event) {
-        alert("Event data not found.");
-        return;
-    }
 
-    if (event.eventStatus !== "APPROVED") {
-        alert("Wait for event to be approved before sharing.");
-        return;
-    }
-
-    const eventUrl = `${window.location.origin}/eventDetails/${eventId}`;
-    const cleanDesc = event.description ? (event.description.substring(0, 150) + (event.description.length > 150 ? "..." : "")) : "";
-    const message = `🔥 Check out this exciting event on CampusHive! 🔥\n\n📌 *${event.title}*\n📝 ${cleanDesc}\n\n👉 *Register here:* ${eventUrl}\n🖼️ *Banner:* ${event.bannerUrl || 'No image'}`;
-
-    const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, "_blank");
-}
-
+// CAMPUS REGISTRATION FORM RESPONSES VIEW & EXPORT FOR HOSTS
 // ----------------------------------------------------
-// CUSTOM REGISTRATION FORM RESPONSES VIEW & EXPORT
-// ----------------------------------------------------
-let activeEventForResponses = null;
+let activeFormForResponses = null;
 
-function shareFormLink(formId) {
-    const formUrl = `${window.location.origin}/formDetails?formId=${formId}`;
-    navigator.clipboard.writeText(formUrl).then(() => {
-        alert("Form registration link copied to clipboard!");
-    }).catch(err => {
-        const input = document.createElement("input");
-        input.value = formUrl;
-        document.body.appendChild(input);
-        input.select();
-        document.execCommand("copy");
-        document.body.removeChild(input);
-        alert("Form registration link copied to clipboard!");
-    });
-}
-
-function showResponsesView(eventId, eventTitle) {
-    activeEventForResponses = { eventId, title: eventTitle };
+function showResponsesView(formId, formTitle) {
+    activeFormForResponses = { formId, title: formTitle };
     
     // Set header
-    document.getElementById("responses-event-title").textContent = eventTitle;
+    document.getElementById("responses-event-title").textContent = formTitle;
 
     // Toggle views
-    document.getElementById("events-dashboard-view").classList.add("hidden");
+    document.getElementById("dashboard-view").classList.add("hidden");
     document.getElementById("responses-view").classList.remove("hidden");
 
     // Bind CSV export button click
     const exportBtn = document.getElementById("export-csv-btn");
-    exportBtn.onclick = () => downloadResponsesCsv(eventId);
+    exportBtn.onclick = () => downloadResponsesCsv(formId);
 
     // Fetch and populate responses
-    fetchResponsesData(eventId);
+    fetchResponsesData(formId);
 }
 
 function hideResponsesView() {
-    activeEventForResponses = null;
+    activeFormForResponses = null;
     document.getElementById("responses-view").classList.add("hidden");
-    document.getElementById("events-dashboard-view").classList.remove("hidden");
+    document.getElementById("dashboard-view").classList.remove("hidden");
 }
 
-async function fetchResponsesData(eventId) {
+async function fetchResponsesData(formId) {
     const token = localStorage.getItem("accessToken");
     const headerRow = document.getElementById("responses-table-header");
     const tableBody = document.getElementById("responses-table-body");
@@ -900,7 +1137,7 @@ async function fetchResponsesData(eventId) {
     table.classList.remove("hidden");
 
     try {
-        const res = await fetch(`${API_CUSTOM_FORM_BASE}/responses/${eventId}`, {
+        const res = await fetch(`${API_CUSTOM_FORMS}/${formId}/responses`, {
             headers: { Authorization: `Bearer ${token}` }
         });
         const body = await res.json();
@@ -917,111 +1154,115 @@ async function fetchResponsesData(eventId) {
             const sampleAnswers = submissions[0].answers || [];
             
             let headersHtml = `
-                <th class="p-md text-label-md text-on-surface-variant uppercase tracking-wider">Submission Code</th>
-                <th class="p-md text-label-md text-on-surface-variant uppercase tracking-wider">Attendee</th>
-                <th class="p-md text-label-md text-on-surface-variant uppercase tracking-wider">Email</th>
-                <th class="p-md text-label-md text-on-surface-variant uppercase tracking-wider">Submitted At</th>
+                <th class="p-3 text-[11px] eyebrow text-ink font-semibold">Submission Code</th>
+                <th class="p-3 text-[11px] eyebrow text-ink font-semibold">Attendee</th>
+                <th class="p-3 text-[11px] eyebrow text-ink font-semibold">Email</th>
+                <th class="p-3 text-[11px] eyebrow text-ink font-semibold">Submitted At</th>
             `;
-
+            
             sampleAnswers.forEach(ans => {
-                headersHtml += `<th class="p-md text-label-md text-on-surface-variant uppercase tracking-wider">${ans.label}</th>`;
+                headersHtml += `<th class="p-3 text-[11px] eyebrow text-ink font-semibold">${escapeHtml(ans.fieldLabel || ans.label)}</th>`;
             });
+            
             headerRow.innerHTML = headersHtml;
 
-            // Build rows
+            // Populate rows
             submissions.forEach(sub => {
-                const date = new Date(sub.submittedAt);
-                const dateStr = date.toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
-
+                const subDate = new Date(sub.submittedAt).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
                 let rowHtml = `
-                    <tr class="hover:bg-surface-container/20 transition-colors">
-                        <td class="p-md text-body-sm text-primary font-semibold">${sub.submissionCode}</td>
-                        <td class="p-md text-body-sm text-on-surface font-semibold">${sub.username}</td>
-                        <td class="p-md text-body-sm text-on-surface-variant">${sub.userEmail}</td>
-                        <td class="p-md text-body-sm text-outline">${dateStr}</td>
+                    <tr class="hover:bg-canvas-sunk transition-colors">
+                        <td class="p-3 text-xs font-semibold text-action">${escapeHtml(sub.submissionCode)}</td>
+                        <td class="p-3 text-xs text-ink font-medium">${escapeHtml(sub.username)}</td>
+                        <td class="p-3 text-xs text-muted">${escapeHtml(sub.userEmail)}</td>
+                        <td class="p-3 text-xs text-muted">${subDate}</td>
                 `;
 
+                // Map field values
                 sub.answers.forEach(ans => {
                     if (ans.fileUrl) {
                         rowHtml += `
-                            <td class="p-md text-body-sm">
-                                <a href="${ans.fileUrl}" target="_blank" class="inline-flex items-center gap-xs text-primary hover:underline font-semibold">
-                                    <span class="material-symbols-outlined text-[16px]">open_in_new</span>
+                            <td class="p-3 text-xs text-action">
+                                <a href="${ans.fileUrl}" target="_blank" class="inline-flex items-center gap-1 hover:underline font-semibold">
+                                    <span class="material-symbols-outlined text-[16px]">attachment</span>
                                     <span>View File</span>
                                 </a>
                             </td>
                         `;
                     } else {
-                        rowHtml += `<td class="p-md text-body-sm text-on-surface-variant">${ans.value || "—"}</td>`;
+                        rowHtml += `<td class="p-3 text-xs text-muted">${escapeHtml(ans.value || "—")}</td>`;
                     }
                 });
 
-                rowHtml += `</tr>`;
+                rowHtml += "</tr>";
                 tableBody.insertAdjacentHTML("beforeend", rowHtml);
             });
 
         } else {
-            throw new Error(body.message || "Failed to load responses.");
+            throw new Error(body.message || "Failed to load responses data.");
         }
     } catch (err) {
         console.error("fetchResponsesData error:", err);
         tableBody.innerHTML = `
             <tr>
-                <td colspan="4" class="p-lg text-center text-body-sm text-error">
-                    Failed to fetch responses: ${err.message || "Network issue"}
+                <td colspan="4" class="p-6 text-center text-sm text-danger font-medium">
+                    Failed to fetch custom responses: ${err.message || "Network issue"}
                 </td>
             </tr>
         `;
     }
 }
 
-async function downloadResponsesCsv(eventId) {
+async function downloadResponsesCsv(formId) {
     const token = localStorage.getItem("accessToken");
     try {
-        const res = await fetch(`${API_CUSTOM_FORM_BASE}/export/${eventId}`, {
+        const res = await fetch(`${API_CUSTOM_FORMS}/${formId}/responses/export`, {
             headers: { Authorization: `Bearer ${token}` }
         });
+        
         if (res.ok) {
             const blob = await res.blob();
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url;
-            a.download = `custom_form_${eventId}_responses.csv`;
+            a.download = `responses_form_${formId}.csv`;
             document.body.appendChild(a);
             a.click();
             a.remove();
+            window.URL.revokeObjectURL(url);
+            showToast("CSV exported successfully!", "success");
         } else {
-            alert("Failed to export responses as CSV. Please try again.");
+            showToast("Failed to export CSV file.", "error");
         }
     } catch (err) {
-        console.error("downloadResponsesCsv error:", err);
-        alert("A network error occurred.");
+        console.error("CSV download error:", err);
+        showToast("A network error occurred downloading responses CSV.", "error");
     }
 }
 
-async function deleteCustomForm(formId, formTitle) {
-    if (!confirm(`Are you sure you want to delete the form "${formTitle}"? This will permanently delete the form, all of its fields, and all submitted responses.`)) {
-        return;
-    }
-
+// Toggle submissions acceptance
+async function toggleResponses(formId, currentVal) {
     const token = localStorage.getItem("accessToken");
+    const newVal = !currentVal;
     try {
-        const res = await fetch(`${API_CUSTOM_FORM_BASE}/delete/${formId}`, {
-            method: "DELETE",
-            headers: { Authorization: `Bearer ${token}` }
+        const res = await fetch(`${API_CUSTOM_FORMS}/${formId}/accepting-responses`, {
+            method: "PATCH",
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(newVal)
         });
-        const body = await res.json();
-        if (res.ok && body.success) {
-            alert(`SUCCESS: Custom Form "${formTitle}" deleted successfully!`);
-            initPage();
+        if (res.ok) {
+            await fetchData();
+            showToast(newVal ? "Form submissions enabled." : "Form submissions disabled.", "success");
         } else {
-            alert(`ERROR: ${body.message || "Failed to delete custom form."}`);
+            showToast("Failed to toggle form responses availability.", "error");
         }
-    } catch (err) {
-        console.error("Delete custom form error:", err);
-        alert("A network error occurred trying to delete the custom form.");
+    } catch (e) {
+        showToast("Network error updating form status.", "error");
     }
 }
+window.toggleResponses = toggleResponses;
 
 // Run initialization
 document.addEventListener("DOMContentLoaded", initPage);

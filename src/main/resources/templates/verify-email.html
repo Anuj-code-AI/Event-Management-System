@@ -1,191 +1,88 @@
 <!DOCTYPE html>
-<html class="dark" lang="en">
-
+<html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>Verify Email | CampusHive</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-    <link
-            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
-            rel="stylesheet" />
-    <script id="tailwind-config">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <script>
         tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    "colors": {
-                        "on-error-container": "#ffdad6",
-                        "error": "#ffb4ab",
-                        "surface-container": "#171f1c",
-                        "error-container": "#93000a",
-                        "surface-container-low": "#131a17",
-                        "surface-bright": "#313d36",
-                        "secondary": "#7fc9a0",
-                        "on-secondary": "#08311c",
-                        "primary-fixed-dim": "#4edea3",
-                        "outline-variant": "#33453c",
-                        "surface-tint": "#4edea3",
-                        "on-tertiary-fixed-variant": "#0b513d",
-                        "on-tertiary-container": "#004231",
-                        "background": "#0a1310",
-                        "on-secondary-container": "#c2ecd4",
-                        "tertiary": "#95d3ba",
-                        "primary": "#4edea3",
-                        "surface-container-high": "#212a26",
-                        "outline": "#86948a",
-                        "secondary-fixed": "#c2ecd4",
-                        "on-primary-container": "#00422b",
-                        "inverse-primary": "#006c49",
-                        "tertiary-container": "#1f5b41",
-                        "surface-container-highest": "#2c3631",
-                        "on-tertiary": "#003829",
-                        "surface-container-lowest": "#05100c",
-                        "tertiary-fixed-dim": "#95d3ba",
-                        "surface-dim": "#0a1310",
-                        "on-secondary-fixed-variant": "#1d5235",
-                        "inverse-on-surface": "#22302a",
-                        "on-secondary-fixed": "#03210f",
-                        "inverse-surface": "#dcebe0",
-                        "secondary-container": "#1d5235",
-                        "surface": "#0a1310",
-                        "on-primary": "#003824",
-                        "on-error": "#690005",
-                        "on-surface": "#dcebe0",
-                        "primary-fixed": "#6ffbbe",
-                        "on-surface-variant": "#bbcabf",
-                        "secondary-fixed-dim": "#7fc9a0",
-                        "on-primary-fixed": "#002113",
-                        "on-tertiary-fixed": "#002117",
-                        "primary-container": "#10b981",
-                        "tertiary-fixed": "#b0f0d6",
-                        "on-background": "#dcebe0"
-                    },
-                    "borderRadius": {
-                        "DEFAULT": "0.5rem",
-                        "lg": "0.5rem",
-                        "xl": "0.75rem",
-                        "full": "9999px"
-                    },
-                    "spacing": {
-                        "gutter": "24px",
-                        "xl": "40px",
-                        "2xl": "64px",
-                        "container-max": "1280px",
-                        "xs": "4px",
-                        "sm": "8px",
-                        "md": "16px",
-                        "margin-mobile": "16px",
-                        "base": "8px",
-                        "lg": "24px"
-                    },
-                    "fontFamily": {
-                        "body-sm": ["Inter"],
-                        "display-lg": ["Inter"],
-                        "label-md": ["Inter"],
-                        "headline-sm": ["Inter"],
-                        "headline-md": ["Inter"],
-                        "display-lg-mobile": ["Inter"],
-                        "title-lg": ["Inter"],
-                        "body-md": ["Inter"],
-                        "body-lg": ["Inter"]
-                    },
-                    "fontSize": {
-                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
-                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
-                        "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
-                        "headline-sm": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
-                        "headline-md": ["30px", { "lineHeight": "38px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
-                        "display-lg-mobile": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
-                        "title-lg": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
-                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
-                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }]
-                    }
-                },
-            },
-        }
+            theme: { extend: {
+                colors: { ink: "#0B1526", "ink-soft": "#14213B", canvas: "#FFFFFF", "canvas-sunk": "#F5F7FA", "canvas-mid": "#EEF1F6", line: "#E2E6ED", "line-strong": "#CBD2DE", muted: "#5B6B85", "muted-dim": "#8894A8", action: "#2450E8", "action-hover": "#1A3FC4", "action-tint": "#EDF1FE", signal: "#0EA5A5", "signal-tint": "#E7F8F8", amber: "#B45309", danger: "#B42318" },
+                fontFamily: { display: ["Sora", "sans-serif"], body: ["Inter", "sans-serif"], mono: ["IBM Plex Mono", "monospace"] },
+                spacing: { "container-max": "1360px" },
+                borderRadius: { DEFAULT: "8px", lg: "10px", xl: "14px" }
+            }}
+        };
     </script>
     <style>
-        .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-        }
-
-        body {
-            background-color: #0a1310;
-            color: #dcebe0;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .hero-mesh {
-            background-image: radial-gradient(at 0% 0%, hsla(158, 64%, 52%, 0.10) 0, transparent 50%),
-            radial-gradient(at 100% 100%, hsla(158, 64%, 52%, 0.08) 0, transparent 50%);
-        }
-
-        input:focus {
-            outline: none;
-        }
+        body { background: #F5F7FA; color: #0B1526; font-family: Inter, sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .eyebrow { font-family: 'IBM Plex Mono', monospace; letter-spacing: .08em; text-transform: uppercase; }
     </style>
 </head>
 
-<body class="dark overflow-x-hidden">
+<body class="min-h-screen flex flex-col justify-between overflow-x-hidden font-body">
+
 <!-- Header -->
-<header class="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-md border-b border-outline-variant">
-    <div class="flex justify-between items-center h-16 px-md md:px-lg max-w-container-max mx-auto">
-        <a href="/" class="flex items-center gap-3">
-            <img src="/images/logo.png" alt="CampusHive Logo" class="w-10 h-10 object-contain"/>
-            <span class="text-xl font-bold tracking-tight">
-                <span class="text-white">Campus</span><span class="text-primary">Hive</span>
+<header class="fixed top-0 w-full z-50 border-b border-line bg-canvas/85 backdrop-blur-md">
+    <div class="flex justify-between items-center h-16 px-4 md:px-8 max-w-container-max mx-auto">
+        <a href="/" class="flex items-center gap-2 group">
+            <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-ink font-display text-base font-bold text-white shadow-md group-hover:scale-105 transition-transform">
+                CH
+            </span>
+            <span class="font-display text-lg font-bold tracking-tight text-ink">
+                <span>Campus</span><span class="text-action">Hive</span>
             </span>
         </a>
-        <div class="hidden md:flex gap-lg ml-auto items-center">
-            <a class="text-on-surface-variant hover:text-primary transition-colors text-body-sm" href="/contact">Contact</a>
-            <a class="text-on-surface-variant hover:text-primary transition-colors text-body-sm" href="/aboutUs">About Us</a>
+        <div class="flex gap-4 items-center text-sm font-semibold">
+            <a class="text-muted hover:text-ink transition-colors" href="/contact">Support</a>
+            <a class="text-muted hover:text-ink transition-colors" href="/about-us">About</a>
         </div>
     </div>
 </header>
 
-<main class="pt-16 min-h-screen flex items-center justify-center hero-mesh px-md py-2xl">
+<main class="flex-1 flex items-center justify-center px-4 py-12 pt-24">
     <div class="w-full max-w-md">
-        <div class="bg-surface-container border border-outline-variant rounded-xl shadow-2xl p-xl">
-            <div class="text-center mb-lg">
-                <span class="material-symbols-outlined text-primary text-[48px] mb-xs animate-bounce">mail</span>
-                <h1 class="text-headline-md text-on-background mb-xs font-bold font-sans">Verify Your Email</h1>
-                <p class="text-body-sm text-on-surface-variant">We have sent a verification code to <span id="display-email" class="text-on-surface font-semibold">—</span></p>
+        <div class="bg-canvas border border-line rounded-xl shadow-md p-6 md:p-8 space-y-6 relative text-center">
+            
+            <div class="space-y-1.5 flex flex-col items-center">
+                <span class="flex h-12 w-12 items-center justify-center rounded-lg bg-action-tint text-action animate-bounce mb-1">
+                    <span class="material-symbols-outlined text-[28px]">mail</span>
+                </span>
+                <h1 class="text-xl font-bold text-ink font-display">Verify Your Email</h1>
+                <p class="text-xs text-muted">We have sent a verification code to <span id="display-email" class="text-ink font-bold font-mono">—</span></p>
             </div>
 
             <!-- Messages banner -->
-            <div id="info-banner" class="hidden mb-md p-sm rounded-lg bg-primary/10 border border-primary/30 text-primary text-body-sm"></div>
-            <div id="error-banner" class="hidden mb-md p-sm rounded-lg bg-error-container border border-error/30 text-on-error-container text-body-sm"></div>
+            <div id="info-banner" class="hidden p-4 rounded-lg bg-green-50 border border-green-200 text-signal text-xs font-semibold flex items-center gap-2 shadow-inner text-left"></div>
+            <div id="error-banner" class="hidden p-4 rounded-lg bg-red-50 border border-red-200 text-danger text-xs font-semibold flex items-center gap-2 shadow-inner text-left"></div>
 
-            <form id="verify-form" class="space-y-md" novalidate>
-                <div>
-                    <label for="otp" class="block text-body-sm font-medium text-on-surface-variant mb-xs">Verification Code</label>
+            <form id="verify-form" class="space-y-4" novalidate>
+                <div class="space-y-1">
+                    <label for="otp" class="block text-xs font-bold text-ink uppercase tracking-wider eyebrow">Verification Code</label>
                     <input id="otp" name="otp" type="text" required maxlength="6" autocomplete="one-time-code"
-                           class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-md py-sm text-on-surface text-center tracking-[0.75em] text-title-lg placeholder:tracking-normal placeholder:text-body-sm focus:border-primary transition-colors"
+                           class="w-full bg-canvas-sunk border border-line rounded-lg px-4 py-2.5 text-ink text-center tracking-[0.75em] text-lg font-bold placeholder:tracking-normal placeholder:text-xs focus:border-action focus:ring-action transition-all"
                            placeholder="Enter 6-digit OTP" />
                 </div>
 
-                <button id="verify-btn" type="submit"
-                        class="w-full bg-primary hover:bg-primary-fixed text-on-primary font-bold px-lg py-sm rounded-lg transition-all transform hover:scale-[1.01] shadow-lg shadow-primary/20 mt-sm">
+                <button id="verify-btn" type="submit" class="w-full bg-action hover:bg-action-hover text-white font-semibold py-3 px-4 rounded-lg text-sm transition-all shadow-md shadow-action/10 mt-2">
                     Verify Code
                 </button>
             </form>
 
-            <div class="mt-lg text-center space-y-sm">
-                <p class="text-body-sm text-on-surface-variant">
-                    Didn't receive the code?
-                </p>
-                <button id="resend-btn"
-                        class="text-primary font-semibold hover:underline text-body-sm focus:outline-none disabled:text-on-surface-variant/40 disabled:no-underline">
+            <div class="space-y-2 pt-2 border-t border-line/60">
+                <p class="text-xs text-muted font-medium">Didn't receive the code?</p>
+                <button id="resend-btn" class="text-action font-bold hover:underline text-xs focus:outline-none disabled:text-muted-dim disabled:no-underline">
                     Resend Code
                 </button>
-                <p id="timer-text" class="hidden text-body-sm text-on-surface-variant/60"></p>
+                <p id="timer-text" class="hidden text-xs text-muted-dim font-medium"></p>
             </div>
-            
-            <p class="text-center text-body-sm text-on-surface-variant mt-lg border-t border-outline-variant/30 pt-md">
-                <a href="/login" class="text-primary font-semibold hover:underline flex items-center justify-center gap-xs">
+
+            <p class="border-t border-line/60 pt-4 text-xs font-semibold">
+                <a href="/login" class="text-action font-bold hover:underline inline-flex items-center gap-1">
                     <span class="material-symbols-outlined text-[18px]">arrow_back</span>
                     <span>Back to Sign In</span>
                 </a>
@@ -193,6 +90,16 @@
         </div>
     </div>
 </main>
+
+<footer class="border-t border-line py-4 bg-canvas/40 text-center text-xs text-muted">
+    <div class="max-w-container-max mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-2">
+        <p>© 2026 CampusHive. Empowering student engagement.</p>
+        <div class="flex gap-4">
+            <a href="/about-us" class="hover:text-ink transition-colors">About</a>
+            <a href="/contact" class="hover:text-ink transition-colors">Support</a>
+        </div>
+    </div>
+</footer>
 
 <script src="/js/auth.js"></script>
 <script>
@@ -204,7 +111,6 @@
     const resendBtn = document.getElementById("resend-btn");
     const timerText = document.getElementById("timer-text");
 
-    // Extract email from URL params
     const urlParams = new URLSearchParams(window.location.search);
     const email = urlParams.get("email");
 
@@ -214,7 +120,6 @@
         displayEmail.textContent = email;
     }
 
-    // Cooldown logic for resending OTP
     let cooldownSeconds = 0;
     let cooldownInterval = null;
 
@@ -240,7 +145,6 @@
         timerText.textContent = `You can request a new code in ${cooldownSeconds}s`;
     }
 
-    // Handle verification submission
     form.addEventListener("submit", async (e) => {
         e.preventDefault();
         errorBanner.classList.add("hidden");
@@ -272,18 +176,16 @@
         }
     });
 
-    // Handle Resend OTP click
     resendBtn.addEventListener("click", async () => {
         errorBanner.classList.add("hidden");
         infoBanner.classList.add("hidden");
-        
         resendBtn.disabled = true;
         
         try {
             await resendEmailOtp(email);
             infoBanner.textContent = "A new verification code has been sent.";
             infoBanner.classList.remove("hidden");
-            startCooldown(60); // 60s cooldown limit
+            startCooldown(60);
         } catch (err) {
             errorBanner.textContent = err.message || "Failed to resend code.";
             errorBanner.classList.remove("hidden");
@@ -292,5 +194,4 @@
     });
 </script>
 </body>
-
 </html>

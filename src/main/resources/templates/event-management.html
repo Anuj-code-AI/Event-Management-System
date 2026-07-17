@@ -1,183 +1,75 @@
 <!DOCTYPE html>
-<html class="dark" lang="en">
-
+<html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>Event Management | CampusHive</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-    <link
-            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
-            rel="stylesheet" />
-    <script id="tailwind-config">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <script>
         tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    "colors": {
-                        "on-error-container": "#ffdad6",
-                        "error": "#ffb4ab",
-                        "surface-container": "#171f1c",
-                        "error-container": "#93000a",
-                        "surface-container-low": "#131a17",
-                        "surface-bright": "#313d36",
-                        "secondary": "#7fc9a0",
-                        "on-secondary": "#08311c",
-                        "primary-fixed-dim": "#4edea3",
-                        "outline-variant": "#33453c",
-                        "surface-tint": "#4edea3",
-                        "on-tertiary-fixed-variant": "#0b513d",
-                        "on-tertiary-container": "#004231",
-                        "background": "#0a1310",
-                        "on-secondary-container": "#c2ecd4",
-                        "tertiary": "#95d3ba",
-                        "primary": "#4edea3",
-                        "surface-container-high": "#212a26",
-                        "outline": "#86948a",
-                        "secondary-fixed": "#c2ecd4",
-                        "on-primary-container": "#00422b",
-                        "inverse-primary": "#006c49",
-                        "tertiary-container": "#1f5b41",
-                        "surface-container-highest": "#2c3631",
-                        "on-tertiary": "#003829",
-                        "surface-container-lowest": "#05100c",
-                        "tertiary-fixed-dim": "#95d3ba",
-                        "surface-dim": "#0a1310",
-                        "on-secondary-fixed-variant": "#1d5235",
-                        "inverse-on-surface": "#22302a",
-                        "on-secondary-fixed": "#03210f",
-                        "inverse-surface": "#dcebe0",
-                        "secondary-container": "#1d5235",
-                        "surface": "#0a1310",
-                        "on-primary": "#003824",
-                        "on-error": "#690005",
-                        "on-surface": "#dcebe0",
-                        "primary-fixed": "#6ffbbe",
-                        "on-surface-variant": "#bbcabf",
-                        "secondary-fixed-dim": "#7fc9a0",
-                        "on-primary-fixed": "#002113",
-                        "on-tertiary-fixed": "#002117",
-                        "primary-container": "#10b981",
-                        "tertiary-fixed": "#b0f0d6",
-                        "on-background": "#dcebe0"
-                    },
-                    "borderRadius": {
-                        "DEFAULT": "0.5rem",
-                        "lg": "0.5rem",
-                        "xl": "0.75rem",
-                        "full": "9999px"
-                    },
-                    "spacing": {
-                        "gutter": "24px",
-                        "xl": "40px",
-                        "2xl": "64px",
-                        "container-max": "1280px",
-                        "xs": "4px",
-                        "sm": "8px",
-                        "md": "16px",
-                        "margin-mobile": "16px",
-                        "base": "8px",
-                        "lg": "24px",
-                        "sidebar-w": "272px"
-                    },
-                    "fontFamily": {
-                        "body-sm": ["Inter"],
-                        "display-lg": ["Inter"],
-                        "label-md": ["Inter"],
-                        "headline-sm": ["Inter"],
-                        "headline-md": ["Inter"],
-                        "display-lg-mobile": ["Inter"],
-                        "title-lg": ["Inter"],
-                        "body-md": ["Inter"],
-                        "body-lg": ["Inter"]
-                    },
-                    "fontSize": {
-                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
-                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
-                        "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
-                        "headline-sm": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
-                        "headline-md": ["30px", { "lineHeight": "38px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
-                        "display-lg-mobile": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
-                        "title-lg": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
-                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
-                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }]
-                    }
-                },
-            },
-        }
+            theme: { extend: {
+                colors: { ink: "#0B1526", "ink-soft": "#14213B", canvas: "#FFFFFF", "canvas-sunk": "#F5F7FA", "canvas-mid": "#EEF1F6", line: "#E2E6ED", "line-strong": "#CBD2DE", muted: "#5B6B85", "muted-dim": "#8894A8", action: "#2450E8", "action-hover": "#1A3FC4", "action-tint": "#EDF1FE", signal: "#0EA5A5", "signal-tint": "#E7F8F8", amber: "#B45309", danger: "#B42318" },
+                fontFamily: { display: ["Sora", "sans-serif"], body: ["Inter", "sans-serif"], mono: ["IBM Plex Mono", "monospace"] },
+                spacing: { "sidebar-w": "256px", "container-max": "1360px" },
+                borderRadius: { DEFAULT: "8px", lg: "10px", xl: "14px" }
+            }}
+        };
     </script>
     <style>
-        .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-        }
-
-        body {
-            background-color: #0a1310;
-            color: #dcebe0;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .hero-mesh {
-            background-image: radial-gradient(at 0% 0%, hsla(158, 64%, 52%, 0.10) 0, transparent 50%),
-            radial-gradient(at 100% 0%, hsla(158, 64%, 52%, 0.08) 0, transparent 50%);
-        }
-
-        /* Glassmorphism card */
-        .glass-card {
-            background: rgba(23, 31, 28, 0.45);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(51, 69, 60, 0.5);
-        }
+        body { background: #F5F7FA; color: #0B1526; font-family: Inter, sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .eyebrow { font-family: 'IBM Plex Mono', monospace; letter-spacing: .08em; text-transform: uppercase; }
+        #sidebar-nav a { display: flex; align-items: center; gap: .75rem; border: 1px solid transparent; border-radius: 8px; padding: .625rem .75rem; color: #5B6B85; font-size: 14px; font-weight: 500; }
+        #sidebar-nav a:hover { background: #F5F7FA; color: #0B1526; }
+        #sidebar-nav a.bg-primary\/10 { background: #EDF1FE; border-color: #C8D4FD; color: #2450E8; }
+        #sidebar-nav a .material-symbols-outlined { font-size: 20px; }
+        #sidebar-auth-actions a:first-child { background: #2450E8; color: #fff; }
+        #sidebar-auth-actions a:last-child { border: 1px solid #CBD2DE; color: #0B1526; }
+        #sidebar-logout-wrap button { color: #B42318; }
+        #sidebar-nav::-webkit-scrollbar { width: 4px; }
+        #sidebar-nav::-webkit-scrollbar-thumb { background: #CBD2DE; }
+        .toast-enter { transform: translateY(-1rem); opacity: 0; }
+        .toast-active { transform: translateY(0); opacity: 1; }
     </style>
 </head>
 
-<body class="dark overflow-x-hidden">
+<body class="min-h-screen overflow-x-hidden font-body">
 
 <!-- Mobile backdrop -->
-<div id="sidebar-overlay" class="hidden fixed inset-0 bg-black/60 z-30 md:hidden"></div>
+<div id="sidebar-overlay" class="hidden fixed inset-0 bg-ink/40 z-30 md:hidden"></div>
+
+<!-- Toast Container -->
+<div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
 <div class="flex min-h-screen">
 
     <!-- ===================== SIDEBAR ===================== -->
-    <aside id="sidebar"
-           class="flex flex-col w-sidebar-w h-screen fixed left-0 top-0 bg-surface-container-lowest border-r border-outline-variant z-40
-           -translate-x-full md:translate-x-0 transition-transform duration-200">
-        <button id="sidebar-close" aria-label="Close menu"
-                class="md:hidden absolute top-md right-md text-on-surface-variant hover:text-on-surface">
-            <span class="material-symbols-outlined">close</span>
-        </button>
-
-        <div class="flex flex-col items-center text-center pt-xl pb-lg px-md border-b border-outline-variant">
-            <a href="/profile" aria-label="Go to profile"
-               class="w-20 h-20 rounded-full bg-surface-container-high border-2 border-primary/40 hover:border-primary transition-colors flex items-center justify-center overflow-hidden mb-md">
-                <span class="material-symbols-outlined text-on-surface-variant text-[44px]">person</span>
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 flex w-sidebar-w -translate-x-full flex-col border-r border-line bg-canvas transition-transform duration-200 md:translate-x-0">
+        <div class="flex h-16 items-center border-b border-line px-5">
+            <a href="/home" class="flex items-center gap-2.5">
+                <span class="flex h-8 w-8 items-center justify-center rounded-md bg-ink font-display text-sm font-bold text-white">CH</span>
+                <span class="font-display text-lg font-bold tracking-tight text-ink">CampusHive</span>
             </a>
-            <p id="sidebar-username" class="text-title-lg font-semibold text-on-background">—</p>
-            <p id="sidebar-role" class="text-label-md text-primary uppercase tracking-wide mt-xs">—</p>
+            <button id="sidebar-close" class="ml-auto p-2 text-muted md:hidden" aria-label="Close menu"><span class="material-symbols-outlined">close</span></button>
         </div>
-
-        <nav id="sidebar-nav" class="flex-1 overflow-y-auto px-sm py-md space-y-xs">
-            <!-- populated by sidebar.js -->
-        </nav>
-
-        <div id="sidebar-auth-actions" class="hidden flex-1 flex flex-col gap-sm px-md py-md">
-            <a href="/login" class="w-full text-center bg-primary hover:bg-primary-fixed text-on-primary font-bold px-lg py-sm rounded-lg transition-all">
-                Log In
-            </a>
-            <a href="/register" class="w-full text-center border border-outline-variant hover:bg-surface-container-high text-on-surface font-bold px-lg py-sm rounded-lg transition-all">
-                Sign Up
+        <div class="border-b border-line px-5 py-5">
+            <a href="/profile" class="flex items-center gap-3">
+                <span class="flex h-10 w-10 items-center justify-center rounded-lg bg-action-tint text-action"><span class="material-symbols-outlined">person</span></span>
+                <span class="min-w-0">
+                    <span id="sidebar-username" class="block truncate text-sm font-semibold text-ink">Loading...</span>
+                    <span id="sidebar-role" class="eyebrow mt-0.5 block truncate text-[10px] text-muted">Account</span>
+                </span>
             </a>
         </div>
-
-        <div id="sidebar-logout-wrap" class="px-sm py-md border-t border-outline-variant">
-            <button id="logout-btn"
-                    class="w-full flex items-center gap-sm px-md py-sm rounded-lg text-body-sm font-medium text-error hover:bg-error-container/20 transition-colors">
-                <span class="material-symbols-outlined text-[22px]">logout</span>
-                <span>Log Out</span>
-            </button>
+        <nav id="sidebar-nav" class="flex-1 space-y-1 overflow-y-auto px-3 py-4"></nav>
+        <div id="sidebar-auth-actions" class="hidden flex-1 flex-col gap-2 px-4 py-4 text-center text-sm font-semibold">
+            <a href="/login" class="rounded-lg px-4 py-2.5">Sign in</a>
+            <a href="/register" class="rounded-lg px-4 py-2.5">Create account</a>
+        </div>
+        <div id="sidebar-logout-wrap" class="border-t border-line p-3">
+            <button id="logout-btn" class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-red-50"><span class="material-symbols-outlined text-[20px]">logout</span>Sign out</button>
         </div>
     </aside>
 
@@ -185,181 +77,200 @@
     <div class="flex-1 md:ml-sidebar-w flex flex-col min-w-0">
 
         <!-- ---------- HEADER ---------- -->
-        <header class="sticky top-0 z-20 h-16 bg-background/90 backdrop-blur-md border-b border-outline-variant">
-            <div class="h-full flex items-center gap-md px-md md:px-lg">
-                <button id="sidebar-open" class="md:hidden text-on-surface-variant hover:text-on-surface" aria-label="Open menu">
-                    <span class="material-symbols-outlined">menu</span>
-                </button>
-
+        <header class="sticky top-0 z-20 h-16 border-b border-line bg-canvas/95 backdrop-blur">
+            <div class="flex h-full max-w-container-max items-center gap-3 px-4 md:px-8">
+                <button id="sidebar-open" class="p-2 text-muted md:hidden" aria-label="Open menu"><span class="material-symbols-outlined">menu</span></button>
+                <div class="hidden min-w-0 md:block"><p class="eyebrow text-[10px] text-muted-dim">Dashboard</p><p id="header-dashboard-title" class="font-display text-sm font-semibold text-ink">Host Console</p></div>
+                
                 <a href="/home" class="flex md:hidden items-center gap-2">
-                    <img src="/images/logo.png" alt="CampusHive Logo" class="w-7 h-7 object-contain" />
-                    <span class="text-title-lg font-bold tracking-tight whitespace-nowrap">
-                        <span class="text-white">Campus</span><span class="text-primary">Hive</span>
-                    </span>
+                    <span class="flex h-7 w-7 items-center justify-center rounded bg-ink font-display text-xs font-bold text-white">CH</span>
+                    <span class="font-display text-sm font-bold tracking-tight text-ink">CampusHive</span>
                 </a>
-
-                <h1 id="page-title" class="hidden md:block text-title-lg font-bold text-on-background">Event Management</h1>
-
-                <a href="/home" class="hidden md:flex items-center gap-2 ml-auto">
-                    <img src="/images/logo.png" alt="CampusHive Logo" class="w-7 h-7 object-contain" />
-                    <span class="text-title-lg font-bold tracking-tight whitespace-nowrap">
-                        <span class="text-white">Campus</span><span class="text-primary">Hive</span>
-                    </span>
-                </a>
+                
+                <a href="/profile" class="hidden h-9 w-9 items-center justify-center rounded-lg border border-line text-muted hover:border-action hover:text-action sm:flex ml-auto" aria-label="Profile"><span class="material-symbols-outlined text-[20px]">account_circle</span></a>
             </div>
         </header>
 
         <!-- ---------- MAIN CONTENT ---------- -->
-        <main class="flex-1 px-md md:px-lg py-lg space-y-lg hero-mesh">
+        <main class="flex-1 px-4 py-6 md:px-8 md:py-8 space-y-6">
 
-            <!-- Events Dashboard View Container -->
-            <div id="events-dashboard-view" class="space-y-lg">
-                <!-- Stats Bar -->
-                <section class="grid grid-cols-2 md:grid-cols-4 gap-md">
-                <div class="glass-card rounded-xl p-md flex flex-col justify-between">
-                    <span class="text-label-md text-on-surface-variant uppercase tracking-wider">Total Events</span>
-                    <span id="stat-total" class="text-headline-md font-bold text-on-background mt-xs">0</span>
-                </div>
-                <div class="glass-card rounded-xl p-md flex flex-col justify-between border-l-4 border-l-yellow-500">
-                    <span class="text-label-md text-on-surface-variant uppercase tracking-wider">Pending</span>
-                    <span id="stat-pending" class="text-headline-md font-bold text-yellow-500 mt-xs">0</span>
-                </div>
-                <div class="glass-card rounded-xl p-md flex flex-col justify-between border-l-4 border-l-primary">
-                    <span class="text-label-md text-on-surface-variant uppercase tracking-wider">Approved</span>
-                    <span id="stat-approved" class="text-headline-md font-bold text-primary mt-xs">0</span>
-                </div>
-                <div class="glass-card rounded-xl p-md flex flex-col justify-between border-l-4 border-l-error">
-                    <span class="text-label-md text-on-surface-variant uppercase tracking-wider">Rejected</span>
-                    <span id="stat-rejected" class="text-headline-md font-bold text-error mt-xs">0</span>
-                </div>
-            </section>
+            <!-- MAIN CONSOLE DASHBOARD VIEW -->
+            <div id="dashboard-view" class="space-y-6">
 
-            <!-- Search, Tab Actions, Request Button -->
-            <section class="flex flex-col md:flex-row items-center justify-between gap-md">
-                <!-- Search bar -->
-                <div class="w-full md:max-w-md">
-                    <label class="relative block w-full">
-                        <span class="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
-                        <input
-                                id="eventSearch"
-                                type="search"
-                                placeholder="Search hosted events..."
-                                class="w-full bg-surface-container-low border border-outline-variant rounded-lg pl-[40px] pr-md py-sm text-body-sm text-on-surface placeholder:text-on-surface-variant/60 focus:border-primary focus:outline-none transition-colors"
-                        />
-                    </label>
-                </div>
-
-                <!-- Request Event Action -->
-                <a href="/request-event" class="w-full md:w-auto inline-flex items-center justify-center gap-xs bg-primary hover:bg-primary-fixed text-on-primary font-bold px-lg py-sm rounded-lg transition-all shadow-lg shadow-primary/20">
-                    <span class="material-symbols-outlined text-[20px]">add_circle</span>
-                    <span>Request Event</span>
-                </a>
-            </section>
-
-            <!-- Tabs Section -->
-            <section class="border-b border-outline-variant/30 flex overflow-x-auto scrollbar-none gap-sm">
-                <!-- Tabs are loaded dynamically based on HOD vs. Host status -->
-                <div id="tabs-container" class="flex gap-md">
-                    <!-- filled by event-management.js -->
-                </div>
-            </section>
-
-            <!-- Loading State -->
-            <div id="loading-state" class="flex flex-col items-center justify-center py-2xl">
-                <div class="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-md"></div>
-                <p class="text-body-sm text-on-surface-variant">Loading events data...</p>
-            </div>
-
-            <!-- Error State -->
-            <div id="error-state" class="hidden flex flex-col items-center justify-center py-2xl text-center space-y-md">
-                <span class="material-symbols-outlined text-[64px] text-error">error</span>
-                <h2 class="text-headline-sm text-on-surface font-bold">Something went wrong</h2>
-                <p id="error-message" class="text-body-md text-on-surface-variant max-w-md">Failed to load events. Please try again later.</p>
-                <button onclick="fetchEventsData()" class="bg-surface-container hover:bg-surface-container-high border border-outline-variant px-lg py-sm rounded-lg font-bold transition-all">
-                    Retry
-                </button>
-            </div>
-
-            <!-- Main Content Container (Grid / Empty State / Pagination) -->
-            <div id="events-content-section" class="hidden space-y-lg">
-                <!-- Events Grid -->
-                <div id="events-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-lg">
-                    <!-- Dynamically populated cards -->
-                </div>
-
-                <!-- Empty State -->
-                <div id="events-empty-msg" class="hidden flex flex-col items-center justify-center py-2xl text-center space-y-sm bg-surface-container border border-outline-variant rounded-xl p-lg">
-                    <span class="material-symbols-outlined text-[48px] text-on-surface-variant/40">event_busy</span>
-                    <p id="empty-message-text" class="text-body-md text-on-surface-variant font-medium">No events found in this category.</p>
-                </div>
-
-                <!-- Pagination -->
-                <div id="events-pagination" class="hidden flex items-center justify-between pt-md border-t border-outline-variant/30">
-                    <span id="pagination-info" class="text-body-sm text-on-surface-variant">Showing page 1 of 1</span>
-                    <div class="flex gap-2">
-                        <button id="prev-page-btn" class="border border-outline-variant hover:bg-surface-container text-on-surface px-md py-xs rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed">
-                            Previous
+                <!-- Dynamic Page Switcher -->
+                <div class="flex justify-center">
+                    <div class="bg-canvas-mid p-1 rounded-xl flex gap-1 relative border border-line shadow-inner max-w-md w-full">
+                        <div id="switcher-highlight" class="absolute top-1 bottom-1 left-1 w-[calc(50%-4px)] bg-canvas rounded-lg shadow-sm border border-line transition-transform duration-300 ease-out z-0"></div>
+                        
+                        <button onclick="switchDashboard('events')" id="switch-btn-events" class="flex-1 py-2.5 px-4 font-semibold text-sm rounded-lg relative z-10 text-action transition-all duration-300 flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined text-[20px]">event</span>
+                            <span>Events</span>
                         </button>
-                        <button id="next-page-btn" class="border border-outline-variant hover:bg-surface-container text-on-surface px-md py-xs rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed">
-                            Next
+                        <button onclick="switchDashboard('forms')" id="switch-btn-forms" class="flex-1 py-2.5 px-4 font-semibold text-sm rounded-lg relative z-10 text-muted hover:text-ink transition-all duration-300 flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined text-[20px]">assignment</span>
+                            <span>Campus Forms</span>
                         </button>
                     </div>
                 </div>
-            </div>
+
+                <!-- Search and Filters Section -->
+                <section class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div class="w-full sm:max-w-md">
+                        <label class="relative block w-full">
+                            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-dim text-[20px]">search</span>
+                            <input id="dashboardSearch" type="search" placeholder="Search hosted content..." class="w-full rounded-lg border-line bg-canvas py-2 pl-10 pr-4 text-sm text-ink placeholder:text-muted focus:border-action focus:ring-action transition-all" />
+                        </label>
+                    </div>
+                </section>
+
+                <!-- Loading State -->
+                <div id="loading-state" class="flex flex-col items-center justify-center py-12">
+                    <div class="w-10 h-10 border-4 border-action border-t-transparent rounded-full animate-spin mb-4"></div>
+                    <p class="text-sm text-muted">Loading dashboard details...</p>
+                </div>
+
+                <!-- Error State -->
+                <div id="error-state" class="hidden flex flex-col items-center justify-center py-12 text-center space-y-4">
+                    <span class="material-symbols-outlined text-[48px] text-danger">error</span>
+                    <h2 class="text-lg text-ink font-bold">Failed to load console data</h2>
+                    <p id="error-message" class="text-sm text-muted max-w-md">Try refreshing the page or checking your internet connection.</p>
+                    <button onclick="fetchData()" class="border border-line-strong bg-canvas hover:bg-canvas-sunk px-5 py-2 rounded-lg text-sm font-semibold transition-all">Retry</button>
+                </div>
+
+                <!-- SLIDING CONTAINER FOR SWITCHER PANELS -->
+                <div class="relative w-full overflow-hidden min-h-[500px]" id="console-panels-container">
+                    
+                    <!-- ================= EVENTS PANEL ================= -->
+                    <div id="events-panel" class="transition-all duration-300 transform translate-x-0 opacity-100 space-y-6">
+                        
+                        <!-- Panel Header Card -->
+                        <div class="border border-line bg-canvas rounded-xl p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
+                            <div class="space-y-1">
+                                <h2 class="text-lg font-bold text-ink flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-action text-[24px]">event_note</span>
+                                    <span>My Hosted Events</span>
+                                </h2>
+                                <p class="text-xs text-muted">Submit requests, manage active reservations, and track attendance.</p>
+                            </div>
+                            <a href="/request-event" class="inline-flex items-center justify-center gap-1.5 bg-action hover:bg-action-hover text-white text-sm font-semibold px-5 py-2.5 rounded-lg transition-all shadow-md">
+                                <span class="material-symbols-outlined text-[20px]">add</span>
+                                <span>Create Event</span>
+                            </a>
+                        </div>
+
+                        <!-- Subtabs -->
+                        <div class="border-b border-line flex overflow-x-auto scrollbar-none gap-2">
+                            <div class="flex gap-4" id="events-tabs">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Card Grid -->
+                        <div id="events-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- ================= CAMPUS FORMS PANEL ================= -->
+                    <div id="forms-panel" class="hidden transition-all duration-300 transform translate-x-8 opacity-0 space-y-6">
+                        
+                        <!-- Panel Header Card -->
+                        <div class="border border-line bg-canvas rounded-xl p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
+                            <div class="space-y-1">
+                                <h2 class="text-lg font-bold text-ink flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-action text-[24px]">assignment</span>
+                                    <span>My Campus Forms</span>
+                                </h2>
+                                <p class="text-xs text-muted">Create Custom registration forms, specify response fields, and download CSV responses.</p>
+                            </div>
+                            <a href="/create-custom-form" class="inline-flex items-center justify-center gap-1.5 bg-action hover:bg-action-hover text-white text-sm font-semibold px-5 py-2.5 rounded-lg transition-all shadow-md">
+                                <span class="material-symbols-outlined text-[20px]">add</span>
+                                <span>Create Campus Form</span>
+                            </a>
+                        </div>
+
+                        <!-- Subtabs -->
+                        <div class="border-b border-line flex overflow-x-auto scrollbar-none gap-2">
+                            <div class="flex gap-4" id="forms-tabs">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Card Grid -->
+                        <div id="forms-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Empty state indicator -->
+                    <div id="dashboard-empty-msg" class="hidden flex flex-col items-center justify-center py-16 text-center space-y-3 bg-canvas border border-line border-dashed rounded-xl p-6">
+                        <span class="material-symbols-outlined text-[40px] text-muted-dim">folder_open</span>
+                        <p id="empty-message-text" class="text-sm text-muted font-medium">All caught up! No content to display.</p>
+                    </div>
+
+                    <!-- Pagination Controls -->
+                    <div id="dashboard-pagination" class="hidden flex items-center justify-between pt-6 border-t border-line">
+                        <span id="pagination-info" class="text-xs text-muted font-mono">Showing page 1 of 1</span>
+                        <div class="flex gap-2">
+                            <button id="prev-page-btn" class="border border-line hover:bg-canvas-sunk text-ink px-4 py-1.5 rounded-lg text-sm font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+                                Previous
+                            </button>
+                            <button id="next-page-btn" class="border border-line hover:bg-canvas-sunk text-ink px-4 py-1.5 rounded-lg text-sm font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+                                Next
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
             </div>
 
             <!-- Attendees View Section (Hidden by default) -->
-            <div id="attendees-view" class="hidden space-y-lg">
+            <div id="attendees-view" class="hidden space-y-6">
                 <!-- Header Card -->
-                <div class="glass-card rounded-xl p-md flex flex-col sm:flex-row sm:items-center justify-between gap-md">
-                    <div class="space-y-xs">
-                        <div class="flex items-center gap-xs text-primary">
-                            <span class="material-symbols-outlined text-[28px]">group</span>
-                            <h2 class="text-headline-sm font-bold text-on-background">Attendance Management</h2>
+                <div class="border border-line bg-canvas rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
+                    <div class="space-y-1">
+                        <div class="flex items-center gap-2 text-action">
+                            <span class="material-symbols-outlined text-[24px]">group</span>
+                            <h2 class="text-lg font-bold text-ink">Attendance Management</h2>
                         </div>
-                        <p class="text-body-sm text-on-surface-variant">
-                            Event: <span id="attendees-event-title" class="text-on-surface font-semibold">—</span>
+                        <p class="text-xs text-muted">
+                            Event: <span id="attendees-event-title" class="text-ink font-semibold">—</span>
                         </p>
                     </div>
-                    <button onclick="hideAttendeesView()" class="border border-outline-variant hover:bg-surface-container-high text-on-surface font-semibold py-sm px-md rounded-lg transition-all flex items-center justify-center gap-xs">
-                        <span class="material-symbols-outlined text-[20px]">arrow_back</span>
-                        <span>Back to Events</span>
+                    <button onclick="hideAttendeesView()" class="border border-line hover:bg-canvas-sunk text-ink font-semibold py-2 px-4 rounded-lg text-sm transition-all flex items-center justify-center gap-1.5">
+                        <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                        <span>Back to Dashboard</span>
                     </button>
                 </div>
 
                 <!-- Search and Scan controls -->
-                <div class="flex flex-col sm:flex-row items-center justify-between gap-md">
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
                     <div class="w-full sm:max-w-md">
                         <label class="relative block w-full">
-                            <span class="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
-                            <input
-                                    id="attendeeSearch"
-                                    type="search"
-                                    placeholder="Search attendees by name or email..."
-                                    class="w-full bg-surface-container-low border border-outline-variant rounded-lg pl-[40px] pr-md py-sm text-body-sm text-on-surface placeholder:text-on-surface-variant/60 focus:border-primary focus:outline-none transition-colors"
-                            />
+                            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-dim text-[20px]">search</span>
+                            <input id="attendeeSearch" type="search" placeholder="Search attendees by name or email..." class="w-full rounded-lg border-line bg-canvas py-2 pl-10 pr-4 text-sm text-ink placeholder:text-muted focus:border-action focus:ring-action transition-all" />
                         </label>
                     </div>
-                    <button onclick="openScanner()" class="w-full sm:w-auto inline-flex items-center justify-center gap-xs bg-primary hover:bg-primary-fixed text-on-primary font-bold px-lg py-sm rounded-lg transition-all shadow-lg shadow-primary/20">
+                    <button onclick="openScanner()" class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 bg-action hover:bg-action-hover text-white font-semibold px-5 py-2.5 rounded-lg transition-all shadow-md">
                         <span class="material-symbols-outlined text-[20px]">qr_code_scanner</span>
                         <span>Scan Ticket QR</span>
                     </button>
                 </div>
 
                 <!-- Attendees Table -->
-                <div class="glass-card rounded-xl overflow-hidden border border-outline-variant/30">
+                <div class="bg-canvas rounded-xl overflow-hidden border border-line shadow-sm">
                     <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
+                        <table class="w-full text-left border-collapse text-sm">
                             <thead>
-                                <tr class="bg-surface-container-high/60 border-b border-outline-variant/30">
-                                    <th class="p-md text-label-md text-on-surface-variant uppercase tracking-wider">Attendee</th>
-                                    <th class="p-md text-label-md text-on-surface-variant uppercase tracking-wider">Email</th>
-                                    <th class="p-md text-label-md text-on-surface-variant uppercase tracking-wider">Ticket Code</th>
-                                    <th class="p-md text-label-md text-on-surface-variant uppercase tracking-wider">Status</th>
-                                    <th class="p-md text-label-md text-on-surface-variant uppercase tracking-wider text-right">Actions</th>
+                                <tr class="bg-canvas-sunk border-b border-line text-ink font-semibold uppercase tracking-wider text-[11px] eyebrow">
+                                    <th class="p-3">Attendee</th>
+                                    <th class="p-3">Email</th>
+                                    <th class="p-3">Ticket Code</th>
+                                    <th class="p-3">Status</th>
+                                    <th class="p-3 text-right">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody id="attendees-table-body" class="divide-y divide-outline-variant/20">
+                            <tbody id="attendees-table-body" class="divide-y divide-line">
                                 <!-- Populated dynamically -->
                             </tbody>
                         </table>
@@ -367,19 +278,19 @@
                 </div>
 
                 <!-- Attendees Empty State -->
-                <div id="attendees-empty-msg" class="hidden flex flex-col items-center justify-center py-2xl text-center space-y-sm bg-surface-container border border-outline-variant rounded-xl p-lg">
-                    <span class="material-symbols-outlined text-[48px] text-on-surface-variant/40">group_off</span>
-                    <p class="text-body-md text-on-surface-variant font-medium">No attendees found for this event.</p>
+                <div id="attendees-empty-msg" class="hidden flex flex-col items-center justify-center py-12 text-center space-y-3 bg-canvas border border-line border-dashed rounded-xl p-6">
+                    <span class="material-symbols-outlined text-[40px] text-muted-dim">group_off</span>
+                    <p class="text-sm text-muted font-medium">No attendees found for this event.</p>
                 </div>
 
                 <!-- Attendees Pagination -->
-                <div id="attendees-pagination" class="flex items-center justify-between pt-md border-t border-outline-variant/30">
-                    <span id="attendees-pagination-info" class="text-body-sm text-on-surface-variant">Showing page 1 of 1</span>
+                <div id="attendees-pagination" class="flex items-center justify-between pt-4 border-t border-line">
+                    <span id="attendees-pagination-info" class="text-xs text-muted font-mono">Showing page 1 of 1</span>
                     <div class="flex gap-2">
-                        <button id="attendees-prev-btn" class="border border-outline-variant hover:bg-surface-container text-on-surface px-md py-xs rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+                        <button id="attendees-prev-btn" class="border border-line hover:bg-canvas-sunk text-ink px-4 py-1.5 rounded-lg text-sm font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed">
                             Previous
                         </button>
-                        <button id="attendees-next-btn" class="border border-outline-variant hover:bg-surface-container text-on-surface px-md py-xs rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+                        <button id="attendees-next-btn" class="border border-line hover:bg-canvas-sunk text-ink px-4 py-1.5 rounded-lg text-sm font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed">
                             Next
                         </button>
                     </div>
@@ -387,40 +298,40 @@
             </div>
 
             <!-- Custom Form Responses View Section (Hidden by default) -->
-            <div id="responses-view" class="hidden space-y-lg">
+            <div id="responses-view" class="hidden space-y-6">
                 <!-- Header Card -->
-                <div class="glass-card rounded-xl p-md flex flex-col sm:flex-row sm:items-center justify-between gap-md">
-                    <div class="space-y-xs">
-                        <div class="flex items-center gap-xs text-primary">
-                            <span class="material-symbols-outlined text-[28px]">receipt_long</span>
-                            <h2 class="text-headline-sm font-bold text-on-background">Registration Responses</h2>
+                <div class="border border-line bg-canvas rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
+                    <div class="space-y-1">
+                        <div class="flex items-center gap-2 text-action">
+                            <span class="material-symbols-outlined text-[24px]">receipt_long</span>
+                            <h2 class="text-lg font-bold text-ink">Registration Responses</h2>
                         </div>
-                        <p class="text-body-sm text-on-surface-variant">
-                            Event: <span id="responses-event-title" class="text-on-surface font-semibold">—</span>
+                        <p class="text-xs text-muted">
+                            Campus Form: <span id="responses-event-title" class="text-ink font-semibold">—</span>
                         </p>
                     </div>
-                    <div class="flex gap-sm">
-                        <button id="export-csv-btn" class="bg-primary hover:bg-primary-fixed text-on-primary font-bold py-sm px-md rounded-lg transition-all flex items-center justify-center gap-xs shadow-md shadow-primary/10">
-                            <span class="material-symbols-outlined text-[20px]">download_for_offline</span>
+                    <div class="flex gap-2">
+                        <button id="export-csv-btn" class="bg-action hover:bg-action-hover text-white font-semibold py-2 px-4 rounded-lg text-sm transition-all flex items-center justify-center gap-1.5 shadow-sm">
+                            <span class="material-symbols-outlined text-[18px]">download_for_offline</span>
                             <span>Export CSV</span>
                         </button>
-                        <button onclick="hideResponsesView()" class="border border-outline-variant hover:bg-surface-container-high text-on-surface font-semibold py-sm px-md rounded-lg transition-all flex items-center justify-center gap-xs">
-                            <span class="material-symbols-outlined text-[20px]">arrow_back</span>
-                            <span>Back to Events</span>
+                        <button onclick="hideResponsesView()" class="border border-line hover:bg-canvas-sunk text-ink font-semibold py-2 px-4 rounded-lg text-sm transition-all flex items-center justify-center gap-1.5">
+                            <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                            <span>Back to Dashboard</span>
                         </button>
                     </div>
                 </div>
 
                 <!-- Responses Table -->
-                <div class="glass-card rounded-xl overflow-hidden border border-outline-variant/30">
+                <div class="bg-canvas rounded-xl overflow-hidden border border-line shadow-sm">
                     <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse" id="responses-table">
+                        <table class="w-full text-left border-collapse text-sm" id="responses-table">
                             <thead>
-                                <tr class="bg-surface-container-high/60 border-b border-outline-variant/30" id="responses-table-header">
+                                <tr class="bg-canvas-sunk border-b border-line text-ink font-semibold uppercase tracking-wider text-[11px] eyebrow" id="responses-table-header">
                                     <!-- Populated dynamically based on form fields -->
                                 </tr>
                             </thead>
-                            <tbody id="responses-table-body" class="divide-y divide-outline-variant/20">
+                            <tbody id="responses-table-body" class="divide-y divide-line">
                                 <!-- Populated dynamically -->
                             </tbody>
                         </table>
@@ -428,22 +339,22 @@
                 </div>
 
                 <!-- Responses Empty State -->
-                <div id="responses-empty-msg" class="hidden flex flex-col items-center justify-center py-2xl text-center space-y-sm bg-surface-container border border-outline-variant rounded-xl p-lg">
-                    <span class="material-symbols-outlined text-[48px] text-on-surface-variant/40">feedback</span>
-                    <p class="text-body-md text-on-surface-variant font-medium">No form submissions received yet.</p>
+                <div id="responses-empty-msg" class="hidden flex flex-col items-center justify-center py-12 text-center space-y-3 bg-canvas border border-line border-dashed rounded-xl p-6">
+                    <span class="material-symbols-outlined text-[40px] text-muted-dim">feedback</span>
+                    <p class="text-sm text-muted font-medium">No form submissions received yet.</p>
                 </div>
             </div>
 
         </main>
 
         <!-- ---------- FOOTER ---------- -->
-        <footer class="border-t border-outline-variant px-md md:px-lg py-lg mt-2xl">
-            <div class="flex flex-col md:flex-row justify-between items-center gap-md text-center md:text-left">
-                <p class="text-body-sm text-on-surface-variant">© 2026 CampusHive. Empowering student engagement across 100+ campuses worldwide.</p>
-                <div class="flex gap-md text-body-sm text-on-surface-variant">
-                    <a href="/aboutUs" class="hover:text-primary transition-colors">About Us</a>
-                    <a href="/contact" class="hover:text-primary transition-colors">Support</a>
-                    <a href="#" class="hover:text-primary transition-colors">Privacy</a>
+        <footer class="border-t border-line bg-canvas px-4 py-6 md:px-8 mt-12">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left text-sm text-muted">
+                <p>© 2026 CampusHive. Empowering student engagement across 100+ campuses worldwide.</p>
+                <div class="flex gap-4">
+                    <a href="/about-us" class="hover:text-ink transition-colors">About Us</a>
+                    <a href="/contact" class="hover:text-ink transition-colors">Support</a>
+                    <a href="#" class="hover:text-ink transition-colors">Privacy</a>
                 </div>
             </div>
         </footer>
@@ -452,84 +363,63 @@
 
 <!-- ===================== MODALS ===================== -->
 
-<!-- HOD Approve Confirmation Modal -->
-<div id="approve-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-md bg-black/75 backdrop-blur-sm">
-    <div class="glass-card rounded-xl max-w-md w-full p-lg space-y-md shadow-2xl animate-fade-in">
-        <div class="flex items-center gap-sm text-primary">
-            <span class="material-symbols-outlined text-[32px]">check_circle</span>
-            <h3 class="text-headline-sm font-bold">Approve Event</h3>
+<!-- Cancel Event/Form Modal -->
+<div id="cancel-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink/50 backdrop-blur-sm">
+    <div class="bg-canvas rounded-xl max-w-md w-full p-6 space-y-4 shadow-xl border border-line animate-fade-in">
+        <div class="flex items-center gap-2 text-danger">
+            <span class="material-symbols-outlined text-[28px]">warning</span>
+            <h3 class="text-lg font-bold text-ink">Cancel Confirmation</h3>
         </div>
-        <p class="text-body-md text-on-surface-variant">
-            Are you sure you want to approve "<span id="approve-event-title" class="text-on-surface font-semibold"></span>"? This will publish the event to the campus directory and make it visible to university members.
+        <p class="text-sm text-muted">
+            Are you sure you want to cancel "<span id="cancel-title" class="text-ink font-semibold"></span>"? This will mark the item as CANCELLED.
         </p>
-        <div class="flex items-center justify-end gap-sm pt-sm border-t border-outline-variant/30">
-            <button onclick="closeModal('approve-modal')" class="border border-outline-variant hover:bg-surface-container-high text-on-surface font-bold px-md py-sm rounded-lg transition-all">
-                Cancel
-            </button>
-            <button id="confirm-approve-btn" class="bg-primary hover:bg-primary-fixed text-on-primary font-bold px-md py-sm rounded-lg transition-all shadow-lg shadow-primary/20">
-                Confirm Approve
-            </button>
-        </div>
-    </div>
-</div>
-
-<!-- HOD Reject Modal -->
-<div id="reject-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-md bg-black/75 backdrop-blur-sm">
-    <div class="glass-card rounded-xl max-w-md w-full p-lg space-y-md shadow-2xl animate-fade-in">
-        <div class="flex items-center gap-sm text-error">
-            <span class="material-symbols-outlined text-[32px]">cancel</span>
-            <h3 class="text-headline-sm font-bold">Reject Event</h3>
-        </div>
-        <p class="text-body-md text-on-surface-variant">
-            Are you sure you want to reject "<span id="reject-event-title" class="text-on-surface font-semibold"></span>"? The event host will be notified of the rejection status.
-        </p>
-        <div class="flex items-center justify-end gap-sm pt-sm border-t border-outline-variant/30">
-            <button onclick="closeModal('reject-modal')" class="border border-outline-variant hover:bg-surface-container-high text-on-surface font-bold px-md py-sm rounded-lg transition-all">
-                Cancel
-            </button>
-            <button id="confirm-reject-btn" class="bg-error hover:bg-error-container text-on-error font-bold px-md py-sm rounded-lg transition-all shadow-lg">
-                Confirm Reject
-            </button>
-        </div>
-    </div>
-</div>
-
-<!-- Cancel Event Modal -->
-<div id="cancel-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-md bg-black/75 backdrop-blur-sm">
-    <div class="glass-card rounded-xl max-w-md w-full p-lg space-y-md shadow-2xl animate-fade-in">
-        <div class="flex items-center gap-sm text-error">
-            <span class="material-symbols-outlined text-[32px]">warning</span>
-            <h3 class="text-headline-sm font-bold">Cancel Event</h3>
-        </div>
-        <p class="text-body-md text-on-surface-variant">
-            Are you sure you want to cancel "<span id="cancel-event-title" class="text-on-surface font-semibold"></span>"? This will mark the event as CANCELLED, stop new registrations, and keep the event visible as cancelled.
-        </p>
-        <div class="flex items-center justify-end gap-sm pt-sm border-t border-outline-variant/30">
-            <button onclick="closeModal('cancel-modal')" class="border border-outline-variant hover:bg-surface-container-high text-on-surface font-bold px-md py-sm rounded-lg transition-all">
+        <div class="flex items-center justify-end gap-2 pt-3 border-t border-line">
+            <button onclick="closeModal('cancel-modal')" class="border border-line hover:bg-canvas-sunk text-ink font-semibold px-4 py-2 rounded-lg text-sm transition-all">
                 Close
             </button>
-            <button id="confirm-cancel-btn" class="bg-error hover:bg-error-container text-on-error font-bold px-md py-sm rounded-lg transition-all shadow-lg">
-                Cancel Event
+            <button id="confirm-cancel-btn" class="bg-danger hover:bg-red-700 text-white font-semibold px-4 py-2 rounded-lg text-sm transition-all shadow-sm">
+                Confirm Cancellation
             </button>
         </div>
     </div>
 </div>
 
-<!-- Delete Event Modal -->
-<div id="delete-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-md bg-black/75 backdrop-blur-sm">
-    <div class="glass-card rounded-xl max-w-md w-full p-lg space-y-md shadow-2xl animate-fade-in">
-        <div class="flex items-center gap-sm text-error font-semibold">
-            <span class="material-symbols-outlined text-[32px]">delete_forever</span>
-            <h3 class="text-headline-sm font-bold">Delete Event</h3>
+<!-- Restore Event/Form Modal -->
+<div id="restore-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink/50 backdrop-blur-sm">
+    <div class="bg-canvas rounded-xl max-w-md w-full p-6 space-y-4 shadow-xl border border-line animate-fade-in">
+        <div class="flex items-center gap-2 text-action">
+            <span class="material-symbols-outlined text-[28px]">event_available</span>
+            <h3 class="text-lg font-bold text-ink">Reactivate Confirmation</h3>
         </div>
-        <p class="text-body-md text-on-surface-variant">
-            Are you sure you want to permanently delete "<span id="delete-event-title" class="text-on-surface font-semibold"></span>"? This action is irreversible and will remove all tickets and registrations for this event.
+        <p class="text-sm text-muted">
+            Are you sure you want to restore / reactivate "<span id="restore-title" class="text-ink font-semibold"></span>"? This will make the item active again.
         </p>
-        <div class="flex items-center justify-end gap-sm pt-sm border-t border-outline-variant/30">
-            <button onclick="closeModal('delete-modal')" class="border border-outline-variant hover:bg-surface-container-high text-on-surface font-bold px-md py-sm rounded-lg transition-all">
+        <div class="flex items-center justify-end gap-2 pt-3 border-t border-line">
+            <button onclick="closeModal('restore-modal')" class="border border-line hover:bg-canvas-sunk text-ink font-semibold px-4 py-2 rounded-lg text-sm transition-all">
+                Close
+            </button>
+            <button id="confirm-restore-btn" class="bg-action hover:bg-action-hover text-white font-semibold px-4 py-2 rounded-lg text-sm transition-all shadow-sm">
+                Restore Reactivate
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Event/Form Modal -->
+<div id="delete-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink/50 backdrop-blur-sm">
+    <div class="bg-canvas rounded-xl max-w-md w-full p-6 space-y-4 shadow-xl border border-line animate-fade-in">
+        <div class="flex items-center gap-2 text-danger">
+            <span class="material-symbols-outlined text-[28px]">delete</span>
+            <h3 class="text-lg font-bold text-ink">Delete Confirmation</h3>
+        </div>
+        <p class="text-sm text-muted">
+            Are you sure you want to delete "<span id="delete-title" class="text-ink font-semibold"></span>"? This action is permanent and cannot be undone.
+        </p>
+        <div class="flex items-center justify-end gap-2 pt-3 border-t border-line">
+            <button onclick="closeModal('delete-modal')" class="border border-line hover:bg-canvas-sunk text-ink font-semibold px-4 py-2 rounded-lg text-sm transition-all">
                 Cancel
             </button>
-            <button id="confirm-delete-btn" class="bg-error hover:bg-error-container text-on-error font-bold px-md py-sm rounded-lg transition-all shadow-lg">
+            <button id="confirm-delete-btn" class="bg-danger hover:bg-red-700 text-white font-semibold px-4 py-2 rounded-lg text-sm transition-all shadow-sm">
                 Delete Permanently
             </button>
         </div>
@@ -537,35 +427,33 @@
 </div>
 
 <!-- Scanner Modal -->
-<div id="scanner-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-md bg-black/85 backdrop-blur-sm">
-    <div class="glass-card rounded-xl max-w-md w-full p-lg space-y-md shadow-2xl animate-fade-in flex flex-col items-center">
-        <div class="w-full flex items-center justify-between border-b border-outline-variant/30 pb-sm">
-            <div class="flex items-center gap-xs text-primary">
-                <span class="material-symbols-outlined text-[28px]">qr_code_scanner</span>
-                <h3 class="text-headline-sm font-bold">Scan Ticket QR</h3>
+<div id="scanner-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink/80 backdrop-blur-sm">
+    <div class="bg-canvas rounded-xl max-w-md w-full p-6 space-y-4 shadow-xl border border-line animate-fade-in flex flex-col items-center">
+        <div class="w-full flex items-center justify-between border-b border-line pb-2">
+            <div class="flex items-center gap-2 text-action">
+                <span class="material-symbols-outlined text-[24px]">qr_code_scanner</span>
+                <h3 class="text-lg font-bold text-ink">Scan Ticket QR</h3>
             </div>
-            <button onclick="closeScanner()" class="text-on-surface-variant hover:text-on-surface">
+            <button onclick="closeScanner()" class="text-muted hover:text-ink">
                 <span class="material-symbols-outlined">close</span>
             </button>
         </div>
         
-        <p class="text-body-sm text-on-surface-variant text-center">
+        <p class="text-xs text-muted text-center">
             Point your camera at the ticket's QR code.
         </p>
 
-        <!-- Scanner area -->
-        <div class="w-full aspect-square max-w-[280px] bg-black rounded-lg overflow-hidden relative border border-outline-variant/50">
+        <div class="w-full aspect-square max-w-[260px] bg-ink rounded-lg overflow-hidden relative border border-line">
             <div id="scanner-preview" class="w-full h-full"></div>
-            <!-- Scan line effect -->
-            <div class="absolute inset-x-0 h-0.5 bg-primary/80 top-0 animate-[bounce_3s_infinite] shadow-[0_0_8px_#4edea3]"></div>
+            <div class="absolute inset-x-0 h-0.5 bg-action/85 top-0 animate-[bounce_3s_infinite] shadow-[0_0_8px_#2450E8]"></div>
         </div>
 
-        <div id="scanner-status" class="text-body-sm font-semibold text-yellow-500 text-center animate-pulse">
+        <div id="scanner-status" class="text-xs font-semibold text-amber-500 text-center animate-pulse">
             Initializing camera...
         </div>
 
-        <div class="w-full flex justify-center pt-sm border-t border-outline-variant/30">
-            <button onclick="closeScanner()" class="border border-outline-variant hover:bg-surface-container-high text-on-surface font-bold px-lg py-sm rounded-lg transition-all">
+        <div class="w-full flex justify-center pt-3 border-t border-line">
+            <button onclick="closeScanner()" class="border border-line hover:bg-canvas-sunk text-ink font-semibold px-5 py-2 rounded-lg text-sm transition-all">
                 Cancel / Stop Scanning
             </button>
         </div>
@@ -579,5 +467,4 @@
 <script src="https://unpkg.com/html5-qrcode"></script>
 <script src="/js/event-management.js"></script>
 </body>
-
 </html>

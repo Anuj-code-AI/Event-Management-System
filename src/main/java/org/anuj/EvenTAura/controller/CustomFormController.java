@@ -29,12 +29,20 @@ public class CustomFormController {
     private final CloudinaryService cloudinaryService;
 
     // Create a Standalone Custom Form
-    @PostMapping("/custom-forms")
+    @PostMapping(value = "/custom-forms",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("@eventSecurity.isHostOrHOD(authentication)")
     public ResponseEntity<ApiResponse<CustomFormResponse>> createCustomForm(
-            @ModelAttribute CreateCustomFormRequest request,
-            @RequestParam(value = "banner",required = false) MultipartFile banner,
-            @RequestParam(value = "paymentQr", required = false) MultipartFile paymentQr,
+
+            @RequestPart("request")
+            CreateCustomFormRequest request,
+
+            @RequestPart(value = "banner", required = false)
+            MultipartFile banner,
+
+            @RequestPart(value = "paymentQr", required = false)
+            MultipartFile paymentQr,
+
             Authentication authentication
     ) {
         if (request.getRegistrationFee() != null && request.getRegistrationFee() > 0) {
@@ -61,13 +69,14 @@ public class CustomFormController {
     }
 
     // Update a Standalone Custom Form
-    @PutMapping(value = "/custom-forms/{formId}")
+    @PutMapping(value = "/custom-forms/{formId}",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("@eventSecurity.isHostOrHOD(authentication)")
     public ResponseEntity<ApiResponse<CustomFormResponse>> updateCustomForm(
             @PathVariable Long formId,
-            @ModelAttribute UpdateCustomFormRequest request,
-            @RequestParam(value = "banner", required = false) MultipartFile banner,
-            @RequestParam(value = "paymentQr", required = false) MultipartFile paymentQr,
+            @RequestPart("request") UpdateCustomFormRequest request,
+            @RequestPart(value = "banner", required = false) MultipartFile banner,
+            @RequestPart(value = "paymentQr", required = false) MultipartFile paymentQr,
             Authentication authentication
     ) {
         if (banner != null && !banner.isEmpty()) {

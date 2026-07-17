@@ -1,5 +1,5 @@
-// eventDetails.js — handles loading event details and buying tickets
-const API_EVENT = "/api/v1/event";
+// event-details.js — handles loading event details and buying tickets
+const API_EVENT = "/api/v1/events";
 const API_TICKETS = "/api/v1/tickets";
 const API_CUSTOM_FORM_BASE = "/api/v1/custom-forms";
 
@@ -67,14 +67,14 @@ const screenshotLabel = document.getElementById("screenshot-label");
 function formatDate(dateStr) {
     if (!dateStr) return "N/A";
     const date = new Date(dateStr);
-    return date.toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric", year: "numeric" });
+    return date.toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric", year: "numeric" });
 }
 
 // Helper: Format Time
 function formatTime(timeStr) {
     if (!timeStr) return "N/A";
     const [hours, minutes] = timeStr.split(":");
-    const hr = parseInt(hours);
+    const hr = parseInt(hours, 10);
     const ampm = hr >= 12 ? "PM" : "AM";
     const displayHr = hr % 12 || 12;
     return `${displayHr}:${minutes} ${ampm}`;
@@ -84,25 +84,20 @@ function formatTime(timeStr) {
 function showAlert(type, message) {
     detailsAlert.classList.remove("hidden");
     if (type === "success") {
-        detailsAlert.className = "p-sm rounded text-label-md font-medium flex items-start gap-xs bg-primary/10 border border-primary/20 text-primary";
+        detailsAlert.className = "p-3 rounded text-xs font-semibold flex items-start gap-1.5 bg-green-50 border-green-200 text-signal";
         detailsAlert.innerHTML = `<span class="material-symbols-outlined text-[16px]">check_circle</span> <span>${message}</span>`;
     } else {
-        detailsAlert.className = "p-sm rounded text-label-md font-medium flex items-start gap-xs bg-error/10 border border-error/20 text-error";
+        detailsAlert.className = "p-3 rounded text-xs font-semibold flex items-start gap-1.5 bg-red-50 border-red-200 text-danger";
         detailsAlert.innerHTML = `<span class="material-symbols-outlined text-[16px]">error</span> <span>${message}</span>`;
     }
 }
 
-// ---------------------------------------------------------------------
-// Banner lightbox: click the banner (or press Enter/Space on it, since
-// it's a real <button>) to see the full, uncropped image. object-cover
-// on the inline banner already crops it to fill the box, so without this
-// there was no way to see the full frame at all.
-// ---------------------------------------------------------------------
+// Banner lightbox details
 function openBannerLightbox() {
-    if (!eventBanner.src) return; // nothing loaded yet, nothing to show
+    if (!eventBanner.src) return;
     bannerLightboxImg.src = eventBanner.src;
     bannerLightbox.dataset.open = "true";
-    document.body.style.overflow = "hidden"; // stop background scroll while open
+    document.body.style.overflow = "hidden";
     bannerLightboxClose.focus();
 }
 
@@ -119,7 +114,6 @@ if (bannerLightboxClose) {
     bannerLightboxClose.addEventListener("click", closeBannerLightbox);
 }
 if (bannerLightbox) {
-    // Click on the dark backdrop (not the image itself) also closes it
     bannerLightbox.addEventListener("click", (e) => {
         if (e.target === bannerLightbox) closeBannerLightbox();
     });
@@ -130,7 +124,7 @@ document.addEventListener("keydown", (e) => {
     }
 });
 
-// Check session, parse ID and initialize
+// Initialize page
 async function initPage() {
     const user = await getCurrentUser();
 
@@ -143,14 +137,14 @@ async function initPage() {
     const segments = window.location.pathname.split("/");
     eventId = segments.pop();
 
-    if (!eventId || isNaN(parseInt(eventId))) {
+    if (!eventId || isNaN(parseInt(eventId, 10))) {
         showLoading(false);
         contentSection.classList.add("hidden");
         errorBlock.classList.remove("hidden");
         return;
     }
 
-    // Load specifications
+    // Load event details
     await loadEventDetails(eventId);
 
     // Bind file upload input name change
@@ -158,12 +152,12 @@ async function initPage() {
         screenshotInput.addEventListener("change", (e) => {
             if (e.target.files && e.target.files.length > 0) {
                 screenshotLabel.textContent = `Attached: ${e.target.files[0].name}`;
-                screenshotLabel.classList.remove("text-on-surface-variant");
-                screenshotLabel.classList.add("text-primary");
+                screenshotLabel.classList.remove("text-muted");
+                screenshotLabel.classList.add("text-action");
             } else {
                 screenshotLabel.textContent = "Click to attach receipt";
-                screenshotLabel.classList.add("text-on-surface-variant");
-                screenshotLabel.classList.remove("text-primary");
+                screenshotLabel.classList.add("text-muted");
+                screenshotLabel.classList.remove("text-action");
             }
         });
     }
@@ -186,18 +180,13 @@ function showLoading(show) {
     }
 }
 
-// Fetch custom form structure if exists
-async function loadCustomFormStructure(id) {
-    customFormStructure = null;
-}
-
-// Fetch event detail specs
+// Fetch event details specs (Using correct endpoint: GET /api/v1/events/{id})
 async function loadEventDetails(id) {
     showLoading(true);
     const token = localStorage.getItem("accessToken");
 
     try {
-        const res = await fetch(`${API_EVENT}/getEvent/${id}`, {
+        const res = await fetch(`${API_EVENT}/${id}`, {
             headers: token ? { Authorization: `Bearer ${token}` } : {}
         });
         const body = await res.json();
@@ -228,13 +217,13 @@ function populateEventDetails(event) {
     categoryBadge.textContent = event.category || "General";
     statusBadge.textContent = event.eventStatus || "PENDING";
 
-    let statusClass = "bg-surface-container text-on-surface-variant border border-outline-variant";
-    if (event.eventStatus === "PENDING") statusClass = "bg-yellow-500/10 text-yellow-500 border border-yellow-500/30";
-    else if (event.eventStatus === "APPROVED") statusClass = "bg-primary/10 text-primary border border-primary/30";
-    else if (event.eventStatus === "REJECTED") statusClass = "bg-error/10 text-error border border-error/30";
-    else if (event.eventStatus === "CANCELLED") statusClass = "bg-surface-container-high text-outline border border-outline-variant";
-    else if (event.eventStatus === "FINISHED") statusClass = "bg-blue-500/10 text-blue-500 border border-blue-500/30";
-    statusBadge.className = `${statusClass} text-label-md px-sm py-xs rounded-full font-semibold uppercase`;
+    let statusClass = "bg-canvas-sunk text-muted border border-line";
+    if (event.eventStatus === "PENDING") statusClass = "bg-amber-50 text-amber-700 border border-amber-200";
+    else if (event.eventStatus === "APPROVED") statusClass = "bg-green-50 text-signal border border-green-200";
+    else if (event.eventStatus === "REJECTED") statusClass = "bg-red-50 text-danger border border-red-200";
+    else if (event.eventStatus === "CANCELLED") statusClass = "bg-red-50 text-danger border border-red-200";
+    else if (event.eventStatus === "FINISHED") statusClass = "bg-action-tint text-action border border-action/25";
+    statusBadge.className = `${statusClass} text-[10px] px-2.5 py-0.5 rounded-full font-semibold uppercase`;
 
     // Metadata details
     eventMode.textContent = event.eventMode || "OFFLINE";
@@ -282,19 +271,21 @@ function validateRegistrationState(event) {
 
     if (event.eventStatus !== "APPROVED") {
         isClosed = true;
-        closedReason = "Moderation Required (Pending)";
+        closedReason = "Pending Approval";
+    } else if (event.cancelled) {
+        isClosed = true;
+        closedReason = "Event Cancelled";
     } else if (available <= 0) {
         isClosed = true;
         closedReason = "Sold Out";
     } else if (deadlineDate < today) {
         isClosed = true;
-        closedReason = "Registration Closed";
+        closedReason = "Closed";
     }
 
     if (isClosed) {
         bookingBtn.disabled = true;
-        bookingBtn.classList.remove("bg-primary", "hover:bg-primary-fixed", "shadow-primary/20");
-        bookingBtn.classList.add("bg-surface-container-high", "text-outline", "cursor-not-allowed", "opacity-60");
+        bookingBtn.className = "w-full bg-canvas-sunk text-muted-dim border border-line font-bold py-3 px-4 rounded-lg cursor-not-allowed opacity-60 flex items-center justify-center gap-1.5";
         bookingBtnText.textContent = closedReason;
         showAlert("error", `Ticket booking is currently unavailable: ${closedReason}`);
     } else {
@@ -309,7 +300,7 @@ function validateRegistrationState(event) {
     }
 }
 
-// Handle Ticket booking submission
+// Handle Ticket booking submission (Using correct endpoint: POST /api/v1/tickets/{id}/buy)
 async function handleBookingSubmit(e) {
     e.preventDefault();
     detailsAlert.classList.add("hidden");
@@ -331,10 +322,10 @@ async function handleBookingSubmit(e) {
     if (price > 0) {
         if (!screenshotInput.files || screenshotInput.files.length === 0) {
             showAlert("error", "Please upload your payment transaction screenshot before booking.");
-            screenshotInput.parentElement.classList.add("border-error");
+            screenshotInput.parentElement.classList.add("border-danger");
             return;
         }
-        screenshotInput.parentElement.classList.remove("border-error");
+        screenshotInput.parentElement.classList.remove("border-danger");
     }
 
     // Disable button to prevent double clicks
@@ -349,7 +340,7 @@ async function handleBookingSubmit(e) {
     }
 
     try {
-        const res = await fetch(`${API_TICKETS}/buy/${eventId}`, {
+        const res = await fetch(`${API_TICKETS}/${eventId}/buy`, {
             method: "POST",
             headers: {
                 Authorization: `Bearer ${token}`
@@ -380,7 +371,7 @@ async function handleBookingSubmit(e) {
 }
 
 // ----------------------------------------------------
-// CUSTOM FORM REGISTRATION RENDERING & SUBMISSION
+// CAMPUS FORM REGISTRATION MODAL RENDERING & SUBMISSION
 // ----------------------------------------------------
 function openCustomFormModal() {
     if (!customFormStructure) return;
@@ -393,60 +384,60 @@ function openCustomFormModal() {
     customFormFieldsContainer.innerHTML = "";
     customFormStructure.fields.forEach(field => {
         const fieldCard = document.createElement("div");
-        fieldCard.className = "space-y-xs p-xs border-b border-outline-variant/10 pb-sm";
+        fieldCard.className = "space-y-1 pb-3 border-b border-line/40";
 
-        const labelHtml = `<label class="text-body-sm font-semibold text-on-surface flex items-center gap-xs">
+        const labelHtml = `<label class="text-xs font-bold text-ink uppercase tracking-wide eyebrow flex items-center gap-1">
             <span>${field.label}</span>
-            ${field.required ? '<span class="text-error">*</span>' : ''}
+            ${field.required ? '<span class="text-danger">*</span>' : ''}
         </label>`;
 
         let inputHtml = "";
 
         if (field.fieldType === "SHORT_ANSWER") {
             inputHtml = `<input type="text" data-field-id="${field.id}" data-type="SHORT_ANSWER" ${field.required ? 'required' : ''} placeholder="Your answer"
-                               class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-md py-sm text-body-sm text-on-surface focus:border-primary focus:outline-none transition-colors" />`;
+                               class="w-full bg-canvas-sunk border border-line rounded-lg px-3 py-2 text-xs text-ink focus:border-action focus:ring-action transition-all" />`;
         } else if (field.fieldType === "PARAGRAPH") {
             inputHtml = `<textarea data-field-id="${field.id}" data-type="PARAGRAPH" ${field.required ? 'required' : ''} rows="3" placeholder="Your long answer"
-                                  class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-md py-sm text-body-sm text-on-surface focus:border-primary focus:outline-none transition-colors"></textarea>`;
+                                  class="w-full bg-canvas-sunk border border-line rounded-lg px-3 py-2 text-xs text-ink focus:border-action focus:ring-action transition-all"></textarea>`;
         } else if (field.fieldType === "NUMBER") {
             inputHtml = `<input type="number" data-field-id="${field.id}" data-type="NUMBER" ${field.required ? 'required' : ''} placeholder="Your number answer"
-                               class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-md py-sm text-body-sm text-on-surface focus:border-primary focus:outline-none transition-colors" />`;
+                               class="w-full bg-canvas-sunk border border-line rounded-lg px-3 py-2 text-xs text-ink focus:border-action focus:ring-action transition-all" />`;
         } else if (field.fieldType === "EMAIL") {
             inputHtml = `<input type="email" data-field-id="${field.id}" data-type="EMAIL" ${field.required ? 'required' : ''} placeholder="Your email address"
-                               class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-md py-sm text-body-sm text-on-surface focus:border-primary focus:outline-none transition-colors" />`;
+                               class="w-full bg-canvas-sunk border border-line rounded-lg px-3 py-2 text-xs text-ink focus:border-action focus:ring-action transition-all" />`;
         } else if (field.fieldType === "PHONE") {
             inputHtml = `<input type="tel" data-field-id="${field.id}" data-type="PHONE" ${field.required ? 'required' : ''} placeholder="e.g. +1234567890"
-                               class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-md py-sm text-body-sm text-on-surface focus:border-primary focus:outline-none transition-colors" />`;
+                               class="w-full bg-canvas-sunk border border-line rounded-lg px-3 py-2 text-xs text-ink focus:border-action focus:ring-action transition-all" />`;
         } else if (field.fieldType === "DATE") {
             inputHtml = `<input type="date" data-field-id="${field.id}" data-type="DATE" ${field.required ? 'required' : ''}
-                               class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-md py-sm text-body-sm text-on-surface focus:border-primary focus:outline-none transition-colors" />`;
+                               class="w-full bg-canvas-sunk border border-line rounded-lg px-3 py-2 text-xs text-ink focus:border-action focus:ring-action transition-all" />`;
         } else if (field.fieldType === "FILE_UPLOAD") {
             inputHtml = `
-                <div class="flex items-center gap-md">
+                <div class="flex items-center gap-3">
                     <input type="file" data-field-id="${field.id}" data-type="FILE_UPLOAD" accept=".pdf,image/*" ${field.required ? 'required' : ''}
                            class="hidden file-upload-input" id="custom_file_${field.id}" />
-                    <label for="custom_file_${field.id}" class="cursor-pointer border border-outline-variant bg-surface-container-low hover:bg-surface-container-high text-on-surface font-semibold py-xs px-sm rounded text-body-sm transition-all flex items-center gap-xs">
-                        <span class="material-symbols-outlined text-[18px]">upload</span>
+                    <label for="custom_file_${field.id}" class="cursor-pointer border border-line bg-canvas-sunk hover:bg-canvas-mid text-ink font-semibold py-1.5 px-3 rounded text-xs transition-all flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[16px]">upload</span>
                         <span class="file-label-text">Choose File</span>
                     </label>
-                    <span class="text-label-md text-on-surface-variant file-name-display">No file chosen</span>
+                    <span class="text-xs text-muted file-name-display">No file chosen</span>
                 </div>
             `;
         } else if (field.fieldType === "DROPDOWN") {
             inputHtml = `
                 <select data-field-id="${field.id}" data-type="DROPDOWN" ${field.required ? 'required' : ''}
-                        class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-md py-sm text-body-sm text-on-surface focus:border-primary focus:outline-none transition-colors">
+                        class="w-full bg-canvas-sunk border border-line rounded-lg px-3 py-2 text-xs text-ink focus:border-action focus:ring-action transition-all">
                     <option value="">Select option</option>
                     ${field.options.map(opt => `<option value="${opt}">${opt}</option>`).join("")}
                 </select>
             `;
         } else if (field.fieldType === "MULTIPLE_CHOICE") {
             inputHtml = `
-                <div class="space-y-xs pt-xs" data-field-id="${field.id}" data-type="MULTIPLE_CHOICE">
+                <div class="space-y-1.5 pt-1" data-field-id="${field.id}" data-type="MULTIPLE_CHOICE">
                     ${field.options.map((opt, oIdx) => `
-                        <label class="flex items-center gap-sm text-body-sm text-on-surface-variant hover:text-on-surface cursor-pointer">
+                        <label class="flex items-center gap-2 text-xs text-muted hover:text-ink cursor-pointer">
                             <input type="radio" name="mcq_${field.id}" value="${opt}"
-                                   class="bg-surface-container-low border-outline-variant text-primary focus:ring-primary focus:ring-offset-background" />
+                                   class="bg-canvas-sunk border-line text-action focus:ring-action focus:ring-offset-background" />
                             <span>${opt}</span>
                         </label>
                     `).join("")}
@@ -454,11 +445,11 @@ function openCustomFormModal() {
             `;
         } else if (field.fieldType === "CHECKBOXES") {
             inputHtml = `
-                <div class="space-y-xs pt-xs" data-field-id="${field.id}" data-type="CHECKBOXES">
+                <div class="space-y-1.5 pt-1" data-field-id="${field.id}" data-type="CHECKBOXES">
                     ${field.options.map(opt => `
-                        <label class="flex items-center gap-sm text-body-sm text-on-surface-variant hover:text-on-surface cursor-pointer">
+                        <label class="flex items-center gap-2 text-xs text-muted hover:text-ink cursor-pointer">
                             <input type="checkbox" name="chk_${field.id}" value="${opt}"
-                                   class="rounded bg-surface-container-low border-outline-variant text-primary focus:ring-primary focus:ring-offset-background" />
+                                   class="rounded bg-canvas-sunk border-line text-action focus:ring-action focus:ring-offset-background" />
                             <span>${opt}</span>
                         </label>
                     `).join("")}
@@ -468,10 +459,10 @@ function openCustomFormModal() {
 
         fieldCard.innerHTML = `
             ${labelHtml}
-            <div class="mt-xs">
+            <div class="mt-1">
                 ${inputHtml}
             </div>
-            <p class="error-msg text-label-md text-error hidden"></p>
+            <p class="error-msg text-xs text-danger hidden mt-1"></p>
         `;
         customFormFieldsContainer.appendChild(fieldCard);
     });
@@ -523,7 +514,7 @@ customAnswersForm.addEventListener("submit", async (e) => {
 
     // Clear previous errors
     document.querySelectorAll("#custom-form-modal .error-msg").forEach(el => el.classList.add("hidden"));
-    document.querySelectorAll("#custom-form-modal input, #custom-form-modal select, #custom-form-modal textarea").forEach(el => el.classList.remove("border-error"));
+    document.querySelectorAll("#custom-form-modal input, #custom-form-modal select, #custom-form-modal textarea").forEach(el => el.classList.remove("border-danger"));
 
     const token = localStorage.getItem("accessToken");
     if (!token) {
@@ -606,7 +597,7 @@ customAnswersForm.addEventListener("submit", async (e) => {
     if (price > 0) {
         const paymentFile = customPaymentScreenshotInput.files[0];
         if (!paymentFile) {
-            customPaymentScreenshotInput.classList.add("border-error");
+            customPaymentScreenshotInput.classList.add("border-danger");
             showCustomFormAlert("Please upload your payment verification receipt screenshot.");
             return;
         }
@@ -626,7 +617,7 @@ customAnswersForm.addEventListener("submit", async (e) => {
     formData.append("answers", JSON.stringify(answersList));
 
     try {
-        const submitId = isStandaloneForm ? standaloneFormId : eventId;
+        const submitId = eventId;
         const res = await fetch(`${API_CUSTOM_FORM_BASE}/submit/${submitId}`, {
             method: "POST",
             headers: {
@@ -656,8 +647,8 @@ customAnswersForm.addEventListener("submit", async (e) => {
 
 function showFieldCustomError(el, msg) {
     if (!el) return;
-    el.classList.add("border-error");
-    const container = el.closest(".space-y-xs");
+    el.classList.add("border-danger");
+    const container = el.closest(".space-y-1");
     if (container) {
         const errEl = container.querySelector(".error-msg");
         if (errEl) {
@@ -670,10 +661,10 @@ function showFieldCustomError(el, msg) {
 function showCustomFormAlert(msg, type = "error") {
     customFormAlert.classList.remove("hidden");
     if (type === "success") {
-        customFormAlert.className = "p-sm rounded text-label-md font-medium flex items-start gap-xs bg-primary/10 border border-primary/20 text-primary mb-md";
+        customFormAlert.className = "p-3 rounded text-xs font-semibold flex items-start gap-1.5 bg-green-50 border-green-200 text-signal mb-3";
         customFormAlert.innerHTML = `<span class="material-symbols-outlined text-[16px]">check_circle</span> <span>${msg}</span>`;
     } else {
-        customFormAlert.className = "p-sm rounded text-label-md font-medium flex items-start gap-xs bg-error/10 border border-error/20 text-error mb-md";
+        customFormAlert.className = "p-3 rounded text-xs font-semibold flex items-start gap-1.5 bg-red-50 border-red-200 text-danger mb-3";
         customFormAlert.innerHTML = `<span class="material-symbols-outlined text-[16px]">error</span> <span>${msg}</span>`;
     }
 }

@@ -1,4 +1,152 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Campus Events | CampusHive</title><script src="https://cdn.tailwindcss.com?plugins=forms"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" /><link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" /><script>tailwind.config={theme:{extend:{colors:{ink:"#0B1526",canvas:"#FFFFFF","canvas-sunk":"#F5F7FA",line:"#E2E6ED","line-strong":"#CBD2DE",muted:"#5B6B85","muted-dim":"#8894A8",action:"#2450E8","action-hover":"#1A3FC4","action-tint":"#EDF1FE",signal:"#0EA5A5","signal-tint":"#E7F8F8",danger:"#B42318"},fontFamily:{display:["Sora","sans-serif"],body:["Inter","sans-serif"],mono:["IBM Plex Mono","monospace"]},spacing:{"sidebar-w":"256px","container-max":"1360px"},borderRadius:{DEFAULT:"8px",lg:"10px",xl:"14px"}}}};</script><style>body{background:#F5F7FA;color:#0B1526;font-family:Inter,sans-serif}.material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}.eyebrow{font-family:'IBM Plex Mono',monospace;letter-spacing:.08em;text-transform:uppercase}.grid-fade{background-image:linear-gradient(to right,#E2E6ED 1px,transparent 1px),linear-gradient(to bottom,#E2E6ED 1px,transparent 1px);background-size:52px 52px;mask-image:linear-gradient(to bottom,black,transparent)}#sidebar-nav a{display:flex;align-items:center;gap:.75rem;border:1px solid transparent;border-radius:8px;padding:.625rem .75rem;color:#5B6B85;font-size:14px;font-weight:500}#sidebar-nav a:hover{background:#F5F7FA;color:#0B1526}#sidebar-nav a.bg-primary\/10{background:#EDF1FE;border-color:#C8D4FD;color:#2450E8}#sidebar-nav a .material-symbols-outlined{font-size:20px}#sidebar-auth-actions a:first-child{background:#2450E8;color:white}#sidebar-auth-actions a:last-child{border:1px solid #CBD2DE;color:#0B1526}#sidebar-logout-wrap button{color:#B42318}.event-image{background:#14213B center/cover no-repeat}</style></head>
-<body class="min-h-screen overflow-x-hidden font-body"><div id="sidebar-overlay" class="hidden fixed inset-0 z-30 bg-ink/40 md:hidden"></div><aside id="sidebar" class="fixed inset-y-0 left-0 z-40 flex w-sidebar-w -translate-x-full flex-col border-r border-line bg-canvas transition-transform duration-200 md:translate-x-0"><div class="flex h-16 items-center border-b border-line px-5"><a href="/home" class="flex items-center gap-2.5"><span class="flex h-8 w-8 items-center justify-center rounded-md bg-ink font-display text-sm font-bold text-white">CH</span><span class="font-display text-lg font-bold text-ink">CampusHive</span></a><button id="sidebar-close" class="ml-auto p-2 text-muted md:hidden" aria-label="Close menu"><span class="material-symbols-outlined">close</span></button></div><div class="border-b border-line px-5 py-5"><a href="/profile" class="flex items-center gap-3"><span class="flex h-10 w-10 items-center justify-center rounded-lg bg-action-tint text-action"><span class="material-symbols-outlined">person</span></span><span class="min-w-0"><span id="sidebar-username" class="block truncate text-sm font-semibold text-ink">Loading...</span><span id="sidebar-role" class="eyebrow mt-0.5 block text-[10px] text-muted">Account</span></span></a></div><nav id="sidebar-nav" class="flex-1 space-y-1 overflow-y-auto px-3 py-4"></nav><div id="sidebar-auth-actions" class="hidden flex-1 flex-col gap-2 px-4 py-4 text-center text-sm font-semibold"><a href="/login" class="rounded-lg px-4 py-2.5">Sign in</a><a href="/register" class="rounded-lg px-4 py-2.5">Create account</a></div><div id="sidebar-logout-wrap" class="border-t border-line p-3"><button id="logout-btn" class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-red-50"><span class="material-symbols-outlined text-[20px]">logout</span>Sign out</button></div></aside>
-<div class="min-h-screen md:ml-sidebar-w"><header class="sticky top-0 z-20 h-16 border-b border-line bg-canvas/95 backdrop-blur"><div class="flex h-full max-w-container-max items-center gap-3 px-4 md:px-8"><button id="sidebar-open" class="p-2 text-muted md:hidden" aria-label="Open menu"><span class="material-symbols-outlined">menu</span></button><div class="hidden md:block"><p class="eyebrow text-[10px] text-muted-dim">Campus board</p><p class="font-display text-sm font-semibold text-ink">Your university</p></div><label class="relative ml-auto block w-full max-w-xl"><i class="fa-solid fa-magnifying-glass pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-xs text-muted"></i><input id="eventSearch" type="search" placeholder="Search your campus" class="w-full rounded-lg border-line bg-canvas-sunk py-2.5 pl-9 pr-4 text-sm text-ink placeholder:text-muted-dim focus:border-action focus:ring-action" /></label></div></header><main class="mx-auto max-w-container-max px-4 py-7 md:px-8 md:py-10"><section class="relative overflow-hidden border border-line bg-canvas px-5 py-7 md:px-8 md:py-9"><div class="grid-fade pointer-events-none absolute inset-0 opacity-70"></div><div class="relative"><p class="eyebrow text-[11px] text-action">Campus only</p><h1 class="mt-2 flex items-center gap-3 font-display text-3xl font-bold text-ink"><span id="banner-logo-container" class="hidden"></span><span id="banner-university-name">Campus events</span></h1><p class="mt-3 max-w-2xl text-sm leading-6 text-muted">Events and registrations published for your university community.</p></div></section><div id="loading-state" class="py-12 text-center text-sm text-muted"><i class="fa-solid fa-spinner mr-2 animate-spin text-action"></i>Loading your campus board</div><section id="no-university-state" class="hidden mx-auto max-w-xl border border-line bg-canvas p-8 text-center"><span class="material-symbols-outlined text-4xl text-action">school</span><h2 class="mt-3 font-display text-xl font-semibold text-ink">Add your university first</h2><p class="mt-2 text-sm leading-6 text-muted">Associate your profile with a university to browse its campus-only events.</p><a href="/profile" class="mt-5 inline-flex rounded-lg bg-action px-4 py-2.5 text-sm font-semibold text-white hover:bg-action-hover">Open profile</a></section><section id="error-state" class="hidden py-12 text-center"><p id="error-message" class="text-sm text-danger"></p><button id="retry-btn" class="mt-4 rounded-lg border border-line-strong bg-canvas px-4 py-2 text-sm font-semibold text-ink">Retry</button></section><section id="campus-events-section" class="hidden pt-9"><div class="mb-5 flex items-end justify-between"><div><p class="eyebrow text-[11px] text-signal">Live listings</p><h2 id="campus-name-heading" class="mt-1 font-display text-2xl font-semibold text-ink">Events on campus</h2></div><span id="events-count" class="font-mono text-xs text-muted"></span></div><div id="events-grid" class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3"></div><p id="events-empty-msg" class="hidden border border-dashed border-line-strong bg-canvas px-5 py-9 text-center text-sm text-muted">No events or registrations match this search.</p><div id="events-pagination" class="hidden mt-6 flex items-center justify-between border-t border-line pt-4"><span id="pagination-info" class="font-mono text-xs text-muted"></span><div class="flex gap-2"><button id="prev-page-btn" class="rounded-lg border border-line-strong bg-canvas px-3 py-2 text-sm font-medium text-ink disabled:opacity-40">Previous</button><button id="next-page-btn" class="rounded-lg border border-line-strong bg-canvas px-3 py-2 text-sm font-medium text-ink disabled:opacity-40">Next</button></div></div></section></main></div><script src="/js/auth.js"></script><script src="/js/auto-refresh.js"></script><script src="/js/nav-config.js"></script><script src="/js/sidebar.js"></script><script src="/js/campus-events.js"></script></body></html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Campus Events | CampusHive</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <script>
+        tailwind.config = {
+            theme: { extend: {
+                colors: { ink: "#0B1526", "ink-soft": "#14213B", canvas: "#FFFFFF", "canvas-sunk": "#F5F7FA", "canvas-mid": "#EEF1F6", line: "#E2E6ED", "line-strong": "#CBD2DE", muted: "#5B6B85", "muted-dim": "#8894A8", action: "#2450E8", "action-hover": "#1A3FC4", "action-tint": "#EDF1FE", signal: "#0EA5A5", "signal-tint": "#E7F8F8", amber: "#B45309", danger: "#B42318" },
+                fontFamily: { display: ["Sora", "sans-serif"], body: ["Inter", "sans-serif"], mono: ["IBM Plex Mono", "monospace"] },
+                spacing: { "sidebar-w": "256px", "container-max": "1360px" },
+                borderRadius: { DEFAULT: "8px", lg: "10px", xl: "14px" }
+            }}
+        };
+    </script>
+    <style>
+        body { background: #F5F7FA; color: #0B1526; font-family: Inter, sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .eyebrow { font-family: 'IBM Plex Mono', monospace; letter-spacing: .08em; text-transform: uppercase; }
+        .grid-fade { background-image: linear-gradient(to right, #E2E6ED 1px, transparent 1px), linear-gradient(to bottom, #E2E6ED 1px, transparent 1px); background-size: 52px 52px; mask-image: linear-gradient(to bottom, black, transparent); }
+        .event-image { background-position: center; background-size: cover; background-color: #14213B; }
+        #sidebar-nav a { display: flex; align-items: center; gap: .75rem; border: 1px solid transparent; border-radius: 8px; padding: .625rem .75rem; color: #5B6B85; font-size: 14px; font-weight: 500; }
+        #sidebar-nav a:hover { background: #F5F7FA; color: #0B1526; }
+        #sidebar-nav a.bg-primary\/10 { background: #EDF1FE; border-color: #C8D4FD; color: #2450E8; }
+        #sidebar-nav a .material-symbols-outlined { font-size: 20px; }
+        #sidebar-auth-actions a:first-child { background: #2450E8; color: #fff; }
+        #sidebar-auth-actions a:last-child { border: 1px solid #CBD2DE; color: #0B1526; }
+        #sidebar-logout-wrap button { color: #B42318; }
+        #sidebar-nav::-webkit-scrollbar { width: 4px; }
+        #sidebar-nav::-webkit-scrollbar-thumb { background: #CBD2DE; }
+        .skeleton { animation: pulse 1.4s ease-in-out infinite; }
+        @keyframes pulse { 50% { opacity: .48; } }
+    </style>
+</head>
+<body class="min-h-screen overflow-x-hidden font-body">
+<div id="sidebar-overlay" class="hidden fixed inset-0 z-30 bg-ink/40 md:hidden"></div>
+
+<aside id="sidebar" class="fixed inset-y-0 left-0 z-40 flex w-sidebar-w -translate-x-full flex-col border-r border-line bg-canvas transition-transform duration-200 md:translate-x-0">
+    <div class="flex h-16 items-center border-b border-line px-5">
+        <a href="/home" class="flex items-center gap-2.5">
+            <span class="flex h-8 w-8 items-center justify-center rounded-md bg-ink font-display text-sm font-bold text-white">CH</span>
+            <span class="font-display text-lg font-bold tracking-tight text-ink">CampusHive</span>
+        </a>
+        <button id="sidebar-close" class="ml-auto p-2 text-muted md:hidden" aria-label="Close menu"><span class="material-symbols-outlined">close</span></button>
+    </div>
+    <div class="border-b border-line px-5 py-5">
+        <a href="/profile" class="flex items-center gap-3">
+            <span class="flex h-10 w-10 items-center justify-center rounded-lg bg-action-tint text-action"><span class="material-symbols-outlined">person</span></span>
+            <span class="min-w-0">
+                <span id="sidebar-username" class="block truncate text-sm font-semibold text-ink">Loading...</span>
+                <span id="sidebar-role" class="eyebrow mt-0.5 block truncate text-[10px] text-muted">Account</span>
+            </span>
+        </a>
+    </div>
+    <nav id="sidebar-nav" class="flex-1 space-y-1 overflow-y-auto px-3 py-4"></nav>
+    <div id="sidebar-auth-actions" class="hidden flex-1 flex-col gap-2 px-4 py-4 text-center text-sm font-semibold">
+        <a href="/login" class="rounded-lg px-4 py-2.5">Sign in</a>
+        <a href="/register" class="rounded-lg px-4 py-2.5">Create account</a>
+    </div>
+    <div id="sidebar-logout-wrap" class="border-t border-line p-3">
+        <button id="logout-btn" class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-red-50"><span class="material-symbols-outlined text-[20px]">logout</span>Sign out</button>
+    </div>
+</aside>
+
+<div class="min-h-screen md:ml-sidebar-w">
+    <header class="sticky top-0 z-20 h-16 border-b border-line bg-canvas/95 backdrop-blur">
+        <div class="flex h-full max-w-container-max items-center gap-3 px-4 md:px-8">
+            <button id="sidebar-open" class="p-2 text-muted md:hidden" aria-label="Open menu"><span class="material-symbols-outlined">menu</span></button>
+            <div class="hidden min-w-0 md:block"><p class="eyebrow text-[10px] text-muted-dim">Campus board</p><p class="font-display text-sm font-semibold text-ink">Your university</p></div>
+            <label class="relative ml-auto block w-full max-w-xl">
+                <i class="fa-solid fa-magnifying-glass pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-xs text-muted"></i>
+                <input id="eventSearch" type="search" placeholder="Search your campus" class="w-full rounded-lg border-line bg-canvas-sunk py-2.5 pl-9 pr-4 text-sm text-ink placeholder:text-muted-dim focus:border-action focus:ring-action" />
+            </label>
+            <a href="/profile" class="hidden h-9 w-9 items-center justify-center rounded-lg border border-line text-muted hover:border-action hover:text-action sm:flex" aria-label="Profile"><span class="material-symbols-outlined text-[20px]">account_circle</span></a>
+        </div>
+    </header>
+
+    <main class="mx-auto max-w-container-max px-4 py-7 md:px-8 md:py-10">
+        <section class="relative overflow-hidden border border-line bg-canvas px-5 py-7 md:px-8 md:py-10">
+            <div class="grid-fade pointer-events-none absolute inset-0 opacity-70"></div>
+            <div class="relative">
+                <p class="eyebrow text-[11px] text-action">Campus only</p>
+                <h1 class="mt-2 flex items-center gap-3 font-display text-3xl font-bold text-ink">
+                    <span id="banner-logo-container" class="hidden"></span>
+                    <span id="banner-university-name">Campus events</span>
+                </h1>
+                <p class="mt-3 max-w-2xl text-sm leading-6 text-muted md:text-base">Events and registrations published for your university community.</p>
+            </div>
+        </section>
+
+        <!-- Loading state with text-spinner (fallback/initial) -->
+        <div id="loading-state" class="py-12 text-center text-sm text-muted">
+            <i class="fa-solid fa-spinner mr-2 animate-spin text-action"></i>Loading your campus board
+        </div>
+
+        <section id="no-university-state" class="hidden mx-auto mt-10 max-w-xl border border-line bg-canvas p-8 text-center">
+            <span class="material-symbols-outlined text-4xl text-action">school</span>
+            <h2 class="mt-3 font-display text-xl font-semibold text-ink">Add your university first</h2>
+            <p class="mt-2 text-sm leading-6 text-muted">Associate your profile with a university to browse its campus-only events.</p>
+            <a href="/profile" class="mt-5 inline-flex rounded-lg bg-action px-4 py-2.5 text-sm font-semibold text-white hover:bg-action-hover">Open profile</a>
+        </section>
+
+        <section id="error-state" class="hidden py-12 text-center">
+            <p id="error-message" class="text-sm text-danger"></p>
+            <button id="retry-btn" class="mt-4 rounded-lg border border-line-strong bg-canvas px-4 py-2 text-sm font-semibold text-ink">Retry</button>
+        </section>
+
+        <section id="campus-events-section" class="hidden pt-9">
+            <div class="mb-5 flex items-end justify-between">
+                <div>
+                    <p class="eyebrow text-[11px] text-signal">Live listings</p>
+                    <h2 id="campus-name-heading" class="mt-1 font-display text-2xl font-semibold text-ink">Events on campus</h2>
+                </div>
+                <span id="events-count" class="font-mono text-xs text-muted"></span>
+            </div>
+            
+            <div id="events-grid" class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3"></div>
+            
+            <p id="events-empty-msg" class="hidden border border-dashed border-line-strong bg-canvas px-5 py-9 text-center text-sm text-muted">No events or registrations match this search.</p>
+            
+            <div id="events-pagination" class="hidden mt-6 flex items-center justify-between border-t border-line pt-4">
+                <span id="pagination-info" class="font-mono text-xs text-muted"></span>
+                <div class="flex gap-2">
+                    <button id="prev-page-btn" class="rounded-lg border border-line-strong bg-canvas px-3 py-2 text-sm font-medium text-ink disabled:opacity-40">Previous</button>
+                    <button id="next-page-btn" class="rounded-lg border border-line-strong bg-canvas px-3 py-2 text-sm font-medium text-ink disabled:opacity-40">Next</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="border-t border-line bg-canvas px-4 py-6 md:px-8">
+        <div class="mx-auto flex max-w-container-max flex-col justify-between gap-3 text-sm text-muted sm:flex-row">
+            <p>Copyright 2026 CampusHive</p>
+            <div class="flex gap-5">
+                <a href="/about-us" class="hover:text-ink">About</a>
+                <a href="/contact" class="hover:text-ink">Support</a>
+            </div>
+        </div>
+    </footer>
+</div>
+
+<script src="/js/auth.js"></script>
+<script src="/js/auto-refresh.js"></script>
+<script src="/js/nav-config.js"></script>
+<script src="/js/sidebar.js"></script>
+<script src="/js/campus-events.js"></script>
+</body>
+</html>

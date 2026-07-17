@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Campus Form Details | CampusHive</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <script>
+        tailwind.config = {
+            theme: { extend: {
+                colors: { ink: "#0B1526", "ink-soft": "#14213B", canvas: "#FFFFFF", "canvas-sunk": "#F5F7FA", "canvas-mid": "#EEF1F6", line: "#E2E6ED", "line-strong": "#CBD2DE", muted: "#5B6B85", "muted-dim": "#8894A8", action: "#2450E8", "action-hover": "#1A3FC4", "action-tint": "#EDF1FE", signal: "#0EA5A5", "signal-tint": "#E7F8F8", amber: "#B45309", danger: "#B42318" },
+                fontFamily: { display: ["Sora", "sans-serif"], body: ["Inter", "sans-serif"], mono: ["IBM Plex Mono", "monospace"] },
+                spacing: { "sidebar-w": "256px", "container-max": "1360px" },
+                borderRadius: { DEFAULT: "8px", lg: "10px", xl: "14px" }
+            }}
+        };
+    </script>
+    <style>
+        body { background: #F5F7FA; color: #0B1526; font-family: Inter, sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .eyebrow { font-family: 'IBM Plex Mono', monospace; letter-spacing: .08em; text-transform: uppercase; }
+        #sidebar-nav a { display: flex; align-items: center; gap: .75rem; border: 1px solid transparent; border-radius: 8px; padding: .625rem .75rem; color: #5B6B85; font-size: 14px; font-weight: 500; }
+        #sidebar-nav a:hover { background: #F5F7FA; color: #0B1526; }
+        #sidebar-nav a.bg-primary\/10 { background: #EDF1FE; border-color: #C8D4FD; color: #2450E8; }
+        #sidebar-nav a .material-symbols-outlined { font-size: 20px; }
+        #sidebar-logout-wrap button { color: #B42318; }
+        #sidebar-nav::-webkit-scrollbar { width: 4px; }
+        #sidebar-nav::-webkit-scrollbar-thumb { background: #CBD2DE; }
+        .skeleton { animation: pulse 1.4s ease-in-out infinite; }
+        @keyframes pulse { 50% { opacity: .48; } }
+        
+        /* Success Animation */
+        .success-checkmark { width: 80px; height: 80px; margin: 0 auto; }
+        .checkmark-circle { stroke-dasharray: 166; stroke-dashoffset: 166; stroke-width: 4; stroke-miterlimit: 10; stroke: #0EA5A5; fill: none; animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards; }
+        .checkmark-check { transform-origin: 50% 50%; stroke-dasharray: 48; stroke-dashoffset: 48; stroke-width: 4; stroke: #0EA5A5; fill: none; animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards; }
+        @keyframes stroke { 100% { stroke-dashoffset: 0; } }
+    </style>
+</head>
+<body class="min-h-screen overflow-x-hidden font-body">
+
+<div id="sidebar-overlay" class="hidden fixed inset-0 bg-ink/40 z-30 md:hidden"></div>
+
+<div class="flex min-h-screen">
+
+    <!-- ===================== SIDEBAR ===================== -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 flex w-sidebar-w -translate-x-full flex-col border-r border-line bg-canvas transition-transform duration-200 md:translate-x-0">
+        <div class="flex h-16 items-center border-b border-line px-5">
+            <a href="/home" class="flex items-center gap-2.5">
+                <span class="flex h-8 w-8 items-center justify-center rounded-md bg-ink font-display text-sm font-bold text-white">CH</span>
+                <span class="font-display text-lg font-bold tracking-tight text-ink">CampusHive</span>
+            </a>
+            <button id="sidebar-close" class="ml-auto p-2 text-muted md:hidden" aria-label="Close menu"><span class="material-symbols-outlined">close</span></button>
+        </div>
+        <div class="border-b border-line px-5 py-5">
+            <a href="/profile" class="flex items-center gap-3">
+                <span class="flex h-10 w-10 items-center justify-center rounded-lg bg-action-tint text-action"><span class="material-symbols-outlined">person</span></span>
+                <span class="min-w-0">
+                    <span id="sidebar-username" class="block truncate text-sm font-semibold text-ink">Loading...</span>
+                    <span id="sidebar-role" class="eyebrow mt-0.5 block truncate text-[10px] text-muted">Account</span>
+                </span>
+            </a>
+        </div>
+        <nav id="sidebar-nav" class="flex-1 space-y-1 overflow-y-auto px-3 py-4"></nav>
+        <div id="sidebar-logout-wrap" class="border-t border-line p-3">
+            <button id="logout-btn" class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-red-50"><span class="material-symbols-outlined text-[20px]">logout</span>Sign out</button>
+        </div>
+    </aside>
+
+    <!-- ===================== MAIN COLUMN ===================== -->
+    <div class="flex-1 md:ml-sidebar-w flex flex-col min-w-0">
+
+        <!-- ---------- HEADER ---------- -->
+        <header class="sticky top-0 z-20 h-16 border-b border-line bg-canvas/95 backdrop-blur flex items-center justify-between px-4 md:px-8">
+            <div class="flex items-center gap-3">
+                <button id="sidebar-open" class="p-2 text-muted md:hidden" aria-label="Open menu"><span class="material-symbols-outlined">menu</span></button>
+                <div class="hidden min-w-0 md:block">
+                    <p class="eyebrow text-[10px] text-muted-dim">Form Details</p>
+                    <p class="font-display text-sm font-semibold text-ink" id="header-form-title">Loading Form...</p>
+                </div>
+            </div>
+
+            <!-- Sticky Progress Indicator -->
+            <div id="sticky-progress-container" class="hidden flex items-center gap-3 bg-canvas-sunk border border-line rounded-lg px-3 py-1.5 shadow-sm text-xs">
+                <span class="font-medium text-ink flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[16px] text-action">task_alt</span>
+                    <span id="progress-text">0 / 0 Answered</span>
+                </span>
+                <div class="w-20 bg-line rounded-full h-1.5 overflow-hidden">
+                    <div id="progress-bar" class="bg-action h-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+            </div>
+        </header>
+
+        <!-- ---------- MAIN CONTENT ---------- -->
+        <main class="flex-1 px-4 py-6 md:px-8 md:py-8 max-w-3xl mx-auto w-full space-y-6">
+
+            <!-- Preview Mode Alert Banner -->
+            <div id="preview-mode-banner" class="hidden bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-center gap-3">
+                <span class="material-symbols-outlined text-[28px] text-amber-600">visibility</span>
+                <div>
+                    <h4 class="font-bold text-ink text-sm">Preview Mode Active</h4>
+                    <p class="text-xs text-muted">You are viewing the form template. Submission actions and inputs are disabled.</p>
+                </div>
+            </div>
+
+            <!-- Loading Spinner Skeleton -->
+            <div id="form-loading" class="space-y-6">
+                <div class="h-48 skeleton bg-line rounded-xl"></div>
+                <div class="glass-card border border-line bg-canvas rounded-xl p-6 space-y-4">
+                    <div class="h-6 skeleton bg-line w-2/3 rounded"></div>
+                    <div class="h-4 skeleton bg-line w-1/3 rounded"></div>
+                    <div class="h-24 skeleton bg-line w-full rounded"></div>
+                </div>
+            </div>
+
+            <!-- Error State Block -->
+            <div id="form-error" class="hidden flex flex-col items-center justify-center py-16 text-center space-y-4">
+                <span class="material-symbols-outlined text-[56px] text-danger">warning</span>
+                <h2 class="text-lg text-ink font-bold">This form is unavailable</h2>
+                <p id="error-message" class="text-sm text-muted max-w-md">The form may have been disabled, deleted, or requires different permissions.</p>
+                <a href="/home" class="bg-action hover:bg-action-hover text-white font-semibold px-6 py-2 rounded-lg text-sm transition-all shadow-sm flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[18px]">home</span>
+                    <span>Go to Home</span>
+                </a>
+            </div>
+
+            <!-- Form Content View -->
+            <div id="form-content-section" class="hidden space-y-6">
+                
+                <!-- Banner Image -->
+                <div class="h-48 md:h-60 bg-ink-soft border border-line rounded-xl overflow-hidden relative shadow-sm">
+                    <img id="form-banner" class="w-full h-full object-cover" src="/images/banner-placeholder.png" alt="Form Banner" />
+                    <span id="scope-badge" class="absolute top-4 left-4 bg-white/90 text-ink text-xs font-semibold px-3 py-1 rounded shadow-sm border border-line">
+                        Public Access
+                    </span>
+                </div>
+
+                <!-- Form Card Header details -->
+                <div class="border border-line bg-canvas rounded-xl p-6 md:p-8 space-y-4 shadow-sm border-t-8 border-t-action">
+                    <div class="space-y-2">
+                        <h1 id="form-title" class="font-display font-extrabold text-2xl text-ink leading-tight">Form Title</h1>
+                        <p id="form-description" class="text-sm text-muted whitespace-pre-wrap">Form description...</p>
+                    </div>
+
+                    <div class="border-t border-line pt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                        <div class="space-y-2 text-muted">
+                            <p class="flex items-center gap-2"><span class="material-symbols-outlined text-[18px] text-action">person</span> <span>Creator: <strong class="text-ink" id="form-creator">—</strong></span></p>
+                            <p class="flex items-center gap-2"><span class="material-symbols-outlined text-[18px] text-action">school</span> <span>University: <strong class="text-ink" id="form-university">—</strong></span></p>
+                            <p class="flex items-center gap-2"><span class="material-symbols-outlined text-[18px] text-action">payments</span> <span>Registration Fee: <strong class="text-ink" id="form-fee">Free</strong></span></p>
+                        </div>
+                        <div class="space-y-2 text-muted">
+                            <p class="flex items-center gap-2"><span class="material-symbols-outlined text-[18px] text-action">schedule</span> <span>Start: <strong class="text-ink" id="form-start">—</strong></span></p>
+                            <p class="flex items-center gap-2"><span class="material-symbols-outlined text-[18px] text-action">event_busy</span> <span>Deadline: <strong class="text-ink" id="form-deadline">—</strong></span></p>
+                            <p class="flex items-center gap-2"><span class="material-symbols-outlined text-[18px] text-action">timer</span> <span>Est. Time: <strong class="text-ink" id="form-est-time">—</strong></span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dynamic Questionnaire Container -->
+                <form id="custom-answers-form" class="space-y-6" novalidate>
+                    <div id="form-fields-container" class="space-y-6">
+                        <!-- Questions injected dynamically -->
+                    </div>
+
+                    <!-- Submit trigger footer -->
+                    <div class="border border-line bg-canvas rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm" id="form-footer-bar">
+                        <div class="text-xs text-muted space-y-0.5">
+                            <p>Total Questions: <span id="footer-total-q" class="text-ink font-semibold">0</span></p>
+                            <p>Required Questions: <span id="footer-req-q" class="text-ink font-semibold">0</span></p>
+                        </div>
+                        <button type="submit" id="form-submit-btn" class="bg-action hover:bg-action-hover text-white font-semibold py-3 px-8 rounded-lg text-sm transition-all shadow-md flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined text-[20px]">send</span>
+                            <span id="form-submit-text">Submit Response</span>
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Success Confirmation State -->
+                <div id="form-success-block" class="hidden border border-line bg-canvas rounded-xl p-8 text-center space-y-4 shadow-md">
+                    <div class="success-checkmark">
+                        <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                            <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
+                            <path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-bold text-ink">Response Submitted Successfully!</h3>
+                    <p class="text-xs text-muted">Thank you! Your registration details have been received and saved.</p>
+                    <a href="/home" class="inline-flex items-center gap-1.5 border border-line hover:bg-canvas-sunk text-ink font-semibold py-2 px-5 rounded-lg text-xs transition-all shadow-sm">
+                        <span class="material-symbols-outlined text-[16px]">home</span>
+                        <span>Back to Home</span>
+                    </a>
+                </div>
+
+            </div>
+
+        </main>
+    </div>
+</div>
+
+<script src="/js/auth.js"></script>
+<script src="/js/auto-refresh.js"></script>
+<script src="/js/nav-config.js"></script>
+<script src="/js/sidebar.js"></script>
+<script src="/js/form-details.js"></script>
+</body>
+</html>

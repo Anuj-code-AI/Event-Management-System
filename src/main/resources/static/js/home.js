@@ -49,10 +49,10 @@ function imageStyle(url) {
 function eventCard(event) {
     const id = encodeURIComponent(event.eventId);
     return `<article class="group overflow-hidden border border-line bg-canvas transition hover:border-action/50 hover:shadow-[0_10px_28px_-18px_rgba(11,21,38,.38)]">
-        <a href="/eventDetails/${id}" class="event-image relative block h-36" ${imageStyle(event.bannerUrl)}>
+        <a href="/event-details/${id}" class="event-image relative block h-36" ${imageStyle(event.bannerUrl)}>
             <span class="absolute left-3 top-3 rounded bg-canvas/95 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-ink">${escapeHtml(event.category || "Event")}</span>
         </a>
-        <div class="p-4"><a href="/eventDetails/${id}" class="font-display text-base font-semibold text-ink group-hover:text-action">${escapeHtml(event.title || "Untitled event")}</a>
+        <div class="p-4"><a href="/event-details/${id}" class="font-display text-base font-semibold text-ink group-hover:text-action">${escapeHtml(event.title || "Untitled event")}</a>
             <div class="mt-3 space-y-1.5 text-sm text-muted"><p><i class="fa-regular fa-calendar mr-2 w-3 text-muted-dim"></i>${escapeHtml(dateLabel(event.lastRegistrationDate, "Register by"))}</p><p><i class="fa-solid fa-location-dot mr-2 w-3 text-muted-dim"></i>${escapeHtml(event.location || "Location TBA")}</p></div>
             <div class="mt-4 flex items-center justify-between border-t border-line pt-3"><span class="font-mono text-xs font-semibold text-ink">${escapeHtml(priceLabel(event.ticketPrice))}</span><span class="text-[11px] font-medium text-signal">${escapeHtml(event.eventStatus || "OPEN")}</span></div></div></article>`;
 }
@@ -104,7 +104,7 @@ async function loadFeed(feedName, reset = false) {
 function renderFeatured(event) {
     const target = document.getElementById("featured-event");
     if (!event) { target.innerHTML = `<p class="eyebrow text-[10px] text-muted">Featured event</p><p class="mt-3 text-sm text-muted">New events will appear here as they are published.</p>`; return; }
-    target.innerHTML = `<p class="eyebrow text-[10px] text-action">Featured event</p><h2 class="mt-2 font-display text-lg font-semibold text-ink">${escapeHtml(event.title || "Untitled event")}</h2><p class="mt-2 text-sm text-muted">${escapeHtml(event.location || "Location TBA")} &middot; ${escapeHtml(dateLabel(event.lastRegistrationDate, "Register by"))}</p><a class="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-action hover:text-action-hover" href="/eventDetails/${encodeURIComponent(event.eventId)}">View details <i class="fa-solid fa-arrow-right text-xs"></i></a>`;
+    target.innerHTML = `<p class="eyebrow text-[10px] text-action">Featured event</p><h2 class="mt-2 font-display text-lg font-semibold text-ink">${escapeHtml(event.title || "Untitled event")}</h2><p class="mt-2 text-sm text-muted">${escapeHtml(event.location || "Location TBA")} &middot; ${escapeHtml(dateLabel(event.lastRegistrationDate, "Register by"))}</p><a class="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-action hover:text-action-hover" href="/event-details/${encodeURIComponent(event.eventId)}">View details <i class="fa-solid fa-arrow-right text-xs"></i></a>`;
 }
 
 document.addEventListener("DOMContentLoaded", () => {

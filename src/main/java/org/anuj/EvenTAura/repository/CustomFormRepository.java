@@ -73,6 +73,12 @@ AND (
             Pageable pageable
     );
 
+    Page<CustomForm> findByUniversityAndStatusIn(
+            University university,
+            java.util.Collection<FormStatus> statuses,
+            Pageable pageable
+    );
+
     @Query("""
 SELECT f
 FROM CustomForm f
@@ -86,6 +92,23 @@ AND (
     Page<CustomForm> searchByUniversityAndStatus(
             @Param("university") University university,
             @Param("status") FormStatus status,
+            @Param("query") String query,
+            Pageable pageable
+    );
+
+    @Query("""
+SELECT f
+FROM CustomForm f
+WHERE f.university = :university
+AND f.status IN :statuses
+AND (
+    LOWER(f.title) LIKE LOWER(CONCAT('%', :query, '%'))
+    OR LOWER(f.description) LIKE LOWER(CONCAT('%', :query, '%'))
+)
+""")
+    Page<CustomForm> searchByUniversityAndStatusIn(
+            @Param("university") University university,
+            @Param("statuses") java.util.Collection<FormStatus> statuses,
             @Param("query") String query,
             Pageable pageable
     );

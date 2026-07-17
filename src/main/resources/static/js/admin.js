@@ -1,27 +1,35 @@
 // admin.js — HOD Moderation dashboard script
-const API_ADMIN = "/api/admin";
+const API_ADMIN = "/api/v1/admin";
 const API_CUSTOM_FORM_BASE = "/api/v1/custom-forms";
 
 // State management
 let currentUser = null;
-let currentTab = "pending-events"; // default tab
+let currentSection = "events"; // events, forms, hosts
+let currentTab = "PENDING"; // PENDING, APPROVED, REJECTED, HOSTED, CANCELLED
 let currentPage = 0;
-const pageSizes = {
-    events: 9,
-    hosts: 10
-};
+const pageSize = 9; // For card grids
+const hostPageSize = 10; // For table rows
 
-// Data arrays cache
-let eventsPending = [];
-let eventsApproved = [];
-let eventsRejected = [];
-let hostsPending = [];
-let hostsApproved = [];
-let hostsRejected = [];
+// Data cache lists
+let hostsList = [];
+let eventsList = [];
+let formsList = [];
 
-// Action context
+// For pagination cache
+let formsTotalPages = 1;
+let formsTotalElements = 0;
+
+// Action contexts
 let activeId = null;
-let isActiveForm = false;
+let activeTitle = "";
+let actionType = ""; // approve-event, reject-event, approve-host, reject-host, approve-form, reject-form, cancel-event, restore-event, cancel-form, restore-form
+let activeEventForAttendees = null;
+let allAttendeesList = [];
+let filteredAttendees = [];
+let attendeesPage = 0;
+const attendeesPageSize = 8;
+let attendeeSearchQuery = "";
+let html5QrCode = null;
 
 // Element selections
 const tabsContainer = document.getElementById("admin-tabs");
@@ -55,11 +63,14 @@ async function initPage() {
         renderLoggedInSidebar(currentUser);
     }
 
+    // Set initial section buttons style
+    updateSectionButtons();
+
     // Render admin tabs
     renderTabs();
 
     // Fetch initial datasets
-    await fetchAdminData();
+    await fetchSectionData();
 
     // Bind search key events
     searchInput.addEventListener("input", () => {
@@ -71,29 +82,37 @@ async function initPage() {
     prevPageBtn.addEventListener("click", () => {
         if (currentPage > 0) {
             currentPage--;
-            filterAndRender();
+            if (currentSection === "forms" && currentTab !== "CANCELLED") {
+                fetchSectionData();
+            } else {
+                filterAndRender();
+            }
         }
     });
 
     nextPageBtn.addEventListener("click", () => {
-        const fullList = getActiveList();
-        const pageSize = currentTab.includes("events") ? pageSizes.events : pageSizes.hosts;
-        const totalPages = Math.ceil(fullList.length / pageSize) || 1;
+        const totalPages = getActiveTotalPages();
         if (currentPage < totalPages - 1) {
             currentPage++;
-            filterAndRender();
+            if (currentSection === "forms" && currentTab !== "CANCELLED") {
+                fetchSectionData();
+            } else {
+                filterAndRender();
+            }
         }
     });
 
-    // Confirm buttons listener mappings
+    // Action modals confirm click listeners
     document.getElementById("confirm-approve-event-btn").addEventListener("click", confirmApproveEvent);
     document.getElementById("confirm-reject-event-btn").addEventListener("click", confirmRejectEvent);
     document.getElementById("confirm-approve-host-btn").addEventListener("click", confirmApproveHost);
     document.getElementById("confirm-reject-host-btn").addEventListener("click", confirmRejectHost);
-
-    // Cancel & Uncancel confirms
+    document.getElementById("confirm-approve-form-btn").addEventListener("click", confirmApproveForm);
+    document.getElementById("confirm-reject-form-btn").addEventListener("click", confirmRejectForm);
     document.getElementById("confirm-cancel-btn").addEventListener("click", confirmCancel);
     document.getElementById("confirm-uncancel-btn").addEventListener("click", confirmUncancel);
+    document.getElementById("confirm-cancel-form-btn").addEventListener("click", confirmCancelForm);
+    document.getElementById("confirm-restore-form-btn").addEventListener("click", confirmRestoreForm);
 
     // Attendee search & pagination
     const attendeeSearch = document.getElementById("attendeeSearch");
@@ -126,87 +145,84 @@ async function initPage() {
     }
 }
 
-// Render tabs list
+// Visual navigation toggles for section selector tabs
+function updateSectionButtons() {
+    const sections = ["events", "forms", "hosts"];
+    sections.forEach(sec => {
+        const btn = document.getElementById(`section-btn-${sec}`);
+        if (btn) {
+            if (sec === currentSection) {
+                btn.className = "flex items-center gap-2 px-4 py-3 font-semibold text-sm border-b-2 transition-all whitespace-nowrap border-action text-action";
+            } else {
+                btn.className = "flex items-center gap-2 px-4 py-3 font-semibold text-sm border-b-2 transition-all whitespace-nowrap border-transparent text-muted hover:text-ink hover:border-line-strong";
+            }
+        }
+    });
+}
+
+// Render dynamic tabs based on selected module
 function renderTabs() {
-    const tabs = [
-        { id: "pending-events", label: "Pending Events", icon: "pending_actions" },
-        { id: "approved-events", label: "Approved Events", icon: "check_circle" },
-        { id: "rejected-events", label: "Rejected Events", icon: "cancel" },
-        { id: "pending-hosts", label: "Pending Hosts", icon: "contact_mail" },
-        { id: "approved-hosts", label: "Approved Hosts", icon: "verified_user" },
-        { id: "rejected-hosts", label: "Rejected Hosts", icon: "no_accounts" }
-    ];
+    let tabs = [];
+    if (currentSection === "hosts") {
+        tabs = [
+            { status: "PENDING", label: "Pending", icon: "pending_actions" },
+            { status: "APPROVED", label: "Approved", icon: "check_circle" },
+            { status: "REJECTED", label: "Rejected", icon: "cancel" }
+        ];
+    } else {
+        tabs = [
+            { status: "PENDING", label: "Pending Requests", icon: "pending_actions" },
+            { status: "APPROVED", label: "Approved", icon: "check_circle" },
+            { status: "REJECTED", label: "Rejected", icon: "cancel" },
+            { status: "HOSTED", label: "Hosted (Mine)", icon: "account_circle" },
+            { status: "CANCELLED", label: "Cancelled", icon: "warning" }
+        ];
+    }
 
     tabsContainer.innerHTML = tabs.map(tab => {
-        const isActive = tab.id === currentTab;
+        const isActive = tab.status === currentTab;
         return `
-            <button onclick="switchTab('${tab.id}')" id="tab-btn-${tab.id}"
-                class="flex items-center gap-xs px-md py-sm border-b-2 font-medium text-body-sm transition-all whitespace-nowrap
+            <button onclick="switchTab('${tab.status}')" id="tab-btn-${tab.status}"
+                class="flex items-center gap-1.5 px-3 py-2.5 border-b-2 font-semibold text-sm transition-all whitespace-nowrap
                 ${isActive 
-                    ? "border-primary text-primary" 
-                    : "border-transparent text-on-surface-variant hover:text-on-surface hover:border-outline-variant/50"}"
+                    ? "border-action text-action" 
+                    : "border-transparent text-muted hover:text-ink hover:border-line-strong"}"
             >
-                <span class="material-symbols-outlined text-[20px]">${tab.icon}</span>
+                <span class="material-symbols-outlined text-[18px]">${tab.icon}</span>
                 <span>${tab.label}</span>
             </button>
         `;
     }).join("");
 }
 
-// Switch tabs handler
-function switchTab(tabId) {
-    if (currentTab === tabId) return;
-    currentTab = tabId;
+// Switch main management sections
+function switchSection(sectionId) {
+    if (currentSection === sectionId) return;
+    currentSection = sectionId;
+    currentTab = "PENDING"; // Reset sub-tab
     currentPage = 0;
+    searchInput.value = "";
 
-    // Visual styles toggle
-    document.querySelectorAll("#admin-tabs button").forEach(btn => {
-        btn.className = btn.className
-            .replace("border-primary text-primary", "border-transparent text-on-surface-variant hover:text-on-surface hover:border-outline-variant/50");
-    });
-
-    const activeBtn = document.getElementById(`tab-btn-${tabId}`);
-    if (activeBtn) {
-        activeBtn.className = "flex items-center gap-xs px-md py-sm border-b-2 font-medium text-body-sm transition-all whitespace-nowrap border-primary text-primary";
-    }
-
-    filterAndRender();
+    updateSectionButtons();
+    renderTabs();
+    fetchSectionData();
 }
+window.switchSection = switchSection;
 
-// Get matching array list for the active tab and apply search filter
-function getActiveList() {
-    const searchQuery = searchInput.value.toLowerCase().trim();
-    let list = [];
+// Switch tab views
+function switchTab(status) {
+    if (currentTab === status) return;
+    currentTab = status;
+    currentPage = 0;
+    searchInput.value = "";
 
-    // Map tab to caches
-    if (currentTab === "pending-events") list = eventsPending;
-    else if (currentTab === "approved-events") list = eventsApproved;
-    else if (currentTab === "rejected-events") list = eventsRejected;
-    else if (currentTab === "pending-hosts") list = hostsPending;
-    else if (currentTab === "approved-hosts") list = hostsApproved;
-    else if (currentTab === "rejected-hosts") list = hostsRejected;
-
-    // Search filters
-    if (searchQuery) {
-        if (currentTab.includes("events")) {
-            return list.filter(e => 
-                e.title.toLowerCase().includes(searchQuery) || 
-                e.location.toLowerCase().includes(searchQuery)
-            );
-        } else {
-            return list.filter(h => 
-                (h.user && h.user.name && h.user.name.toLowerCase().includes(searchQuery)) ||
-                h.collegeEmail.toLowerCase().includes(searchQuery) ||
-                (h.phone && h.phone.includes(searchQuery))
-            );
-        }
-    }
-
-    return list;
+    renderTabs();
+    fetchSectionData();
 }
+window.switchTab = switchTab;
 
-// Fetch all university moderation lists
-async function fetchAdminData() {
+// Fetch active module list data
+async function fetchSectionData() {
     showLoading(true);
     const token = localStorage.getItem("accessToken");
     if (!token) {
@@ -215,107 +231,106 @@ async function fetchAdminData() {
     }
 
     try {
-        const [
-            pEventsRes, aEventsRes, rEventsRes,
-            pHostsRes, aHostsRes, rHostsRes
-        ] = await Promise.all([
-            fetch(`${API_ADMIN}/event/pending`, { headers: { Authorization: `Bearer ${token}` } }),
-            fetch(`${API_ADMIN}/event/approved`, { headers: { Authorization: `Bearer ${token}` } }),
-            fetch(`${API_ADMIN}/event/rejected`, { headers: { Authorization: `Bearer ${token}` } }),
-            fetch(`${API_ADMIN}/host/pending`, { headers: { Authorization: `Bearer ${token}` } }),
-            fetch(`${API_ADMIN}/host/approved`, { headers: { Authorization: `Bearer ${token}` } }),
-            fetch(`${API_ADMIN}/host/rejected`, { headers: { Authorization: `Bearer ${token}` } })
-        ]);
-
-        const pEvents = await pEventsRes.json();
-        const aEvents = await aEventsRes.json();
-        const rEvents = await rEventsRes.json();
-        
-        const pHosts = await pHostsRes.json();
-        const aHosts = await aHostsRes.json();
-        const rHosts = await rHostsRes.json();
-
-        // Fetch pending, approved, and rejected custom forms
-        let formsPendingList = [];
-        let formsApprovedList = [];
-        let formsRejectedList = [];
-        try {
-            const [pendingRes, approvedRes, rejectedRes] = await Promise.all([
-                fetch(`/api/v1/custom-forms/pending`, { headers: { Authorization: `Bearer ${token}` } }),
-                fetch(`/api/v1/custom-forms/approved`, { headers: { Authorization: `Bearer ${token}` } }),
-                fetch(`/api/v1/custom-forms/rejected`, { headers: { Authorization: `Bearer ${token}` } })
-            ]);
-
-            if (pendingRes.ok) {
-                const body = await pendingRes.json();
-                formsPendingList = body.data || [];
-                formsPendingList.forEach(f => {
-                    f.isCustomForm = true;
-                    f.eventStatus = f.status;
-                    f.eventId = f.id;
+        if (currentSection === "events") {
+            if (currentTab === "HOSTED" || currentTab === "CANCELLED") {
+                const res = await fetch("/api/v1/events/hosted-events", {
+                    headers: { Authorization: `Bearer ${token}` }
                 });
-            }
-            if (approvedRes.ok) {
-                const body = await approvedRes.json();
-                formsApprovedList = body.data || [];
-                formsApprovedList.forEach(f => {
-                    f.isCustomForm = true;
-                    f.eventStatus = f.status;
-                    f.eventId = f.id;
+                const body = await res.json();
+                if (res.ok && body.success) {
+                    eventsList = (body.data && body.data.content) || body.data || [];
+                } else {
+                    throw new Error(body.message || "Failed to load hosted events");
+                }
+            } else {
+                const statusStr = currentTab.toLowerCase();
+                const res = await fetch(`${API_ADMIN}/events/${statusStr}`, {
+                    headers: { Authorization: `Bearer ${token}` }
                 });
+                const body = await res.json();
+                if (res.ok && body.success) {
+                    eventsList = body.data || [];
+                } else {
+                    throw new Error(body.message || "Failed to load events list");
+                }
             }
-            if (rejectedRes.ok) {
-                const body = await rejectedRes.json();
-                formsRejectedList = body.data || [];
-                formsRejectedList.forEach(f => {
-                    f.isCustomForm = true;
-                    f.eventStatus = f.status;
-                    f.eventId = f.id;
+        } else if (currentSection === "forms") {
+            if (currentTab === "HOSTED" || currentTab === "CANCELLED") {
+                const res = await fetch("/api/v1/custom-forms/my-forms", {
+                    headers: { Authorization: `Bearer ${token}` }
                 });
+                const body = await res.json();
+                if (res.ok && body.success) {
+                    formsList = (body.data && body.data.content) || body.data || [];
+                } else {
+                    throw new Error(body.message || "Failed to load hosted forms");
+                }
+            } else {
+                // Paginated admin custom forms fetch
+                const res = await fetch(`${API_ADMIN}/custom-forms?status=${currentTab}&page=${currentPage}&size=${pageSize}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                const body = await res.json();
+                if (res.ok && body.success && body.data) {
+                    formsList = body.data.content || [];
+                    formsTotalPages = body.data.totalPages || 1;
+                    formsTotalElements = body.data.totalElements || 0;
+                } else {
+                    throw new Error(body.message || "Failed to load custom forms");
+                }
             }
-        } catch (e) {
-            console.error("Error loading moderated custom forms:", e);
+        } else if (currentSection === "hosts") {
+            const statusStr = currentTab.toLowerCase();
+            const res = await fetch(`${API_ADMIN}/host/${statusStr}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            const body = await res.json();
+            if (res.ok && body.success) {
+                hostsList = body.data || [];
+            } else {
+                throw new Error(body.message || "Failed to load host requests");
+            }
         }
 
-        if (
-            pEventsRes.ok && aEventsRes.ok && rEventsRes.ok &&
-            pHostsRes.ok && aHostsRes.ok && rHostsRes.ok
-        ) {
-            eventsPending = [...(pEvents.data || []), ...formsPendingList];
-            eventsApproved = [...(aEvents.data || []), ...formsApprovedList];
-            eventsRejected = [...(rEvents.data || []), ...formsRejectedList];
+        // Dynamically update dashboard statistics cards
+        await updateStatsCards();
 
-            hostsPending = pHosts.data || [];
-            hostsApproved = aHosts.data || [];
-            hostsRejected = rHosts.data || [];
-        } else {
-            throw new Error("Failed to load one or more moderation lists");
-        }
-
-        // Set summary figures
-        calculateSummaryStats();
-
-        // Render current view
         filterAndRender();
         showLoading(false);
     } catch (err) {
-        console.error("fetchAdminData error:", err);
+        console.error("fetchSectionData error:", err);
         showLoading(false);
         contentSection.classList.add("hidden");
         errorBlock.classList.remove("hidden");
-        document.getElementById("admin-error-text").textContent = err.message || "Network issue loading moderation datasets.";
+        document.getElementById("admin-error-text").textContent = err.message || "Network issue loading moderation panel.";
     }
 }
 
-// Stats displaying logic
-function calculateSummaryStats() {
-    document.getElementById("stat-pending-events").textContent = eventsPending.length;
-    document.getElementById("stat-approved-events").textContent = eventsApproved.length;
-    document.getElementById("stat-pending-hosts").textContent = hostsPending.length;
-    document.getElementById("stat-approved-hosts").textContent = hostsApproved.length;
+// Calculate and render stats counts
+async function updateStatsCards() {
+    const token = localStorage.getItem("accessToken");
+    if (!token) return;
+
+    try {
+        const [pEvents, aEvents, pForms, aForms, pHosts] = await Promise.all([
+            fetch(`${API_ADMIN}/events/pending`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json().catch(() => ({}))),
+            fetch(`${API_ADMIN}/events/approved`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json().catch(() => ({}))),
+            fetch(`${API_ADMIN}/admin/custom-forms?status=PENDING&page=0&size=1`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json().catch(() => ({}))),
+            fetch(`${API_ADMIN}/admin/custom-forms?status=APPROVED&page=0&size=1`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json().catch(() => ({}))),
+            fetch(`${API_ADMIN}/host/pending`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json().catch(() => ({})))
+        ]);
+
+        document.getElementById("stat-pending-events").textContent = (pEvents.data && pEvents.data.length) || 0;
+        document.getElementById("stat-approved-events").textContent = (aEvents.data && aEvents.data.length) || 0;
+        document.getElementById("stat-pending-forms").textContent = (pForms.data && pForms.data.totalElements) || 0;
+        document.getElementById("stat-approved-forms").textContent = (aForms.data && aForms.data.totalElements) || 0;
+        document.getElementById("stat-pending-hosts").textContent = (pHosts.data && pHosts.data.length) || 0;
+    } catch (e) {
+        console.error("Stats fetch error:", e);
+    }
 }
 
-// Show/Hide loading spinner
+// Show/Hide spinner
 function showLoading(show) {
     if (show) {
         loadingSpinner.classList.remove("hidden");
@@ -327,380 +342,393 @@ function showLoading(show) {
     }
 }
 
-// Toggles view grids/tables based on active tab type
-function filterAndRender() {
-    const list = getActiveList();
-    const isEvents = currentTab.includes("events");
-    const pageSize = isEvents ? pageSizes.events : pageSizes.hosts;
-    const totalItems = list.length;
-    const totalPages = Math.ceil(totalItems / pageSize) || 1;
+// Calculate active page count
+function getActiveTotalPages() {
+    if (currentSection === "forms" && currentTab !== "CANCELLED" && currentTab !== "HOSTED") {
+        return formsTotalPages;
+    }
+    const fullList = getFilteredActiveList();
+    const size = currentSection === "hosts" ? hostPageSize : pageSize;
+    return Math.ceil(fullList.length / size) || 1;
+}
 
+// Local filtering for hosts/events list
+function getFilteredActiveList() {
+    const query = searchInput.value.toLowerCase().trim();
+    let list = [];
+
+    if (currentSection === "events") {
+        if (currentTab === "CANCELLED") {
+            list = eventsList.filter(e => e.eventStatus === "CANCELLED" || e.cancelled === true);
+        } else if (currentTab === "HOSTED") {
+            list = eventsList.filter(e => e.eventStatus !== "CANCELLED" && e.cancelled !== true);
+        } else if (currentTab === "APPROVED") {
+            list = eventsList.filter(e => e.eventStatus === "APPROVED" && e.cancelled !== true);
+        } else {
+            list = eventsList;
+        }
+
+        if (query) {
+            return list.filter(e => e.title && e.title.toLowerCase().includes(query));
+        }
+    } else if (currentSection === "forms") {
+        if (currentTab === "CANCELLED") {
+            list = formsList.filter(f => f.status === "CANCELLED");
+        } else if (currentTab === "HOSTED") {
+            list = formsList.filter(f => f.status !== "CANCELLED");
+        } else if (currentTab === "APPROVED") {
+            list = formsList.filter(f => f.status === "APPROVED");
+        } else {
+            list = formsList;
+        }
+
+        if (query) {
+            return list.filter(f => f.title && f.title.toLowerCase().includes(query));
+        }
+    } else if (currentSection === "hosts") {
+        list = hostsList;
+        if (query) {
+            return list.filter(h => 
+                (h.user && h.user.name && h.user.name.toLowerCase().includes(query)) ||
+                (h.collegeEmail && h.collegeEmail.toLowerCase().includes(query))
+            );
+        }
+    }
+    return list;
+}
+
+// Render filtered grid/table lists
+function filterAndRender() {
     eventsGridView.classList.add("hidden");
     hostsTableView.classList.add("hidden");
     emptyMsgBlock.classList.add("hidden");
+    paginationSection.classList.add("hidden");
 
-    if (totalItems === 0) {
-        emptyMsgBlock.classList.remove("hidden");
-        paginationSection.classList.add("hidden");
-        emptyText.textContent = isEvents 
-            ? "No events found under this status." 
-            : "No host profile requests found under this status.";
-        return;
-    }
-
-    const startIndex = currentPage * pageSize;
-    const slice = list.slice(startIndex, startIndex + pageSize);
-
-    if (isEvents) {
-        eventsGridView.classList.remove("hidden");
-        eventsGridView.innerHTML = slice.map(event => renderEventCard(event)).join("");
-    } else {
-        hostsTableView.classList.remove("hidden");
-        
-        // Hide Actions column header if not in Pending Host tab
-        const actionHeader = document.getElementById("action-header");
-        if (currentTab === "pending-hosts") {
-            actionHeader.classList.remove("hidden");
-        } else {
-            actionHeader.classList.add("hidden");
+    // Check if form paginated list
+    if (currentSection === "forms" && currentTab !== "CANCELLED" && currentTab !== "HOSTED") {
+        if (formsList.length === 0) {
+            emptyMsgBlock.classList.remove("hidden");
+            emptyText.textContent = "No campus forms found.";
+            return;
         }
 
-        hostsTbody.innerHTML = slice.map(host => renderHostRow(host)).join("");
-    }
+        eventsGridView.classList.remove("hidden");
+        eventsGridView.innerHTML = formsList.map(form => renderFormCard(form)).join("");
 
-    // Render local pagination controls
-    paginationSection.classList.remove("hidden");
-    paginationInfo.textContent = `Showing page ${currentPage + 1} of ${totalPages}`;
-    prevPageBtn.disabled = currentPage === 0;
-    nextPageBtn.disabled = currentPage === totalPages - 1;
+        paginationSection.classList.remove("hidden");
+        paginationInfo.textContent = `Showing page ${currentPage + 1} of ${formsTotalPages}`;
+        prevPageBtn.disabled = currentPage === 0;
+        nextPageBtn.disabled = currentPage === formsTotalPages - 1;
+    } else {
+        const filtered = getFilteredActiveList();
+        const total = filtered.length;
+        const size = currentSection === "hosts" ? hostPageSize : pageSize;
+        const totalPages = Math.ceil(total / size) || 1;
+
+        if (total === 0) {
+            emptyMsgBlock.classList.remove("hidden");
+            emptyText.textContent = "No matching items found.";
+            return;
+        }
+
+        const startIndex = currentPage * size;
+        const slice = filtered.slice(startIndex, startIndex + size);
+
+        if (currentSection === "hosts") {
+            hostsTableView.classList.remove("hidden");
+            hostsTbody.innerHTML = slice.map(h => renderHostRow(h)).join("");
+        } else if (currentSection === "events") {
+            eventsGridView.classList.remove("hidden");
+            eventsGridView.innerHTML = slice.map(e => renderEventCard(e)).join("");
+        } else if (currentSection === "forms") {
+            eventsGridView.classList.remove("hidden");
+            eventsGridView.innerHTML = slice.map(f => renderFormCard(f)).join("");
+        }
+
+        paginationSection.classList.remove("hidden");
+        paginationInfo.textContent = `Showing page ${currentPage + 1} of ${totalPages}`;
+        prevPageBtn.disabled = currentPage === 0;
+        nextPageBtn.disabled = currentPage === totalPages - 1;
+    }
 }
 
-// Date formatter helper
+// Helpers: escape strings
+function escapeHtml(value) {
+    const node = document.createElement("div");
+    node.textContent = value == null ? "" : String(value);
+    return node.innerHTML;
+}
+
+function escapeJs(value) {
+    return (value || "").replace(/'/g, "\\'").replace(/"/g, '\\"');
+}
+
 function formatDate(dateStr) {
     if (!dateStr) return "N/A";
     const date = new Date(dateStr);
-    return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    return date.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
 }
 
-// HTML Generator: Event Card for HOD Moderation
+// Render cards and rows
 function renderEventCard(event) {
-    if (event.isCustomForm) {
-        let badgeClass = "bg-surface-container text-on-surface-variant border border-outline-variant";
-        if (event.status === "PENDING") badgeClass = "bg-yellow-500/10 text-yellow-500 border border-yellow-500/30";
-        else if (event.status === "APPROVED") badgeClass = "bg-primary/10 text-primary border border-primary/30";
-        else if (event.status === "REJECTED") badgeClass = "bg-error/10 text-error border border-error/30";
-
-        const banner = event.bannerUrl || "/images/banner-placeholder.png";
-        const showModeration = currentTab === "pending-events";
-
-        let actionButtons = "";
-        if (showModeration) {
-            actionButtons = `
-                <button onclick="openApproveEventModal(${event.eventId}, '${event.title.replace(/'/g, "\\'")}', true)" 
-                    class="flex-1 bg-primary hover:bg-primary-fixed text-on-primary font-bold py-xs px-sm rounded text-body-sm transition-all flex items-center justify-center gap-xs"
-                >
-                    <span class="material-symbols-outlined text-[18px]">check</span>
-                    <span>Approve Form</span>
-                </button>
-                <button onclick="openRejectEventModal(${event.eventId}, '${event.title.replace(/'/g, "\\'")}', true)" 
-                    class="flex-1 border border-error hover:bg-error/10 text-error font-bold py-xs px-sm rounded text-body-sm transition-all flex items-center justify-center gap-xs"
-                >
-                    <span class="material-symbols-outlined text-[18px]">close</span>
-                    <span>Reject Form</span>
-                </button>
-            `;
-        } else if (event.status === "APPROVED") {
-            actionButtons = `
-                <div class="flex flex-col gap-xs w-full">
-                    <a href="/update-custom-form?formId=${event.eventId}" 
-                        class="w-full bg-surface-container-high hover:bg-surface-container-highest text-on-surface border border-outline-variant font-semibold py-xs px-sm rounded text-body-sm transition-all flex items-center justify-center gap-xs mt-xs"
-                    >
-                        <span class="material-symbols-outlined text-[18px]">edit</span>
-                        <span>Edit Form</span>
-                    </a>
-                    <button onclick="showResponsesView(${event.eventId}, '${event.title.replace(/'/g, "\\'")}')" 
-                        class="w-full bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 font-semibold py-xs px-sm rounded text-body-sm transition-all flex items-center justify-center gap-xs mt-xs"
-                    >
-                        <span class="material-symbols-outlined text-[18px]">receipt_long</span>
-                        <span>View Responses</span>
-                    </button>
-                </div>
-            `;
-        }
-
-        return `
-            <div class="glass-card rounded-xl overflow-hidden flex flex-col justify-between hover:shadow-primary/5 hover:border-primary/30 transition-all duration-300">
-                <!-- Banner area -->
-                <div class="relative h-44 w-full bg-surface-container-low overflow-hidden cursor-pointer" onclick="window.open('/formDetails?formId=${event.eventId}', '_blank')">
-                    <img class="w-full h-full object-cover hover:scale-105 transition-transform duration-500" src="${banner}" alt="${event.title}" onerror="this.src='/images/banner-placeholder.png'">
-                    <span class="absolute top-sm left-sm bg-purple-500/20 text-purple-300 border border-purple-500/30 text-label-md px-sm py-xs rounded-full">
-                        Custom Form
-                    </span>
-                    <span class="absolute top-sm right-sm ${badgeClass} text-label-md px-sm py-xs rounded-full font-semibold uppercase">
-                        ${event.status}
-                    </span>
-                </div>
-
-                <!-- Card Body -->
-                <div class="p-md flex-1 flex flex-col justify-between space-y-md">
-                    <div class="space-y-sm">
-                        <h3 class="text-title-lg font-bold text-on-background line-clamp-1 hover:text-primary cursor-pointer transition-colors" onclick="window.open('/formDetails?formId=${event.eventId}', '_blank')">${event.title}</h3>
-                        <p class="text-body-sm text-on-surface-variant line-clamp-2">${event.description || "No description provided."}</p>
-                        <p class="text-label-md text-outline">Requested by: <span class="text-on-surface font-semibold">${event.username || "Organizer"}</span></p>
-                    </div>
-                    ${actionButtons ? `
-                        <div class="flex gap-sm border-t border-outline-variant/20 pt-sm">
-                            ${actionButtons}
-                        </div>
-                    ` : ""}
-                </div>
-            </div>
-        `;
-    }
-
-    let badgeClass = "bg-surface-container text-on-surface-variant border border-outline-variant";
-    if (event.eventStatus === "PENDING") badgeClass = "bg-yellow-500/10 text-yellow-500 border border-yellow-500/30";
-    else if (event.eventStatus === "APPROVED") badgeClass = "bg-primary/10 text-primary border border-primary/30";
-    else if (event.eventStatus === "REJECTED") badgeClass = "bg-error/10 text-error border border-error/30";
-    else if (event.eventStatus === "CANCELLED") badgeClass = "bg-surface-container-high text-outline border border-outline-variant";
-
     const banner = event.bannerUrl || "/images/banner-placeholder.png";
-    const priceDisplay = event.ticketPrice > 0 ? `$${event.ticketPrice.toFixed(2)}` : "Free";
+    const dateStr = formatDate(event.eventDate);
+    const deadlineStr = formatDate(event.lastRegistrationDate);
+    const status = event.eventStatus;
 
-    // Moderation controls for HOD
-    const showModeration = currentTab === "pending-events";
-    const isApprovedOrCancelled = currentTab === "approved-events";
-    
-    let actionButtons = "";
-    if (showModeration) {
-        actionButtons = `
-            <button onclick="openApproveEventModal(${event.eventId}, '${event.title.replace(/'/g, "\\'")}')" 
-                class="flex-1 bg-primary hover:bg-primary-fixed text-on-primary font-bold py-xs px-sm rounded text-body-sm transition-all flex items-center justify-center gap-xs"
-            >
-                <span class="material-symbols-outlined text-[18px]">check</span>
-                <span>Approve</span>
-            </button>
-            <button onclick="openRejectEventModal(${event.eventId}, '${event.title.replace(/'/g, "\\'")}')" 
-                class="flex-1 border border-error hover:bg-error/10 text-error font-bold py-xs px-sm rounded text-body-sm transition-all flex items-center justify-center gap-xs"
-            >
-                <span class="material-symbols-outlined text-[18px]">close</span>
-                <span>Reject</span>
-            </button>
-        `;
-    } else if (isApprovedOrCancelled) {
-        actionButtons = `
-            <div class="flex flex-col gap-xs w-full">
-                <div class="flex gap-sm w-full">
-                    ${event.eventStatus === "APPROVED" ? `
-                        <button onclick="openCancelModal(${event.eventId}, '${event.title.replace(/'/g, "\\'")}')" 
-                            class="flex-1 border border-yellow-500/50 hover:bg-yellow-500/10 text-yellow-500 font-bold py-xs px-sm rounded text-body-sm transition-all flex items-center justify-center gap-xs"
-                        >
-                            <span class="material-symbols-outlined text-[18px]">block</span>
-                            <span>Cancel Event</span>
-                        </button>
-                    ` : `
-                        <button onclick="openUncancelModal(${event.eventId}, '${event.title.replace(/'/g, "\\'")}')" 
-                            class="flex-1 bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-500 border border-yellow-500/30 font-bold py-xs px-sm rounded text-body-sm transition-all flex items-center justify-center gap-xs"
-                        >
-                            <span class="material-symbols-outlined text-[18px]">event_available</span>
-                            <span>Uncancel Event</span>
-                        </button>
-                    `}
-                </div>
-                <button onclick="showAttendeesView(${event.eventId}, '${event.title.replace(/'/g, "\\'")}')" 
-                    class="w-full bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 font-semibold py-xs px-sm rounded text-body-sm transition-all flex items-center justify-center gap-xs mt-xs"
-                >
-                    <span class="material-symbols-outlined text-[18px]">group</span>
-                    <span>Manage Attendance</span>
+    let badgeClass = "bg-amber-50 text-amber-700 border-amber-200";
+    if (status === "APPROVED") badgeClass = "bg-green-50 text-signal border-green-200";
+    if (status === "REJECTED" || status === "CANCELLED") badgeClass = "bg-red-50 text-danger border-red-200";
+
+    let pendingActions = "";
+    if (currentTab === "PENDING") {
+        pendingActions = `
+            <div class="flex gap-2 mb-2">
+                <button onclick="openApproveEventModal(${event.eventId}, '${escapeJs(event.title)}')" class="flex-1 bg-green-600 hover:bg-green-700 text-white text-[11px] font-semibold py-1.5 rounded flex items-center justify-center gap-0.5 shadow-sm">
+                    <span class="material-symbols-outlined text-[14px]">check_circle</span> Approve
+                </button>
+                <button onclick="openRejectEventModal(${event.eventId}, '${escapeJs(event.title)}')" class="flex-1 bg-red-600 hover:bg-red-700 text-white text-[11px] font-semibold py-1.5 rounded flex items-center justify-center gap-0.5 shadow-sm">
+                    <span class="material-symbols-outlined text-[14px]">cancel</span> Reject
                 </button>
             </div>
         `;
-    } else {
-        actionButtons = `<span class="text-label-md text-outline italic w-full text-center py-xs">No moderation needed</span>`;
     }
+
+    const actionButtons = `
+        <div class="flex flex-col gap-1.5 border-t border-line pt-3 mt-3">
+            ${pendingActions}
+            <div class="flex gap-1.5">
+                <button onclick="window.location.href='/update-event/${event.eventId}'" class="flex-1 border border-line text-ink text-[11px] font-semibold py-1.5 rounded flex items-center justify-center gap-0.5 hover:bg-canvas-sunk">
+                    <span class="material-symbols-outlined text-[14px]">edit</span> Edit
+                </button>
+                <button onclick="window.open('/event-details/${event.eventId}', '_blank')" class="flex-1 border border-line text-ink text-[11px] font-semibold py-1.5 rounded flex items-center justify-center gap-0.5 hover:bg-canvas-sunk">
+                    <span class="material-symbols-outlined text-[14px]">visibility</span> Details
+                </button>
+            </div>
+            <div class="flex gap-1.5">
+                ${(event.eventStatus === 'CANCELLED' || event.cancelled) ? `
+                    <button onclick="openRestoreEventModal(${event.eventId}, '${escapeJs(event.title)}')" class="flex-1 border border-action/30 text-action text-[11px] font-semibold py-1.5 rounded flex items-center justify-center gap-0.5 hover:bg-action-tint">
+                        <span class="material-symbols-outlined text-[14px]">restore</span> Restore
+                    </button>
+                ` : `
+                    <button onclick="openCancelEventModal(${event.eventId}, '${escapeJs(event.title)}')" class="flex-1 border border-danger/30 text-danger text-[11px] font-semibold py-1.5 rounded flex items-center justify-center gap-0.5 hover:bg-red-50">
+                        <span class="material-symbols-outlined text-[14px]">cancel</span> Cancel
+                    </button>
+                `}
+                <button onclick="showAttendeesView(${event.eventId}, '${escapeJs(event.title)}')" class="flex-1 bg-action-tint text-action text-[11px] font-semibold py-1.5 rounded flex items-center justify-center gap-0.5 hover:bg-action/20">
+                    <span class="material-symbols-outlined text-[14px]">group</span> Attendance
+                </button>
+            </div>
+            <button onclick="shareLink('/event-details/${event.eventId}')" class="w-full border border-line text-muted text-[11px] font-semibold py-1.5 rounded flex items-center justify-center gap-0.5 hover:bg-canvas-sunk">
+                <span class="material-symbols-outlined text-[14px]">share</span> Share Link
+            </button>
+        </div>
+    `;
 
     return `
-        <div class="glass-card rounded-xl overflow-hidden flex flex-col justify-between hover:shadow-primary/5 hover:border-primary/30 transition-all duration-300">
-            <div class="relative h-44 w-full bg-surface-container-low overflow-hidden">
-                <img class="w-full h-full object-cover" src="${banner}" alt="${event.title}" onerror="this.src='/images/banner-placeholder.png'">
-                ${event.category ? `
-                    <span class="absolute top-sm left-sm bg-background/80 backdrop-blur-md text-primary border border-primary/20 text-label-md px-sm py-xs rounded-full">
-                        ${event.category}
+        <div class="border border-line bg-canvas rounded-xl overflow-hidden flex flex-col justify-between hover:shadow-lg transition-all duration-200">
+            <div>
+                <div class="h-40 relative event-image" style="background-image: url('${banner}')">
+                    <span class="absolute top-3 right-3 bg-white/90 text-ink font-mono text-[10px] px-2 py-0.5 rounded shadow-sm">
+                        ${event.ticketPrice > 0 ? `$${event.ticketPrice}` : "Free"}
                     </span>
-                ` : ""}
-                <span class="absolute top-sm right-sm ${badgeClass} text-label-md px-sm py-xs rounded-full font-semibold uppercase">
-                    ${event.eventStatus}
-                </span>
-            </div>
-
-            <div class="p-md flex-1 flex flex-col justify-between space-y-md">
-                <div class="space-y-sm">
-                    <h3 class="text-title-lg font-bold text-on-background line-clamp-1">${event.title}</h3>
-                    
-                    <div class="space-y-xs text-body-sm text-on-surface-variant">
-                        <div class="flex items-center gap-xs">
-                            <span class="material-symbols-outlined text-[18px] text-primary">calendar_today</span>
-                            <span>Date: ${formatDate(event.lastRegistrationDate)}</span>
-                        </div>
-                        <div class="flex items-center gap-xs">
-                            <span class="material-symbols-outlined text-[18px] text-primary">pin_drop</span>
-                            <span class="line-clamp-1">${event.location}</span>
-                        </div>
-                        <div class="flex items-center gap-xs">
-                            <span class="material-symbols-outlined text-[18px] text-primary">payments</span>
-                            <span>Ticket Price: <span class="text-on-surface font-semibold">${priceDisplay}</span></span>
-                        </div>
+                </div>
+                <div class="p-4 space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="border px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${badgeClass}">${status}</span>
+                        <span class="text-muted-dim text-[10px]">${escapeHtml(event.category || "General")}</span>
+                    </div>
+                    <h3 class="font-display font-semibold text-ink text-sm line-clamp-1">${escapeHtml(event.title)}</h3>
+                    <div class="space-y-1 text-xs text-muted">
+                        <p class="flex items-center gap-1.5"><span class="material-symbols-outlined text-[16px] text-action">calendar_today</span> <span>Date: ${dateStr}</span></p>
+                        <p class="flex items-center gap-1.5"><span class="material-symbols-outlined text-[16px] text-action">timer</span> <span>Deadline: ${deadlineStr}</span></p>
+                        <p class="flex items-center gap-1.5"><span class="material-symbols-outlined text-[16px] text-action">person</span> <span>Host: ${escapeHtml(event.university || "University Only")}</span></p>
                     </div>
                 </div>
-
-                <div class="flex gap-sm border-t border-outline-variant/20 pt-sm">
-                    ${actionButtons}
-                </div>
             </div>
+            <div class="p-4 pt-0">${actionButtons}</div>
         </div>
     `;
 }
+window.renderEventCard = renderEventCard;
 
-// HTML Generator: Host Row for Table view
-function renderHostRow(host) {
-    const name = host.user ? host.user.name : "N/A";
-    const dateStr = host.appliedAt ? formatDate(host.appliedAt.substring(0, 10)) : "N/A";
-    
-    // Status style classes
-    let statusClass = "text-outline bg-surface-container border border-outline-variant/30";
-    if (host.status === "PENDING") statusClass = "text-yellow-500 bg-yellow-500/10 border border-yellow-500/30";
-    else if (host.status === "APPROVED") statusClass = "text-primary bg-primary/10 border border-primary/30";
-    else if (host.status === "REJECTED") statusClass = "text-error bg-error/10 border border-error/30";
+function renderFormCard(form) {
+    const banner = form.bannerUrl || "/images/banner-placeholder.png";
+    const status = form.status;
 
-    const isPending = currentTab === "pending-hosts";
-    const actionButtons = isPending ? `
-        <div class="flex gap-sm justify-end">
-            <button onclick="openApproveHostModal(${host.hostId}, '${name.replace(/'/g, "\\'")}')" 
-                class="bg-primary hover:bg-primary-fixed text-on-primary font-bold py-xs px-sm rounded text-label-md transition-all flex items-center gap-xs"
-            >
-                <span class="material-symbols-outlined text-[16px]">done</span>
-                <span>Approve</span>
+    let badgeClass = "bg-amber-50 text-amber-700 border-amber-200";
+    if (status === "APPROVED") badgeClass = "bg-green-50 text-signal border-green-200";
+    if (status === "REJECTED" || status === "CANCELLED") badgeClass = "bg-red-50 text-danger border-red-200";
+
+    let pendingActions = "";
+    if (currentTab === "PENDING") {
+        pendingActions = `
+            <div class="flex gap-2 mb-2">
+                <button onclick="openApproveFormModal(${form.id}, '${escapeJs(form.title)}')" class="flex-1 bg-green-600 hover:bg-green-700 text-white text-[11px] font-semibold py-1.5 rounded flex items-center justify-center gap-0.5 shadow-sm">
+                    <span class="material-symbols-outlined text-[14px]">check_circle</span> Approve
+                </button>
+                <button onclick="openRejectFormModal(${form.id}, '${escapeJs(form.title)}')" class="flex-1 bg-red-600 hover:bg-red-700 text-white text-[11px] font-semibold py-1.5 rounded flex items-center justify-center gap-0.5 shadow-sm">
+                    <span class="material-symbols-outlined text-[14px]">cancel</span> Reject
+                </button>
+            </div>
+        `;
+    }
+
+    let hostedActions = "";
+    if (form.status === "APPROVED" || form.status === "HOSTED" || currentTab === "HOSTED" || currentTab === "APPROVED") {
+        const toggleLabel = form.acceptingResponses ? "Disable Submissions" : "Enable Submissions";
+        hostedActions = `
+            <button onclick="toggleResponses(${form.id}, ${form.acceptingResponses})" class="w-full mb-2 bg-canvas-sunk border border-line hover:bg-canvas-mid text-ink text-[11px] font-semibold py-1.5 rounded flex items-center justify-center gap-0.5">
+                <span class="material-symbols-outlined text-[14px]">${form.acceptingResponses ? 'do_not_disturb_on' : 'check_circle'}</span> ${toggleLabel}
             </button>
-            <button onclick="openRejectHostModal(${host.hostId}, '${name.replace(/'/g, "\\'")}')" 
-                class="border border-error hover:bg-error/10 text-error font-bold py-xs px-sm rounded text-label-md transition-all flex items-center gap-xs"
-            >
-                <span class="material-symbols-outlined text-[16px]">close</span>
-                <span>Reject</span>
+        `;
+    }
+
+    const actionButtons = `
+        <div class="flex flex-col gap-1.5 border-t border-line pt-3 mt-3">
+            ${pendingActions}
+            ${hostedActions}
+            <div class="flex gap-1.5">
+                <button onclick="window.location.href='/update-custom-form/${form.id}'" class="flex-1 border border-line text-ink text-[11px] font-semibold py-1.5 rounded flex items-center justify-center gap-0.5 hover:bg-canvas-sunk">
+                    <span class="material-symbols-outlined text-[14px]">edit</span> Edit
+                </button>
+                <button onclick="window.open('/form-details/${form.id}', '_blank')" class="flex-1 border border-line text-ink text-[11px] font-semibold py-1.5 rounded flex items-center justify-center gap-0.5 hover:bg-canvas-sunk">
+                    <span class="material-symbols-outlined text-[14px]">visibility</span> Details
+                </button>
+            </div>
+            <div class="flex gap-1.5">
+                ${form.status === 'CANCELLED' ? `
+                    <button onclick="openRestoreFormModal(${form.id}, '${escapeJs(form.title)}')" class="flex-1 border border-action/30 text-action text-[11px] font-semibold py-1.5 rounded flex items-center justify-center gap-0.5 hover:bg-action-tint">
+                        <span class="material-symbols-outlined text-[14px]">restore</span> Restore
+                    </button>
+                ` : `
+                    <button onclick="openCancelFormModal(${form.id}, '${escapeJs(form.title)}')" class="flex-1 border border-danger/30 text-danger text-[11px] font-semibold py-1.5 rounded flex items-center justify-center gap-0.5 hover:bg-red-50">
+                        <span class="material-symbols-outlined text-[14px]">cancel</span> Cancel
+                    </button>
+                `}
+                <button onclick="window.location.href='/form-responses/${form.id}'" class="flex-1 bg-action-tint text-action text-[11px] font-semibold py-1.5 rounded flex items-center justify-center gap-0.5 hover:bg-action/20">
+                    <span class="material-symbols-outlined text-[14px]">group</span> Attendance
+                </button>
+            </div>
+            <button onclick="shareLink('/form-details/${form.id}')" class="w-full border border-line text-muted text-[11px] font-semibold py-1.5 rounded flex items-center justify-center gap-0.5 hover:bg-canvas-sunk">
+                <span class="material-symbols-outlined text-[14px]">share</span> Share Link
             </button>
         </div>
-    ` : "";
+    `;
 
     return `
-        <tr class="hover:bg-surface-container-low/40 transition-colors">
-            <td class="px-md py-sm">
-                <div class="font-medium text-on-surface">${name}</div>
-                <div class="text-label-md text-outline">Phone: ${host.phone || "N/A"}</div>
+        <div class="border border-line bg-canvas rounded-xl overflow-hidden flex flex-col justify-between hover:shadow-lg transition-all duration-200">
+            <div>
+                <div class="h-40 relative event-image" style="background-image: url('${banner}')"></div>
+                <div class="p-4 space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="border px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${badgeClass}">${status}</span>
+                        <span class="text-muted-dim text-[10px] eyebrow">${escapeHtml(form.participationType || "PUBLIC")}</span>
+                    </div>
+                    <h3 class="font-display font-semibold text-ink text-sm line-clamp-1">${escapeHtml(form.title)}</h3>
+                    <div class="space-y-1 text-xs text-muted">
+                        <p class="flex items-center gap-1.5"><span class="material-symbols-outlined text-[16px] text-action">person</span> <span>Creator: ${escapeHtml(form.createdBy || "Organizer")}</span></p>
+                        <p class="flex items-center gap-1.5"><span class="material-symbols-outlined text-[16px] text-action">timer</span> <span>Deadline: ${formatDate(form.registrationDeadLine)}</span></p>
+                    </div>
+                </div>
+            </div>
+            <div class="p-4 pt-0">${actionButtons}</div>
+        </div>
+    `;
+}
+window.renderFormCard = renderFormCard;
+
+function renderHostRow(host) {
+    const name = host.user ? host.user.name : "Unknown User";
+    const univ = host.user && host.user.university ? host.user.university.name : "No University";
+    const phone = host.phone || "—";
+    const email = host.collegeEmail || "—";
+    const date = formatDate(host.createdAt || host.appliedAt);
+
+    let statusBadge = "";
+    if (host.status === "PENDING") {
+        statusBadge = `<span class="bg-amber-50 text-amber-700 border border-amber-200 text-[10px] px-2.5 py-0.5 rounded-full font-semibold uppercase">Pending</span>`;
+    } else if (host.status === "APPROVED") {
+        statusBadge = `<span class="bg-green-50 text-signal border border-green-200 text-[10px] px-2.5 py-0.5 rounded-full font-semibold uppercase">Approved</span>`;
+    } else if (host.status === "REJECTED") {
+        statusBadge = `<span class="bg-red-50 text-danger border border-red-200 text-[10px] px-2.5 py-0.5 rounded-full font-semibold uppercase">Rejected / Revoked</span>`;
+    }
+
+    let actionBtn = "";
+    if (currentTab === "PENDING") {
+        actionBtn = `
+            <div class="flex items-center justify-end gap-2">
+                <button onclick="openApproveHostModal(${host.hostId}, '${escapeJs(name)}')" class="bg-action hover:bg-action-hover text-white text-xs font-semibold py-1 px-3 rounded transition-all shadow-sm">
+                    Approve
+                </button>
+                <button onclick="openRejectHostModal(${host.hostId}, '${escapeJs(name)}')" class="border border-danger hover:bg-red-50 text-danger text-xs font-semibold py-1 px-3 rounded transition-all">
+                    Reject
+                </button>
+            </div>
+        `;
+    } else if (currentTab === "APPROVED") {
+        actionBtn = `
+            <div class="flex items-center justify-end">
+                <button onclick="openRejectHostModal(${host.hostId}, '${escapeJs(name)}')" class="border border-danger hover:bg-red-50 text-danger text-xs font-semibold py-1 px-3 rounded transition-all">
+                    Revoke privileges
+                </button>
+            </div>
+        `;
+    } else if (currentTab === "REJECTED") {
+        actionBtn = `
+            <div class="flex items-center justify-end">
+                <button onclick="openApproveHostModal(${host.hostId}, '${escapeJs(name)}')" class="border border-action hover:bg-action-tint text-action text-xs font-semibold py-1 px-3 rounded transition-all">
+                    Re-approve
+                </button>
+            </div>
+        `;
+    }
+
+    return `
+        <tr class="hover:bg-canvas-sunk transition-colors">
+            <td class="px-4 py-3">
+                <div class="font-semibold text-ink">${escapeHtml(name)}</div>
+                <div class="text-xs text-muted">${escapeHtml(univ)}</div>
             </td>
-            <td class="px-md py-sm text-on-surface-variant font-mono text-[13px]">${host.collegeEmail}</td>
-            <td class="px-md py-sm text-on-surface-variant">${host.phone || "N/A"}</td>
-            <td class="px-md py-sm text-on-surface-variant">${dateStr}</td>
-            <td class="px-md py-sm">
-                <span class="inline-block px-sm py-xs rounded text-label-md font-semibold uppercase tracking-wider ${statusClass}">
-                    ${host.status}
-                </span>
-            </td>
-            ${isPending ? `<td class="px-md py-sm text-right">${actionButtons}</td>` : ""}
+            <td class="px-4 py-3 text-muted">${escapeHtml(email)}</td>
+            <td class="px-4 py-3 text-muted">${escapeHtml(phone)}</td>
+            <td class="px-4 py-3 text-muted font-mono text-xs">${date}</td>
+            <td class="px-4 py-3">${statusBadge}</td>
+            <td class="px-4 py-3">${actionBtn}</td>
         </tr>
     `;
 }
+window.renderHostRow = renderHostRow;
 
-// Modal management utilities
-function openModal(id) {
-    document.getElementById(id).classList.remove("hidden");
+// Modal triggers
+function openModal(modalId) {
+    document.getElementById(modalId).classList.remove("hidden");
 }
 
-function closeModal(id) {
-    document.getElementById(id).classList.add("hidden");
+function closeModal(modalId) {
+    document.getElementById(modalId).classList.add("hidden");
     activeId = null;
-    isActiveForm = false;
+    activeTitle = "";
+    actionType = "";
 }
+window.closeModal = closeModal;
 
-// Action modal openings
-function openApproveEventModal(id, title, isForm = false) {
-    activeId = id;
-    isActiveForm = isForm;
-    document.getElementById("approve-event-title").textContent = title;
-    openModal("approve-event-modal");
-}
-
-function openRejectEventModal(id, title, isForm = false) {
-    activeId = id;
-    isActiveForm = isForm;
-    document.getElementById("reject-event-title").textContent = title;
-    openModal("reject-event-modal");
-}
-
-function openApproveHostModal(id, name) {
-    activeId = id;
+// Host Privileges triggers
+function openApproveHostModal(hostId, name) {
+    activeId = hostId;
     document.getElementById("approve-host-name").textContent = name;
     openModal("approve-host-modal");
 }
+window.openApproveHostModal = openApproveHostModal;
 
-function openRejectHostModal(id, name) {
-    activeId = id;
+function openRejectHostModal(hostId, name) {
+    activeId = hostId;
     document.getElementById("reject-host-name").textContent = name;
     openModal("reject-host-modal");
 }
+window.openRejectHostModal = openRejectHostModal;
 
-// Confirm event actions calling HOD API
-async function confirmApproveEvent() {
-    if (!activeId) return;
-    const token = localStorage.getItem("accessToken");
-    const url = isActiveForm 
-        ? `/api/v1/custom-forms/approve/${activeId}`
-        : `${API_ADMIN}/event/${activeId}/approve`;
-    const method = isActiveForm ? "POST" : "PATCH";
-
-    try {
-        const res = await fetch(url, {
-            method: method,
-            headers: { Authorization: `Bearer ${token}` }
-        });
-        if (res.ok) {
-            closeModal("approve-event-modal");
-            await fetchAdminData();
-        } else {
-            alert("Failed to approve request.");
-        }
-    } catch (err) {
-        console.error("Approve request error:", err);
-        alert("Network error approving request.");
-    }
-}
-
-async function confirmRejectEvent() {
-    if (!activeId) return;
-    const token = localStorage.getItem("accessToken");
-    const url = isActiveForm 
-        ? `/api/v1/custom-forms/reject/${activeId}`
-        : `${API_ADMIN}/event/${activeId}/reject`;
-    const method = isActiveForm ? "POST" : "PATCH";
-
-    try {
-        const res = await fetch(url, {
-            method: method,
-            headers: { Authorization: `Bearer ${token}` }
-        });
-        if (res.ok) {
-            closeModal("reject-event-modal");
-            await fetchAdminData();
-        } else {
-            alert("Failed to reject request.");
-        }
-    } catch (err) {
-        console.error("Reject request error:", err);
-        alert("Network error rejecting request.");
-    }
-}
-
-// Confirm host actions calling HOD API
 async function confirmApproveHost() {
-    if (!activeId) return;
     const token = localStorage.getItem("accessToken");
     try {
         const res = await fetch(`${API_ADMIN}/host/${activeId}/approve`, {
@@ -709,18 +737,17 @@ async function confirmApproveHost() {
         });
         if (res.ok) {
             closeModal("approve-host-modal");
-            await fetchAdminData();
+            await fetchSectionData();
+            showToast("Host application approved successfully!", "success");
         } else {
-            alert("Failed to approve host application.");
+            showToast("Failed to approve host application.", "error");
         }
-    } catch (err) {
-        console.error("Approve host error:", err);
-        alert("Network error approving host.");
+    } catch (e) {
+        showToast("Network error approving host.", "error");
     }
 }
 
 async function confirmRejectHost() {
-    if (!activeId) return;
     const token = localStorage.getItem("accessToken");
     try {
         const res = await fetch(`${API_ADMIN}/host/${activeId}/reject`, {
@@ -729,78 +756,256 @@ async function confirmRejectHost() {
         });
         if (res.ok) {
             closeModal("reject-host-modal");
-            await fetchAdminData();
+            await fetchSectionData();
+            showToast("Host application status updated.", "success");
         } else {
-            alert("Failed to reject host application.");
+            showToast("Failed to reject host application.", "error");
         }
-    } catch (err) {
-        console.error("Reject host error:", err);
-        alert("Network error rejecting host.");
+    } catch (e) {
+        showToast("Network error rejecting host.", "error");
     }
 }
 
-// HOD Cancel/Uncancel event functionality
-function openCancelModal(id, title) {
-    activeId = id;
+// Event Moderation triggers
+function openApproveEventModal(eventId, title) {
+    activeId = eventId;
+    document.getElementById("approve-event-title").textContent = title;
+    openModal("approve-event-modal");
+}
+window.openApproveEventModal = openApproveEventModal;
+
+function openRejectEventModal(eventId, title) {
+    activeId = eventId;
+    document.getElementById("reject-event-title").textContent = title;
+    openModal("reject-event-modal");
+}
+window.openRejectEventModal = openRejectEventModal;
+
+async function confirmApproveEvent() {
+    const token = localStorage.getItem("accessToken");
+    try {
+        const res = await fetch(`${API_ADMIN}/events/${activeId}/approve`, {
+            method: "PATCH",
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+            closeModal("approve-event-modal");
+            await fetchSectionData();
+            showToast("Event request approved successfully!", "success");
+        } else {
+            showToast("Failed to approve event request.", "error");
+        }
+    } catch (e) {
+        showToast("Network error approving event.", "error");
+    }
+}
+
+async function confirmRejectEvent() {
+    const token = localStorage.getItem("accessToken");
+    try {
+        const res = await fetch(`${API_ADMIN}/events/${activeId}/reject`, {
+            method: "PATCH",
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+            closeModal("reject-event-modal");
+            await fetchSectionData();
+            showToast("Event request rejected successfully.", "success");
+        } else {
+            showToast("Failed to reject event request.", "error");
+        }
+    } catch (e) {
+        showToast("Network error rejecting event.", "error");
+    }
+}
+
+// Hosted Event triggers
+function openCancelEventModal(eventId, title) {
+    activeId = eventId;
     document.getElementById("cancel-event-title").textContent = title;
     openModal("cancel-modal");
 }
-
-function openUncancelModal(id, title) {
-    activeId = id;
-    document.getElementById("uncancel-event-title").textContent = title;
-    openModal("uncancel-modal");
-}
+window.openCancelEventModal = openCancelEventModal;
 
 async function confirmCancel() {
-    if (!activeId) return;
     const token = localStorage.getItem("accessToken");
     try {
-        const res = await fetch(`/api/v1/event/cancelEvent/${activeId}`, {
+        const res = await fetch(`/api/v1/events/${activeId}/cancel`, {
             method: "DELETE",
             headers: { Authorization: `Bearer ${token}` }
         });
         if (res.ok) {
             closeModal("cancel-modal");
-            await fetchAdminData();
+            await fetchSectionData();
+            showToast("Event canceled successfully!", "success");
         } else {
-            alert("Failed to cancel event.");
+            showToast("Failed to cancel event listing.", "error");
         }
-    } catch (err) {
-        console.error("Cancel error:", err);
-        alert("Network error cancelling event.");
+    } catch (e) {
+        showToast("Network error canceling event.", "error");
     }
 }
 
+function openRestoreEventModal(eventId, title) {
+    activeId = eventId;
+    document.getElementById("uncancel-event-title").textContent = title;
+    openModal("uncancel-modal");
+}
+window.openRestoreEventModal = openRestoreEventModal;
+
 async function confirmUncancel() {
-    if (!activeId) return;
     const token = localStorage.getItem("accessToken");
     try {
-        const res = await fetch(`/api/v1/event/uncancelEvent/${activeId}`, {
+        const res = await fetch(`/api/v1/events/${activeId}/restore`, {
             method: "POST",
             headers: { Authorization: `Bearer ${token}` }
         });
         if (res.ok) {
             closeModal("uncancel-modal");
-            await fetchAdminData();
+            await fetchSectionData();
+            showToast("Event reactivated successfully!", "success");
         } else {
-            alert("Failed to reactivate event.");
+            showToast("Failed to restore event listing.", "error");
         }
-    } catch (err) {
-        console.error("Uncancel error:", err);
-        alert("Network error reactivating event.");
+    } catch (e) {
+        showToast("Network error restoring event.", "error");
     }
 }
 
-// Attendee & QR Scanner management for HOD
-let activeEventForAttendees = null;
-let allAttendeesList = [];
-let filteredAttendees = [];
-let attendeesPage = 0;
-const attendeesPageSize = 8;
-let attendeeSearchQuery = "";
-let html5QrCode = null;
+// Campus Form Moderation triggers
+function openApproveFormModal(formId, title) {
+    activeId = formId;
+    document.getElementById("approve-form-title").textContent = title;
+    openModal("approve-form-modal");
+}
+window.openApproveFormModal = openApproveFormModal;
 
+function openRejectFormModal(formId, title) {
+    activeId = formId;
+    document.getElementById("reject-form-title").textContent = title;
+    openModal("reject-form-modal");
+}
+window.openRejectFormModal = openRejectFormModal;
+
+async function confirmApproveForm() {
+    const token = localStorage.getItem("accessToken");
+    try {
+        const res = await fetch(`${API_ADMIN}/custom-forms/${activeId}/approve`, {
+            method: "POST",
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+            closeModal("approve-form-modal");
+            await fetchSectionData();
+            showToast("Campus Form approved successfully!", "success");
+        } else {
+            showToast("Failed to approve custom form.", "error");
+        }
+    } catch (e) {
+        showToast("Network error approving form.", "error");
+    }
+}
+
+async function confirmRejectForm() {
+    const token = localStorage.getItem("accessToken");
+    try {
+        const res = await fetch(`${API_ADMIN}/custom-forms/${activeId}/reject`, {
+            method: "POST",
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+            closeModal("reject-form-modal");
+            await fetchSectionData();
+            showToast("Campus Form request rejected.", "success");
+        } else {
+            showToast("Failed to reject custom form.", "error");
+        }
+    } catch (e) {
+        showToast("Network error rejecting form.", "error");
+    }
+}
+
+// Hosted Campus Form triggers
+function openCancelFormModal(formId, title) {
+    activeId = formId;
+    document.getElementById("cancel-form-title").textContent = title;
+    openModal("cancel-form-modal");
+}
+window.openCancelFormModal = openCancelFormModal;
+
+async function confirmCancelForm() {
+    const token = localStorage.getItem("accessToken");
+    try {
+        const res = await fetch(`${API_CUSTOM_FORM_BASE}/${activeId}/cancel`, {
+            method: "PATCH",
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+            closeModal("cancel-form-modal");
+            await fetchSectionData();
+            showToast("Campus Form canceled successfully!", "success");
+        } else {
+            const body = await res.json().catch(() => ({}));
+            showToast(body.message || "Failed to cancel form.", "error");
+        }
+    } catch (e) {
+        showToast("Network error canceling form.", "error");
+    }
+}
+
+function openRestoreFormModal(formId, title) {
+    activeId = formId;
+    document.getElementById("restore-form-title").textContent = title;
+    openModal("restore-form-modal");
+}
+window.openRestoreFormModal = openRestoreFormModal;
+
+async function confirmRestoreForm() {
+    const token = localStorage.getItem("accessToken");
+    try {
+        const res = await fetch(`${API_CUSTOM_FORM_BASE}/${activeId}/restore`, {
+            method: "PATCH",
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+            closeModal("restore-form-modal");
+            await fetchSectionData();
+            showToast("Campus Form restored successfully!", "success");
+        } else {
+            const body = await res.json().catch(() => ({}));
+            showToast(body.message || "Failed to restore form.", "error");
+        }
+    } catch (e) {
+        showToast("Network error restoring form.", "error");
+    }
+}
+
+// Toggle submissions acceptance
+async function toggleResponses(formId, currentVal) {
+    const token = localStorage.getItem("accessToken");
+    const newVal = !currentVal;
+    try {
+        const res = await fetch(`${API_CUSTOM_FORM_BASE}/${formId}/accepting-responses`, {
+            method: "PATCH",
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(newVal) // Spring maps request body boolean value
+        });
+        if (res.ok) {
+            await fetchSectionData();
+            showToast(newVal ? "Form submissions enabled." : "Form submissions disabled.", "success");
+        } else {
+            showToast("Failed to toggle form responses availability.", "error");
+        }
+    } catch (e) {
+        showToast("Network error updating form status.", "error");
+    }
+}
+window.toggleResponses = toggleResponses;
+
+// Attendance view triggers
 function showAttendeesView(eventId, eventTitle) {
     activeEventForAttendees = { eventId, title: eventTitle };
     attendeesPage = 0;
@@ -809,16 +1014,14 @@ function showAttendeesView(eventId, eventTitle) {
     const searchInput = document.getElementById("attendeeSearch");
     if (searchInput) searchInput.value = "";
 
-    // Set header details
     document.getElementById("attendees-event-title").textContent = eventTitle;
 
-    // Toggle views
     document.getElementById("admin-dashboard-view").classList.add("hidden");
     document.getElementById("attendees-view").classList.remove("hidden");
 
-    // Fetch and populate data
     fetchAttendeesData();
 }
+window.showAttendeesView = showAttendeesView;
 
 function hideAttendeesView() {
     activeEventForAttendees = null;
@@ -826,6 +1029,7 @@ function hideAttendeesView() {
     document.getElementById("attendees-view").classList.add("hidden");
     document.getElementById("admin-dashboard-view").classList.remove("hidden");
 }
+window.hideAttendeesView = hideAttendeesView;
 
 async function fetchAttendeesData() {
     if (!activeEventForAttendees) return;
@@ -835,7 +1039,7 @@ async function fetchAttendeesData() {
     const paginationSection = document.getElementById("attendees-pagination");
 
     try {
-        const res = await fetch(`/api/v1/tickets/audienceList/${activeEventForAttendees.eventId}?page=0&size=200`, {
+        const res = await fetch(`/api/v1/tickets/${activeEventForAttendees.eventId}/audienceList?page=0&size=200`, {
             headers: { Authorization: `Bearer ${token}` }
         });
         const body = await res.json();
@@ -843,17 +1047,10 @@ async function fetchAttendeesData() {
             allAttendeesList = body.data.content || [];
             filterAndRenderAttendees();
         } else {
-            throw new Error(body.message || "Failed to load attendees list");
+            throw new Error(body.message || "Failed to load attendees");
         }
     } catch (err) {
-        console.error("fetchAttendeesData error:", err);
-        tableBody.innerHTML = `
-            <tr>
-                <td colspan="5" class="p-lg text-center text-body-sm text-error">
-                    Failed to fetch attendees: ${err.message || "Network issue"}
-                </td>
-            </tr>
-        `;
+        tableBody.innerHTML = `<tr><td colspan="5" class="p-3 text-center text-danger font-medium">Error loading attendees: ${err.message}</td></tr>`;
     }
 }
 
@@ -867,24 +1064,23 @@ function filterAndRenderAttendees() {
     if (query) {
         filteredAttendees = allAttendeesList.filter(a => 
             (a.name && a.name.toLowerCase().includes(query)) ||
-            (a.email && a.email.toLowerCase().includes(query)) ||
-            (a.ticketId && String(a.ticketId).includes(query))
+            (a.email && a.email.toLowerCase().includes(query))
         );
     } else {
         filteredAttendees = [...allAttendeesList];
     }
 
-    const totalElements = filteredAttendees.length;
-    const totalPages = Math.ceil(totalElements / attendeesPageSize) || 1;
+    const total = filteredAttendees.length;
+    const totalPages = Math.ceil(total / attendeesPageSize) || 1;
 
     if (attendeesPage >= totalPages) attendeesPage = totalPages - 1;
     if (attendeesPage < 0) attendeesPage = 0;
 
     const startIdx = attendeesPage * attendeesPageSize;
-    const endIdx = Math.min(startIdx + attendeesPageSize, totalElements);
-    const paginatedList = filteredAttendees.slice(startIdx, endIdx);
+    const endIdx = Math.min(startIdx + attendeesPageSize, total);
+    const slice = filteredAttendees.slice(startIdx, endIdx);
 
-    if (totalElements === 0) {
+    if (total === 0) {
         tableBody.innerHTML = "";
         emptyMsg.classList.remove("hidden");
         paginationSection.classList.add("hidden");
@@ -893,68 +1089,56 @@ function filterAndRenderAttendees() {
 
     emptyMsg.classList.add("hidden");
     paginationSection.classList.remove("hidden");
+    paginationInfo.textContent = `Showing ${startIdx + 1}-${endIdx} of ${total}`;
 
-    paginationInfo.textContent = `Showing ${startIdx + 1}-${endIdx} of ${totalElements}`;
     document.getElementById("attendees-prev-btn").disabled = attendeesPage === 0;
     document.getElementById("attendees-next-btn").disabled = attendeesPage === totalPages - 1;
 
-    tableBody.innerHTML = paginatedList.map(a => {
-        let statusBadge = "";
-        if (a.checkedIn) {
-            statusBadge = `<span class="bg-primary/10 text-primary border border-primary/20 text-label-md px-sm py-xs rounded-full font-semibold uppercase">PRESENT</span>`;
-        } else {
-            statusBadge = `<span class="bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 text-label-md px-sm py-xs rounded-full font-semibold uppercase">ABSENT</span>`;
-        }
+    tableBody.innerHTML = slice.map(a => {
+        let badge = a.checkedIn 
+            ? `<span class="bg-green-50 text-signal border border-green-200 text-[10px] px-2.5 py-0.5 rounded-full font-semibold">PRESENT</span>`
+            : `<span class="bg-amber-50 text-amber-600 border border-amber-200 text-[10px] px-2.5 py-0.5 rounded-full font-semibold">ABSENT</span>`;
 
-        const actionBtn = a.checkedIn ? `
-            <button onclick="toggleAttendance(${a.ticketId}, 'absent')" class="border border-error/50 hover:bg-error/10 text-error font-bold py-xs px-sm rounded text-body-sm transition-all flex items-center gap-xs ml-auto">
-                <span class="material-symbols-outlined text-[16px]">close</span>
-                <span>Mark Absent</span>
-            </button>
-        ` : `
-            <button onclick="toggleAttendance(${a.ticketId}, 'present')" class="bg-primary/20 hover:bg-primary/30 text-primary border border-primary/30 font-bold py-xs px-sm rounded text-body-sm transition-all flex items-center gap-xs ml-auto">
-                <span class="material-symbols-outlined text-[16px]">check</span>
-                <span>Mark Present</span>
-            </button>
-        `;
+        const action = a.checkedIn 
+            ? `<button onclick="toggleAttendance(${a.ticketId}, 'absent')" class="border border-danger/40 hover:bg-red-50 text-danger text-xs font-semibold py-1 px-3 rounded flex items-center gap-1 ml-auto"><span class="material-symbols-outlined text-[16px]">close</span> Mark Absent</button>`
+            : `<button onclick="toggleAttendance(${a.ticketId}, 'present')" class="bg-action-tint hover:bg-action/20 text-action border border-action/20 text-xs font-semibold py-1 px-3 rounded flex items-center gap-1 ml-auto"><span class="material-symbols-outlined text-[16px]">check</span> Mark Present</button>`;
 
         return `
-            <tr class="hover:bg-surface-container/30 transition-colors border-b border-outline-variant/10">
-                <td class="p-md text-body-sm font-semibold text-on-background">${a.name || "—"}</td>
-                <td class="p-md text-body-sm text-on-surface-variant">${a.email || "—"}</td>
-                <td class="p-md text-body-sm text-on-surface-variant font-mono">${a.ticketId || "—"}</td>
-                <td class="p-md">${statusBadge}</td>
-                <td class="p-md text-right">${actionBtn}</td>
+            <tr class="hover:bg-canvas-sunk transition-colors">
+                <td class="p-3 font-semibold text-ink">${escapeHtml(a.name || "—")}</td>
+                <td class="p-3 text-muted">${escapeHtml(a.email || "—")}</td>
+                <td class="p-3 text-muted font-mono text-xs">${a.ticketId || "—"}</td>
+                <td class="p-3">${badge}</td>
+                <td class="p-3 text-right">${action}</td>
             </tr>
         `;
     }).join("");
 }
 
-async function toggleAttendance(ticketId, action) {
+async function toggleAttendance(ticketId, actionVal) {
     const token = localStorage.getItem("accessToken");
-    const url = `/api/v1/tickets/${ticketId}/${action === 'present' ? 'markPresent' : 'markAbsent'}`;
-
+    const endPoint = actionVal === 'present' ? 'markPresent' : 'markAbsent';
     try {
-        const res = await fetch(url, {
+        const res = await fetch(`/api/v1/tickets/${ticketId}/${endPoint}`, {
             method: "POST",
             headers: { Authorization: `Bearer ${token}` }
         });
         if (res.ok) {
             await fetchAttendeesData();
+            showToast(`Guest marked ${actionVal} successfully!`, "success");
         } else {
-            const body = await res.json().catch(() => ({}));
-            alert(body.message || `Failed to mark attendee ${action}.`);
+            showToast("Failed to update guest attendance.", "error");
         }
-    } catch (err) {
-        console.error("toggleAttendance error:", err);
-        alert("Network error toggling attendance.");
+    } catch (e) {
+        showToast("Network error updating attendance.", "error");
     }
 }
+window.toggleAttendance = toggleAttendance;
 
-// Scanner Management
+// Scan tickets handlers
 function openScanner() {
     openModal("scanner-modal");
-    document.getElementById("scanner-status").className = "text-body-sm font-semibold text-yellow-500 text-center animate-pulse";
+    document.getElementById("scanner-status").className = "text-xs font-semibold text-amber-500 text-center animate-pulse";
     document.getElementById("scanner-status").textContent = "Requesting camera permissions...";
 
     html5QrCode = new Html5Qrcode("scanner-preview");
@@ -965,16 +1149,16 @@ function openScanner() {
             qrbox: { width: 200, height: 200 }
         },
         onScanSuccess,
-        onScanError
+        () => {}
     ).then(() => {
-        document.getElementById("scanner-status").className = "text-body-sm font-semibold text-primary text-center";
+        document.getElementById("scanner-status").className = "text-xs font-semibold text-signal text-center";
         document.getElementById("scanner-status").textContent = "Camera active. Scan QR code...";
-    }).catch(err => {
-        console.error("Scanner start error:", err);
-        document.getElementById("scanner-status").className = "text-body-sm font-semibold text-error text-center";
-        document.getElementById("scanner-status").textContent = "Error opening camera. Please check permissions.";
+    }).catch(() => {
+        document.getElementById("scanner-status").className = "text-xs font-semibold text-danger text-center";
+        document.getElementById("scanner-status").textContent = "Error opening camera. Verify permissions.";
     });
 }
+window.openScanner = openScanner;
 
 async function closeScanner() {
     closeModal("scanner-modal");
@@ -987,186 +1171,87 @@ async function closeScanner() {
         }
     }
 }
+window.closeScanner = closeScanner;
 
-async function onScanSuccess(decodedText, decodedResult) {
+async function onScanSuccess(decodedText) {
     await closeScanner();
-
     const urlParts = decodedText.split("/");
     const ticketCode = urlParts[urlParts.length - 1];
 
     if (!ticketCode || isNaN(ticketCode)) {
-        alert("Invalid QR Code content scanned.");
+        showToast("Invalid QR Code content scanned.", "error");
         openScanner();
         return;
     }
 
     const token = localStorage.getItem("accessToken");
     try {
-        const res = await fetch(`/api/v1/tickets/checkin/${ticketCode}`, {
+        const res = await fetch(`/api/v1/tickets/${ticketCode}/checkin`, {
             method: "POST",
             headers: { Authorization: `Bearer ${token}` }
         });
-        const body = await res.json();
-
-        if (res.ok && body.success) {
-            alert(`SUCCESS: Guest checked in successfully!`);
+        if (res.ok) {
+            showToast("Guest checked in successfully!", "success");
             await fetchAttendeesData();
         } else {
-            alert(`ERROR: ${body.message || "Failed to check in ticket."}`);
+            showToast("Failed to process QR code check-in.", "error");
         }
     } catch (err) {
-        console.error("Checkin API error:", err);
-        alert("Network error checking in ticket.");
+        showToast("Network error checking in guest.", "error");
     }
-
     openScanner();
 }
 
-function onScanError(errorMessage) {
-    // Quietly ignore frame read failures
+// Utility: copy link
+function shareLink(path) {
+    const url = `${window.location.origin}${path}`;
+    navigator.clipboard.writeText(url).then(() => {
+        showToast("Shareable link copied to clipboard!", "success");
+    }).catch(() => {
+        showToast("Failed to copy link.", "error");
+    });
 }
+window.shareLink = shareLink;
 
-// CUSTOM REGISTRATION FORM RESPONSES VIEW & EXPORT FOR HOD
-// ----------------------------------------------------
-let activeEventForResponses = null;
-
-function showResponsesView(eventId, eventTitle) {
-    activeEventForResponses = { eventId, title: eventTitle };
+// Toast alert notification
+function showToast(message, type = "success") {
+    let container = document.getElementById("toast-container");
+    if (!container) {
+        container = document.createElement("div");
+        container.id = "toast-container";
+        container.className = "fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none max-w-sm w-full";
+        document.body.appendChild(container);
+    }
     
-    // Set header
-    document.getElementById("responses-event-title").textContent = eventTitle;
-
-    // Toggle views
-    document.getElementById("admin-dashboard-view").classList.add("hidden");
-    document.getElementById("responses-view").classList.remove("hidden");
-
-    // Bind CSV export button click
-    const exportBtn = document.getElementById("export-csv-btn");
-    exportBtn.onclick = () => downloadResponsesCsv(eventId);
-
-    // Fetch and populate responses
-    fetchResponsesData(eventId);
-}
-
-function hideResponsesView() {
-    activeEventForResponses = null;
-    document.getElementById("responses-view").classList.add("hidden");
-    document.getElementById("admin-dashboard-view").classList.remove("hidden");
-}
-
-async function fetchResponsesData(eventId) {
-    const token = localStorage.getItem("accessToken");
-    const headerRow = document.getElementById("responses-table-header");
-    const tableBody = document.getElementById("responses-table-body");
-    const emptyMsg = document.getElementById("responses-empty-msg");
-    const table = document.getElementById("responses-table");
-
-    headerRow.innerHTML = "";
-    tableBody.innerHTML = "";
-    emptyMsg.classList.add("hidden");
-    table.classList.remove("hidden");
-
-    try {
-        const res = await fetch(`${API_CUSTOM_FORM_BASE}/responses/${eventId}`, {
-            headers: { Authorization: `Bearer ${token}` }
-        });
-        const body = await res.json();
-        
-        if (res.ok && body.success) {
-            const submissions = body.data || [];
-            if (submissions.length === 0) {
-                table.classList.add("hidden");
-                emptyMsg.classList.remove("hidden");
-                return;
-            }
-
-            // Build table headers dynamically based on the questions present in the first submission
-            const sampleAnswers = submissions[0].answers || [];
-            
-            let headersHtml = `
-                <th class="p-md text-label-md text-on-surface-variant uppercase tracking-wider">Submission Code</th>
-                <th class="p-md text-label-md text-on-surface-variant uppercase tracking-wider">Attendee</th>
-                <th class="p-md text-label-md text-on-surface-variant uppercase tracking-wider">Email</th>
-                <th class="p-md text-label-md text-on-surface-variant uppercase tracking-wider">Submitted At</th>
-            `;
-            
-            sampleAnswers.forEach(ans => {
-                headersHtml += `<th class="p-md text-label-md text-on-surface-variant uppercase tracking-wider">${ans.fieldLabel}</th>`;
-            });
-            
-            headerRow.innerHTML = headersHtml;
-
-            // Populate rows
-            submissions.forEach(sub => {
-                const subDate = new Date(sub.submittedAt).toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
-                let rowHtml = `
-                    <tr class="hover:bg-surface-container-high/30 transition-colors">
-                        <td class="p-md text-body-sm font-semibold text-primary">${sub.submissionCode}</td>
-                        <td class="p-md text-body-sm text-on-surface font-medium">${sub.username}</td>
-                        <td class="p-md text-body-sm text-on-surface-variant">${sub.userEmail}</td>
-                        <td class="p-md text-body-sm text-on-surface-variant">${subDate}</td>
-                `;
-
-                // Map field values
-                sub.answers.forEach(ans => {
-                    if (ans.fileUrl) {
-                        rowHtml += `
-                            <td class="p-md text-body-sm text-primary">
-                                <a href="${ans.fileUrl}" target="_blank" class="inline-flex items-center gap-xs hover:underline font-semibold">
-                                    <span class="material-symbols-outlined text-[16px]">attachment</span>
-                                    <span>View File</span>
-                                </a>
-                            </td>
-                        `;
-                    } else {
-                        rowHtml += `<td class="p-md text-body-sm text-on-surface-variant">${ans.value || "—"}</td>`;
-                    }
-                });
-
-                rowHtml += "</tr>";
-                tableBody.insertAdjacentHTML("beforeend", rowHtml);
-            });
-
-        } else {
-            throw new Error(body.message || "Failed to load responses data.");
-        }
-    } catch (err) {
-        console.error("fetchResponsesData error:", err);
-        tableBody.innerHTML = `
-            <tr>
-                <td colspan="4" class="p-lg text-center text-body-sm text-error font-medium">
-                    Failed to fetch custom responses: ${err.message || "Network issue"}
-                </td>
-            </tr>
-        `;
+    const toast = document.createElement("div");
+    toast.className = "flex items-center gap-2 px-4 py-3 rounded-lg shadow-lg border transition-all duration-300 pointer-events-auto transform translate-y-[-1rem] opacity-0";
+    
+    if (type === "success") {
+        toast.classList.add("bg-green-50", "text-emerald-500", "border-green-200");
+    } else {
+        toast.classList.add("bg-red-50", "text-red-500", "border-red-200");
     }
+    
+    const icon = type === "success" ? "check_circle" : "error";
+    toast.innerHTML = `
+        <span class="material-symbols-outlined text-[20px]">${icon}</span>
+        <span class="text-xs font-semibold">${message}</span>
+    `;
+    
+    container.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.classList.remove("translate-y-[-1rem]", "opacity-0");
+        toast.classList.add("translate-y-0", "opacity-100");
+    }, 10);
+    
+    setTimeout(() => {
+        toast.classList.remove("translate-y-0", "opacity-100");
+        toast.classList.add("translate-y-[-1rem]", "opacity-0");
+        setTimeout(() => {
+            toast.remove();
+        }, 300);
+    }, 4000);
 }
 
-async function downloadResponsesCsv(eventId) {
-    const token = localStorage.getItem("accessToken");
-    try {
-        const res = await fetch(`${API_CUSTOM_FORM_BASE}/export/${eventId}`, {
-            headers: { Authorization: `Bearer ${token}` }
-        });
-        
-        if (res.ok) {
-            const blob = await res.blob();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = `responses_form_${eventId}.csv`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
-        } else {
-            alert("Failed to export CSV file.");
-        }
-    } catch (err) {
-        console.error("CSV download error:", err);
-        alert("A network error occurred downloading responses CSV.");
-    }
-}
-
-// Run initialization
 document.addEventListener("DOMContentLoaded", initPage);

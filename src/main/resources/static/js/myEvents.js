@@ -1,7 +1,17 @@
 // myEvents.js — manages the display of events a user has registered to attend
 
-const API_EVENT = "/api/v1/event";
+const API_EVENT = "/api/v1/events";
 const PAGE_SIZE = 9;
+
+function escapeHtml(value) {
+    const node = document.createElement("div");
+    node.textContent = value == null ? "" : String(value);
+    return node.innerHTML;
+}
+
+function imageStyle(url) {
+    return url ? `style="background-image:url('${escapeHtml(url).replace(/'/g, "%27")}')"` : "";
+}
 
 // State management
 let currentUser = null;
@@ -78,7 +88,7 @@ async function fetchJoinedEvents() {
 
     try {
         // Fetch with a large size to load all joined events for client-side search & pagination
-        const res = await fetch(`${API_EVENT}/getJoinedEvents?page=0&size=1000`, {
+        const res = await fetch(`${API_EVENT}/joined-events?page=0&size=1000`, {
             headers: { Authorization: `Bearer ${token}` }
         });
         const body = await res.json();
@@ -88,12 +98,12 @@ async function fetchJoinedEvents() {
 
             // Fetch custom form submissions
             try {
-                const formsRes = await fetch(`/api/v1/custom-forms/mySubmissions`, {
+                const formsRes = await fetch(`/api/v1/custom-forms/my-submissions?page=0&size=1000`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 const formsBody = await formsRes.json();
-                if (formsRes.ok && formsBody.success && formsBody.data) {
-                    const submissions = formsBody.data;
+                if (formsRes.ok && formsBody.success && formsBody.data && formsBody.data.content) {
+                    const submissions = formsBody.data.content;
                     submissions.forEach(sub => {
                         sub.isCustomFormSubmission = true;
                         sub.eventId = sub.formId; // Map key form ID
@@ -183,93 +193,65 @@ function filterAndRender() {
 
 // Generate Card HTML
 function renderEventCard(event) {
-    const bannerUrl = event.bannerUrl || "/images/banner-placeholder.png";
-
     if (event.isCustomFormSubmission) {
         const subDateText = event.submittedAt
-            ? new Date(event.submittedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+            ? new Date(event.submittedAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })
             : "TBA";
         return `
-            <div class="bg-surface-container border border-outline-variant rounded-xl overflow-hidden hover:border-primary/30 transition-all group flex flex-col h-full animate-fade-in">
-                <a href="/formDetails?formId=${event.eventId}" class="block relative pt-[56.25%] overflow-hidden bg-surface-container-low shrink-0">
-                    <img src="${bannerUrl}" alt="${event.title} Banner" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" onerror="this.src='/images/banner-placeholder.png'" />
-                    <div class="absolute top-sm right-sm flex flex-col gap-xs items-end">
-                        <span class="bg-purple-500/20 text-purple-300 border border-purple-500/30 text-label-md px-sm py-xs rounded-full z-10 font-semibold uppercase tracking-wide">
-                            Custom Form
-                        </span>
-                        <span class="bg-primary/10 text-primary border border-primary/30 text-[10px] font-semibold px-sm py-[2px] rounded-full uppercase tracking-wider mt-xs">
-                            Submitted
-                        </span>
-                    </div>
-                </a>
-                <div class="p-md flex flex-col flex-1 space-y-md">
-                    <div class="space-y-xs flex-1">
-                        <h3 class="text-title-lg font-bold text-on-surface group-hover:text-primary transition-colors line-clamp-2">
-                            <a href="/formDetails?formId=${event.eventId}">${event.title}</a>
-                        </h3>
-                        <p class="text-body-sm text-on-surface-variant flex items-center gap-xs mt-xs">
-                            <span class="material-symbols-outlined text-[16px] text-primary">description</span>
-                            <span class="truncate">Submission: ${event.submissionCode}</span>
-                        </p>
-                    </div>
-                    <div class="flex items-center justify-between pt-sm border-t border-outline-variant/30 text-body-sm text-on-surface-variant">
-                        <span class="flex items-center gap-xs">
-                            <span class="material-symbols-outlined text-[16px]">calendar_month</span>
-                            Submitted: ${subDateText}
-                        </span>
-                        <span class="font-bold text-primary">Free</span>
+            <article class="group overflow-hidden border border-line bg-canvas transition hover:border-signal/60 hover:shadow-[0_10px_28px_-18px_rgba(11,21,38,.38)] flex flex-col justify-between h-full">
+                <div>
+                    <a href="/formDetails?formId=${event.eventId}" class="event-image relative block h-36" ${imageStyle(event.bannerUrl)}>
+                        <span class="absolute left-3 top-3 rounded bg-signal-tint px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-signal">Registration</span>
+                        <span class="absolute right-3 top-3 rounded bg-canvas/95 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-ink border border-line-strong">Submitted</span>
+                    </a>
+                    <div class="p-4">
+                        <a href="/formDetails?formId=${event.eventId}" class="font-display text-base font-semibold text-ink group-hover:text-signal line-clamp-2">${escapeHtml(event.title || "Untitled form")}</a>
+                        <div class="mt-3 space-y-1.5 text-sm text-muted">
+                            <p><i class="fa-regular fa-calendar mr-2 w-3 text-muted-dim"></i>Submitted: ${escapeHtml(subDateText)}</p>
+                            <p><i class="fa-regular fa-file-lines mr-2 w-3 text-muted-dim"></i>Submission Code: ${escapeHtml(event.submissionCode)}</p>
+                        </div>
                     </div>
                 </div>
-            </div>
+                <div class="p-4 border-t border-line mt-auto flex items-center justify-between">
+                    <span class="font-mono text-xs font-semibold text-ink">Free</span>
+                    <span class="text-[11px] font-medium text-signal">COMPLETED</span>
+                </div>
+            </article>
         `;
     }
 
     const dateText = event.lastRegistrationDate
-        ? new Date(event.lastRegistrationDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+        ? new Date(event.lastRegistrationDate).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })
         : "TBA";
     const priceText = event.ticketPrice > 0 ? `$${event.ticketPrice.toFixed(2)}` : "Free";
     
     // Status color classes
-    let statusClass = "bg-surface-container text-on-surface-variant border border-outline-variant";
-    if (event.eventStatus === "PENDING") statusClass = "bg-yellow-500/10 text-yellow-500 border border-yellow-500/30";
-    else if (event.eventStatus === "APPROVED") statusClass = "bg-primary/10 text-primary border border-primary/30";
-    else if (event.eventStatus === "REJECTED") statusClass = "bg-error/10 text-error border border-error/30";
-    else if (event.eventStatus === "CANCELLED") statusClass = "bg-surface-container-high text-outline border border-outline-variant";
-    else if (event.eventStatus === "FINISHED") statusClass = "bg-blue-500/10 text-blue-500 border border-blue-500/30";
+    let statusClass = "text-muted";
+    if (event.eventStatus === "PENDING") statusClass = "text-amber-600";
+    else if (event.eventStatus === "APPROVED" || event.eventStatus === "OPEN") statusClass = "text-signal";
+    else if (event.eventStatus === "REJECTED" || event.eventStatus === "CANCELLED") statusClass = "text-danger";
+    else if (event.eventStatus === "FINISHED") statusClass = "text-muted-dim";
 
     return `
-        <div class="bg-surface-container border border-outline-variant rounded-xl overflow-hidden hover:border-primary/30 transition-all group flex flex-col h-full animate-fade-in">
-            <a href="/eventDetails/${event.eventId}" class="block relative pt-[56.25%] overflow-hidden bg-surface-container-low shrink-0">
-                <img src="${bannerUrl}" alt="${event.title} Banner" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" onerror="this.src='/images/banner-placeholder.png'" />
-                ${event.logoUrl ? `<span class="absolute top-sm left-sm bg-background/80 backdrop-blur-sm p-0.5 rounded-full border border-outline-variant/30 flex items-center justify-center w-8 h-8 z-10"><img src="${event.logoUrl}" alt="University Logo" class="w-full h-full object-contain rounded-full" /></span>` : ""}
-                <div class="absolute top-sm right-sm flex flex-col gap-xs items-end">
-                    <span class="bg-surface-container-high/90 backdrop-blur-sm text-primary text-label-md font-semibold px-sm py-xs rounded-full border border-outline-variant/30 uppercase tracking-wide">
-                        ${event.category || "General"}
-                    </span>
-                    <span class="${statusClass} text-[10px] font-semibold px-sm py-[2px] rounded-full uppercase tracking-wider mt-xs">
-                        ${event.eventStatus || "APPROVED"}
-                    </span>
-                </div>
-            </a>
-            <div class="p-md flex flex-col flex-1 space-y-md">
-                <div class="space-y-xs flex-1">
-                    <h3 class="text-title-lg font-bold text-on-surface group-hover:text-primary transition-colors line-clamp-2">
-                        <a href="/eventDetails/${event.eventId}">${event.title}</a>
-                    </h3>
-                    <p class="text-body-sm text-on-surface-variant flex items-center gap-xs mt-xs">
-                        <span class="material-symbols-outlined text-[16px] text-primary">location_on</span>
-                        <span class="truncate">${event.location || "On Campus"}</span>
-                    </p>
-                </div>
-                <div class="flex items-center justify-between pt-sm border-t border-outline-variant/30 text-body-sm text-on-surface-variant">
-                    <span class="flex items-center gap-xs">
-                        <span class="material-symbols-outlined text-[16px]">calendar_month</span>
-                        Reg Date: ${dateText}
-                    </span>
-                    <span class="font-bold text-primary">${priceText}</span>
+        <article class="group overflow-hidden border border-line bg-canvas transition hover:border-action/50 hover:shadow-[0_10px_28px_-18px_rgba(11,21,38,.38)] flex flex-col justify-between h-full">
+            <div>
+                <a href="/event-details/${event.eventId}" class="event-image relative block h-36" ${imageStyle(event.bannerUrl)}>
+                    <span class="absolute left-3 top-3 rounded bg-canvas/95 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-ink">${escapeHtml(event.category || "Event")}</span>
+                    ${event.logoUrl ? `<span class="absolute top-3 right-3 bg-canvas/95 p-0.5 rounded-full border border-line flex items-center justify-center w-7 h-7 z-10"><img src="${escapeHtml(event.logoUrl)}" alt="Logo" class="w-full h-full object-contain rounded-full" /></span>` : ""}
+                </a>
+                <div class="p-4">
+                    <a href="/event-details/${event.eventId}" class="font-display text-base font-semibold text-ink group-hover:text-action line-clamp-2">${escapeHtml(event.title || "Untitled event")}</a>
+                    <div class="mt-3 space-y-1.5 text-sm text-muted">
+                        <p><i class="fa-regular fa-calendar mr-2 w-3 text-muted-dim"></i>Register by: ${escapeHtml(dateText)}</p>
+                        <p><i class="fa-solid fa-location-dot mr-2 w-3 text-muted-dim"></i>${escapeHtml(event.location || "Location TBA")}</p>
+                    </div>
                 </div>
             </div>
-        </div>
+            <div class="p-4 border-t border-line mt-auto flex items-center justify-between">
+                <span class="font-mono text-xs font-semibold text-ink">${escapeHtml(priceText)}</span>
+                <span class="text-[11px] font-medium uppercase ${statusClass}">${escapeHtml(event.eventStatus || "APPROVED")}</span>
+            </div>
+        </article>
     `;
 }
 

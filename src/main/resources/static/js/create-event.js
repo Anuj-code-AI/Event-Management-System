@@ -1,5 +1,5 @@
 // create-event.js — handles creating and updating campus events
-const API_EVENT_BASE = "/api/v1/event";
+const API_EVENTS = "/api/v1/events";
 
 // Initialize variables
 let isEditMode = false;
@@ -38,8 +38,8 @@ const paymentQrPreview = document.getElementById("paymentQr-preview");
 // Helper: Show custom error under input
 function showInputError(inputEl, message) {
     if (!inputEl) return;
-    inputEl.classList.add("border-error");
-    inputEl.classList.remove("focus:border-primary");
+    inputEl.classList.add("border-danger");
+    inputEl.classList.remove("focus:border-action");
     const errorEl = inputEl.parentElement.querySelector(".error-msg");
     if (errorEl) {
         errorEl.textContent = message;
@@ -51,10 +51,10 @@ function showInputError(inputEl, message) {
 function clearInputErrors() {
     document.querySelectorAll(".error-msg").forEach(el => el.classList.add("hidden"));
     document.querySelectorAll("input, select, textarea").forEach(el => {
-        el.classList.remove("border-error");
-        el.classList.add("focus:border-primary");
+        el.classList.remove("border-danger");
+        el.classList.add("focus:border-action");
     });
-    alertBox.className = "hidden p-md rounded-lg mb-lg text-body-sm font-medium flex items-start gap-sm";
+    alertBox.className = "hidden p-4 rounded-lg mb-6 text-xs font-semibold flex items-start gap-2 border";
     alertBox.innerHTML = "";
 }
 
@@ -62,10 +62,10 @@ function clearInputErrors() {
 function showGlobalAlert(type, message) {
     alertBox.classList.remove("hidden");
     if (type === "success") {
-        alertBox.className = "p-md rounded-lg mb-lg text-body-sm font-medium flex items-start gap-sm bg-primary/10 border border-primary/30 text-primary";
+        alertBox.className = "p-4 rounded-lg mb-6 text-xs font-semibold flex items-start gap-2 bg-green-50 border-green-200 text-signal shadow-sm";
         alertBox.innerHTML = `<span class="material-symbols-outlined text-[20px]">check_circle</span> <span>${message}</span>`;
     } else {
-        alertBox.className = "p-md rounded-lg mb-lg text-body-sm font-medium flex items-start gap-sm bg-error/10 border border-error/30 text-error";
+        alertBox.className = "p-4 rounded-lg mb-6 text-xs font-semibold flex items-start gap-2 bg-red-50 border-red-200 text-danger shadow-sm";
         alertBox.innerHTML = `<span class="material-symbols-outlined text-[20px]">error</span> <span>${message}</span>`;
     }
     alertBox.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -88,16 +88,16 @@ function bindFileLabelChange(inputEl, labelEl) {
     inputEl.addEventListener("change", (e) => {
         if (e.target.files && e.target.files.length > 0) {
             labelEl.textContent = `Selected: ${e.target.files[0].name}`;
-            labelEl.classList.remove("text-on-surface-variant");
-            labelEl.classList.add("text-primary");
+            labelEl.classList.remove("text-muted");
+            labelEl.classList.add("text-action");
         } else {
             labelEl.textContent = labelEl.id.includes("banner") 
                 ? "Click to upload banner" 
                 : labelEl.id.includes("ticket") 
                     ? "Click to upload ticket card design" 
                     : "Click to upload UPI / Payment QR code";
-            labelEl.classList.add("text-on-surface-variant");
-            labelEl.classList.remove("text-primary");
+            labelEl.classList.add("text-muted");
+            labelEl.classList.remove("text-action");
         }
     });
 }
@@ -147,20 +147,25 @@ async function initPage() {
 
         await loadEventDetails(eventId);
     } else {
-        // Set default date values
+        // Set default date values (today for registration deadline, tomorrow for event date)
         const tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);
-        const tomorrowStr = tomorrow.toISOString().split("T")[0];
-        document.getElementById("eventDate").min = tomorrowStr;
-        document.getElementById("lastRegistrationDate").min = tomorrowStr;
+        document.getElementById("eventDate").value = tomorrow.toISOString().split("T")[0];
+        document.getElementById("lastRegistrationDate").value = tomorrow.toISOString().split("T")[0];
+        document.getElementById("eventTime").value = "09:00";
+    }
+
+    // Form submit listener
+    if (form) {
+        form.addEventListener("submit", handleFormSubmit);
     }
 }
 
-// Fetch event details for edit mode
+// Fetch event details for edit mode (Using correct endpoint: GET /api/v1/events/{id})
 async function loadEventDetails(eventId) {
     const token = localStorage.getItem("accessToken");
     try {
-        const res = await fetch(`${API_EVENT_BASE}/getEvent/${eventId}`, {
+        const res = await fetch(`${API_EVENTS}/${eventId}`, {
             headers: {
                 Authorization: `Bearer ${token}`
             }
@@ -169,194 +174,175 @@ async function loadEventDetails(eventId) {
         if (res.ok && body.success) {
             populateForm(body.data);
         } else {
-            showGlobalAlert("error", body.message || "Failed to load event details.");
+            showGlobalAlert("error", body.message || "Failed to load event specifications for editing.");
         }
     } catch (err) {
-        console.error("Error loading event details:", err);
-        showGlobalAlert("error", "Error loading event details. Please try again.");
+        console.error("loadEventDetails error:", err);
+        showGlobalAlert("error", "Failed to retrieve event information due to a connectivity issue.");
     }
 }
 
-// Populate form in edit mode
+// Populate fields in edit mode
 function populateForm(event) {
     document.getElementById("title").value = event.title || "";
     document.getElementById("description").value = event.description || "";
     document.getElementById("category").value = event.category || "";
     document.getElementById("club").value = event.club || "";
     document.getElementById("eventDate").value = event.eventDate || "";
-    document.getElementById("eventTime").value = event.eventTime ? event.eventTime.substring(0, 5) : "";
+    
+    if (event.eventTime) {
+        // format hh:mm
+        document.getElementById("eventTime").value = event.eventTime.substring(0, 5);
+    }
+    
     document.getElementById("lastRegistrationDate").value = event.lastRegisterDate || "";
     document.getElementById("eventMode").value = event.eventMode || "OFFLINE";
     document.getElementById("city").value = event.city || "";
     document.getElementById("location").value = event.location || "";
     document.getElementById("participationType").value = event.participationType || "UNIVERSITY_ONLY";
-    ticketPriceInput.value = event.ticketPrice !== null ? event.ticketPrice : 0;
-    totalTicketsInput.value = event.totalTickets || "";
-    ticketsAvailableInput.value = event.ticketsAvailable !== null ? event.ticketsAvailable : "";
+    
+    ticketPriceInput.value = event.ticketPrice || 0;
+    totalTicketsInput.value = event.totalTickets || 0;
+    ticketsAvailableInput.value = event.ticketsAvailable || 0;
 
     // Show image previews
     if (event.bannerUrl) {
         currentBannerUrl = event.bannerUrl;
         bannerPreview.src = event.bannerUrl;
         bannerPreviewContainer.classList.remove("hidden");
-        bannerFileName.textContent = "Current Banner Loaded";
+        bannerFileName.textContent = "Change banner artwork";
     }
-    if (event.ticketUrl) {
-        currentTicketUrl = event.ticketUrl;
-        ticketPreview.src = event.ticketUrl;
-        ticketPreviewContainer.classList.remove("hidden");
-        ticketFileName.textContent = "Current Ticket Cover Loaded";
-    }
-    if (event.paymentQrUrl) {
+    if (event.ticketPrice > 0 && event.paymentQrUrl) {
         currentPaymentQrUrl = event.paymentQrUrl;
         paymentQrPreview.src = event.paymentQrUrl;
         paymentQrPreviewContainer.classList.remove("hidden");
-        paymentQrFileName.textContent = "Current QR Code Loaded";
+        paymentQrFileName.textContent = "Change UPI payment QR code";
     }
 
-    // Toggle Payment QR code upload block
     togglePaymentQr();
 }
 
-// Form Submission Handler
-form.addEventListener("submit", async (e) => {
-    e.preventDefault();
+// Form validation
+function validateForm() {
+    let isValid = true;
     clearInputErrors();
 
-    const token = localStorage.getItem("accessToken");
-    if (!token) {
-        showGlobalAlert("error", "Your session has expired. Please log in again.");
+    const title = document.getElementById("title").value.trim();
+    const eventDateStr = document.getElementById("eventDate").value;
+    const eventTimeStr = document.getElementById("eventTime").value;
+    const lastRegDateStr = document.getElementById("lastRegistrationDate").value;
+    const city = cityInput.value.trim();
+    const location = document.getElementById("location").value.trim();
+    const ticketPrice = parseFloat(ticketPriceInput.value || 0);
+    const totalTickets = parseInt(totalTicketsInput.value || 0, 10);
+    const ticketsAvailable = parseInt(ticketsAvailableInput.value || 0, 10);
+
+    if (!title) {
+        showInputError(document.getElementById("title"), "Event title is required.");
+        isValid = false;
+    }
+    if (!eventDateStr) {
+        showInputError(document.getElementById("eventDate"), "Event date is required.");
+        isValid = false;
+    }
+    if (!eventTimeStr) {
+        showInputError(document.getElementById("eventTime"), "Event start time is required.");
+        isValid = false;
+    }
+    if (!lastRegDateStr) {
+        showInputError(document.getElementById("lastRegistrationDate"), "Registration deadline is required.");
+        isValid = false;
+    }
+    if (!city) {
+        showInputError(cityInput, "City / Campus location is required.");
+        isValid = false;
+    }
+    if (!location) {
+        showInputError(document.getElementById("location"), "Venue location or join link is required.");
+        isValid = false;
+    }
+    if (isNaN(ticketPrice) || ticketPrice < 0) {
+        showInputError(ticketPriceInput, "Ticket price must be a valid number of 0 or greater.");
+        isValid = false;
+    }
+    if (isNaN(totalTickets) || totalTickets < 1) {
+        showInputError(totalTicketsInput, "Total tickets capacity must be at least 1.");
+        isValid = false;
+    }
+    if (isNaN(ticketsAvailable) || ticketsAvailable < 0 || ticketsAvailable > totalTickets) {
+        showInputError(ticketsAvailableInput, "Tickets available must be between 0 and total tickets capacity.");
+        isValid = false;
+    }
+
+    // Dates integrity checks
+    if (eventDateStr && lastRegDateStr) {
+        const eventDate = new Date(eventDateStr);
+        const lastRegDate = new Date(lastRegDateStr);
+        if (lastRegDate > eventDate) {
+            showInputError(document.getElementById("lastRegistrationDate"), "Registration deadline must be on or before the event date.");
+            isValid = false;
+        }
+    }
+
+    // Files requirement checks in creation mode
+    if (!isEditMode) {
+        if (!bannerInput.files || bannerInput.files.length === 0) {
+            showInputError(bannerInput.parentElement, "Event banner artwork is required.");
+            isValid = false;
+        }
+        if (ticketPrice > 0 && (!paymentQrInput.files || paymentQrInput.files.length === 0)) {
+            showInputError(paymentQrInput.parentElement, "UPI payment QR code is required for paid events.");
+            isValid = false;
+        }
+    }
+
+    return isValid;
+}
+
+// Handle Form Submission (Using correct endpoints: POST /api/v1/events or PATCH /api/v1/events/{id})
+async function handleFormSubmit(e) {
+    e.preventDefault();
+
+    if (!validateForm()) {
+        showGlobalAlert("error", "Please fix all the validation errors highlighted above.");
         return;
     }
 
-    // Capture values
+    const token = localStorage.getItem("accessToken");
+    const submitBtn = document.getElementById("submit-btn");
+
+    submitBtn.disabled = true;
+    submitBtn.classList.add("opacity-60", "cursor-not-allowed");
+
     const title = document.getElementById("title").value.trim();
     const description = document.getElementById("description").value.trim();
     const category = document.getElementById("category").value;
     const club = document.getElementById("club").value.trim();
-    const eventDateVal = document.getElementById("eventDate").value;
-    const eventTimeVal = document.getElementById("eventTime").value;
-    const lastRegDateVal = document.getElementById("lastRegistrationDate").value;
+    const eventDate = document.getElementById("eventDate").value;
+    const eventTime = document.getElementById("eventTime").value;
+    const lastRegistrationDate = document.getElementById("lastRegistrationDate").value;
     const eventMode = document.getElementById("eventMode").value;
-    const city = document.getElementById("city").value.trim();
-    const locationVal = document.getElementById("location").value.trim();
+    const city = cityInput.value.trim();
+    const location = document.getElementById("location").value.trim();
     const participationType = document.getElementById("participationType").value;
     const ticketPrice = parseFloat(ticketPriceInput.value || 0);
-    const totalTickets = parseInt(totalTicketsInput.value || 0);
-    const ticketsAvailable = parseInt(ticketsAvailableInput.value || 0);
+    const totalTickets = parseInt(totalTicketsInput.value || 0, 10);
+    const ticketsAvailable = parseInt(ticketsAvailableInput.value || 0, 10);
 
-    // Client-side validations
-    let hasError = false;
-
-    if (!title) {
-        showInputError(document.getElementById("title"), "Event title required*");
-        hasError = true;
-    }
-    if (!eventDateVal) {
-        showInputError(document.getElementById("eventDate"), "Event date is required");
-        hasError = true;
-    }
-    if (!eventTimeVal) {
-        showInputError(document.getElementById("eventTime"), "Event time can't be null");
-        hasError = true;
-    }
-    if (!lastRegDateVal) {
-        showInputError(document.getElementById("lastRegistrationDate"), "Last registration date should not be blank");
-        hasError = true;
-    }
-    if (!city) {
-        showInputError(cityInput, "City of event or choose Online Mode");
-        hasError = true;
-    }
-    if (!locationVal) {
-        showInputError(document.getElementById("location"), "Location of event must be filled");
-        hasError = true;
-    }
-    if (isNaN(ticketPrice) || ticketPrice < 0) {
-        showInputError(ticketPriceInput, "Minimum ticket price must be 0");
-        hasError = true;
-    }
-    if (isNaN(totalTickets) || totalTickets < 1) {
-        showInputError(totalTicketsInput, "Minimum tickets must be 1");
-        hasError = true;
-    }
-    if (isNaN(ticketsAvailable) || ticketsAvailable < 0) {
-        showInputError(ticketsAvailableInput, "Minimum available tickets must be 0");
-        hasError = true;
-    }
-    if (ticketsAvailable > totalTickets) {
-        showInputError(ticketsAvailableInput, "Tickets available cannot exceed total capacity");
-        hasError = true;
-    }
-
-    // Date logical checks
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const evDate = new Date(eventDateVal);
-    const regDate = new Date(lastRegDateVal);
-
-    if (eventDateVal && evDate <= today) {
-        showInputError(document.getElementById("eventDate"), "Event date must be in future");
-        hasError = true;
-    }
-    if (lastRegDateVal && regDate <= today) {
-        showInputError(document.getElementById("lastRegistrationDate"), "Last registration date should be in future");
-        hasError = true;
-    }
-    if (eventDateVal && lastRegDateVal && regDate > evDate) {
-        showInputError(document.getElementById("lastRegistrationDate"), "Last registration date should be before event date");
-        hasError = true;
-    }
-
-    // File validation in Create Mode
-    if (!isEditMode) {
-        if (!bannerInput.files || bannerInput.files.length === 0) {
-            showInputError(document.getElementById("banner-error"), "Banner image required");
-            hasError = true;
-        }
-        if (!ticketInput.files || ticketInput.files.length === 0) {
-            showInputError(document.getElementById("ticket-error"), "Ticket image required");
-            hasError = true;
-        }
-        if (ticketPrice > 0 && (!paymentQrInput.files || paymentQrInput.files.length === 0)) {
-            showInputError(document.getElementById("paymentQr-error"), "Payment QR required for paid events");
-            hasError = true;
-        }
-    } else {
-        // In edit mode, UPI QR is required if ticket price is > 0 and we don't have a current one
-        if (ticketPrice > 0 && !currentPaymentQrUrl && (!paymentQrInput.files || paymentQrInput.files.length === 0)) {
-            showInputError(document.getElementById("paymentQr-error"), "Payment QR required for paid events");
-            hasError = true;
-        }
-    }
-
-    if (hasError) {
-        showGlobalAlert("error", "Please fix the highlighted errors before submitting.");
-        return;
-    }
-
-    // Disable submit button
-    const submitBtn = document.getElementById("submit-btn");
-    submitBtn.disabled = true;
-    submitBtn.classList.add("opacity-60", "cursor-not-allowed");
-
-    // Construct FormData
     const formData = new FormData();
     formData.append("title", title);
     formData.append("description", description);
-    formData.append("location", locationVal);
-    formData.append("city", city);
-    formData.append("lastRegistrationDate", lastRegDateVal);
-    formData.append("eventDate", eventDateVal);
-    // Ensure seconds are included if not present
-    const timeFormatted = eventTimeVal.length === 5 ? `${eventTimeVal}:00` : eventTimeVal;
-    formData.append("eventTime", timeFormatted);
-    formData.append("totalTickets", totalTickets);
-    formData.append("ticketsAvailable", ticketsAvailable);
     formData.append("category", category);
     formData.append("club", club);
-    formData.append("ticketPrice", ticketPrice);
+    formData.append("eventDate", eventDate);
+    formData.append("eventTime", eventTime + ":00"); // Backend expects HH:mm:ss format
+    formData.append("lastRegistrationDate", lastRegistrationDate);
+    formData.append("location", location);
+    formData.append("city", city);
     formData.append("participationType", participationType);
+    formData.append("ticketPrice", ticketPrice);
+    formData.append("totalTickets", totalTickets);
+    formData.append("ticketsAvailable", ticketsAvailable);
     formData.append("eventMode", eventMode);
 
     // Append files
@@ -371,11 +357,11 @@ form.addEventListener("submit", async (e) => {
     }
 
     try {
-        let url = `${API_EVENT_BASE}/addEvent`;
+        let url = API_EVENTS;
         let method = "POST";
 
         if (isEditMode) {
-            url = `${API_EVENT_BASE}/updateEvent/${editEventId}`;
+            url = `${API_EVENTS}/${editEventId}`;
             method = "PATCH";
         }
 
@@ -407,7 +393,7 @@ form.addEventListener("submit", async (e) => {
         submitBtn.disabled = false;
         submitBtn.classList.remove("opacity-60", "cursor-not-allowed");
     }
-});
+}
 
 // Run initialization
 document.addEventListener("DOMContentLoaded", initPage);
