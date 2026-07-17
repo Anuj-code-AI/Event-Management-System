@@ -141,15 +141,90 @@
                                 </div>
                             </div>
 
-                            <!-- Access Scope -->
-                            <div class="space-y-1 pt-2">
-                                <label for="form-is-public" class="text-xs font-bold text-ink uppercase tracking-wider eyebrow">Access Scope <span class="text-danger">*</span></label>
-                                <select id="form-is-public" name="isPublic" required
-                                        class="w-full bg-canvas-sunk border border-line rounded-lg text-xs text-ink focus:border-action focus:ring-action transition-all">
-                                    <option value="true" selected>Public (Show globally on CampusHive explore)</option>
-                                    <option value="false">Campus Only (Show only to students of your university)</option>
-                                </select>
-                                <p class="error-msg text-xs text-danger hidden mt-1"></p>
+                            <!-- Access Scope & Submissions Settings -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                                <div class="space-y-1">
+                                    <label for="form-is-public" class="text-xs font-bold text-ink uppercase tracking-wider eyebrow">Access Scope <span class="text-danger">*</span></label>
+                                    <select id="form-is-public" name="isPublic" required
+                                            class="w-full bg-canvas-sunk border border-line rounded-lg text-xs text-ink focus:border-action focus:ring-action transition-all">
+                                        <option value="true" selected>Public (Show globally on CampusHive explore)</option>
+                                        <option value="false">Campus Only (Show only to students of your university)</option>
+                                    </select>
+                                    <p class="error-msg text-xs text-danger hidden mt-1"></p>
+                                </div>
+
+                                <div class="space-y-1">
+                                    <label for="maxSubmissions" class="text-xs font-bold text-ink uppercase tracking-wider eyebrow">Max Submission Limit <span class="text-danger">*</span></label>
+                                    <input type="number" id="maxSubmissions" name="maxSubmissions" min="1" required value="1000"
+                                           class="w-full bg-canvas-sunk border border-line rounded-lg text-xs text-ink focus:border-action focus:ring-action transition-all" />
+                                    <p class="error-msg text-xs text-danger hidden mt-1"></p>
+                                </div>
+                            </div>
+
+                            <!-- Registration Dates -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                                <div class="space-y-1">
+                                    <label for="registrationStart" class="text-xs font-bold text-ink uppercase tracking-wider eyebrow">Registration Opens <span class="text-danger">*</span></label>
+                                    <input type="datetime-local" id="registrationStart" name="registrationStart" required
+                                           class="w-full bg-canvas-sunk border border-line rounded-lg text-xs text-ink focus:border-action focus:ring-action transition-all" />
+                                    <p class="error-msg text-xs text-danger hidden mt-1"></p>
+                                </div>
+
+                                <div class="space-y-1">
+                                    <label for="registrationDeadline" class="text-xs font-bold text-ink uppercase tracking-wider eyebrow">Registration Closes <span class="text-danger">*</span></label>
+                                    <input type="datetime-local" id="registrationDeadline" name="registrationDeadline" required
+                                           class="w-full bg-canvas-sunk border border-line rounded-lg text-xs text-ink focus:border-action focus:ring-action transition-all" />
+                                    <p class="error-msg text-xs text-danger hidden mt-1"></p>
+                                </div>
+                            </div>
+
+                            <!-- Allow multiple submissions checkbox -->
+                            <div class="flex items-center gap-2 pt-2">
+                                <input type="checkbox" id="allowMultipleSubmissions" name="allowMultipleSubmissions"
+                                       class="rounded border-line text-action focus:ring-action focus:ring-offset-canvas bg-canvas transition-all" />
+                                <label for="allowMultipleSubmissions" class="text-xs font-semibold text-ink cursor-pointer select-none">Allow students to submit multiple times</label>
+                            </div>
+
+                            <!-- Registration Fee Configuration -->
+                            <div class="border-t border-line pt-4 space-y-4">
+                                <h3 class="text-xs font-bold text-action uppercase tracking-wider eyebrow font-display">Registration Fee Configuration</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div class="space-y-1">
+                                        <label for="registrationFee" class="text-xs font-bold text-ink uppercase tracking-wider eyebrow">Registration Fee ($) <span class="text-danger">*</span></label>
+                                        <input type="number" id="registrationFee" name="registrationFee" step="0.01" min="0" required value="0"
+                                               class="w-full bg-canvas-sunk border border-line rounded-lg text-xs text-ink focus:border-action focus:ring-action transition-all" />
+                                        <p class="error-msg text-xs text-danger hidden mt-1"></p>
+                                    </div>
+                                </div>
+
+                                <!-- Payment QR Code (Mandatory if Paid) -->
+                                <div id="payment-qr-container" class="hidden space-y-4">
+                                    <div class="space-y-1.5">
+                                        <label class="text-xs font-bold text-ink uppercase tracking-wider eyebrow">Payment UPI / QR Code <span class="text-danger">*</span></label>
+                                        <div class="flex items-center justify-center w-full">
+                                            <label class="flex flex-col items-center justify-center w-full h-32 border border-line border-dashed rounded-lg cursor-pointer bg-canvas-sunk hover:bg-canvas-mid hover:border-action transition-all">
+                                                <div class="flex flex-col items-center justify-center pt-4 pb-4">
+                                                    <span class="material-symbols-outlined text-[28px] text-muted mb-1">qr_code_2</span>
+                                                    <p id="paymentQr-file-name" class="text-xs text-muted font-semibold text-center px-4">Click to upload UPI / Payment QR code</p>
+                                                    <p class="text-[10px] text-muted-dim font-mono">Mandatory for paid forms (JPG, PNG)</p>
+                                                </div>
+                                                <input type="file" id="paymentQr" name="paymentQr" accept="image/*" class="hidden" />
+                                            </label>
+                                        </div>
+                                        <p id="paymentQr-error" class="error-msg text-xs text-danger hidden mt-1"></p>
+                                        <div id="paymentQr-preview-container" class="hidden mt-2 relative rounded-lg overflow-hidden border border-line h-20 w-20 bg-canvas-sunk">
+                                            <img id="paymentQr-preview" class="w-full h-full object-cover" src="" alt="Payment QR Preview">
+                                        </div>
+                                    </div>
+
+                                    <!-- Payment Instructions -->
+                                    <div class="space-y-1">
+                                        <label for="paymentInstructions" class="text-xs font-bold text-ink uppercase tracking-wider eyebrow">Payment Instructions</label>
+                                        <textarea id="paymentInstructions" name="paymentInstructions" rows="2" placeholder="Instructions on how to complete the UPI payment..."
+                                                  class="w-full bg-canvas-sunk border border-line rounded-lg text-xs text-ink focus:border-action focus:ring-action transition-all"></textarea>
+                                        <p class="error-msg text-xs text-danger hidden mt-1"></p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

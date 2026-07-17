@@ -109,25 +109,37 @@
             <button id="retry-btn" class="mt-4 rounded-lg border border-line-strong bg-canvas px-4 py-2 text-sm font-semibold text-ink">Retry</button>
         </section>
 
-        <section id="campus-events-section" class="hidden pt-9">
-            <div class="mb-5 flex items-end justify-between">
+        <!-- Events section -->
+        <section id="events" class="scroll-mt-24 pt-10 hidden">
+            <div class="mb-5 flex items-end justify-between gap-4">
                 <div>
-                    <p class="eyebrow text-[11px] text-signal">Live listings</p>
-                    <h2 id="campus-name-heading" class="mt-1 font-display text-2xl font-semibold text-ink">Events on campus</h2>
+                    <p class="eyebrow text-[11px] text-action">Events</p>
+                    <h2 id="campus-name-heading" class="mt-1 font-display text-2xl font-semibold text-ink">Upcoming campus events</h2>
                 </div>
                 <span id="events-count" class="font-mono text-xs text-muted"></span>
             </div>
-            
-            <div id="events-grid" class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3"></div>
-            
-            <p id="events-empty-msg" class="hidden border border-dashed border-line-strong bg-canvas px-5 py-9 text-center text-sm text-muted">No events or registrations match this search.</p>
-            
-            <div id="events-pagination" class="hidden mt-6 flex items-center justify-between border-t border-line pt-4">
-                <span id="pagination-info" class="font-mono text-xs text-muted"></span>
-                <div class="flex gap-2">
-                    <button id="prev-page-btn" class="rounded-lg border border-line-strong bg-canvas px-3 py-2 text-sm font-medium text-ink disabled:opacity-40">Previous</button>
-                    <button id="next-page-btn" class="rounded-lg border border-line-strong bg-canvas px-3 py-2 text-sm font-medium text-ink disabled:opacity-40">Next</button>
+            <div id="event-cards" class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3"></div>
+            <p id="events-empty-msg" class="hidden border border-dashed border-line-strong bg-canvas px-5 py-8 text-center text-sm text-muted">No campus events match this search.</p>
+            <p id="events-error-msg" class="hidden mt-4 text-sm text-danger"></p>
+            <div class="mt-6 text-center">
+                <button id="load-more-events-btn" class="hidden rounded-lg border border-line-strong bg-canvas px-4 py-2.5 text-sm font-semibold text-ink hover:border-ink">Load more events</button>
+            </div>
+        </section>
+
+        <!-- Registrations section -->
+        <section id="forms" class="scroll-mt-24 border-t border-line pt-10 mt-12 hidden">
+            <div class="mb-5 flex items-end justify-between gap-4">
+                <div>
+                    <p class="eyebrow text-[11px] text-signal">Registrations</p>
+                    <h2 class="mt-1 font-display text-2xl font-semibold text-ink">Open campus forms</h2>
                 </div>
+                <span id="forms-count" class="font-mono text-xs text-muted"></span>
+            </div>
+            <div id="form-cards" class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3"></div>
+            <p id="forms-empty-msg" class="hidden border border-dashed border-line-strong bg-canvas px-5 py-8 text-center text-sm text-muted">No active registrations match this search.</p>
+            <p id="forms-error-msg" class="hidden mt-4 text-sm text-danger"></p>
+            <div class="mt-6 text-center">
+                <button id="load-more-forms-btn" class="hidden rounded-lg border border-line-strong bg-canvas px-4 py-2.5 text-sm font-semibold text-ink hover:border-ink">Load more registrations</button>
             </div>
         </section>
     </main>

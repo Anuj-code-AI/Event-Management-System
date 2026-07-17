@@ -106,8 +106,8 @@ function bindFileLabelChange(inputEl, labelEl) {
 async function initPage() {
     const user = await getCurrentUser();
     if (!user || (user.systemRole !== "HOD" && user.hostStatus !== "APPROVED")) {
-        console.warn("[create-event] Unauthorized access. Redirecting to home...");
-        window.location.href = "/home";
+        console.warn("[create-event] Unauthorized access.");
+        show404Page("You do not have permission to request events.");
         return;
     }
 

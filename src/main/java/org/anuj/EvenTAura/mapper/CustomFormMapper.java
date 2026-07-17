@@ -61,7 +61,8 @@ public final class CustomFormMapper {
                 form.getBannerUrl(),
                 form.getRegistrationDeadline(),
                 form.getStatus(),
-                form.getUniversity().getLogoUrl()
+                form.getUniversity().getLogoUrl(),
+                form.isAcceptingResponses()
         );
     }
 

@@ -174,7 +174,10 @@ function switchTab(tab) {
 
 document.addEventListener("DOMContentLoaded", async () => {
     const user = await getCurrentUser();
-    if (!user || user.systemRole !== "SUPER_ADMIN") { window.location.href = "/home"; return; }
+    if (!user || user.systemRole !== "SUPER_ADMIN") {
+        show404Page("You do not have permission to access the Universities administration portal.");
+        return;
+    }
     loadUniversities();
     document.getElementById("tab-univ-btn").addEventListener("click", () => switchTab("universities"));
     document.getElementById("tab-users-btn").addEventListener("click", () => switchTab("users"));

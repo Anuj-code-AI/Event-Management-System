@@ -99,10 +99,32 @@ async function loadFormSpecifications() {
         }
 
         const res = await fetch(endpoint, { headers });
+
+        if (res.status === 401) {
+            showLoading(false);
+            showLoginRequiredPage("Please login to register for this event.");
+            return;
+        }
+
         const body = await res.json();
 
         if (res.ok && body.success && body.data) {
             customFormStructure = body.data;
+
+            // Access control check for unapproved forms
+            if (customFormStructure.status !== "APPROVED") {
+                const currentUser = await getCurrentUser();
+                const isAdmin = currentUser && (currentUser.systemRole === "SUPER_ADMIN");
+                const isHOD = currentUser && (currentUser.systemRole === "HOD");
+                const isHost = currentUser && (currentUser.hostStatus === "APPROVED");
+
+                if (!isAdmin && !isHOD && !isHost) {
+                    showLoading(false);
+                    show404Page("The form you are looking for has not been approved, or you do not have permission to view it.");
+                    return;
+                }
+            }
+
             populateFormHeader(customFormStructure);
             renderFormFields(customFormStructure.questions || []);
             
@@ -125,6 +147,13 @@ async function loadFormSpecifications() {
     } catch (err) {
         console.error("loadFormSpecifications error:", err);
         showLoading(false);
+
+        // Double check if it's a JSON parse error caused by HTML/text response from unauthenticated / expired token
+        if (err.message && (err.message.includes("Unexpected token") || err.message.includes("JSON") || err.message.includes("Unexpected end"))) {
+            showLoginRequiredPage("Please login to register for this event.");
+            return;
+        }
+
         formContentSection.classList.add("hidden");
         formError.classList.remove("hidden");
         errorMessage.textContent = err.message || "The form you are requesting could not be loaded.";

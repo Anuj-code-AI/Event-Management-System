@@ -18,4 +18,5 @@ public class CustomFormSummaryResponse {
     private LocalDateTime registrationDeadLine;
     private FormStatus status;
     private String logoUrl;
+    private boolean acceptingResponses;
 }

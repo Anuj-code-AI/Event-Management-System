@@ -110,3 +110,70 @@ document.addEventListener("DOMContentLoaded", () => {
         if (e.key === "Escape") setMobileSidebarOpen(false);
     });
 });
+
+function show404Page(message = "The page you are looking for doesn't exist.") {
+    const mainEl = document.querySelector("main");
+    if (!mainEl) return;
+    mainEl.className = "flex-1 px-4 py-6 md:px-8 md:py-8 space-y-6";
+    mainEl.innerHTML = `
+        <div class="flex flex-col items-center justify-center min-h-[60vh] text-center px-4 py-12 animate-fade-in">
+            <div class="relative mb-6">
+                <h1 class="text-[120px] md:text-[160px] font-extrabold font-display leading-none select-none bg-gradient-to-r from-danger/20 via-amber/20 to-action/20 bg-clip-text text-transparent">404</h1>
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-[64px] text-danger">error</span>
+                </div>
+            </div>
+            
+            <h2 class="text-2xl md:text-3xl font-extrabold text-ink font-display tracking-tight mb-3">
+                Page Doesn't Exist
+            </h2>
+            <p class="text-sm md:text-base text-muted max-w-md mb-8 leading-relaxed">
+                ${message}
+            </p>
+            
+            <div class="flex flex-wrap items-center justify-center gap-4">
+                <a href="/home" class="inline-flex items-center gap-2 bg-action hover:bg-action-hover text-white font-semibold px-6 py-3 rounded-lg text-sm transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                    <span class="material-symbols-outlined text-[18px]">home</span>
+                    <span>Return to Home</span>
+                </a>
+                <button onclick="window.history.back()" class="inline-flex items-center gap-2 border border-line-strong bg-canvas hover:bg-canvas-sunk text-ink font-semibold px-6 py-3 rounded-lg text-sm transition-all shadow-sm">
+                    <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                    <span>Go Back</span>
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+function showLoginRequiredPage(message = "Please login to register for this event.") {
+    const mainEl = document.querySelector("main");
+    if (!mainEl) return;
+    mainEl.className = "flex-1 px-4 py-6 md:px-8 md:py-8 space-y-6";
+    mainEl.innerHTML = `
+        <div class="flex flex-col items-center justify-center min-h-[60vh] text-center px-4 py-12 animate-fade-in">
+            <div class="relative mb-6">
+                <div class="w-24 h-24 rounded-full bg-action-tint flex items-center justify-center mx-auto mb-2 shadow-inner">
+                    <span class="material-symbols-outlined text-[48px] text-action">lock</span>
+                </div>
+            </div>
+            
+            <h2 class="text-2xl md:text-3xl font-extrabold text-ink font-display tracking-tight mb-3">
+                Login Required
+            </h2>
+            <p class="text-sm md:text-base text-muted max-w-md mb-8 leading-relaxed font-medium">
+                ${message}
+            </p>
+            
+            <div class="flex flex-wrap items-center justify-center gap-4">
+                <a href="/login" class="inline-flex items-center gap-2 bg-action hover:bg-action-hover text-white font-semibold px-8 py-3 rounded-lg text-sm transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                    <span class="material-symbols-outlined text-[18px]">login</span>
+                    <span>Login / Register</span>
+                </a>
+                <a href="/home" class="inline-flex items-center gap-2 border border-line-strong bg-canvas hover:bg-canvas-sunk text-ink font-semibold px-6 py-3 rounded-lg text-sm transition-all shadow-sm">
+                    <span class="material-symbols-outlined text-[18px]">home</span>
+                    <span>Return to Home</span>
+                </a>
+            </div>
+        </div>
+    `;
+}

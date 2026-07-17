@@ -5,6 +5,12 @@ const API_CUSTOM_FORM_BASE = "/api/v1/custom-forms";
 let questions = [];
 let nextQuestionId = 1;
 
+// Element selectors
+const ticketPriceInput = document.getElementById("registrationFee");
+const paymentQrContainer = document.getElementById("payment-qr-container");
+const paymentQrInput = document.getElementById("paymentQr");
+const paymentQrFileName = document.getElementById("paymentQr-file-name");
+
 // File input handler with preview for header banner
 function setupFilePreview(inputId, previewContainerId, previewImgId, labelId, defaultLabel) {
     const input = document.getElementById(inputId);
@@ -39,19 +45,50 @@ function setupFilePreview(inputId, previewContainerId, previewImgId, labelId, de
 }
 
 setupFilePreview("banner", "banner-preview-container", "banner-preview", "banner-file-name", "Click to upload header banner");
+setupFilePreview("paymentQr", "paymentQr-preview-container", "paymentQr-preview", "paymentQr-file-name", "Click to upload UPI / Payment QR code");
+
+// Handle conditional Payment QR display
+function togglePaymentQr() {
+    const price = parseFloat(ticketPriceInput.value || 0);
+    if (price > 0) {
+        paymentQrContainer.classList.remove("hidden");
+    } else {
+        paymentQrContainer.classList.add("hidden");
+        paymentQrInput.value = "";
+        paymentQrFileName.textContent = "Click to upload UPI / Payment QR code";
+        const container = document.getElementById("paymentQr-preview-container");
+        if (container) container.classList.add("hidden");
+    }
+}
+
+if (ticketPriceInput) {
+    ticketPriceInput.addEventListener("input", togglePaymentQr);
+}
 
 // Initial Page Setup
 async function initPage() {
     const user = await getCurrentUser();
     if (!user || (user.systemRole !== "HOD" && user.hostStatus !== "APPROVED")) {
-        console.warn("[create-custom-form] Unauthorized access. Redirecting...");
-        window.location.href = "/home";
+        console.warn("[create-custom-form] Unauthorized access.");
+        show404Page("You do not have permission to build custom forms.");
         return;
     }
 
     if (typeof renderLoggedInSidebar === "function") {
         renderLoggedInSidebar(user);
     }
+
+    // Set default dates: start now, deadline in 1 week
+    const now = new Date();
+    const startStr = now.toISOString().slice(0, 16);
+    const deadline = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    const endStr = deadline.toISOString().slice(0, 16);
+
+    document.getElementById("registrationStart").value = startStr;
+    document.getElementById("registrationDeadline").value = endStr;
+
+    // Bind add question button click
+    document.getElementById("add-question-btn")?.addEventListener("click", addQuestion);
 
     // Load initial empty question
     addQuestion();
@@ -198,135 +235,143 @@ function renderQuestions() {
                 </div>
 
                 <!-- Field Type -->
-                <div class="w-full md:w-56 space-y-1">
-                    <label class="text-xs font-bold text-action uppercase tracking-wider eyebrow">Answer Type</label>
+                <div class="w-full md:w-48 space-y-1">
+                    <label class="text-xs font-bold text-ink uppercase tracking-wider eyebrow">Question Type</label>
                     <select onchange="updateQuestionField(${q.id}, 'fieldType', this.value)"
-                            class="w-full bg-canvas-sunk border border-line rounded-lg px-4 py-2 text-xs text-ink focus:border-action focus:ring-action transition-all">
+                            class="w-full bg-canvas-sunk border border-line rounded-lg px-3 py-2 text-xs text-ink focus:border-action focus:ring-action transition-all">
                         <option value="SHORT_ANSWER" ${q.fieldType === "SHORT_ANSWER" ? "selected" : ""}>Short Answer</option>
                         <option value="PARAGRAPH" ${q.fieldType === "PARAGRAPH" ? "selected" : ""}>Paragraph</option>
-                        <option value="MULTIPLE_CHOICE" ${q.fieldType === "MULTIPLE_CHOICE" ? "selected" : ""}>Multiple Choice</option>
-                        <option value="CHECKBOXES" ${q.fieldType === "CHECKBOXES" ? "selected" : ""}>Checkboxes</option>
+                        <option value="MULTIPLE_CHOICE" ${q.fieldType === "MULTIPLE_CHOICE" ? "selected" : ""}>Single Choice (Radio)</option>
+                        <option value="CHECKBOXES" ${q.fieldType === "CHECKBOXES" ? "selected" : ""}>Multiple Choice (Checkbox)</option>
                         <option value="DROPDOWN" ${q.fieldType === "DROPDOWN" ? "selected" : ""}>Dropdown</option>
                         <option value="NUMBER" ${q.fieldType === "NUMBER" ? "selected" : ""}>Number</option>
                         <option value="EMAIL" ${q.fieldType === "EMAIL" ? "selected" : ""}>Email</option>
                         <option value="PHONE" ${q.fieldType === "PHONE" ? "selected" : ""}>Phone</option>
                         <option value="DATE" ${q.fieldType === "DATE" ? "selected" : ""}>Date</option>
-                        <option value="FILE_UPLOAD" ${q.fieldType === "FILE_UPLOAD" ? "selected" : ""}>File Upload (Images/PDF)</option>
+                        <option value="FILE_UPLOAD" ${q.fieldType === "FILE_UPLOAD" ? "selected" : ""}>File Upload</option>
                     </select>
                 </div>
             </div>
 
-            <!-- Dynamic choices options block -->
+            <!-- Options (Choices) -->
             ${optionsHtml}
 
-            <!-- Bottom action panel -->
-            <div class="flex items-center justify-end gap-3 mt-4 pt-2 border-t border-line text-muted">
-                <label class="flex items-center gap-1.5 text-xs font-semibold mr-auto cursor-pointer hover:text-ink transition-colors">
-                    <input type="checkbox" ${q.required ? "checked" : ""} onchange="updateQuestionField(${q.id}, 'required', this.checked)"
-                           class="rounded bg-canvas-sunk border-line text-action focus:ring-action focus:ring-offset-background" />
-                    Required field
-                </label>
-
-                <!-- Duplicate -->
-                <button type="button" onclick="duplicateQuestion(${q.id})" class="hover:text-action transition-colors flex items-center p-1" title="Duplicate question">
-                    <span class="material-symbols-outlined text-[20px]">content_copy</span>
-                </button>
-
-                <!-- Delete -->
-                <button type="button" onclick="deleteQuestion(${q.id})" class="hover:text-danger transition-colors flex items-center p-1" title="Delete question">
-                    <span class="material-symbols-outlined text-[20px]">delete</span>
-                </button>
+            <!-- Card Actions -->
+            <div class="flex items-center justify-between border-t border-line pt-4 mt-2">
+                <div class="flex items-center gap-2">
+                    <input type="checkbox" id="req_${q.id}" ${q.required ? "checked" : ""}
+                           onchange="updateQuestionField(${q.id}, 'required', this.checked)"
+                           class="rounded border-line text-action focus:ring-action bg-canvas transition-all" />
+                    <label for="req_${q.id}" class="text-xs font-semibold text-ink cursor-pointer select-none">Required</label>
+                </div>
+                <div class="flex gap-1">
+                    <button type="button" onclick="duplicateQuestion(${q.id})" class="text-muted hover:text-ink p-1.5 rounded hover:bg-canvas-sunk transition-colors" title="Duplicate">
+                        <span class="material-symbols-outlined text-[20px]">content_copy</span>
+                    </button>
+                    <button type="button" onclick="deleteQuestion(${q.id})" class="text-danger hover:text-red-500 p-1.5 rounded hover:bg-red-50 transition-colors" title="Delete">
+                        <span class="material-symbols-outlined text-[20px]">delete</span>
+                    </button>
+                </div>
             </div>
         `;
         questionsContainer.appendChild(card);
     });
 }
 
-// Drag & Drop event handlers
-let draggedIndex = null;
+// Drag & Drop reordering logic
+let dragSrcEl = null;
 
 function handleDragStart(e) {
-    draggedIndex = parseInt(this.getAttribute("data-index"));
-    this.style.opacity = "0.4";
+    this.classList.add("opacity-50");
+    dragSrcEl = this;
     e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", this.getAttribute("data-index"));
 }
 
 function handleDragOver(e) {
-    e.preventDefault();
+    if (e.preventDefault) {
+        e.preventDefault();
+    }
     this.classList.add("drag-over");
+    return false;
 }
 
-function handleDragLeave() {
+function handleDragLeave(e) {
     this.classList.remove("drag-over");
 }
 
 function handleDrop(e) {
-    e.preventDefault();
+    e.stopPropagation();
     this.classList.remove("drag-over");
-    const targetIndex = parseInt(this.getAttribute("data-index"));
+    
+    if (dragSrcEl !== this) {
+        const fromIndex = parseInt(e.dataTransfer.getData("text/plain"));
+        const toIndex = parseInt(this.getAttribute("data-index"));
 
-    if (draggedIndex !== null && draggedIndex !== targetIndex) {
-        const draggedItem = questions[draggedIndex];
-        questions.splice(draggedIndex, 1);
-        questions.splice(targetIndex, 0, draggedItem);
+        // Reorder questions state
+        const targetQuestion = questions.splice(fromIndex, 1)[0];
+        questions.splice(toIndex, 0, targetQuestion);
+
         renderQuestions();
     }
+    return false;
 }
 
-function handleDragEnd() {
-    this.style.opacity = "1";
-    draggedIndex = null;
-    document.querySelectorAll("#questions-container > div").forEach(c => c.classList.remove("drag-over"));
+function handleDragEnd(e) {
+    this.classList.remove("opacity-50");
+    document.querySelectorAll("#questions-container > div").forEach(el => {
+        el.classList.remove("drag-over");
+    });
 }
 
-// Floating control adding question
-document.getElementById("add-question-btn").addEventListener("click", addQuestion);
-
-// Client-side helper alerts
+// Global alert alerts
 const alertBox = document.getElementById("alert-box");
-function showGlobalAlert(type, message) {
+
+function showGlobalAlert(type, msg) {
     alertBox.classList.remove("hidden");
     if (type === "success") {
-        alertBox.className = "p-4 rounded-lg mb-6 text-xs font-semibold flex items-start gap-2 bg-green-50 border border-green-200 text-signal shadow-sm";
-        alertBox.innerHTML = `<span class="material-symbols-outlined text-[20px]">check_circle</span> <span>${message}</span>`;
+        alertBox.className = "p-4 rounded-lg mb-6 text-xs font-semibold flex items-start gap-2 border bg-green-50 border-green-200 text-emerald-600";
+        alertBox.innerHTML = `<span class="material-symbols-outlined text-[16px]">check_circle</span><span>${msg}</span>`;
     } else {
-        alertBox.className = "p-4 rounded-lg mb-6 text-xs font-semibold flex items-start gap-2 bg-red-50 border border-red-200 text-danger shadow-sm";
-        alertBox.innerHTML = `<span class="material-symbols-outlined text-[20px]">error</span> <span>${message}</span>`;
+        alertBox.className = "p-4 rounded-lg mb-6 text-xs font-semibold flex items-start gap-2 border bg-red-50 border-red-200 text-danger";
+        alertBox.innerHTML = `<span class="material-symbols-outlined text-[16px]">error</span><span>${msg}</span>`;
     }
     alertBox.scrollIntoView({ behavior: "smooth", block: "center" });
 }
 
-function clearAlerts() {
-    alertBox.className = "hidden p-4 rounded-lg mb-6 text-xs font-semibold flex items-start gap-2";
-    alertBox.innerHTML = "";
-    document.querySelectorAll("input, select, textarea").forEach(el => el.classList.remove("border-danger"));
+function highlightError(element) {
+    if (!element) return;
+    element.classList.add("border-danger");
 }
 
-function highlightError(inputEl) {
-    if (inputEl) {
-        inputEl.classList.add("border-danger");
-    }
-}
+// Bind custom forms submissions builder submit event
+const customFormBuilder = document.getElementById("custom-form-builder");
 
-// Form Validation and Submission
-const builderForm = document.getElementById("custom-form-builder");
-
-builderForm.addEventListener("submit", async (e) => {
+customFormBuilder.addEventListener("submit", async (e) => {
     e.preventDefault();
-    clearAlerts();
+    alertBox.classList.add("hidden");
+
+    // Clear previous highlights
+    document.querySelectorAll("input, select, textarea").forEach(el => el.classList.remove("border-danger"));
 
     const token = localStorage.getItem("accessToken");
     if (!token) {
-        showGlobalAlert("error", "Your session has expired. Please log in again.");
+        showGlobalAlert("error", "You must be logged in to create a custom form event.");
         return;
     }
 
-    // Capture fields
     const title = document.getElementById("form-title").value.trim();
     const description = document.getElementById("form-description").value.trim();
     const bannerFile = document.getElementById("banner").files[0];
+    const isPublic = document.getElementById("form-is-public").value === "true";
+    const maxSubmissions = parseInt(document.getElementById("maxSubmissions").value || 1000);
+    const startVal = document.getElementById("registrationStart").value;
+    const deadlineVal = document.getElementById("registrationDeadline").value;
+    const allowMultipleSubmissions = document.getElementById("allowMultipleSubmissions").checked;
+    const registrationFee = parseFloat(document.getElementById("registrationFee").value || 0.0);
+    const paymentQrFile = document.getElementById("paymentQr").files[0];
+    const paymentInstructions = document.getElementById("paymentInstructions").value.trim();
 
-    // Client-side validations
     let hasError = false;
 
     if (!title) {
@@ -336,6 +381,39 @@ builderForm.addEventListener("submit", async (e) => {
     if (!bannerFile) {
         highlightError(document.getElementById("banner-file-name").parentElement);
         hasError = true;
+    }
+    if (!startVal) {
+        highlightError(document.getElementById("registrationStart"));
+        hasError = true;
+    }
+    if (!deadlineVal) {
+        highlightError(document.getElementById("registrationDeadline"));
+        hasError = true;
+    }
+    if (isNaN(maxSubmissions) || maxSubmissions <= 0) {
+        highlightError(document.getElementById("maxSubmissions"));
+        hasError = true;
+    }
+    if (isNaN(registrationFee) || registrationFee < 0) {
+        highlightError(document.getElementById("registrationFee"));
+        hasError = true;
+    }
+
+    // Payment QR mandatory if fee > 0
+    if (registrationFee > 0 && !paymentQrFile) {
+        highlightError(document.getElementById("paymentQr-file-name").parentElement);
+        hasError = true;
+    }
+
+    // Date logical validations
+    if (startVal && deadlineVal) {
+        const start = new Date(startVal);
+        const deadline = new Date(deadlineVal);
+        if (start >= deadline) {
+            highlightError(document.getElementById("registrationDeadline"));
+            showGlobalAlert("error", "Registration Closes date must be after Registration Opens date.");
+            return;
+        }
     }
 
     // Question validation: Title is mandatory
@@ -367,20 +445,19 @@ builderForm.addEventListener("submit", async (e) => {
         return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
     };
 
-    const isPublic = document.getElementById("form-is-public").value === "true";
-
     // Construct request payload matching CreateCustomFormRequest DTO
     const requestPayload = {
         title: title,
         description: description || "No form description provided.",
         participationType: isPublic ? "PUBLIC" : "UNIVERSITY_ONLY",
-        registrationStart: toLocalDateTimeString(new Date()),
-        registrationDeadline: toLocalDateTimeString(new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)), // 1 year from now
-        maxSubmissions: 1000,
+        registrationStart: toLocalDateTimeString(new Date(startVal)),
+        registrationDeadline: toLocalDateTimeString(new Date(deadlineVal)),
+        maxSubmissions: maxSubmissions,
         acceptingResponses: true,
-        allowMultipleSubmissions: true,
-        paymentRequired: false,
-        registrationFee: 0.0,
+        allowMultipleSubmissions: allowMultipleSubmissions,
+        paymentRequired: registrationFee > 0,
+        registrationFee: registrationFee,
+        paymentInstructions: paymentInstructions || "",
         questions: questions.map((q, idx) => ({
             title: q.label.trim(),
             description: "",
@@ -401,8 +478,11 @@ builderForm.addEventListener("submit", async (e) => {
     formData.append("request", requestBlob);
     formData.append("banner", bannerFile);
 
+    if (paymentQrFile) {
+        formData.append("paymentQr", paymentQrFile);
+    }
+
     try {
-        // Pointing to POST /api/v1/custom-forms
         const res = await fetch(API_CUSTOM_FORM_BASE, {
             method: "POST",
             headers: {
@@ -433,3 +513,4 @@ builderForm.addEventListener("submit", async (e) => {
 
 // Run initialization
 document.addEventListener("DOMContentLoaded", initPage);
+window.addQuestion = addQuestion;

@@ -8,7 +8,7 @@ let filteredList = [];
 async function initPage() {
     const user = await getCurrentUser();
     if (!user || (user.systemRole !== "HOD" && user.hostStatus !== "APPROVED")) {
-        window.location.href = "/home";
+        show404Page("You do not have permission to view form responses.");
         return;
     }
 

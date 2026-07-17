@@ -53,8 +53,8 @@ const nextPageBtn = document.getElementById("next-page-btn");
 async function initPage() {
     currentUser = await getCurrentUser();
     if (!currentUser || currentUser.systemRole !== "HOD") {
-        console.warn("[adminPage] Access denied. Redirecting to home...");
-        window.location.href = "/home";
+        console.warn("[adminPage] Access denied.");
+        show404Page("You do not have permission to access the moderation dashboard.");
         return;
     }
 
@@ -575,11 +575,12 @@ function renderFormCard(form) {
     }
 
     let hostedActions = "";
+    const isAccepting = form.acceptingResponses !== undefined ? form.acceptingResponses : (form.isAcceptingResponses !== undefined ? form.isAcceptingResponses : false);
     if (form.status === "APPROVED" || form.status === "HOSTED" || currentTab === "HOSTED" || currentTab === "APPROVED") {
-        const toggleLabel = form.acceptingResponses ? "Disable Submissions" : "Enable Submissions";
+        const toggleLabel = isAccepting ? "Disable Submissions" : "Enable Submissions";
         hostedActions = `
-            <button onclick="toggleResponses(${form.id}, ${form.acceptingResponses})" class="w-full mb-2 bg-canvas-sunk border border-line hover:bg-canvas-mid text-ink text-[11px] font-semibold py-1.5 rounded flex items-center justify-center gap-0.5">
-                <span class="material-symbols-outlined text-[14px]">${form.acceptingResponses ? 'do_not_disturb_on' : 'check_circle'}</span> ${toggleLabel}
+            <button onclick="toggleResponses(${form.id}, ${isAccepting})" class="w-full mb-2 bg-canvas-sunk border border-line hover:bg-canvas-mid text-ink text-[11px] font-semibold py-1.5 rounded flex items-center justify-center gap-0.5">
+                <span class="material-symbols-outlined text-[14px]">${isAccepting ? 'do_not_disturb_on' : 'check_circle'}</span> ${toggleLabel}
             </button>
         `;
     }

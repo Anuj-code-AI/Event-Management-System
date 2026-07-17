@@ -189,10 +189,32 @@ async function loadEventDetails(id) {
         const res = await fetch(`${API_EVENT}/${id}`, {
             headers: token ? { Authorization: `Bearer ${token}` } : {}
         });
+
+        if (res.status === 401) {
+            showLoading(false);
+            showLoginRequiredPage("Please login to register for this event.");
+            return;
+        }
+
         const body = await res.json();
 
         if (res.ok && body.success) {
             eventDetails = body.data;
+
+            // Access control check for unapproved events
+            if (eventDetails.eventStatus !== "APPROVED") {
+                const currentUser = await getCurrentUser();
+                const isAdmin = currentUser && (currentUser.systemRole === "SUPER_ADMIN");
+                const isHOD = currentUser && (currentUser.systemRole === "HOD");
+                const isHost = currentUser && eventDetails.organizer && (currentUser.id === eventDetails.organizer.userId);
+
+                if (!isAdmin && !isHOD && !isHost) {
+                    showLoading(false);
+                    show404Page("The event you are looking for has not been approved, or you do not have permission to view it.");
+                    return;
+                }
+            }
+
             populateEventDetails(eventDetails);
             showLoading(false);
         } else {
@@ -201,6 +223,13 @@ async function loadEventDetails(id) {
     } catch (err) {
         console.error("loadEventDetails error:", err);
         showLoading(false);
+
+        // Double check if it's a JSON parse error caused by HTML/text response from unauthenticated / expired token
+        if (err.message && (err.message.includes("Unexpected token") || err.message.includes("JSON") || err.message.includes("Unexpected end"))) {
+            showLoginRequiredPage("Please login to register for this event.");
+            return;
+        }
+
         contentSection.classList.add("hidden");
         errorBlock.classList.remove("hidden");
         document.getElementById("details-error-text").textContent = err.message || "Network issue loading event specifications.";
