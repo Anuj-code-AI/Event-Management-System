@@ -10,11 +10,11 @@
     <script>
         tailwind.config = {
             theme: { extend: {
-                colors: { ink: "#0B1526", "ink-soft": "#14213B", canvas: "#FFFFFF", "canvas-sunk": "#F5F7FA", "canvas-mid": "#EEF1F6", line: "#E2E6ED", "line-strong": "#CBD2DE", muted: "#5B6B85", "muted-dim": "#8894A8", action: "#2450E8", "action-hover": "#1A3FC4", "action-tint": "#EDF1FE", signal: "#0EA5A5", "signal-tint": "#E7F8F8", amber: "#B45309", danger: "#B42318" },
-                fontFamily: { display: ["Sora", "sans-serif"], body: ["Inter", "sans-serif"], mono: ["IBM Plex Mono", "monospace"] },
-                spacing: { "sidebar-w": "256px", "container-max": "1360px" },
-                borderRadius: { DEFAULT: "8px", lg: "10px", xl: "14px" }
-            }}
+                    colors: { ink: "#0B1526", "ink-soft": "#14213B", canvas: "#FFFFFF", "canvas-sunk": "#F5F7FA", "canvas-mid": "#EEF1F6", line: "#E2E6ED", "line-strong": "#CBD2DE", muted: "#5B6B85", "muted-dim": "#8894A8", action: "#2450E8", "action-hover": "#1A3FC4", "action-tint": "#EDF1FE", signal: "#0EA5A5", "signal-tint": "#E7F8F8", amber: "#B45309", danger: "#B42318" },
+                    fontFamily: { display: ["Sora", "sans-serif"], body: ["Inter", "sans-serif"], mono: ["IBM Plex Mono", "monospace"] },
+                    spacing: { "sidebar-w": "256px", "container-max": "1360px" },
+                    borderRadius: { DEFAULT: "8px", lg: "10px", xl: "14px" }
+                }}
         };
     </script>
     <style>
@@ -88,25 +88,31 @@
             </div>
         </section>
 
+        <!-- Team Section Label -->
+        <div class="max-w-4xl mx-auto">
+            <p class="eyebrow text-[11px] text-action">The People Behind It</p>
+            <h2 class="mt-1 font-display text-xl font-bold text-ink">Meet the Team</h2>
+        </div>
+
         <!-- Profile Showcase Grid -->
         <section class="max-w-4xl mx-auto border border-line bg-canvas p-6 md:p-8 hover:shadow-[0_10px_28px_-18px_rgba(11,21,38,.38)] hover:border-action/30 transition-all duration-300">
             <div class="flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-8">
                 <!-- Profile Avatar -->
                 <div class="shrink-0 w-40 h-40 rounded-full border-4 border-action-tint flex items-center justify-center overflow-hidden shadow-md hover:scale-[1.02] transition-transform duration-300 bg-canvas-sunk">
-                    <img src="/images/developer_profile.png" alt="Anuj Chourasiya Profile" class="w-full h-full object-cover" onerror="this.src='/images/logo.png'">
+                    <img src="/images/Anuj.jpeg" alt="Anuj Chourasiya Profile" class="w-full h-full object-cover" onerror="this.src='/images/logo.png'">
                 </div>
 
                 <!-- Developer Details -->
                 <div class="flex-1 space-y-4 text-center md:text-left">
                     <div class="space-y-1">
                         <h2 class="font-display text-2xl font-bold text-ink">Anuj Chourasiya</h2>
-                        <p class="eyebrow text-xs text-action font-semibold">3rd Year Software Developer & Founder</p>
+                        <p class="eyebrow text-xs text-action font-semibold">Founder & Software Developer</p>
                     </div>
 
                     <p class="text-sm leading-6 text-muted">
                         CampusHive was conceived, designed, and engineered by Anuj Chourasiya. As a backend-focused developer, Anuj is passionate about building secure architectures, high-performance APIs, database schemas, and intuitive web solutions.
                     </p>
-                    
+
                     <p class="text-sm leading-6 text-muted">
                         The platform was inspired by a universal campus problem: students missing out on key workshops, hackathons, seminars, and networking sessions due to fragmented communication. CampusHive aggregates all public and campus-only opportunities into a single interface.
                     </p>
@@ -137,6 +143,53 @@
                             <span>GitHub</span>
                         </a>
                         <a href="https://www.instagram.com/anuj_chourasiya8/" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 font-semibold text-muted hover:text-action">
+                            <i class="fa-brands fa-instagram text-[18px]"></i>
+                            <span>Instagram</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Profile Showcase Grid: Co-Founder -->
+        <section class="max-w-4xl mx-auto border border-line bg-canvas p-6 md:p-8 hover:shadow-[0_10px_28px_-18px_rgba(11,21,38,.38)] hover:border-action/30 transition-all duration-300">
+            <div class="flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-8">
+                <!-- Profile Avatar -->
+                <div class="shrink-0 w-40 h-40 rounded-full border-4 border-action-tint flex items-center justify-center overflow-hidden shadow-md hover:scale-[1.02] transition-transform duration-300 bg-canvas-sunk">
+                    <img src="/images/Salil.jpeg" alt="Salil Rao Narote Profile" class="w-full h-full object-cover" onerror="this.src='/images/logo.png'">
+                </div>
+
+                <!-- Co-Founder Details -->
+                <div class="flex-1 space-y-4 text-center md:text-left">
+                    <div class="space-y-1">
+                        <h2 class="font-display text-2xl font-bold text-ink">Salil Rao Narote</h2>
+                        <p class="eyebrow text-xs text-action font-semibold">Co-Founder, Marketing & Relations</p>
+                    </div>
+
+                    <p class="text-sm leading-6 text-muted">
+                        Salil leads marketing and relationship management for CampusHive, handling outreach to universities, hosts, and student communities to get the platform in front of the people who need it.
+                    </p>
+
+                    <p class="text-sm leading-6 text-muted">
+                        His focus is on building partnerships with campus organizers and HODs, growing CampusHive's presence across universities, and making sure early adopters have a smooth onboarding experience.
+                    </p>
+
+                    <!-- Focus Area Tags -->
+                    <div class="flex flex-wrap justify-center md:justify-start gap-2 pt-2">
+                        <span class="bg-canvas-sunk text-ink border border-line text-xs px-3 py-1 rounded-full font-medium">Marketing</span>
+                        <span class="bg-canvas-sunk text-ink border border-line text-xs px-3 py-1 rounded-full font-medium">Public Relations</span>
+                        <span class="bg-canvas-sunk text-ink border border-line text-xs px-3 py-1 rounded-full font-medium">Campus Outreach</span>
+                        <span class="bg-canvas-sunk text-ink border border-line text-xs px-3 py-1 rounded-full font-medium">Partnerships</span>
+                        <span class="bg-canvas-sunk text-ink border border-line text-xs px-3 py-1 rounded-full font-medium">Community Building</span>
+                    </div>
+
+                    <!-- Co-Founder Links -->
+                    <div class="flex flex-wrap justify-center md:justify-start gap-6 pt-4 border-t border-line text-sm">
+                        <a href="https://www.linkedin.com/in/salil-rao-narote-b6852b301/" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 font-semibold text-action hover:text-action-hover">
+                            <i class="fa-brands fa-linkedin text-[18px]"></i>
+                            <span>LinkedIn</span>
+                        </a>
+                        <a href="https://www.instagram.com/salill_rao?igsi=MXhwZzNyM3Zwa20xag%3D%3D&utm_source=qr" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 font-semibold text-muted hover:text-action">
                             <i class="fa-brands fa-instagram text-[18px]"></i>
                             <span>Instagram</span>
                         </a>
