@@ -1,11 +1,11 @@
 // create-event.js — handles creating and updating campus events
 const API_EVENTS = "/api/v1/events";
+const API_AI_GENERATE_DESCRIPTION = "/api/v1/ai/generate-description";
 
 // Initialize variables
 let isEditMode = false;
 let editEventId = null;
 let currentBannerUrl = null;
-let currentTicketUrl = null;
 let currentPaymentQrUrl = null;
 
 // Select form and elements
@@ -17,23 +17,25 @@ const ticketsAvailableInput = document.getElementById("ticketsAvailable");
 const paymentQrContainer = document.getElementById("payment-qr-container");
 const eventModeInput = document.getElementById("eventMode");
 const cityInput = document.getElementById("city");
+const descriptionInput = document.getElementById("description");
 
 // File input elements
 const bannerInput = document.getElementById("banner");
-const ticketInput = document.getElementById("ticket");
 const paymentQrInput = document.getElementById("paymentQr");
 
 const bannerFileName = document.getElementById("banner-file-name");
-const ticketFileName = document.getElementById("ticket-file-name");
 const paymentQrFileName = document.getElementById("paymentQr-file-name");
 
 const bannerPreviewContainer = document.getElementById("banner-preview-container");
-const ticketPreviewContainer = document.getElementById("ticket-preview-container");
 const paymentQrPreviewContainer = document.getElementById("paymentQr-preview-container");
 
 const bannerPreview = document.getElementById("banner-preview");
-const ticketPreview = document.getElementById("ticket-preview");
 const paymentQrPreview = document.getElementById("paymentQr-preview");
+
+// AI description generation elements
+const generateDescriptionBtn = document.getElementById("generate-description-btn");
+const generateDescriptionBtnText = document.getElementById("generate-description-btn-text");
+const generateDescriptionHint = document.getElementById("generate-description-hint");
 
 // Helper: Show custom error under input
 function showInputError(inputEl, message) {
@@ -71,6 +73,12 @@ function showGlobalAlert(type, message) {
     alertBox.scrollIntoView({ behavior: "smooth", block: "center" });
 }
 
+// Grow the description textarea to fit its content instead of scrolling internally
+function autoResizeDescription() {
+    descriptionInput.style.height = "auto";
+    descriptionInput.style.height = descriptionInput.scrollHeight + "px";
+}
+
 // Handle conditional Payment QR display
 function togglePaymentQr() {
     const price = parseFloat(ticketPriceInput.value || 0);
@@ -83,6 +91,59 @@ function togglePaymentQr() {
     }
 }
 
+// Enable/disable the "Generate with AI" button based on whether a banner file is selected.
+// The backend endpoint takes a MultipartFile, so this only works off a freshly-picked file —
+// an existing banner URL from edit mode is not enough on its own.
+function updateGenerateDescriptionAvailability() {
+    const hasBannerFile = bannerInput.files && bannerInput.files.length > 0;
+    generateDescriptionBtn.disabled = !hasBannerFile;
+    generateDescriptionHint.textContent = hasBannerFile
+        ? "Ready to generate a description from your banner image."
+        : "Upload a banner image above to enable AI-generated descriptions.";
+}
+
+// Call the AI description generation endpoint using the currently selected banner image
+async function handleGenerateDescription() {
+    if (!bannerInput.files || bannerInput.files.length === 0) {
+        showGlobalAlert("error", "Please upload a banner image before generating a description.");
+        return;
+    }
+
+    const token = localStorage.getItem("accessToken");
+    const originalBtnText = generateDescriptionBtnText.textContent;
+
+    generateDescriptionBtn.disabled = true;
+    generateDescriptionBtnText.textContent = "Generating...";
+
+    const formData = new FormData();
+    formData.append("bannerImage", bannerInput.files[0]);
+
+    try {
+        const res = await fetch(API_AI_GENERATE_DESCRIPTION, {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${token}`
+            },
+            body: formData
+        });
+
+        const body = await res.json();
+
+        if (res.ok && body && body.success && body.data && typeof body.data.description === "string") {
+            descriptionInput.value = body.data.description;
+            autoResizeDescription();
+        } else {
+            showGlobalAlert("error", body?.message || "Failed to generate a description from the banner image.");
+        }
+    } catch (err) {
+        console.error("handleGenerateDescription error:", err);
+        showGlobalAlert("error", "A network error occurred while generating the description.");
+    } finally {
+        generateDescriptionBtnText.textContent = originalBtnText;
+        updateGenerateDescriptionAvailability();
+    }
+}
+
 // File upload labels listener
 function bindFileLabelChange(inputEl, labelEl) {
     inputEl.addEventListener("change", (e) => {
@@ -91,11 +152,9 @@ function bindFileLabelChange(inputEl, labelEl) {
             labelEl.classList.remove("text-muted");
             labelEl.classList.add("text-action");
         } else {
-            labelEl.textContent = labelEl.id.includes("banner") 
-                ? "Click to upload banner" 
-                : labelEl.id.includes("ticket") 
-                    ? "Click to upload ticket card design" 
-                    : "Click to upload UPI / Payment QR code";
+            labelEl.textContent = labelEl.id.includes("banner")
+                ? "Click to upload banner"
+                : "Click to upload UPI / Payment QR code";
             labelEl.classList.add("text-muted");
             labelEl.classList.remove("text-action");
         }
@@ -118,7 +177,6 @@ async function initPage() {
 
     // Bind file label events
     bindFileLabelChange(bannerInput, bannerFileName);
-    bindFileLabelChange(ticketInput, ticketFileName);
     bindFileLabelChange(paymentQrInput, paymentQrFileName);
 
     // Setup listener on price change
@@ -131,6 +189,15 @@ async function initPage() {
         }
     });
 
+    // Setup AI description generation
+    bannerInput.addEventListener("change", updateGenerateDescriptionAvailability);
+    generateDescriptionBtn.addEventListener("click", handleGenerateDescription);
+    updateGenerateDescriptionAvailability();
+
+    // Setup description auto-resize (grows with content instead of scrolling)
+    descriptionInput.addEventListener("input", autoResizeDescription);
+    autoResizeDescription();
+
     // Check if we are in Edit / Update mode
     const urlParams = new URLSearchParams(window.location.search);
     const eventId = urlParams.get("id");
@@ -140,10 +207,9 @@ async function initPage() {
         document.getElementById("page-action-title").textContent = "Update Event";
         document.getElementById("form-heading").textContent = "Update Event Request";
         document.getElementById("submit-btn-text").textContent = "Update Event";
-        
-        // Remove required asterisks on file uploads (optional in edit mode)
+
+        // Remove required asterisk on banner upload (optional in edit mode)
         document.getElementById("banner-required-star").classList.add("hidden");
-        document.getElementById("ticket-required-star").classList.add("hidden");
 
         await loadEventDetails(eventId);
     } else {
@@ -186,21 +252,22 @@ async function loadEventDetails(eventId) {
 function populateForm(event) {
     document.getElementById("title").value = event.title || "";
     document.getElementById("description").value = event.description || "";
+    autoResizeDescription();
     document.getElementById("category").value = event.category || "";
     document.getElementById("club").value = event.club || "";
     document.getElementById("eventDate").value = event.eventDate || "";
-    
+
     if (event.eventTime) {
         // format hh:mm
         document.getElementById("eventTime").value = event.eventTime.substring(0, 5);
     }
-    
+
     document.getElementById("lastRegistrationDate").value = event.lastRegisterDate || "";
     document.getElementById("eventMode").value = event.eventMode || "OFFLINE";
     document.getElementById("city").value = event.city || "";
     document.getElementById("location").value = event.location || "";
     document.getElementById("participationType").value = event.participationType || "UNIVERSITY_ONLY";
-    
+
     ticketPriceInput.value = event.ticketPrice || 0;
     totalTicketsInput.value = event.totalTickets || 0;
     ticketsAvailableInput.value = event.ticketsAvailable || 0;
@@ -349,9 +416,6 @@ async function handleFormSubmit(e) {
     if (bannerInput.files && bannerInput.files[0]) {
         formData.append("banner", bannerInput.files[0]);
     }
-    if (ticketInput.files && ticketInput.files[0]) {
-        formData.append("ticket", ticketInput.files[0]);
-    }
     if (paymentQrInput.files && paymentQrInput.files[0]) {
         formData.append("paymentQr", paymentQrInput.files[0]);
     }
@@ -376,8 +440,8 @@ async function handleFormSubmit(e) {
         const body = await res.json();
 
         if (res.ok && body.success) {
-            showGlobalAlert("success", isEditMode 
-                ? "Event updated successfully! Redirecting..." 
+            showGlobalAlert("success", isEditMode
+                ? "Event updated successfully! Redirecting..."
                 : "Event request submitted successfully! Redirecting...");
             setTimeout(() => {
                 window.location.href = "/event-management";

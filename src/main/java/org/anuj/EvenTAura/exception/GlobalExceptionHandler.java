@@ -175,4 +175,12 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error(ex.getMessage()));
     }
 
+    // Too Many Requests Exception
+    @ExceptionHandler(TooManyRequestsException.class)
+    public ResponseEntity<ApiResponse<Void>> handleTooManyRequestsException(TooManyRequestsException ex){
+        return ResponseEntity
+                .status(HttpStatus.TOO_MANY_REQUESTS)
+                .body(ApiResponse.error(ex.getMessage()));
+    }
+
 }

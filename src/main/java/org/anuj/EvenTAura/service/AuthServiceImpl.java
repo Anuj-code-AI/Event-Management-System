@@ -1,8 +1,10 @@
 package org.anuj.EvenTAura.service;
 
-
+import io.github.resilience4j.ratelimiter.RateLimiter;
+import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
 import io.jsonwebtoken.Claims;
 import jakarta.mail.internet.MimeMessage;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +28,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService{
 
+    private final RateLimiterRegistry rateLimiterRegistry;
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -34,6 +37,9 @@ public class AuthServiceImpl implements AuthService{
     private final EmailOtpRepository otpRepository;
     private final JavaMailSender mailSender;
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+
+    @Value("${app.mail.from}")
+    private String from;
 
     private String generateOtp(){
         return String.format("%06d",
@@ -90,8 +96,6 @@ public class AuthServiceImpl implements AuthService{
         }
         String generatedOtp = generateOtp();
 
-        log.info("Generated OTP: {}", generatedOtp);
-
         otp.setOtp(generatedOtp);
         otp.setAttempts(0);
 
@@ -146,6 +150,7 @@ public class AuthServiceImpl implements AuthService{
 
             helper.setTo(email);
             helper.setSubject(subject);
+            helper.setFrom(from);
 
             // 3. Set the text content, passing 'true' as the second parameter to enable HTML rendering
             helper.setText(htmlBody, true);
@@ -212,23 +217,24 @@ public class AuthServiceImpl implements AuthService{
                 .orElseThrow(() ->
                         new UserNotFoundException("User not found."));
 
+        String limiterName = "otp-" + user.getUserId();
+
+        RateLimiter limiter =
+                rateLimiterRegistry.rateLimiter(limiterName);
+
+
+        if (!limiter.acquirePermission()) {
+
+            throw new TooManyRequestsException(
+                    "Maximum OTP requests exceeded. Try again later."
+            );
+        }
+
         if (Boolean.TRUE.equals(user.getEmailVerified())) {
             throw new RuntimeException(
                     "Email already verified."
             );
         }
-
-        otpRepository.findByUser(user).ifPresent(otp -> {
-
-            if (otp.getCreatedAt()
-                    .plusSeconds(60)
-                    .isAfter(LocalDateTime.now())) {
-
-                throw new RuntimeException(
-                        "Please wait before requesting another OTP."
-                );
-            }
-        });
 
         createAndSendOtp(user);
     }
@@ -275,9 +281,6 @@ public class AuthServiceImpl implements AuthService{
             );
         }
 
-        log.info("Stored OTP  : {}", otp.getOtp());
-        log.info("Entered OTP : {}", request.getOtp());
-        log.info("Attempts    : {}", otp.getAttempts());
         if (otp.getOtp().equals(request.getOtp())) {
 
             user.setEmailVerified(true);

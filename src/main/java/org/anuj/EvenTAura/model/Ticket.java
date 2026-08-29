@@ -37,6 +37,7 @@ public class Ticket {
     private LocalDateTime checkedInAt;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private TicketStatus status;
 
     private String paymentScreenShotUrl;

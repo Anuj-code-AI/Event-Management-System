@@ -10,11 +10,11 @@
     <script>
         tailwind.config = {
             theme: { extend: {
-                colors: { ink: "#0B1526", "ink-soft": "#14213B", canvas: "#FFFFFF", "canvas-sunk": "#F5F7FA", "canvas-mid": "#EEF1F6", line: "#E2E6ED", "line-strong": "#CBD2DE", muted: "#5B6B85", "muted-dim": "#8894A8", action: "#2450E8", "action-hover": "#1A3FC4", "action-tint": "#EDF1FE", signal: "#0EA5A5", "signal-tint": "#E7F8F8", amber: "#B45309", danger: "#B42318" },
-                fontFamily: { display: ["Sora", "sans-serif"], body: ["Inter", "sans-serif"], mono: ["IBM Plex Mono", "monospace"] },
-                spacing: { "sidebar-w": "256px", "container-max": "1360px" },
-                borderRadius: { DEFAULT: "8px", lg: "10px", xl: "14px" }
-            }}
+                    colors: { ink: "#0B1526", "ink-soft": "#14213B", canvas: "#FFFFFF", "canvas-sunk": "#F5F7FA", "canvas-mid": "#EEF1F6", line: "#E2E6ED", "line-strong": "#CBD2DE", muted: "#5B6B85", "muted-dim": "#8894A8", action: "#2450E8", "action-hover": "#1A3FC4", "action-tint": "#EDF1FE", signal: "#0EA5A5", "signal-tint": "#E7F8F8", amber: "#B45309", danger: "#B42318" },
+                    fontFamily: { display: ["Sora", "sans-serif"], body: ["Inter", "sans-serif"], mono: ["IBM Plex Mono", "monospace"] },
+                    spacing: { "sidebar-w": "256px", "container-max": "1360px" },
+                    borderRadius: { DEFAULT: "8px", lg: "10px", xl: "14px" }
+                }}
         };
     </script>
     <style>
@@ -76,12 +76,12 @@
             <div class="flex h-full max-w-container-max items-center gap-3 px-4 md:px-8">
                 <button id="sidebar-open" class="p-2 text-muted md:hidden" aria-label="Open menu"><span class="material-symbols-outlined">menu</span></button>
                 <div class="hidden min-w-0 md:block"><p class="eyebrow text-[10px] text-muted-dim">Console</p><p id="page-action-title" class="font-display text-sm font-semibold text-ink">Request Event</p></div>
-                
+
                 <a href="/home" class="flex md:hidden items-center gap-2">
                     <span class="flex h-7 w-7 items-center justify-center rounded bg-ink font-display text-xs font-bold text-white">CH</span>
                     <span class="font-display text-sm font-bold tracking-tight text-ink">CampusHive</span>
                 </a>
-                
+
                 <a href="/profile" class="hidden h-9 w-9 items-center justify-center rounded-lg border border-line text-muted hover:border-action hover:text-action sm:flex ml-auto" aria-label="Profile"><span class="material-symbols-outlined text-[20px]">account_circle</span></a>
             </div>
         </header>
@@ -136,10 +136,39 @@
                                     <p class="error-msg text-xs text-danger hidden mt-1"></p>
                                 </div>
 
+                                <!-- Event Banner Image (moved above description so it's uploaded first) -->
                                 <div class="space-y-1">
-                                    <label for="description" class="text-xs font-bold text-ink uppercase tracking-wider eyebrow">Description</label>
+                                    <label class="text-xs font-bold text-ink uppercase tracking-wider eyebrow">Event Banner Image <span id="banner-required-star" class="text-danger">*</span></label>
+                                    <div class="flex items-center justify-center w-full">
+                                        <label class="flex flex-col items-center justify-center w-full h-36 border border-line border-dashed rounded-lg cursor-pointer bg-canvas-sunk hover:bg-canvas-mid hover:border-action transition-all">
+                                            <div class="flex flex-col items-center justify-center pt-4 pb-4">
+                                                <span class="material-symbols-outlined text-[32px] text-muted mb-1">add_photo_alternate</span>
+                                                <p id="banner-file-name" class="text-xs text-muted font-semibold text-center px-4">Click to upload banner</p>
+                                                <p class="text-[10px] text-muted-dim font-mono">SVG, PNG, JPG (max. 800x400px)</p>
+                                            </div>
+                                            <input type="file" id="banner" name="banner" accept="image/*" class="hidden" />
+                                        </label>
+                                    </div>
+                                    <p id="banner-error" class="error-msg text-xs text-danger hidden mt-1"></p>
+                                    <!-- Current Image Preview -->
+                                    <div id="banner-preview-container" class="hidden mt-2 relative rounded-lg overflow-hidden border border-line h-20 w-44 bg-canvas-sunk">
+                                        <img id="banner-preview" class="w-full h-full object-cover" src="" alt="Banner Preview">
+                                    </div>
+                                </div>
+
+                                <!-- Description with AI generation -->
+                                <div class="space-y-1">
+                                    <div class="flex items-center justify-between gap-2">
+                                        <label for="description" class="text-xs font-bold text-ink uppercase tracking-wider eyebrow">Description</label>
+                                        <button type="button" id="generate-description-btn" disabled
+                                                class="inline-flex items-center gap-1 text-[11px] font-semibold text-action bg-action-tint px-2.5 py-1.5 rounded-md disabled:opacity-40 disabled:cursor-not-allowed hover:bg-action/10 transition-all">
+                                            <span class="material-symbols-outlined text-[16px]">auto_awesome</span>
+                                            <span id="generate-description-btn-text">Generate with AI</span>
+                                        </button>
+                                    </div>
                                     <textarea id="description" name="description" rows="4" placeholder="Describe the details, goals, agenda, and guidelines of your event..."
-                                              class="w-full bg-canvas-sunk border border-line rounded-lg px-3 py-2 text-xs text-ink focus:border-action focus:ring-action transition-all"></textarea>
+                                              class="w-full bg-canvas-sunk border border-line rounded-lg px-3 py-2 text-xs text-ink focus:border-action focus:ring-action transition-all resize-none overflow-hidden"></textarea>
+                                    <p id="generate-description-hint" class="text-[10px] text-muted-dim mt-1">Upload a banner image above to enable AI-generated descriptions.</p>
                                     <p class="error-msg text-xs text-danger hidden mt-1"></p>
                                 </div>
 
@@ -268,68 +297,26 @@
                             </div>
                         </div>
 
-                        <!-- Media & Uploads -->
+                        <!-- Payment QR Code -->
                         <div>
-                            <h3 class="text-xs font-bold text-action border-b border-line pb-2 mb-4 uppercase tracking-wider eyebrow">5. Media & Artwork</h3>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <!-- Banner File Input -->
-                                <div class="space-y-1">
-                                    <label class="text-xs font-bold text-ink uppercase tracking-wider eyebrow">Event Banner Image <span id="banner-required-star" class="text-danger">*</span></label>
-                                    <div class="flex items-center justify-center w-full">
-                                        <label class="flex flex-col items-center justify-center w-full h-36 border border-line border-dashed rounded-lg cursor-pointer bg-canvas-sunk hover:bg-canvas-mid hover:border-action transition-all">
-                                            <div class="flex flex-col items-center justify-center pt-4 pb-4">
-                                                <span class="material-symbols-outlined text-[32px] text-muted mb-1">add_photo_alternate</span>
-                                                <p id="banner-file-name" class="text-xs text-muted font-semibold text-center px-4">Click to upload banner</p>
-                                                <p class="text-[10px] text-muted-dim font-mono">SVG, PNG, JPG (max. 800x400px)</p>
-                                            </div>
-                                            <input type="file" id="banner" name="banner" accept="image/*" class="hidden" />
-                                        </label>
-                                    </div>
-                                    <p id="banner-error" class="error-msg text-xs text-danger hidden mt-1"></p>
-                                    <!-- Current Image Preview -->
-                                    <div id="banner-preview-container" class="hidden mt-2 relative rounded-lg overflow-hidden border border-line h-20 w-44 bg-canvas-sunk">
-                                        <img id="banner-preview" class="w-full h-full object-cover" src="" alt="Banner Preview">
-                                    </div>
+                            <h3 class="text-xs font-bold text-action border-b border-line pb-2 mb-4 uppercase tracking-wider eyebrow">5. Payment QR Code</h3>
+                            <!-- Payment QR Code File Input (Conditional, shown only for paid tickets) -->
+                            <div id="payment-qr-container" class="hidden space-y-1">
+                                <label class="text-xs font-bold text-ink uppercase tracking-wider eyebrow">Payment QR Code <span class="text-danger">*</span></label>
+                                <div class="flex items-center justify-center w-full">
+                                    <label class="flex flex-col items-center justify-center w-full h-36 border border-line border-dashed rounded-lg cursor-pointer bg-canvas-sunk hover:bg-canvas-mid hover:border-action transition-all">
+                                        <div class="flex flex-col items-center justify-center pt-4 pb-4">
+                                            <span class="material-symbols-outlined text-[32px] text-muted mb-1">qr_code_2</span>
+                                            <p id="paymentQr-file-name" class="text-xs text-muted font-semibold text-center px-4">Click to upload UPI / Payment QR code</p>
+                                            <p class="text-[10px] text-muted-dim font-mono">Required for paid tickets (JPG, PNG)</p>
+                                        </div>
+                                        <input type="file" id="paymentQr" name="paymentQr" accept="image/*" class="hidden" />
+                                    </label>
                                 </div>
-
-                                <!-- Ticket Design File Input -->
-                                <div class="space-y-1">
-                                    <label class="text-xs font-bold text-ink uppercase tracking-wider eyebrow">Ticket Cover Design <span id="ticket-required-star" class="text-danger">*</span></label>
-                                    <div class="flex items-center justify-center w-full">
-                                        <label class="flex flex-col items-center justify-center w-full h-36 border border-line border-dashed rounded-lg cursor-pointer bg-canvas-sunk hover:bg-canvas-mid hover:border-action transition-all">
-                                            <div class="flex flex-col items-center justify-center pt-4 pb-4">
-                                                <span class="material-symbols-outlined text-[32px] text-muted mb-1">local_activity</span>
-                                                <p id="ticket-file-name" class="text-xs text-muted font-semibold text-center px-4">Click to upload ticket card design</p>
-                                                <p class="text-[10px] text-muted-dim font-mono">Recommended: 3:2 ratio (PNG, JPG)</p>
-                                            </div>
-                                            <input type="file" id="ticket" name="ticket" accept="image/*" class="hidden" />
-                                        </label>
-                                    </div>
-                                    <p id="ticket-error" class="error-msg text-xs text-danger hidden mt-1"></p>
-                                    <!-- Current Image Preview -->
-                                    <div id="ticket-preview-container" class="hidden mt-2 relative rounded-lg overflow-hidden border border-line h-20 w-44 bg-canvas-sunk">
-                                        <img id="ticket-preview" class="w-full h-full object-cover" src="" alt="Ticket Preview">
-                                    </div>
-                                </div>
-
-                                <!-- Payment QR Code File Input (Conditional) -->
-                                <div id="payment-qr-container" class="hidden space-y-1 md:col-span-2">
-                                    <label class="text-xs font-bold text-ink uppercase tracking-wider eyebrow">Payment QR Code <span class="text-danger">*</span></label>
-                                    <div class="flex items-center justify-center w-full">
-                                        <label class="flex flex-col items-center justify-center w-full h-36 border border-line border-dashed rounded-lg cursor-pointer bg-canvas-sunk hover:bg-canvas-mid hover:border-action transition-all">
-                                            <div class="flex flex-col items-center justify-center pt-4 pb-4">
-                                                <span class="material-symbols-outlined text-[32px] text-muted mb-1">qr_code_2</span>
-                                                <p id="paymentQr-file-name" class="text-xs text-muted font-semibold text-center px-4">Click to upload UPI / Payment QR code</p>
-                                                <p class="text-[10px] text-muted-dim font-mono">Required for paid tickets (JPG, PNG)</p>
-                                            </div>
-                                            <input type="file" id="paymentQr" name="paymentQr" accept="image/*" class="hidden" />
-                                        </label>
-                                    </div>
-                                    <p id="paymentQr-error" class="error-msg text-xs text-danger hidden mt-1"></p>
-                                    <!-- Current Image Preview -->
-                                    <div id="paymentQr-preview-container" class="hidden mt-2 relative rounded-lg overflow-hidden border border-line h-20 w-20 bg-canvas-sunk">
-                                        <img id="paymentQr-preview" class="w-full h-full object-cover" src="" alt="Payment QR Preview">
-                                    </div>
+                                <p id="paymentQr-error" class="error-msg text-xs text-danger hidden mt-1"></p>
+                                <!-- Current Image Preview -->
+                                <div id="paymentQr-preview-container" class="hidden mt-2 relative rounded-lg overflow-hidden border border-line h-20 w-20 bg-canvas-sunk">
+                                    <img id="paymentQr-preview" class="w-full h-full object-cover" src="" alt="Payment QR Preview">
                                 </div>
                             </div>
                         </div>

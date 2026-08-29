@@ -6,7 +6,9 @@ import org.anuj.EvenTAura.dto.*;
 import org.anuj.EvenTAura.exception.AllExceptions.*;
 import org.anuj.EvenTAura.mapper.TicketMapper;
 import org.anuj.EvenTAura.model.*;
+import org.anuj.EvenTAura.model.enums.JobStatus;
 import org.anuj.EvenTAura.model.enums.TicketStatus;
+import org.anuj.EvenTAura.repository.EmailJobRepository;
 import org.anuj.EvenTAura.repository.EventRepository;
 import org.anuj.EvenTAura.repository.TicketRepository;
 import org.anuj.EvenTAura.repository.UserRepository;
@@ -33,6 +35,7 @@ public class TicketServiceImpl implements TicketService{
     private final UserRepository userRepository;
     private final EventRepository eventRepository;
     private final CloudinaryService cloudinaryService;
+    private final EmailJobRepository emailJobRepository;
 
     private String generateTicketCode() {
         // Numeric code: fits in a Long, unique enough for tickets
@@ -141,12 +144,22 @@ public class TicketServiceImpl implements TicketService{
                 event.getTicketsAvailable() - 1
         );
 
-        // ================= SAVE =================
+        // ================= SAVE TICKET =================
         eventRepository.save(event);
         ticketRepository.save(ticket);
 
+        // ================= CREATE EMAIL JOB =================
+        EmailJob job = new EmailJob();
+        job.setTicketId(ticket.getTicketId());
+        job.setStatus(JobStatus.PENDING);
+        job.setScheduledAt(LocalDateTime.now());
+
+        emailJobRepository.save(job);
+
         return TicketMapper.toResponse(ticket);
     }
+
+
     @Override
     public Page<TicketResponse> myTickets(int page, int size, Authentication authentication) {
 
@@ -155,7 +168,7 @@ public class TicketServiceImpl implements TicketService{
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         Sort sort = Sort.by("issuedAt").ascending();
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size, sort);
 
         Page<Ticket> tickets = ticketRepository.findAllByUser(user,pageable);
 
