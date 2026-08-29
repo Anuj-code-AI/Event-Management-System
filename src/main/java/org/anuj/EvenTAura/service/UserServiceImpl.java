@@ -76,44 +76,11 @@ public class UserServiceImpl implements UserService{
         User user = userRepository.findById(userDetails.getId())
                 .orElseThrow(()->new UserNotFoundException("User not found"));
 
-        University university = user.getUniversity();
-        if(request.getUniversity()!=null && !request.getUniversity().isBlank()){
-            university = universityRepository.findByNameContainingIgnoreCase(request.getUniversity())
-                    .orElseThrow(() ->
-                            new UniversityNotSupportedException(
-                                     "We are not currently serving this university. You may register without selecting a university."
-                            ));
-            if (university.getDomain() != null) {
-                String primaryDomain = user.getPrimaryEmail().substring(user.getPrimaryEmail().lastIndexOf("@") + 1).toLowerCase();
-                String secondaryDomain = null;
-                if (request.getSecondaryEmail() != null && !request.getSecondaryEmail().isBlank()) {
-                    secondaryDomain = request.getSecondaryEmail().substring(request.getSecondaryEmail().lastIndexOf("@") + 1).toLowerCase();
-                } else if (user.getSecondaryEmail() != null) {
-                    secondaryDomain = user.getSecondaryEmail().substring(user.getSecondaryEmail().lastIndexOf("@") + 1).toLowerCase();
-                }
-
-                boolean primaryMatches = primaryDomain.equalsIgnoreCase(university.getDomain());
-                boolean secondaryMatches = (secondaryDomain != null) && secondaryDomain.equalsIgnoreCase(university.getDomain());
-
-                if (!primaryMatches && !secondaryMatches) {
-                    throw new RuntimeException("To associate with " + university.getName() + ", either your primary email or secondary email must match the university domain (" + university.getDomain() + ").");
-                }
-            }
-        } else if (request.getSecondaryEmail() != null && !request.getSecondaryEmail().isBlank() && university != null && university.getDomain() != null) {
-            String primaryDomain = user.getPrimaryEmail().substring(user.getPrimaryEmail().lastIndexOf("@") + 1).toLowerCase();
-            String secondaryDomain = request.getSecondaryEmail().substring(request.getSecondaryEmail().lastIndexOf("@") + 1).toLowerCase();
-
-            boolean primaryMatches = primaryDomain.equalsIgnoreCase(university.getDomain());
-            boolean secondaryMatches = secondaryDomain.equalsIgnoreCase(university.getDomain());
-
-            if (!primaryMatches && !secondaryMatches) {
-                throw new RuntimeException("To associate with " + university.getName() + ", either your primary email or secondary email must match the university domain (" + university.getDomain() + ").");
-            }
-        }
         if(request.getPassword()!=null && !request.getPassword().isBlank()){
             request.setPassword(passwordEncoder.encode(request.getPassword()));
         }
-        UserMapper.toUpdatedEntity(user, request, university);
+
+        UserMapper.toUpdatedEntity(user, request);
         return UserMapper.toResponse(user);
     }
 
@@ -144,7 +111,7 @@ public class UserServiceImpl implements UserService{
     // GET USER ROLE
     @Override
     public RoleResponse roleOfMe(Authentication authentication) {
-        User user = userRepository.findByPrimaryEmail(authentication.getName())
+        User user = userRepository.findByEmail(authentication.getName())
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
         RoleResponse response = new RoleResponse();
         response.setName(user.getName());

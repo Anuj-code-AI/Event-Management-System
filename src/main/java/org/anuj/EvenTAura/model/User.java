@@ -19,10 +19,7 @@ public class User {
     private String name;
 
     @Column(name = "email", unique = true, nullable = false)
-    private String primaryEmail;
-
-    @Column(name = "secondary_email")
-    private String secondaryEmail;
+    private String email;
 
     private String password;
 

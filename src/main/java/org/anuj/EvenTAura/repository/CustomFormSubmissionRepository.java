@@ -23,7 +23,7 @@ WHERE s.customForm = :form
 AND (
 LOWER(s.submittedBy.name) LIKE LOWER(CONCAT('%',:query,'%'))
 OR
-LOWER(s.submittedBy.primaryEmail) LIKE LOWER(CONCAT('%',:query,'%'))
+LOWER(s.submittedBy.email) LIKE LOWER(CONCAT('%',:query,'%'))
 )
 """)
     Page<CustomFormSubmission> search(

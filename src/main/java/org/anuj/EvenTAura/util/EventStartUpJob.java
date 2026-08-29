@@ -69,7 +69,7 @@ public class EventStartUpJob {
         User user = new User();
 
         user.setName(name);
-        user.setPrimaryEmail(email);
+        user.setEmail(email);
         user.setPassword(passwordEncoder.encode(DEFAULT_PASSWORD));
 
         user.setSystemRole(role);
@@ -95,7 +95,7 @@ public class EventStartUpJob {
             University university
     ) {
 
-        User user = userRepository.findByPrimaryEmail(email)
+        User user = userRepository.findByEmail(email)
                 .orElseGet(() ->
                         createUser(
                                 email,
@@ -108,7 +108,7 @@ public class EventStartUpJob {
         System.out.println("----------------------------");
         System.out.println("Role       : " + user.getSystemRole());
         System.out.println("Name       : " + user.getName());
-        System.out.println("Email      : " + user.getPrimaryEmail());
+        System.out.println("Email      : " + user.getEmail());
         System.out.println("University : " +
                 (user.getUniversity() != null
                         ? user.getUniversity().getName()

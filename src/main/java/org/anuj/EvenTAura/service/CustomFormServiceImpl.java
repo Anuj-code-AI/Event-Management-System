@@ -637,7 +637,7 @@ public class CustomFormServiceImpl implements CustomFormService {
 
             row.add(submission.getSubmittedBy().getName());
 
-            row.add(submission.getSubmittedBy().getPrimaryEmail());
+            row.add(submission.getSubmittedBy().getEmail());
 
             row.add(submission.getSubmittedAt().toString());
 

@@ -98,7 +98,7 @@ public class EmailJobExecutor {
 
         Event event = ticket.getEvent();
 
-        String recipient = ticket.getUser().getPrimaryEmail();
+        String recipient = ticket.getUser().getEmail();
 
         MimeMessage message = mailSender.createMimeMessage();
 

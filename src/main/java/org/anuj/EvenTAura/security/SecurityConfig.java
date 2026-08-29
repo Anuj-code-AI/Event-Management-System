@@ -106,11 +106,11 @@ public class SecurityConfig {
         String provider = token.getAuthorizedClientRegistrationId();
         AuthProvider authProvider = AuthProvider.valueOf(provider.toUpperCase());
 
-        User user = userRepository.findByPrimaryEmail(email)
+        User user = userRepository.findByEmail(email)
                 .orElseGet(() -> {
                     User newUser = new User();
                     newUser.setName(name);
-                    newUser.setPrimaryEmail(email);
+                    newUser.setEmail(email);
                     newUser.setPassword(""); // OAuth users don’t use password
                     newUser.setSystemRole(SystemRole.USER);
                     newUser.setProvider(authProvider);
@@ -119,7 +119,7 @@ public class SecurityConfig {
         if (!user.getProvider().equals(authProvider)) {
             throw new RuntimeException("Account exists with different provider");
         }
-        String access = jwtUtil.generateAccessToken(user.getUserId(),user.getPrimaryEmail(),user.getSystemRole());
+        String access = jwtUtil.generateAccessToken(user.getUserId(),user.getEmail(),user.getSystemRole());
         String refresh = jwtUtil.generateRefreshToken(user.getUserId());
 
 

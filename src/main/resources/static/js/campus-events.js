@@ -1,6 +1,8 @@
 const CAMPUS_EVENTS_API = "/api/v1/events/university-events";
 const CAMPUS_FORMS_API = "/api/v1/custom-forms/university-forms";
 const PAGE_SIZE = 9;
+const EVENT_BANNER_PLACEHOLDER = "/images/eventBanner-placeholder.png";
+const FORM_BANNER_PLACEHOLDER = "/images/banner-placeholder.png";
 
 const feeds = {
     events: { page: 0, last: false, loading: false, endpoint: CAMPUS_EVENTS_API },
@@ -62,15 +64,15 @@ async function fetchPage(feedName, page) {
     return body.data || { content: [], last: true, number: page };
 }
 
-function imageStyle(url) {
-    return url ? `style="background-image:url('${escapeHtml(url).replace(/'/g, "%27")}')"` : "";
+function imageStyle(url, fallback) {
+    const safeUrl = url || fallback;
+    return `style="background-image:url('${escapeHtml(safeUrl).replace(/'/g, "%27")}')"`;
 }
-
 // Generate Event card HTML
 function eventCard(event) {
     const id = encodeURIComponent(event.eventId);
     return `<article class="group overflow-hidden border border-line bg-canvas transition hover:border-action/50 hover:shadow-[0_10px_28px_-18px_rgba(11,21,38,.38)]">
-        <a href="/event-details/${id}" class="event-image relative block h-36" ${imageStyle(event.bannerUrl)}>
+        <a href="/event-details/${id}" class="event-image relative block h-36" ${imageStyle(event.bannerUrl, EVENT_BANNER_PLACEHOLDER)}>
             <span class="absolute left-3 top-3 rounded bg-canvas/95 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-ink">${escapeHtml(event.category || "Event")}</span>
         </a>
         <div class="p-4">
@@ -91,7 +93,7 @@ function eventCard(event) {
 function formCard(form) {
     const id = encodeURIComponent(form.id);
     return `<article class="group overflow-hidden border border-line bg-canvas transition hover:border-signal/60 hover:shadow-[0_10px_28px_-18px_rgba(11,21,38,.38)]">
-        <a href="/form-details/${id}" class="event-image relative block h-36" ${imageStyle(form.bannerUrl)}>
+        <a href="/form-details/${id}" class="event-image relative block h-36" ${imageStyle(form.bannerUrl, FORM_BANNER_PLACEHOLDER)}>
             <span class="absolute left-3 top-3 rounded bg-signal-tint px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-signal">Registration</span>
         </a>
         <div class="p-4">

@@ -46,68 +46,6 @@ public class AuthServiceImpl implements AuthService{
                 SECURE_RANDOM.nextInt(1_000_000));
     }
 
-    private University resolveUniversity(String universityName) {
-
-        if (universityName == null || universityName.isBlank()) {
-            return null;
-        }
-
-        return universityRepository
-                .findByNameContainingIgnoreCase(universityName)
-                .orElseThrow(() ->
-                        new UniversityNotSupportedException(
-                                "We are not currently serving this university."
-                        ));
-    }
-
-    private void validateUniversity(RegisterRequest request) {
-
-        if (request.getUniversity() == null ||
-                request.getUniversity().isBlank()) {
-            return;
-        }
-
-        University university = resolveUniversity(request.getUniversity());
-
-        if (university.getDomain() == null) {
-            return;
-        }
-
-        String emailDomain =
-                request.getEmail()
-                        .substring(request.getEmail().lastIndexOf("@") + 1);
-
-        if (!emailDomain.equalsIgnoreCase(university.getDomain())) {
-            throw new RuntimeException(
-                    "Email domain does not match university."
-            );
-        }
-    }
-
-    private void createAndSendOtp(User user) {
-
-        EmailOtp otp = otpRepository.findByUser(user)
-                .orElse(null);
-
-        if (otp == null) {
-            otp = new EmailOtp();
-            otp.setUser(user);
-
-        }
-        String generatedOtp = generateOtp();
-
-        otp.setOtp(generatedOtp);
-        otp.setAttempts(0);
-
-        LocalDateTime now = LocalDateTime.now();
-        otp.setCreatedAt(now);
-        otp.setExpiryTime(now.plusMinutes(5));
-
-        otpRepository.save(otp);
-
-        sendMail(user.getPrimaryEmail(), otp.getOtp());
-    }
-
     private void sendMail(String email, String otp) {
         String subject = "🔑 CampusHive Email Verification";
 
@@ -164,19 +102,57 @@ public class AuthServiceImpl implements AuthService{
         }
     }
 
+    private University resolveUniversityFromEmail(String email) {
+
+        if (email == null || email.isBlank() || !email.contains("@")) {
+            return null;
+        }
+
+        String emailDomain =
+                email.substring(email.lastIndexOf("@") + 1)
+                        .trim()
+                        .toLowerCase();
+
+        return universityRepository
+                .findByDomainIgnoreCase(emailDomain)
+                .orElse(null);
+    }
+
+    private void createAndSendOtp(User user) {
+
+        EmailOtp otp = otpRepository.findByUser(user)
+                .orElse(null);
+
+        if (otp == null) {
+            otp = new EmailOtp();
+            otp.setUser(user);
+
+        }
+        String generatedOtp = generateOtp();
+
+        otp.setOtp(generatedOtp);
+        otp.setAttempts(0);
+
+        LocalDateTime now = LocalDateTime.now();
+        otp.setCreatedAt(now);
+        otp.setExpiryTime(now.plusMinutes(5));
+
+        otpRepository.save(otp);
+
+        sendMail(user.getEmail(), otp.getOtp());
+    }
+
+
     @Override
     @Transactional
     public void register(RegisterRequest request) {
 
-        validateUniversity(request);
-
-        University university = resolveUniversity(request.getUniversity());
-
         Optional<User> existing =
-                userRepository.findByPrimaryEmailOrSecondaryEmail(
-                        request.getEmail(),
-                        request.getEmail()
-                );
+                userRepository.findByEmail(request.getEmail());
+
+        // Determine university automatically from email domain
+        University university =
+                resolveUniversityFromEmail(request.getEmail());
 
         if (existing.isPresent()) {
 
@@ -190,8 +166,13 @@ public class AuthServiceImpl implements AuthService{
 
             user.setName(request.getName());
 
-            if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-                user.setPassword(passwordEncoder.encode(request.getPassword()));
+            if (!passwordEncoder.matches(
+                    request.getPassword(),
+                    user.getPassword())) {
+
+                user.setPassword(
+                        passwordEncoder.encode(request.getPassword())
+                );
             }
 
             user.setUniversity(university);
@@ -200,9 +181,12 @@ public class AuthServiceImpl implements AuthService{
             return;
         }
 
-        request.setPassword(passwordEncoder.encode(request.getPassword()));
+        request.setPassword(
+                passwordEncoder.encode(request.getPassword())
+        );
 
-        User user = UserMapper.toEntity(request, university);
+        User user =
+                UserMapper.toEntity(request, university);
 
         userRepository.save(user);
 
@@ -213,7 +197,7 @@ public class AuthServiceImpl implements AuthService{
     @Transactional
     public void resendOtp(String email) {
 
-        User user = userRepository.findByPrimaryEmail(email)
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() ->
                         new UserNotFoundException("User not found."));
 
@@ -247,7 +231,7 @@ public class AuthServiceImpl implements AuthService{
     public TokenPair verifyOtp(VerifyOtpRequest request) {
 
         User user = userRepository
-                .findByPrimaryEmail(request.getEmail())
+                .findByEmail(request.getEmail())
                 .orElseThrow(() ->
                         new UserNotFoundException("User not found."));
 
@@ -309,7 +293,7 @@ public class AuthServiceImpl implements AuthService{
     @Transactional
     public TokenPair login(LoginRequest req) {
 
-        User user = userRepository.findByPrimaryEmailOrSecondaryEmail(req.getEmail(), req.getEmail())
+        User user = userRepository.findByEmail(req.getEmail())
                 .orElseThrow(() ->
                         new UserNotFoundException(
                                 "No account with this email."
@@ -368,7 +352,7 @@ public class AuthServiceImpl implements AuthService{
         }
 
         User user = stored.getUser();
-        String newAccess  = jwtUtil.generateAccessToken(user.getUserId(), user.getPrimaryEmail(),user.getSystemRole());
+        String newAccess  = jwtUtil.generateAccessToken(user.getUserId(), user.getEmail(),user.getSystemRole());
         String newRefresh = jwtUtil.generateRefreshToken(user.getUserId());
 
         // Rotate in the same DB row (no extra insert)
@@ -392,7 +376,7 @@ public class AuthServiceImpl implements AuthService{
     // ── private helpers ──────────────────────────────────────────
 
     private TokenPair issueTokenPair(User user) {
-        String access = jwtUtil.generateAccessToken(user.getUserId(), user.getPrimaryEmail(), user.getSystemRole());
+        String access = jwtUtil.generateAccessToken(user.getUserId(), user.getEmail(), user.getSystemRole());
         String refresh = jwtUtil.generateRefreshToken(user.getUserId());
 
         RefreshToken token = new RefreshToken();

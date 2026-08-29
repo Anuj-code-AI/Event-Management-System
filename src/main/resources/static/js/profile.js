@@ -1,115 +1,215 @@
-// profile.js — manages profile display, updates, and host applications
+// profile.js
+// Manages profile display, profile updates and host applications.
 
 const API_USER = "/api/v1/user";
 
-// State
 let currentUser = null;
 let currentRole = null;
 
-// Element selections
+
+// ============================================================
+// ELEMENTS
+// ============================================================
+
 const profileAlert = document.getElementById("profile-alert");
+
 const avatarInitial = document.getElementById("avatar-initial");
 const displayName = document.getElementById("display-name");
 const displayEmail = document.getElementById("display-email");
 const roleBadge = document.getElementById("role-badge");
 const universityBadge = document.getElementById("university-badge");
 
-// Forms
 const profileForm = document.getElementById("profile-form");
 const updateBtn = document.getElementById("update-btn");
+
 const nameInput = document.getElementById("name");
-const universityInput = document.getElementById("university");
-const secondaryEmailInput = document.getElementById("secondaryEmail");
+const emailDisplay = document.getElementById("email-display");
+const universityDisplay = document.getElementById("university-display");
+
 const passwordInput = document.getElementById("password");
 const confirmPasswordInput = document.getElementById("confirmPassword");
 
-// Host Apply Section
+
+// Host application
+
 const hostStatusChip = document.getElementById("host-status-chip");
 const hostPendingAlert = document.getElementById("host-pending-alert");
 const hostApprovedAlert = document.getElementById("host-approved-alert");
+
 const hostApplyForm = document.getElementById("host-apply-form");
 const applyBtn = document.getElementById("apply-btn");
-const collegeEmailInput = document.getElementById("collegeEmail");
 const phoneInput = document.getElementById("phone");
 
-// Modals & Deactivate
+
+// Account actions
+
 const deleteModal = document.getElementById("delete-modal");
 const deleteBtn = document.getElementById("deleteAccount");
 const cancelDeleteBtn = document.getElementById("cancel-delete-btn");
 const confirmDeleteBtn = document.getElementById("confirm-delete-btn");
 const logoutBtn = document.getElementById("logoutBtn");
 
-// Init Page
+
+// ============================================================
+// INIT
+// ============================================================
+
 async function initPage() {
+
     currentUser = await getCurrentUser();
+
     if (!currentUser) {
         window.location.href = "/login";
         return;
     }
 
-    // Render sidebar
     if (typeof renderLoggedInSidebar === "function") {
         renderLoggedInSidebar(currentUser);
     }
 
-    // Load full user details
     await loadUserProfile();
 
-    // Bind forms
-    if (profileForm) profileForm.addEventListener("submit", handleProfileUpdate);
-    if (hostApplyForm) hostApplyForm.addEventListener("submit", handleHostApply);
+    if (profileForm) {
+        profileForm.addEventListener(
+            "submit",
+            handleProfileUpdate
+        );
+    }
 
-    // Bind modals
-    if (deleteBtn) deleteBtn.addEventListener("click", () => deleteModal.classList.remove("hidden"));
-    if (cancelDeleteBtn) cancelDeleteBtn.addEventListener("click", () => deleteModal.classList.add("hidden"));
-    if (confirmDeleteBtn) confirmDeleteBtn.addEventListener("click", handleDeactivateAccount);
+    if (hostApplyForm) {
+        hostApplyForm.addEventListener(
+            "submit",
+            handleHostApply
+        );
+    }
+
+    if (deleteBtn) {
+        deleteBtn.addEventListener("click", () => {
+            deleteModal.classList.remove("hidden");
+        });
+    }
+
+    if (cancelDeleteBtn) {
+        cancelDeleteBtn.addEventListener("click", () => {
+            deleteModal.classList.add("hidden");
+        });
+    }
+
+    if (confirmDeleteBtn) {
+        confirmDeleteBtn.addEventListener(
+            "click",
+            handleDeactivateAccount
+        );
+    }
+
     if (logoutBtn) {
+
         logoutBtn.addEventListener("click", async () => {
-            if (typeof logoutUser === "function") {
-                await logoutUser();
+
+            logoutBtn.disabled = true;
+
+            try {
+
+                if (typeof logoutUser === "function") {
+                    await logoutUser();
+                }
+
+            } catch {
+                // logoutUser clears local state in finally.
             }
+
             window.location.href = "/login";
         });
     }
 }
 
-// Display Alerts
+
+// ============================================================
+// ALERTS
+// ============================================================
+
 function showAlert(type, message) {
+
     if (!profileAlert) return;
+
     profileAlert.classList.remove("hidden");
+
     if (type === "success") {
-        profileAlert.className = "p-4 rounded-lg text-xs font-semibold flex items-start gap-2 bg-green-50 border border-green-200 text-signal shadow-sm";
-        profileAlert.innerHTML = `<span class="material-symbols-outlined text-[18px]">check_circle</span> <span>${message}</span>`;
+
+        profileAlert.className =
+            "p-4 rounded-lg text-xs font-semibold flex items-start gap-2 " +
+            "bg-green-50 border border-green-200 text-signal shadow-sm";
+
+        profileAlert.innerHTML = `
+            <span class="material-symbols-outlined text-[18px]">
+                check_circle
+            </span>
+            <span>${message}</span>
+        `;
+
     } else {
-        profileAlert.className = "p-4 rounded-lg text-xs font-semibold flex items-start gap-2 bg-red-50 border border-red-200 text-danger shadow-sm";
-        profileAlert.innerHTML = `<span class="material-symbols-outlined text-[18px]">error</span> <span>${message}</span>`;
+
+        profileAlert.className =
+            "p-4 rounded-lg text-xs font-semibold flex items-start gap-2 " +
+            "bg-red-50 border border-red-200 text-danger shadow-sm";
+
+        profileAlert.innerHTML = `
+            <span class="material-symbols-outlined text-[18px]">
+                error
+            </span>
+            <span>${message}</span>
+        `;
     }
 }
 
-// Clear Alerts
+
 function clearAlert() {
-    if (profileAlert) profileAlert.classList.add("hidden");
+
+    if (profileAlert) {
+        profileAlert.classList.add("hidden");
+    }
 }
 
-// Load and populate profile fields
+
+// ============================================================
+// LOAD PROFILE
+// ============================================================
+
 async function loadUserProfile() {
+
     const token = localStorage.getItem("accessToken");
+
     if (!token) return;
 
     try {
-        // Fetch fresh User details
-        const meRes = await fetch(API_USER, {
-            headers: { Authorization: `Bearer ${token}` }
-        });
-        const meBody = await meRes.json();
 
-        // Fetch fresh Role details
-        const roleRes = await fetch(`${API_USER}/roleOfMe`, {
-            headers: { Authorization: `Bearer ${token}` }
+        const meRes = await fetch(API_USER, {
+            credentials: "include",
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
         });
+
+        const roleRes = await fetch(
+            `${API_USER}/roleOfMe`,
+            {
+                credentials: "include",
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }
+        );
+
+        const meBody = await meRes.json();
         const roleBody = await roleRes.json();
 
-        if (meRes.ok && roleRes.ok && meBody.success && roleBody.success) {
+        if (
+            meRes.ok &&
+            roleRes.ok &&
+            meBody.success &&
+            roleBody.success
+        ) {
+
             const user = meBody.data;
             const role = roleBody.data;
 
@@ -117,259 +217,589 @@ async function loadUserProfile() {
             currentRole = role;
 
             populateFields(user, role);
+
         } else {
-            throw new Error(meBody.message || roleBody.message || "Failed to load profile details");
+
+            throw new Error(
+                meBody.message ||
+                roleBody.message ||
+                "Failed to load profile details"
+            );
         }
+
     } catch (err) {
-        console.error("loadUserProfile error:", err);
-        showAlert("error", err.message || "Could not retrieve user details from database.");
+
+        console.error(
+            "loadUserProfile error:",
+            err
+        );
+
+        showAlert(
+            "error",
+            err.message ||
+            "Could not retrieve user details."
+        );
     }
 }
 
-// Populate template variables
+
+// ============================================================
+// POPULATE PROFILE
+// ============================================================
+
 function populateFields(user, role) {
-    // Header details
-    if (displayName) displayName.textContent = user.name || "—";
-    if (displayEmail) displayEmail.textContent = user.email || "—";
-    if (avatarInitial) avatarInitial.textContent = user.name ? user.name.charAt(0).toUpperCase() : "U";
+
+    // Header
+
+    if (displayName) {
+        displayName.textContent =
+            user.name || "—";
+    }
+
+    if (displayEmail) {
+        displayEmail.textContent =
+            user.email || "—";
+    }
+
+    if (avatarInitial) {
+        avatarInitial.textContent =
+            user.name
+                ? user.name.charAt(0).toUpperCase()
+                : "U";
+    }
+
+
+    // Role
 
     if (roleBadge) {
-        roleBadge.textContent = user.systemRole ? user.systemRole.replace("ROLE_", "").replace("_", " ") : "USER";
+
+        roleBadge.textContent =
+            user.systemRole
+                ? user.systemRole
+                    .replace("ROLE_", "")
+                    .replace("_", " ")
+                : "USER";
     }
 
+
+    // University badge
+
     if (universityBadge) {
+
         if (user.university) {
-            universityBadge.textContent = user.university;
-            universityBadge.className = "bg-action-tint text-action border border-action/25 text-[10px] px-2.5 py-0.5 rounded-full font-semibold";
+
+            universityBadge.textContent =
+                user.university;
+
+            universityBadge.className =
+                "bg-action-tint text-action " +
+                "border border-action/25 text-[10px] " +
+                "px-2.5 py-0.5 rounded-full font-semibold";
+
         } else {
-            universityBadge.textContent = "No University Selected";
-            universityBadge.className = "bg-canvas-sunk text-ink border border-line text-[10px] px-2.5 py-0.5 rounded-full font-semibold";
+
+            universityBadge.textContent =
+                "No University";
+
+            universityBadge.className =
+                "bg-canvas-sunk text-ink " +
+                "border border-line text-[10px] " +
+                "px-2.5 py-0.5 rounded-full font-semibold";
         }
     }
 
-    // Input fields
-    if (nameInput) nameInput.value = user.name || "";
-    if (universityInput) universityInput.value = user.university || "";
-    if (secondaryEmailInput) secondaryEmailInput.value = user.secondaryEmail || "";
 
-    // Clear password inputs
-    if (passwordInput) passwordInput.value = "";
-    if (confirmPasswordInput) confirmPasswordInput.value = "";
+    // Editable account information
 
-    // Render Host Profile Status Section
-    renderHostStatusSection(role, user);
+    if (nameInput) {
+        nameInput.value = user.name || "";
+    }
+
+    // Read-only email
+
+    if (emailDisplay) {
+        emailDisplay.value = user.email || "";
+    }
+
+    // Read-only university
+
+    if (universityDisplay) {
+        universityDisplay.value =
+            user.university || "No university associated";
+    }
+
+
+    // Password fields
+
+    if (passwordInput) {
+        passwordInput.value = "";
+    }
+
+    if (confirmPasswordInput) {
+        confirmPasswordInput.value = "";
+    }
+
+
+    renderHostStatusSection(role);
 }
 
-// Toggle Host Forms & Alert chips
-function renderHostStatusSection(role, user) {
-    if (!hostStatusChip || !hostPendingAlert || !hostApprovedAlert || !hostApplyForm) return;
 
-    const status = role.status || "NONE";
+// ============================================================
+// HOST STATUS
+// ============================================================
 
-    // Set Status chip text & style
+function renderHostStatusSection(role) {
+
+    if (
+        !hostStatusChip ||
+        !hostPendingAlert ||
+        !hostApprovedAlert ||
+        !hostApplyForm
+    ) {
+        return;
+    }
+
+    const status = role?.status || "NONE";
+
+
+    // Status chip
+
     hostStatusChip.classList.remove("hidden");
-    let chipClass = "bg-canvas-sunk text-ink border border-line";
-    if (status === "PENDING") chipClass = "bg-amber-50 text-amber-700 border border-amber-200";
-    else if (status === "APPROVED") chipClass = "bg-green-50 text-signal border border-green-200";
-    else if (status === "REJECTED") chipClass = "bg-red-50 text-danger border border-red-200";
-    hostStatusChip.className = `${chipClass} text-[10px] px-2.5 py-0.5 rounded-full font-semibold uppercase tracking-wider eyebrow`;
-    hostStatusChip.textContent = `Host Status: ${status}`;
 
-    // Reset visibility states
+    let chipClass =
+        "bg-canvas-sunk text-ink border border-line";
+
+    if (status === "PENDING") {
+
+        chipClass =
+            "bg-amber-50 text-amber-700 border border-amber-200";
+
+    } else if (status === "APPROVED") {
+
+        chipClass =
+            "bg-green-50 text-signal border border-green-200";
+
+    } else if (status === "REJECTED") {
+
+        chipClass =
+            "bg-red-50 text-danger border border-red-200";
+    }
+
+    hostStatusChip.className =
+        `${chipClass} text-[10px] px-2.5 py-0.5 ` +
+        "rounded-full font-semibold uppercase " +
+        "tracking-wider eyebrow";
+
+    hostStatusChip.textContent =
+        `Host Status: ${status}`;
+
+
+    // Reset
+
     hostPendingAlert.classList.add("hidden");
     hostApprovedAlert.classList.add("hidden");
     hostApplyForm.classList.add("hidden");
 
-    if (status === "NONE" || status === "REJECTED") {
+
+    // Show correct section
+
+    if (
+        status === "NONE" ||
+        status === "REJECTED"
+    ) {
+
         hostApplyForm.classList.remove("hidden");
-        // Preset college email if user secondaryEmail is present, otherwise fall back to primary email if it matches university domain
-        if (collegeEmailInput && !collegeEmailInput.value) {
-            collegeEmailInput.value = user.secondaryEmail || user.email || "";
-        }
+
     } else if (status === "PENDING") {
+
         hostPendingAlert.classList.remove("hidden");
+
     } else if (status === "APPROVED") {
+
         hostApprovedAlert.classList.remove("hidden");
     }
 }
 
-// Handle details update submission
+
+// ============================================================
+// UPDATE PROFILE
+// ============================================================
+
 async function handleProfileUpdate(e) {
+
     e.preventDefault();
+
     clearAlert();
 
-    const token = localStorage.getItem("accessToken");
+    const token =
+        localStorage.getItem("accessToken");
+
     if (!token) return;
 
-    const name = nameInput.value.trim();
-    const university = universityInput.value.trim();
-    const secondaryEmail = secondaryEmailInput ? secondaryEmailInput.value.trim() : "";
-    const password = passwordInput.value;
-    const confirmPassword = confirmPasswordInput.value;
+
+    const name =
+        nameInput.value.trim();
+
+    const password =
+        passwordInput.value;
+
+    const confirmPassword =
+        confirmPasswordInput.value;
+
+
+    // Name validation
 
     if (!name) {
-        showAlert("error", "Name cannot be empty.");
+
+        showAlert(
+            "error",
+            "Name cannot be empty."
+        );
+
         return;
     }
 
+
+    // Password validation
+
     if (password) {
+
         if (password !== confirmPassword) {
-            showAlert("error", "Passwords do not match.");
+
+            showAlert(
+                "error",
+                "Passwords do not match."
+            );
+
             return;
         }
+
         if (password.length < 4) {
-            showAlert("error", "Password must be at least 4 characters long.");
+
+            showAlert(
+                "error",
+                "Password must be at least 4 characters long."
+            );
+
             return;
         }
     }
 
-    // Client-side domain check if university is entered and domain is loaded
-    if (university && currentUser && currentUser.universityDomain) {
-        const primaryDomain = currentUser.email.substring(currentUser.email.lastIndexOf("@") + 1).toLowerCase();
-        const secondaryDomain = secondaryEmail ? secondaryEmail.substring(secondaryEmail.lastIndexOf("@") + 1).toLowerCase() : "";
-        
-        const primaryMatches = primaryDomain === currentUser.universityDomain.toLowerCase();
-        const secondaryMatches = secondaryDomain === currentUser.universityDomain.toLowerCase();
-        
-        // Only enforce check client-side if the university name hasn't changed (since currentUser.universityDomain belongs to the current university)
-        if (university.toLowerCase() === (currentUser.university || "").toLowerCase()) {
-            if (secondaryEmail !== (currentUser.secondaryEmail || "")) {
-                if (!primaryMatches && !secondaryMatches) {
-                    showAlert("error", `To associate with this university, either your primary email or secondary email must match the university domain (${currentUser.universityDomain.toLowerCase()}).`);
-                    return;
-                }
-            }
-        }
-    }
 
     updateBtn.disabled = true;
-    updateBtn.classList.add("opacity-60", "cursor-not-allowed");
 
-    const payload = { name, university, secondaryEmail };
-    if (password) {
-        payload.password = password;
-    }
+    updateBtn.classList.add(
+        "opacity-60",
+        "cursor-not-allowed"
+    );
+
+
+    // IMPORTANT:
+    // UserUpdateRequest contains ONLY name and password.
+
+    const payload = {
+        name: name,
+        password: password || null
+    };
+
 
     try {
-        const res = await fetch(API_USER, {
-            method: "PATCH",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`
-            },
-            body: JSON.stringify(payload)
-        });
+
+        const res = await fetch(
+            API_USER,
+            {
+                method: "PATCH",
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify(payload)
+            }
+        );
+
         const body = await res.json();
 
+
         if (res.ok && body.success) {
-            showAlert("success", "Profile updated successfully!");
-            // Reload user state & sidebar
+
+            showAlert(
+                "success",
+                "Profile updated successfully!"
+            );
+
             await loadUserProfile();
-            if (typeof renderSidebar === "function") {
+
+            if (
+                typeof renderSidebar === "function"
+            ) {
                 await renderSidebar();
             }
+
         } else {
-            throw new Error(body.message || "Failed to update profile details");
+
+            throw new Error(
+                body.message ||
+                "Failed to update profile details"
+            );
         }
+
     } catch (err) {
-        console.error("handleProfileUpdate error:", err);
-        showAlert("error", err.message || "Network issue updating details.");
+
+        console.error(
+            "handleProfileUpdate error:",
+            err
+        );
+
+        showAlert(
+            "error",
+            err.message ||
+            "Network issue updating profile."
+        );
+
     } finally {
+
         updateBtn.disabled = false;
-        updateBtn.classList.remove("opacity-60", "cursor-not-allowed");
+
+        updateBtn.classList.remove(
+            "opacity-60",
+            "cursor-not-allowed"
+        );
     }
 }
 
-// Handle Host application submission
+
+// ============================================================
+// HOST APPLICATION
+// ============================================================
+
 async function handleHostApply(e) {
+
     e.preventDefault();
+
     clearAlert();
 
-    const token = localStorage.getItem("accessToken");
+    const token =
+        localStorage.getItem("accessToken");
+
     if (!token) return;
 
-    if (!currentUser || !currentUser.university) {
-        showAlert("error", "Please select and save your University in your profile details before applying for a host profile.");
+
+    // University is already associated with the user.
+    // No university/college email should be entered here.
+
+    if (
+        !currentUser ||
+        !currentUser.university
+    ) {
+
+        showAlert(
+            "error",
+            "Your account is not associated with a university."
+        );
+
         return;
     }
 
-    const collegeEmail = collegeEmailInput.value.trim();
-    const phone = phoneInput.value.trim();
 
-    if (!collegeEmail || !phone) {
-        showAlert("error", "Please fill in all host application details.");
+    const phone =
+        phoneInput.value.trim();
+
+
+    if (!phone) {
+
+        showAlert(
+            "error",
+            "Phone number is required."
+        );
+
         return;
     }
 
-    // Client-side domain verification
-    if (currentUser.universityDomain) {
-        const domainPart = collegeEmail.substring(collegeEmail.lastIndexOf("@") + 1).toLowerCase();
-        if (domainPart !== currentUser.universityDomain.toLowerCase()) {
-            showAlert("error", `College email domain (${domainPart}) must match your university domain (${currentUser.universityDomain.toLowerCase()})`);
-            return;
-        }
+
+    // Same validation as backend:
+    // ^\+?[0-9]{10,15}$
+
+    const phonePattern =
+        /^\+?[0-9]{10,15}$/;
+
+    if (!phonePattern.test(phone)) {
+
+        showAlert(
+            "error",
+            "Phone number must be between 10 and 15 digits."
+        );
+
+        return;
     }
+
 
     applyBtn.disabled = true;
-    applyBtn.classList.add("opacity-60", "cursor-not-allowed");
+
+    applyBtn.classList.add(
+        "opacity-60",
+        "cursor-not-allowed"
+    );
+
 
     try {
-        const res = await fetch(`${API_USER}/host/apply`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`
-            },
-            body: JSON.stringify({ collegeEmail, phone })
-        });
+
+        const res = await fetch(
+            `${API_USER}/host/apply`,
+            {
+                method: "POST",
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
+                },
+
+                // HostRequest contains ONLY phone.
+                body: JSON.stringify({
+                    phone: phone
+                })
+            }
+        );
+
+
         const body = await res.json();
 
+
         if (res.ok && body.success) {
-            showAlert("success", "Host application submitted successfully! Pending HOD review.");
+
+            showAlert(
+                "success",
+                "Host application submitted successfully! Pending HOD review."
+            );
+
             await loadUserProfile();
+
         } else {
-            throw new Error(body.message || "Failed to submit host request");
+
+            throw new Error(
+                body.message ||
+                "Failed to submit host request"
+            );
         }
+
     } catch (err) {
-        console.error("handleHostApply error:", err);
-        showAlert("error", err.message || "Network issue submitting host application.");
+
+        console.error(
+            "handleHostApply error:",
+            err
+        );
+
+        showAlert(
+            "error",
+            err.message ||
+            "Network issue submitting host application."
+        );
+
     } finally {
+
         applyBtn.disabled = false;
-        applyBtn.classList.remove("opacity-60", "cursor-not-allowed");
+
+        applyBtn.classList.remove(
+            "opacity-60",
+            "cursor-not-allowed"
+        );
     }
 }
 
-// Handle account deactivation
+
+// ============================================================
+// ACCOUNT DEACTIVATION
+// ============================================================
+
 async function handleDeactivateAccount() {
-    const token = localStorage.getItem("accessToken");
+
+    const token =
+        localStorage.getItem("accessToken");
+
     if (!token) return;
 
+
     deleteModal.classList.add("hidden");
-    showAlert("success", "Processing account deactivation...");
+
+    showAlert(
+        "success",
+        "Processing account deactivation..."
+    );
+
 
     try {
-        const res = await fetch(API_USER, {
-            method: "DELETE",
-            headers: { Authorization: `Bearer ${token}` }
-        });
+
+        const res = await fetch(
+            API_USER,
+            {
+                method: "DELETE",
+                credentials: "include",
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }
+        );
+
         const body = await res.json();
 
+
         if (res.ok && body.success) {
-            showAlert("success", "Account deactivated successfully. Logging out...");
+
+            showAlert(
+                "success",
+                "Account deactivated successfully. Logging out..."
+            );
+
             setTimeout(() => {
-                if (typeof clearTokens === "function") clearTokens();
-                localStorage.removeItem("accessToken");
-                localStorage.removeItem("refreshToken");
-                window.location.href = "/login";
+
+                if (
+                    typeof clearTokens === "function"
+                ) {
+                    clearTokens();
+                }
+
+                localStorage.removeItem(
+                    "accessToken"
+                );
+
+                localStorage.removeItem(
+                    "refreshToken"
+                );
+
+                window.location.href =
+                    "/login";
+
             }, 1500);
+
         } else {
-            throw new Error(body.message || "Deactivation request failed");
+
+            throw new Error(
+                body.message ||
+                "Deactivation request failed"
+            );
         }
+
     } catch (err) {
-        console.error("handleDeactivateAccount error:", err);
-        showAlert("error", err.message || "Network issue during account deactivation.");
+
+        console.error(
+            "handleDeactivateAccount error:",
+            err
+        );
+
+        showAlert(
+            "error",
+            err.message ||
+            "Network issue during account deactivation."
+        );
     }
 }
 
-// Initialize on DOM load
-document.addEventListener("DOMContentLoaded", initPage);
+
+// ============================================================
+// INIT
+// ============================================================
+
+document.addEventListener(
+    "DOMContentLoaded",
+    initPage
+);

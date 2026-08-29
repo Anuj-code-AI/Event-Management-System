@@ -44,19 +44,15 @@ public class HostServiceImpl implements HostService{
         if (user.getUniversity() == null) {
             throw new RuntimeException("Please select your university in your profile before applying to become a host.");
         }
-        String[] domain = request.getCollegeEmail().split("@");
+        String[] domain = user.getEmail().split("@");
         if (domain.length < 2 || !domain[1].equalsIgnoreCase(user.getUniversity().getDomain())) {
             throw new RuntimeException("College email domain must match your university domain (" + user.getUniversity().getDomain() + ")");
         }
 
-        if (!request.getCollegeEmail().equalsIgnoreCase(user.getPrimaryEmail())) {
-            user.setSecondaryEmail(request.getCollegeEmail());
-            userRepository.save(user);
-        }
 
         HostApplication application = new HostApplication();
         application.setUser(user);
-        application.setCollegeEmail(request.getCollegeEmail());
+        application.setCollegeEmail(user.getEmail());
         application.setPhone(request.getPhone());
         application.setStatus(HostStatus.PENDING);
         hostApplicationRepository.save(application);

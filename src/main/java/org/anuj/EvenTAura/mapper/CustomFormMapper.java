@@ -107,7 +107,7 @@ public final class CustomFormMapper {
                 submission.getSubmissionCode(),
                 submission.getSubmittedBy().getUserId(),
                 submission.getSubmittedBy().getName(),
-                submission.getSubmittedBy().getPrimaryEmail(),
+                submission.getSubmittedBy().getEmail(),
                 submission.getSubmittedAt(),
                 submission.getAnswers()
                         .stream()

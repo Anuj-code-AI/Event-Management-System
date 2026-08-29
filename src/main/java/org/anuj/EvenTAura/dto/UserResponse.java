@@ -17,5 +17,4 @@ public class UserResponse {
     private String university;
     private AuthProvider provider;
     private String universityDomain;
-    private String secondaryEmail;
 }
