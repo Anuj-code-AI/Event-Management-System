@@ -392,6 +392,14 @@ public class CustomFormServiceImpl implements CustomFormService {
 
         CustomForm form = getForm(formId);
 
+        // University restriction
+        if (form.getParticipationType() == ParticipationType.UNIVERSITY_ONLY) {
+            University userUniversity = user.getUniversity();
+            if (userUniversity == null ||
+                    !form.getUniversity().getUniversityId().equals(userUniversity.getUniversityId())) {
+                throw new UnauthorizedException("This form belongs to another university.");
+            }
+        }
         // Form validations
         if (form.getStatus() != FormStatus.APPROVED) {
             throw new BadRequestException("This form is not available.");
@@ -403,15 +411,7 @@ public class CustomFormServiceImpl implements CustomFormService {
 
         validateMultipleSubmission(form, user);
 
-        // University restriction
-        if (form.getParticipationType() == ParticipationType.UNIVERSITY_ONLY &&
-                !form.getUniversity().getUniversityId()
-                        .equals(user.getUniversity().getUniversityId())) {
 
-            throw new UnauthorizedException(
-                    "This form belongs to another university."
-            );
-        }
 
         // Parse answers JSON
         SubmitCustomFormRequest request = parseAnswers(answersJson);

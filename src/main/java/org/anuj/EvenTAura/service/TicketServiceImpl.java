@@ -7,6 +7,7 @@ import org.anuj.EvenTAura.exception.AllExceptions.*;
 import org.anuj.EvenTAura.mapper.TicketMapper;
 import org.anuj.EvenTAura.model.*;
 import org.anuj.EvenTAura.model.enums.JobStatus;
+import org.anuj.EvenTAura.model.enums.ParticipationType;
 import org.anuj.EvenTAura.model.enums.TicketStatus;
 import org.anuj.EvenTAura.repository.EmailJobRepository;
 import org.anuj.EvenTAura.repository.EventRepository;
@@ -64,6 +65,19 @@ public class TicketServiceImpl implements TicketService{
                 .orElseThrow(() ->
                         new EventNotExistException("No event found with this id"));
 
+        // ================= UNIVERSITY AUTHORIZATION =================
+        if (event.getParticipationType() == ParticipationType.UNIVERSITY_ONLY) {
+
+            if (user.getUniversity() == null
+                    || event.getUniversity() == null
+                    || !user.getUniversity().getUniversityId()
+                    .equals(event.getUniversity().getUniversityId())) {
+
+                throw new UnauthorizedException(
+                        "You are not eligible for this university event"
+                );
+            }
+        }
         // ================= TICKET AVAILABILITY =================
         if (event.getTicketsAvailable() <= 0) {
             throw new RuntimeException("Event is sold out");
