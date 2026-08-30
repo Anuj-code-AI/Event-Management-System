@@ -11,8 +11,6 @@ let currentRole = null;
 // ELEMENTS
 // ============================================================
 
-const profileAlert = document.getElementById("profile-alert");
-
 const avatarInitial = document.getElementById("avatar-initial");
 const displayName = document.getElementById("display-name");
 const displayEmail = document.getElementById("display-email");
@@ -125,23 +123,71 @@ async function initPage() {
 
 
 // ============================================================
-// ALERTS
+// ALERTS (fixed-position toast, always visible regardless of scroll)
 // ============================================================
+
+let toastContainer = null;
+let toastHideTimeout = null;
+
+function ensureToastContainer() {
+
+    if (toastContainer) return toastContainer;
+
+    toastContainer = document.createElement("div");
+    toastContainer.id = "toast-alert-container";
+
+    toastContainer.setAttribute("role", "status");
+    toastContainer.setAttribute("aria-live", "polite");
+
+    toastContainer.style.position = "fixed";
+    toastContainer.style.top = "1rem";
+    toastContainer.style.right = "1rem";
+    toastContainer.style.left = "1rem";
+    toastContainer.style.zIndex = "9999";
+    toastContainer.style.display = "flex";
+    toastContainer.style.flexDirection = "column";
+    toastContainer.style.alignItems = "center";
+    toastContainer.style.gap = "0.5rem";
+    toastContainer.style.pointerEvents = "none";
+
+    document.body.appendChild(toastContainer);
+
+    return toastContainer;
+}
 
 function showAlert(type, message) {
 
-    if (!profileAlert) return;
+    // Fixed toast so the message is visible no matter where
+    // the user is scrolled to on the page.
 
-    profileAlert.classList.remove("hidden");
+    const container = ensureToastContainer();
+
+    const toast = document.createElement("div");
+
+    toast.style.pointerEvents = "auto";
+    toast.style.maxWidth = "420px";
+    toast.style.width = "100%";
+    toast.style.padding = "0.875rem 1rem";
+    toast.style.borderRadius = "10px";
+    toast.style.fontSize = "12px";
+    toast.style.fontWeight = "600";
+    toast.style.display = "flex";
+    toast.style.alignItems = "flex-start";
+    toast.style.gap = "0.5rem";
+    toast.style.boxShadow = "0 10px 25px rgba(11, 21, 38, 0.15)";
+    toast.style.border = "1px solid";
+    toast.style.opacity = "0";
+    toast.style.transform = "translateY(-8px)";
+    toast.style.transition = "opacity 150ms ease, transform 150ms ease";
 
     if (type === "success") {
 
-        profileAlert.className =
-            "p-4 rounded-lg text-xs font-semibold flex items-start gap-2 " +
-            "bg-green-50 border border-green-200 text-signal shadow-sm";
+        toast.style.background = "#F0FDF9";
+        toast.style.borderColor = "#BBF0E6";
+        toast.style.color = "#0EA5A5";
 
-        profileAlert.innerHTML = `
-            <span class="material-symbols-outlined text-[18px]">
+        toast.innerHTML = `
+            <span class="material-symbols-outlined" style="font-size:18px;">
                 check_circle
             </span>
             <span>${message}</span>
@@ -149,25 +195,45 @@ function showAlert(type, message) {
 
     } else {
 
-        profileAlert.className =
-            "p-4 rounded-lg text-xs font-semibold flex items-start gap-2 " +
-            "bg-red-50 border border-red-200 text-danger shadow-sm";
+        toast.style.background = "#FEF3F2";
+        toast.style.borderColor = "#FDA29B";
+        toast.style.color = "#B42318";
 
-        profileAlert.innerHTML = `
-            <span class="material-symbols-outlined text-[18px]">
+        toast.innerHTML = `
+            <span class="material-symbols-outlined" style="font-size:18px;">
                 error
             </span>
             <span>${message}</span>
         `;
     }
+
+    container.appendChild(toast);
+
+    // Animate in
+
+    requestAnimationFrame(() => {
+        toast.style.opacity = "1";
+        toast.style.transform = "translateY(0)";
+    });
+
+    // Auto-dismiss this toast after a few seconds
+
+    setTimeout(() => {
+
+        toast.style.opacity = "0";
+        toast.style.transform = "translateY(-8px)";
+
+        setTimeout(() => {
+            toast.remove();
+        }, 200);
+
+    }, 5000);
 }
 
 
 function clearAlert() {
-
-    if (profileAlert) {
-        profileAlert.classList.add("hidden");
-    }
+    // No-op: alerts are now transient toasts that
+    // auto-dismiss on their own timer.
 }
 
 
