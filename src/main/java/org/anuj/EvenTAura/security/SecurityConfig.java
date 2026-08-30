@@ -81,7 +81,9 @@ public class SecurityConfig {
                                 "/" , "/about-us" , "/login" , "/register" , "/verify-email" , "/home" , "/universities" ,
                                 "/campus-events" , "/event-management" , "/oauth" , "/request-event" , "/create-custom-form" , "/admin" , "/event-details/**" ,
                                 "/event-details" , "/tickets" , "/my-events" , "/profile" , "/update-custom-form/**",
-                                "/event-management/**", "/update-event/**", "/form-details/**", "/form-responses/**"
+                                "/event-management/**", "/update-event/**", "/form-details/**", "/form-responses/**",
+                                "/formDetails/", "/formDetails/**"
+
                         ).permitAll()
                         .requestMatchers(
                                 // Public authentication
