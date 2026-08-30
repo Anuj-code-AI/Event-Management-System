@@ -190,11 +190,12 @@ async function fetchTicketsData() {
                     sub.isCustomFormSubmission = true;
                     sub.status = "ACTIVE"; // Show in active passes tab
                     sub.checkedIn = false;
+                    sub.formId = sub.formId; // now populated by backend
                     // Mock event structure for search filtering
                     sub.event = {
                         title: sub.formTitle,
                         description: "Custom Form Submission",
-                        bannerUrl: sub.bannerUrl
+                        bannerUrl: sub.formBannerUrl
                     };
                 });
                 allTicketsList = [...allTicketsList, ...submissions];

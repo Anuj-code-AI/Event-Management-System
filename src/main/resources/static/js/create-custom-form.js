@@ -22,6 +22,7 @@ function setupFilePreview(inputId, previewContainerId, previewImgId, labelId, de
 
     input.addEventListener("change", (e) => {
         if (e.target.files && e.target.files.length > 0) {
+            if (inputId === "banner") useDefaultBanner = false;
             const file = e.target.files[0];
             label.textContent = `Selected: ${file.name}`;
             label.classList.remove("text-muted");
@@ -46,6 +47,28 @@ function setupFilePreview(inputId, previewContainerId, previewImgId, labelId, de
 
 setupFilePreview("banner", "banner-preview-container", "banner-preview", "banner-file-name", "Click to upload header banner");
 setupFilePreview("paymentQr", "paymentQr-preview-container", "paymentQr-preview", "paymentQr-file-name", "Click to upload UPI / Payment QR code");
+
+let useDefaultBanner = false;
+
+document.getElementById("use-default-banner-btn").addEventListener("click", () => {
+    useDefaultBanner = true;
+    document.getElementById("banner").value = "";
+    document.getElementById("banner-file-name").textContent = "Using default banner";
+    document.getElementById("banner-file-name").classList.remove("text-muted");
+    document.getElementById("banner-file-name").classList.add("text-action");
+
+    document.getElementById("banner-preview").src = "/images/banner-placeholder.png";
+    document.getElementById("banner-preview-container").classList.remove("hidden");
+});
+
+document.getElementById("clear-banner-btn").addEventListener("click", () => {
+    useDefaultBanner = false;
+    document.getElementById("banner").value = "";
+    document.getElementById("banner-file-name").textContent = "Click to upload header banner";
+    document.getElementById("banner-file-name").classList.add("text-muted");
+    document.getElementById("banner-file-name").classList.remove("text-action");
+    document.getElementById("banner-preview-container").classList.add("hidden");
+});
 
 // Handle conditional Payment QR display
 function togglePaymentQr() {
@@ -378,7 +401,7 @@ customFormBuilder.addEventListener("submit", async (e) => {
         highlightError(document.getElementById("form-title"));
         hasError = true;
     }
-    if (!bannerFile) {
+    if (!bannerFile && !useDefaultBanner) {
         highlightError(document.getElementById("banner-file-name").parentElement);
         hasError = true;
     }
@@ -476,7 +499,9 @@ customFormBuilder.addEventListener("submit", async (e) => {
         type: "application/json"
     });
     formData.append("request", requestBlob);
-    formData.append("banner", bannerFile);
+    if (bannerFile) {
+        formData.append("banner", bannerFile);
+    }
 
     if (paymentQrFile) {
         formData.append("paymentQr", paymentQrFile);

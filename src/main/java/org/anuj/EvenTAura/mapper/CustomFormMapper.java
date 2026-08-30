@@ -103,7 +103,7 @@ public final class CustomFormMapper {
             CustomFormSubmission submission
     ) {
         return new CustomFormSubmissionResponse(
-                (submission.getId()),
+                submission.getId(),
                 submission.getSubmissionCode(),
                 submission.getSubmittedBy().getUserId(),
                 submission.getSubmittedBy().getName(),
@@ -112,7 +112,10 @@ public final class CustomFormMapper {
                 submission.getAnswers()
                         .stream()
                         .map(CustomFormMapper::toAnswerResponse)
-                        .collect(Collectors.toList())
+                        .collect(Collectors.toList()),
+                submission.getCustomForm().getId(),
+                submission.getCustomForm().getTitle(),
+                submission.getCustomForm().getBannerUrl()
         );
     }
 

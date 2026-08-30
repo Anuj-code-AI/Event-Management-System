@@ -27,4 +27,8 @@ public class CustomFormSubmissionResponse {
     private LocalDateTime submittedAt;
 
     private List<AnswerResponse> answers;
+
+    private Long formId;
+    private String formTitle;
+    private String formBannerUrl;
 }
