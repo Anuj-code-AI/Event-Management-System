@@ -10,11 +10,11 @@
     <script>
         tailwind.config = {
             theme: { extend: {
-                colors: { ink: "#0B1526", "ink-soft": "#14213B", canvas: "#FFFFFF", "canvas-sunk": "#F5F7FA", "canvas-mid": "#EEF1F6", line: "#E2E6ED", "line-strong": "#CBD2DE", muted: "#5B6B85", "muted-dim": "#8894A8", action: "#2450E8", "action-hover": "#1A3FC4", "action-tint": "#EDF1FE", signal: "#0EA5A5", "signal-tint": "#E7F8F8", amber: "#B45309", danger: "#B42318" },
-                fontFamily: { display: ["Sora", "sans-serif"], body: ["Inter", "sans-serif"], mono: ["IBM Plex Mono", "monospace"] },
-                spacing: { "container-max": "1360px" },
-                borderRadius: { DEFAULT: "8px", lg: "10px", xl: "14px" }
-            }}
+                    colors: { ink: "#0B1526", "ink-soft": "#14213B", canvas: "#FFFFFF", "canvas-sunk": "#F5F7FA", "canvas-mid": "#EEF1F6", line: "#E2E6ED", "line-strong": "#CBD2DE", muted: "#5B6B85", "muted-dim": "#8894A8", action: "#2450E8", "action-hover": "#1A3FC4", "action-tint": "#EDF1FE", signal: "#0EA5A5", "signal-tint": "#E7F8F8", amber: "#B45309", danger: "#B42318" },
+                    fontFamily: { display: ["Sora", "sans-serif"], body: ["Inter", "sans-serif"], mono: ["IBM Plex Mono", "monospace"] },
+                    spacing: { "container-max": "1360px" },
+                    borderRadius: { DEFAULT: "8px", lg: "10px", xl: "14px" }
+                }}
         };
     </script>
     <style>
@@ -50,7 +50,7 @@
 <main class="flex-1 flex items-center justify-center px-4 py-12 pt-24">
     <div class="w-full max-w-md">
         <div class="bg-canvas border border-line rounded-xl shadow-md p-6 md:p-8 space-y-6 relative">
-            
+
             <div class="text-center space-y-1">
                 <h1 class="text-xl font-bold text-ink font-display">Create Account</h1>
                 <p class="text-xs text-muted">Join CampusHive and start booking events.</p>
@@ -99,15 +99,6 @@
                         <i class="fa-solid fa-envelope absolute left-3.5 text-sm"></i>
                     </div>
                 </div>
-                <div class="space-y-1">
-                    <label for="university" class="block text-xs font-bold text-ink uppercase tracking-wider eyebrow">University <span class="text-muted/60 font-normal lowercase">(optional)</span></label>
-                    <div class="relative input-icon-wrapper flex items-center">
-                        <input id="university" name="university" type="text" autocomplete="organization"
-                               class="w-full bg-canvas-sunk border border-line rounded-lg pl-10 pr-4 py-2.5 text-xs text-ink placeholder:text-muted/50 focus:border-action focus:ring-action transition-all"
-                               placeholder="State University" />
-                        <i class="fa-solid fa-school absolute left-3.5 text-sm"></i>
-                    </div>
-                </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div class="space-y-1">
                         <label for="password" class="block text-xs font-bold text-ink uppercase tracking-wider eyebrow">Password</label>
@@ -153,31 +144,74 @@
 </footer>
 
 <script src="/js/auth.js"></script>
-<script>
-    const form = document.getElementById("register-form");
-    const errorBanner = document.getElementById("error-banner");
-    const submitBtn = document.getElementById("submit-btn");
 
+<script>
+
+    const form =
+        document.getElementById("register-form");
+
+    const errorBanner =
+        document.getElementById("error-banner");
+
+    const submitBtn =
+        document.getElementById("submit-btn");
+
+
+    // Prevent already authenticated users
+    // from opening the registration page.
     checkExistingSessionAndRedirect("/home");
 
+
     bindAuthForm({
+
         formEl: form,
+
         errorEl: errorBanner,
+
         buttonEl: submitBtn,
+
         buttonDefaultText: "Create Account",
+
         onSubmit: async () => {
-            const formData = new FormData(form);
-            const email = formData.get("email").trim();
+
+            const formData =
+                new FormData(form);
+
+
+            const name =
+                formData.get("name").trim();
+
+            const email =
+                formData.get("email").trim();
+
+            const password =
+                formData.get("password");
+
+            const confirmPassword =
+                formData.get("confirmPassword");
+
+
             await registerUser({
-                name: formData.get("name").trim(),
-                email: email,
-                password: formData.get("password"),
-                confirmPassword: formData.get("confirmPassword"),
-                university: formData.get("university").trim(),
+
+                name,
+
+                email,
+
+                password,
+
+                confirmPassword
+
             });
-            window.location.href = `/verify-email?email=${encodeURIComponent(email)}`;
-        },
+
+
+            // Registration succeeded.
+            // Backend has sent the OTP.
+            window.location.href =
+                `/verify-email?email=${encodeURIComponent(email)}`;
+        }
+
     });
+
 </script>
 </body>
 </html>

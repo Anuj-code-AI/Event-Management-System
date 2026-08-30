@@ -183,4 +183,12 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error(ex.getMessage()));
     }
 
+    // Auth Provider Mismatch Exception
+    @ExceptionHandler(AuthProviderMismatchException.class)
+    public ResponseEntity<ApiResponse<Void>> handleAuthProviderMismatchException(AuthProviderMismatchException ex){
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(ApiResponse.error(ex.getMessage()));
+    }
+
 }

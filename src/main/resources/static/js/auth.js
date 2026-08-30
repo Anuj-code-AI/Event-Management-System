@@ -1,201 +1,441 @@
-// auth.js — shared logic for register.html and login.html
-// Assumes frontend and backend are same-origin (per user confirmation).
-// Access token -> localStorage. Refresh token -> httpOnly cookie (set by server, invisible to JS).
+// auth.js
+// Shared authentication logic for register.html and login.html.
+// Assumes frontend and backend are same-origin.
+//
+// Access token -> localStorage
+// Refresh token -> httpOnly cookie (set by server, invisible to JS)
 
 const API_BASE = "/api/v1/auth";
 
+
 /**
- * Extracts a human-readable error message from a failed response body.
- * Backend has two known error shapes:
- *  1. ApiResponse.error(...) -> { success: false, message: "...", timestamp: "..." }
- *  2. MethodArgumentNotValidException handler -> { fieldName: "error message", ... } (raw map, no "message" key)
- * This defensively handles both, and falls back to a generic string if neither shape matches.
+ * Extract a human-readable error message from a failed response.
+ * Supported backend error shapes:
+ * 1. ApiResponse.error(...)
+ *    {
+ *        success: false,
+ *        message: "...",
+ *        timestamp: "..."
+ *    }
+ * 2. Validation error map
+ *    {
+ *        "email": "Invalid email format",
+ *        "password": "Password must be..."
+ *    }
  */
 function extractErrorMessage(body, fallback) {
-    if (!body || typeof body !== "object") return fallback;
-    if (typeof body.message === "string" && body.message.trim()) return body.message;
-    // Fallback: field-validation map shape { field: "message" }
-    const values = Object.values(body).filter((v) => typeof v === "string" && v.trim());
-    if (values.length) return values[0];
+
+    if (!body || typeof body !== "object") {
+        return fallback;
+    }
+
+    if (
+        typeof body.message === "string" &&
+        body.message.trim()
+    ) {
+        return body.message;
+    }
+
+    const values = Object.values(body)
+        .filter(
+            value =>
+                typeof value === "string" &&
+                value.trim()
+        );
+
+    if (values.length > 0) {
+        return values[0];
+    }
+
     return fallback;
 }
 
+
 /**
- * Wraps fetch with credentials included (so the refresh-token cookie can be set by the server),
- * JSON parsing, and consistent error throwing.
+ * Wrapper around fetch for authentication requests.
+ *
+ * Includes credentials so the browser can send/receive
+ * the httpOnly refresh-token cookie.
  */
-async function authFetch(path, options) {
+async function authFetch(path, options = {}) {
+
     let response;
+
     try {
+
         response = await fetch(`${API_BASE}${path}`, {
+
             credentials: "include",
-            headers: { "Content-Type": "application/json" },
-            ...options,
+
+            headers: {
+                "Content-Type": "application/json",
+                ...(options.headers || {})
+            },
+
+            ...options
         });
+
     } catch (networkErr) {
-        // fetch() itself throws only on network failure (offline, DNS, CORS block, server down) — not on 4xx/5xx.
-        throw new Error("Could not reach the server. Check your connection and try again.");
+
+        throw new Error(
+            "Could not reach the server. Check your connection and try again."
+        );
     }
+
 
     let body = null;
+
     try {
+
         body = await response.json();
+
     } catch {
-        // Response had no JSON body (e.g. empty 204) — fine, leave body null.
+
+        // Response has no JSON body.
+        // Leave body as null.
     }
 
+
     if (!response.ok) {
-        throw new Error(extractErrorMessage(body, `Request failed (${response.status})`));
+
+        throw new Error(
+            extractErrorMessage(
+                body,
+                `Request failed (${response.status})`
+            )
+        );
     }
+
 
     return body;
 }
 
+
 /**
- * Registers a new user. Throws if password/confirmPassword mismatch client-side
- * before even hitting the network, since that's a pure UX check the server also re-validates.
+ * Register a new user.
+ *
+ * IMPORTANT:
+ * University is intentionally NOT sent anymore.
+ *
+ * The backend determines the user's university from
+ * the email domain after registration.
  */
-async function registerUser({ name, email, password, confirmPassword, university }) {
+async function registerUser({
+                                name,
+                                email,
+                                password,
+                                confirmPassword
+                            }) {
+
+    // Client-side password confirmation.
     if (password !== confirmPassword) {
-        throw new Error("Passwords do not match.");
+
+        throw new Error(
+            "Passwords do not match."
+        );
     }
+
+
     const data = await authFetch("/register", {
+
         method: "POST",
-        body: JSON.stringify({ name, email, password, confirmPassword, university: university || null }),
+
+        body: JSON.stringify({
+
+            name,
+            email,
+            password,
+            confirmPassword
+
+        })
     });
+
+
     return data;
 }
 
+
 /**
- * Logs in an existing user.
+ * Login an existing user.
  */
-async function loginUser({ email, password }) {
+async function loginUser({
+                             email,
+                             password
+                         }) {
+
     const data = await authFetch("/login", {
+
         method: "POST",
-        body: JSON.stringify({ email, password }),
+
+        body: JSON.stringify({
+            email,
+            password
+        })
     });
+
+
     if (!data || !data.accessToken) {
-        throw new Error("Login succeeded but no access token was returned.");
+
+        throw new Error(
+            "Login succeeded but no access token was returned."
+        );
     }
-    localStorage.setItem("accessToken", data.accessToken);
+
+
+    localStorage.setItem(
+        "accessToken",
+        data.accessToken
+    );
+
+
     return data;
 }
 
+
 /**
- * Verifies email with OTP.
+ * Verify email using OTP.
  */
-async function verifyEmailOtp({ email, otp }) {
+async function verifyEmailOtp({
+                                  email,
+                                  otp
+                              }) {
+
     const data = await authFetch("/verify-email", {
+
         method: "POST",
-        body: JSON.stringify({ email, otp }),
+
+        body: JSON.stringify({
+            email,
+            otp
+        })
     });
+
+
     if (!data || !data.accessToken) {
-        throw new Error("Verification succeeded but no access token was returned.");
+
+        throw new Error(
+            "Verification succeeded but no access token was returned."
+        );
     }
-    localStorage.setItem("accessToken", data.accessToken);
+
+
+    localStorage.setItem(
+        "accessToken",
+        data.accessToken
+    );
+
+
     return data;
 }
 
+
 /**
- * Resends OTP code.
+ * Resend email OTP.
  */
 async function resendEmailOtp(email) {
-    const response = await fetch(`${API_BASE}/resend-otp`, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain" },
-        body: email
-    });
-    if (!response.ok) {
-        let errMsg = "Failed to resend OTP.";
-        try {
-            const body = await response.json();
-            errMsg = body.message || errMsg;
-        } catch {}
-        throw new Error(errMsg);
+
+    let response;
+
+    try {
+
+        response = await fetch(
+            `${API_BASE}/resend-otp`,
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "text/plain"
+                },
+
+                body: email
+            }
+        );
+
+    } catch {
+
+        throw new Error(
+            "Could not reach the server. Check your connection and try again."
+        );
     }
+
+
+    if (!response.ok) {
+
+        let errorMessage =
+            "Failed to resend OTP.";
+
+        try {
+
+            const body =
+                await response.json();
+
+            errorMessage =
+                body?.message ||
+                errorMessage;
+
+        } catch {
+            // Ignore invalid/empty response.
+        }
+
+
+        throw new Error(errorMessage);
+    }
+
+
     return response;
 }
 
+
 /**
- * Calls /refresh to mint a new access token using the httpOnly refresh cookie.
- * The browser only attaches that cookie because this request's path matches
- * the cookie's restricted path (/api/v1/auth/refresh) exactly — see note in chat.
+ * Refresh the access token using the httpOnly refresh cookie.
  */
 async function refreshAccessToken() {
-    const data = await authFetch("/refresh", { method: "POST" });
+
+    const data = await authFetch(
+        "/refresh",
+        {
+            method: "POST"
+        }
+    );
+
+
     if (data && data.accessToken) {
-        localStorage.setItem("accessToken", data.accessToken);
+
+        localStorage.setItem(
+            "accessToken",
+            data.accessToken
+        );
     }
+
+
     return data;
 }
 
+
 /**
- * Logs out: tells the server to revoke the refresh token, then clears the local access token
- * regardless of whether the server call succeeds (so the UI never gets stuck "logged in"
- * if the network request fails).
+ * Logout the user.
  */
 async function logoutUser() {
+
     try {
-        await authFetch("/logout", { method: "POST" });
+
+        await authFetch(
+            "/logout",
+            {
+                method: "POST"
+            }
+        );
+
     } finally {
-        localStorage.removeItem("accessToken");
+
+        // Always clear the local access token.
+        localStorage.removeItem(
+            "accessToken"
+        );
     }
 }
 
-/** Small helper to wire up a form's submit handler with loading state + error display. */
-function bindAuthForm({ formEl, errorEl, buttonEl, buttonDefaultText, onSubmit, redirectTo }) {
-    formEl.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        errorEl.classList.add("hidden");
-        errorEl.textContent = "";
-        buttonEl.disabled = true;
-        buttonEl.textContent = "Please wait...";
-
-        try {
-            await onSubmit();
-            if (redirectTo) {
-                window.location.href = redirectTo;
-            }
-        } catch (err) {
-            errorEl.textContent = err.message || "Something went wrong. Please try again.";
-            errorEl.classList.remove("hidden");
-            buttonEl.disabled = false;
-            buttonEl.textContent = buttonDefaultText;
-        }
-    });
-}
 
 /**
- * Checks whether the user already has a usable session, and if so, redirects them
- * away from the login/register page instead of making them log in again.
- *
- * Strategy:
- *  1. If no access token is in localStorage at all, nothing to check — show the form.
- *  2. If a token exists, try calling /refresh. This is the one call that tells us
- *     definitively whether the httpOnly refresh cookie is still valid — it doesn't
- *     matter whether the in-memory/localStorage access token has expired, since
- *     /refresh mints a brand new one regardless.
- *  3. On success: store the fresh access token, redirect.
- *  4. On any failure (no valid cookie, expired refresh token, network error): clear
- *     the stale access token and show the form normally — do NOT loop or retry.
- *
- * NOTE: this will only work if the refresh-token cookie was actually set by the
- * server in the first place. If COOKIE_SECURE=true while running on plain http://
- * locally, the browser silently refuses to store that cookie, and this check will
- * always fail — that's a separate, already-flagged backend/env issue, not a bug
- * in this function.
+ * Bind an authentication form.
  */
-async function checkExistingSessionAndRedirect(redirectTo) {
-    try {
-        const refreshed = await refreshAccessToken();
-        if (!refreshed || !refreshed.accessToken) {
-            throw new Error("No active session");
+function bindAuthForm({
+                          formEl,
+                          errorEl,
+                          buttonEl,
+                          buttonDefaultText,
+                          onSubmit,
+                          redirectTo
+                      }) {
+
+    formEl.addEventListener(
+        "submit",
+        async (e) => {
+
+            e.preventDefault();
+
+            errorEl.classList.add("hidden");
+            errorEl.textContent = "";
+
+            buttonEl.disabled = true;
+            buttonEl.textContent = "Please wait...";
+
+
+            try {
+
+                await onSubmit();
+
+
+                if (redirectTo) {
+
+                    window.location.href =
+                        redirectTo;
+                }
+
+            } catch (err) {
+
+                errorEl.textContent =
+                    err.message ||
+                    "Something went wrong. Please try again.";
+
+                errorEl.classList.remove(
+                    "hidden"
+                );
+
+                buttonEl.disabled = false;
+
+                buttonEl.textContent =
+                    buttonDefaultText;
+            }
         }
-        window.location.href = redirectTo;
+    );
+}
+
+
+/**
+ * Check whether an existing valid session exists.
+ *
+ * If the refresh cookie is valid, obtain a new access token
+ * and redirect the user.
+ */
+async function checkExistingSessionAndRedirect(
+    redirectTo
+) {
+
+    try {
+
+        const refreshed =
+            await refreshAccessToken();
+
+
+        if (
+            !refreshed ||
+            !refreshed.accessToken
+        ) {
+
+            throw new Error(
+                "No active session"
+            );
+        }
+
+
+        window.location.href =
+            redirectTo;
+
         return true;
     } catch (err) {
-        console.warn("[auth.js] No valid existing session (this is normal if you're logged out):", err.message);
-        localStorage.removeItem("accessToken");
+
+        console.warn(
+            "[auth.js] No valid existing session:",
+            err.message
+        );
+
+
+        localStorage.removeItem(
+            "accessToken"
+        );
+
+
         return false;
     }
 }

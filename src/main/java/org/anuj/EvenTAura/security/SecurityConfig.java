@@ -3,11 +3,14 @@ package org.anuj.EvenTAura.security;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.anuj.EvenTAura.exception.AllExceptions.AuthProviderMismatchException;
 import org.anuj.EvenTAura.model.RefreshToken;
+import org.anuj.EvenTAura.model.University;
 import org.anuj.EvenTAura.model.enums.AuthProvider;
 import org.anuj.EvenTAura.model.enums.SystemRole;
 import org.anuj.EvenTAura.model.User;
 import org.anuj.EvenTAura.repository.RefreshTokenRepository;
+import org.anuj.EvenTAura.repository.UniversityRepository;
 import org.anuj.EvenTAura.repository.UserRepository;
 import org.anuj.EvenTAura.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Value;
@@ -39,6 +42,7 @@ public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
     private final UserRepository userRepository;
+    private final UniversityRepository universityRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtUtil jwtUtil;
     @Value("${app.cookie.secure}")
@@ -46,6 +50,22 @@ public class SecurityConfig {
 
     @Value("${app.cookie.same-site}")
     private String sameSite;
+
+    private University resolveUniversityFromEmail(String email) {
+
+        if (email == null || email.isBlank() || !email.contains("@")) {
+            return null;
+        }
+
+        String emailDomain =
+                email.substring(email.lastIndexOf("@") + 1)
+                        .trim()
+                        .toLowerCase();
+
+        return universityRepository
+                .findByDomainIgnoreCase(emailDomain)
+                .orElse(null);
+    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception{
@@ -57,12 +77,12 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/favicon.ico","/favicon.ico/**","/css/**","/js/**","/images/**","/webjars/**",
 
-                                "/" , "/about-us" , "/contact" , "/login" , "/register" , "/verify-email" , "/home" , "/universities" ,
+                                "/" , "/about-us" , "/login" , "/register" , "/verify-email" , "/home" , "/universities" ,
                                 "/campus-events" , "/event-management" , "/oauth" , "/request-event" , "/create-custom-form" , "/admin" , "/event-details/**" ,
-                                "/event-details" , "/tickets" , "/my-events" , "/profile" ,"/formDetails/", "/formDetails/**", "/update-custom-form/**",
+                                "/event-details" , "/tickets" , "/my-events" , "/profile" , "/update-custom-form/**",
                                 "/event-management/**", "/update-event/**", "/form-details/**", "/form-responses/**",
 
-                                "/api/v1/auth/**", "/api/v1/events/public-events/**", "/api/v1/events/**", "/api/v1//custom-forms/public-forms/**", "/api/v1/custom-forms/submit/**", "/api/v1/custom-forms/public",
+                                "/api/v1/auth/**", "/api/v1/events/public-events/**", "/api/v1/events/**", "/api/v1//custom-forms/public-forms/**", "/api/v1/custom-forms/submit/**",
                                 "/api/v1/events/public-events", "/api/v1/custom-forms/public-forms", "/api/v1/tickets/*/qr", "/api/v1/universities-list"
                         ).permitAll()
                     .anyRequest().authenticated()
@@ -102,9 +122,17 @@ public class SecurityConfig {
         String email = oauthUser.getAttribute("email");
         String name  = oauthUser.getAttribute("name");
 
+        if (email == null || email.isBlank()) {
+            throw new RuntimeException("Email not provided by OAuth provider");
+        }
+
         OAuth2AuthenticationToken token = (OAuth2AuthenticationToken) auth;
         String provider = token.getAuthorizedClientRegistrationId();
         AuthProvider authProvider = AuthProvider.valueOf(provider.toUpperCase());
+
+        // Automatically resolve university from email domain
+        University university =
+                resolveUniversityFromEmail(email);
 
         User user = userRepository.findByEmail(email)
                 .orElseGet(() -> {
@@ -114,11 +142,26 @@ public class SecurityConfig {
                     newUser.setPassword(""); // OAuth users don’t use password
                     newUser.setSystemRole(SystemRole.USER);
                     newUser.setProvider(authProvider);
+                    newUser.setUniversity(university);
                     return userRepository.save(newUser);
                 });
         if (!user.getProvider().equals(authProvider)) {
-            throw new RuntimeException("Account exists with different provider");
+            throw new AuthProviderMismatchException(
+                    "An account already exists with a different authentication provider."
+            );
         }
+
+        /*
+         * If the user already exists but university was not previously
+         * assigned, resolve it now from the OAuth email domain.
+         *
+         * This also makes the migration safe for existing users.
+         */
+        if (user.getUniversity() == null && university != null) {
+            user.setUniversity(university);
+            userRepository.save(user);
+        }
+
         String access = jwtUtil.generateAccessToken(user.getUserId(),user.getEmail(),user.getSystemRole());
         String refresh = jwtUtil.generateRefreshToken(user.getUserId());
 
