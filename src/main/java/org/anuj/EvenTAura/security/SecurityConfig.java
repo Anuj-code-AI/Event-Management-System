@@ -29,6 +29,7 @@ import org.springframework.security.oauth2.client.authentication.OAuth2Authentic
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.RegexRequestMatcher;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -80,10 +81,34 @@ public class SecurityConfig {
                                 "/" , "/about-us" , "/login" , "/register" , "/verify-email" , "/home" , "/universities" ,
                                 "/campus-events" , "/event-management" , "/oauth" , "/request-event" , "/create-custom-form" , "/admin" , "/event-details/**" ,
                                 "/event-details" , "/tickets" , "/my-events" , "/profile" , "/update-custom-form/**",
-                                "/event-management/**", "/update-event/**", "/form-details/**", "/form-responses/**",
+                                "/event-management/**", "/update-event/**", "/form-details/**", "/form-responses/**"
+                        ).permitAll()
+                        .requestMatchers(
+                                // Public authentication
+                                "/api/v1/auth/register",
+                                "/api/v1/auth/verify-email",
+                                "/api/v1/auth/resend-otp",
+                                "/api/v1/auth/login",
+                                "/api/v1/auth/refresh",
 
-                                "/api/v1/auth/**", "/api/v1/events/public-events/**", "/api/v1/events/**", "/api/v1//custom-forms/public-forms/**", "/api/v1/custom-forms/submit/**",
-                                "/api/v1/events/public-events", "/api/v1/custom-forms/public-forms", "/api/v1/tickets/*/qr", "/api/v1/universities-list"
+                                // Public events
+                                "/api/v1/events/public-events/**",
+
+                                // Public custom forms
+                                "/api/v1/custom-forms/public-forms/**",
+
+                                // Public university list
+                                "/api/v1/universities-list",
+
+                                // Public ticket QR
+                                "/api/v1/tickets/*/qr"
+                        ).permitAll()
+                        // GET /api/v1/events/{eventId}
+                        .requestMatchers(
+                                new RegexRequestMatcher(
+                                        "^/api/v1/events/[0-9]+$",
+                                        "GET"
+                                )
                         ).permitAll()
                     .anyRequest().authenticated()
 
