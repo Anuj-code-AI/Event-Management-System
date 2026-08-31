@@ -1,146 +1,146 @@
 package org.anuj.EvenTAura.util;
 
-
 import lombok.RequiredArgsConstructor;
-import org.anuj.EvenTAura.model.University;
 import org.anuj.EvenTAura.model.User;
 import org.anuj.EvenTAura.model.enums.AuthProvider;
 import org.anuj.EvenTAura.model.enums.SystemRole;
-import org.anuj.EvenTAura.repository.UniversityRepository;
 import org.anuj.EvenTAura.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+
 @Component
 @RequiredArgsConstructor
 public class EventStartUpJob {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final UniversityRepository universityRepository;
 
-    private static final String DEFAULT_PASSWORD = "1234";
+    @Value("${app.admin-name}")
+    private String adminName;
+
+    @Value("${app.admin-email}")
+    private String adminEmail;
+
+    @Value("${app.admin-password}")
+    private String adminPassword;
 
     @EventListener(ApplicationReadyEvent.class)
     @Transactional
     public void runAfterStartup() {
 
-        // ================= UNIVERSITY =================
-        University university = createUniversityIfNotExist();
+        if (adminEmail == null || adminEmail.isBlank()) {
+            throw new IllegalStateException("ADMIN_EMAIL is not configured");
+        }
 
-        // ================= SUPER ADMIN =================
-        createIfNotExists(
-                "admin@gmail.com",
-                "Admin",
-                SystemRole.SUPER_ADMIN,
-                null
-        );
+        if (adminPassword == null || adminPassword.isBlank()) {
+            throw new IllegalStateException("ADMIN_PASSWORD is not configured");
+        }
 
-        // ================= HOD =================
-        createIfNotExists(
-                "hod@medicaps.ac.in",
-                "HOD",
-                SystemRole.HOD,
-                university
-        );
+        User admin = userRepository.findByEmail(adminEmail)
+                .orElse(null);
 
-        // ================= USER =================
-        createIfNotExists(
-                "user@medicaps.ac.in",
-                "User",
-                SystemRole.USER,
-                university
-        );
-    }
+        // ============================================================
+        // ADMIN DOES NOT EXIST -> CREATE
+        // ============================================================
 
-    // ============================================================
-    // CREATE USER
-    // ============================================================
+        if (admin == null) {
 
-    private User createUser(
-            String email,
-            String name,
-            SystemRole role,
-            University university
-    ) {
+            admin = new User();
 
-        User user = new User();
+            admin.setName(adminName);
+            admin.setEmail(adminEmail);
+            admin.setPassword(passwordEncoder.encode(adminPassword));
 
-        user.setName(name);
-        user.setEmail(email);
-        user.setPassword(passwordEncoder.encode(DEFAULT_PASSWORD));
+            admin.setSystemRole(SystemRole.SUPER_ADMIN);
+            admin.setProvider(AuthProvider.LOCAL);
+            admin.setEmailVerified(true);
+            admin.setIsActive(true);
+            admin.setUniversity(null);
 
-        user.setSystemRole(role);
-        user.setProvider(AuthProvider.LOCAL);
-        user.setEmailVerified(true);
-        user.setIsActive(true);
+            userRepository.save(admin);
 
-        // SUPER_ADMIN -> null
-        // HOD / USER -> Medicaps University
-        user.setUniversity(university);
+            System.out.println("----------------------------");
+            System.out.println("Admin account created");
+            System.out.println("Name  : " + adminName);
+            System.out.println("Email : " + adminEmail);
+            System.out.println("----------------------------");
 
-        return userRepository.save(user);
-    }
+            return;
+        }
 
-    // ============================================================
-    // CREATE USER IF NOT EXISTS
-    // ============================================================
+        // ============================================================
+        // ADMIN EXISTS -> VERIFY / UPDATE
+        // ============================================================
 
-    private void createIfNotExists(
-            String email,
-            String name,
-            SystemRole role,
-            University university
-    ) {
+        boolean changed = false;
 
-        User user = userRepository.findByEmail(email)
-                .orElseGet(() ->
-                        createUser(
-                                email,
-                                name,
-                                role,
-                                university
-                        )
-                );
+        // Make sure this account is SUPER_ADMIN
+        if (admin.getSystemRole() != SystemRole.SUPER_ADMIN) {
+            admin.setSystemRole(SystemRole.SUPER_ADMIN);
+            changed = true;
+        }
 
-        System.out.println("----------------------------");
-        System.out.println("Role       : " + user.getSystemRole());
-        System.out.println("Name       : " + user.getName());
-        System.out.println("Email      : " + user.getEmail());
-        System.out.println("University : " +
-                (user.getUniversity() != null
-                        ? user.getUniversity().getName()
-                        : "None"));
-        System.out.println("Password   : " + DEFAULT_PASSWORD);
-    }
+        // Make sure the account is a LOCAL account
+        if (admin.getProvider() != AuthProvider.LOCAL) {
+            admin.setProvider(AuthProvider.LOCAL);
+            changed = true;
+        }
 
-    // ============================================================
-    // CREATE UNIVERSITY IF NOT EXISTS
-    // ============================================================
+        // Make sure email is verified
+        if (!Boolean.TRUE.equals(admin.getEmailVerified())) {
+            admin.setEmailVerified(true);
+            changed = true;
+        }
 
-    private University createUniversityIfNotExist() {
+        // Make sure account is active
+        if (!Boolean.TRUE.equals(admin.getIsActive())) {
+            admin.setIsActive(true);
+            changed = true;
+        }
 
-        return universityRepository
-                .findByDomainIgnoreCase("medicaps.ac.in")
-                .orElseGet(() -> {
+        // Keep admin name synchronized with environment
+        if (adminName != null
+                && !adminName.isBlank()
+                && !adminName.equals(admin.getName())) {
 
-                    University university = new University();
+            admin.setName(adminName);
+            changed = true;
+        }
 
-                    university.setName("Medicaps University");
-                    university.setDomain("medicaps.ac.in");
-                    university.setActive(true);
+        // ============================================================
+        // PASSWORD CHECK
+        //
+        // If ADMIN_PASSWORD in Render is changed, this will detect
+        // the mismatch and replace the stored BCrypt password.
+        // ============================================================
 
-                    University saved =
-                            universityRepository.save(university);
+        if (admin.getPassword() == null
+                || !passwordEncoder.matches(
+                adminPassword,
+                admin.getPassword()
+        )) {
 
-                    System.out.println("----------------------------");
-                    System.out.println("University created:");
-                    System.out.println("Name   : " + saved.getName());
-                    System.out.println("Domain : " + saved.getDomain());
+            admin.setPassword(passwordEncoder.encode(adminPassword));
+            changed = true;
 
-                    return saved;
-                });
+            System.out.println("----------------------------");
+            System.out.println("Admin password updated");
+            System.out.println("Email : " + adminEmail);
+            System.out.println("----------------------------");
+        }
+
+        if (changed) {
+            userRepository.save(admin);
+        } else {
+            System.out.println("----------------------------");
+            System.out.println("Admin account verified");
+            System.out.println("Name  : " + admin.getName());
+            System.out.println("Email : " + admin.getEmail());
+            System.out.println("----------------------------");
+        }
     }
 }
