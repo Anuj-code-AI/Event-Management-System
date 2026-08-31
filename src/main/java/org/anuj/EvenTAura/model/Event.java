@@ -36,6 +36,7 @@ public class Event {
 
     private int totalTickets;
     private int ticketsAvailable;
+    private boolean cancelable;
 
     private String bannerUrl;
     private String paymentQrUrl;

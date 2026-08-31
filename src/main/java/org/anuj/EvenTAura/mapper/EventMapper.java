@@ -20,7 +20,7 @@ public class EventMapper {
         event.setEventDate(req.getEventDate());
         event.setEventTime(req.getEventTime());
         event.setTotalTickets(req.getTotalTickets());
-        event.setTicketsAvailable(req.getTicketsAvailable());
+        event.setCancelable(req.isCancelable());
         event.setBannerUrl(req.getBannerUrl());
         event.setPaymentQrUrl(req.getPaymentQrUrl());
         event.setCategory(req.getCategory());
@@ -31,6 +31,7 @@ public class EventMapper {
         event.setEventStatus(EventStatus.PENDING);
         event.setParticipationType(req.getParticipationType());
         event.setEventMode(req.getEventMode());
+        event.setTicketsAvailable(req.getTotalTickets());
         return event;
     }
 
@@ -47,6 +48,7 @@ public class EventMapper {
                 event.getEventTime(),
                 event.getTotalTickets(),
                 event.getTicketsAvailable(),
+                event.isCancelable(),
                 event.getBannerUrl(),
                 event.getPaymentQrUrl(),
                 event.getTicketPrice(),
@@ -82,11 +84,8 @@ public class EventMapper {
         if(req.getEventTime() != null){
             event.setEventTime(req.getEventTime());
         }
-        if(req.getTotalTickets() != null){
-            event.setTotalTickets(req.getTotalTickets());
-        }
-        if(req.getTicketsAvailable() != null){
-            event.setTicketsAvailable(req.getTicketsAvailable());
+        if(req.getCancelable() != null){
+            event.setCancelable(req.getCancelable());
         }
         if(req.getBannerUrl() != null){
             event.setBannerUrl(req.getBannerUrl());

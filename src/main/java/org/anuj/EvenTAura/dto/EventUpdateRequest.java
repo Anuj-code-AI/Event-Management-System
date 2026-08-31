@@ -19,9 +19,8 @@ public class EventUpdateRequest {
     private LocalDate eventDate;
     private LocalTime eventTime;
     private Integer totalTickets;
-    private Integer ticketsAvailable;
+    private Boolean cancelable;
     private String bannerUrl;
-    private String ticketUrl;
     private String paymentQrUrl;
     private Double ticketPrice;
     private String category;

@@ -70,15 +70,11 @@ public class EventController {
             @PathVariable Long eventId,
             @ModelAttribute EventUpdateRequest request,
             @RequestParam(value = "banner", required = false) MultipartFile banner,
-            @RequestParam(value = "ticket", required = false) MultipartFile ticket,
             @RequestParam(value = "paymentQr", required = false) MultipartFile paymentQr,
             Authentication authentication
     ) {
         if (banner != null && !banner.isEmpty()) {
             request.setBannerUrl(cloudinaryService.uploadImage(banner, "banner"));
-        }
-        if (ticket != null && !ticket.isEmpty()) {
-            request.setTicketUrl(cloudinaryService.uploadImage(ticket, "ticket"));
         }
         if (paymentQr != null && !paymentQr.isEmpty()) {
             request.setPaymentQrUrl(cloudinaryService.uploadImage(paymentQr, "paymentQr"));

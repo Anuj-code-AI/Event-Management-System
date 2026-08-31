@@ -38,8 +38,7 @@ public class EventRequest {
     @Min(value = 1, message = "Minimum tickets must be 1")
     private Integer totalTickets;
 
-    @Min(value = 0, message = "Minimum available tickets must be 0")
-    private Integer ticketsAvailable;
+    private boolean cancelable;
 
     private String bannerUrl;
     private String paymentQrUrl;
@@ -47,7 +46,7 @@ public class EventRequest {
     private String club;
     private Double ticketPrice;
 
-    @NotBlank(message = "Must decide the participation type of event")
+    @NotNull
     private ParticipationType participationType;
 
     @NotBlank(message = "Must select the event mode")

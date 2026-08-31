@@ -50,12 +50,6 @@ public class EventServiceImpl implements EventService {
         if (req.getTotalTickets() <= 0) {
             throw new IllegalArgumentException("Total tickets must be greater than 0");
         }
-        if (req.getTicketsAvailable() < 0) {
-            throw new IllegalArgumentException("Tickets available cannot be negative");
-        }
-        if (req.getTicketsAvailable() > req.getTotalTickets()) {
-            throw new IllegalArgumentException("Tickets available cannot exceed total tickets");
-        }
         if (req.getTicketPrice() > 0 && req.getPaymentQrUrl() == null) {
             throw new IllegalArgumentException("Payment QR required for paid events");
         }
@@ -82,12 +76,18 @@ public class EventServiceImpl implements EventService {
     // Update event service
     @Override
     @Transactional
-    public EventResponse updateEvent(Long eventId, EventUpdateRequest req, Authentication authentication) {
+    public EventResponse updateEvent(
+            Long eventId,
+            EventUpdateRequest req,
+            Authentication authentication
+    ) {
 
-        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        CustomUserDetails userDetails =
+                (CustomUserDetails) authentication.getPrincipal();
 
         Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new EventNotExistException("No event found with this id"));
+                .orElseThrow(() ->
+                        new EventNotExistException("No event found with this id"));
 
         boolean isHOD = authentication.getAuthorities().stream()
                 .anyMatch(auth -> auth.getAuthority().equals("ROLE_HOD"));
@@ -96,7 +96,31 @@ public class EventServiceImpl implements EventService {
             throw new UnauthorizedException("You cannot update this event");
         }
 
-        EventMapper.updateEventFromRequest(req, event);
+        // Validate ticket capacity change
+        if (req.getTotalTickets() != null) {
+
+            long bookedTickets = ticketRepository.countByEventAndStatusIn(
+                    event,
+                    List.of(
+                            TicketStatus.ACTIVE,
+                            TicketStatus.USED
+                    )
+            );
+
+            if (req.getTotalTickets() < bookedTickets) {
+                throw new IllegalArgumentException(
+                        "Total tickets cannot be less than already booked tickets"
+                );
+            }
+
+            EventMapper.updateEventFromRequest(req, event);
+
+            event.setTicketsAvailable(
+                    req.getTotalTickets() - (int) bookedTickets
+            );
+        } else {
+            EventMapper.updateEventFromRequest(req, event);
+        }
         return EventMapper.toResponse(event);
     }
 
@@ -304,7 +328,7 @@ public class EventServiceImpl implements EventService {
 
         return eventRepository.findByUser(user, pageable)
                 .map(event -> {
-                    EventSummaryResponse response = new EventSummaryResponse(
+                    return new EventSummaryResponse(
                             event.getEventId(),
                             event.getTitle(),
                             event.getLocation(),
@@ -315,7 +339,6 @@ public class EventServiceImpl implements EventService {
                             event.getEventStatus(),
                             event.getUniversity() != null ? event.getUniversity().getLogoUrl() : null
                     );
-                    return response;
                 });
     }
 

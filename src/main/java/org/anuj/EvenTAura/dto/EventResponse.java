@@ -26,6 +26,7 @@ public class EventResponse {
     private LocalTime eventTime;
     private int totalTickets;
     private int ticketsAvailable;
+    private boolean cancelable;
     private String bannerUrl;
     private String paymentQrUrl;
     private Double ticketPrice;

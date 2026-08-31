@@ -331,36 +331,55 @@ public class TicketServiceImpl implements TicketService{
 
     @Override
     @Transactional
-    public TicketCancelResponse cancelTicket(Long ticketId, Authentication authentication) {
+    public TicketCancelResponse cancelTicket(
+            Long ticketId,
+            Authentication authentication
+    ) {
 
-        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        CustomUserDetails userDetails =
+                (CustomUserDetails) authentication.getPrincipal();
 
         Ticket ticket = ticketRepository.findById(ticketId)
-                .orElseThrow(() -> new NoTicketFoundException("Ticket not found"));
+                .orElseThrow(() ->
+                        new NoTicketFoundException("Ticket not found"));
 
-        // ensure the ticket belongs to the user
-        if(!ticket.getUser().getUserId().equals(userDetails.getId())){
-            throw new RuntimeException("You cannot cancel this ticket");
-        }
-
-        // ticket already used
-        if(ticket.getStatus() == TicketStatus.USED){
-            throw new RuntimeException("Used ticket cannot be cancelled");
-        }
-
-        // ticket already canceled
-        if(ticket.getStatus() == TicketStatus.CANCELLED){
-            throw new RuntimeException("Ticket already cancelled");
+        // Ensure the ticket belongs to the user
+        if (!ticket.getUser().getUserId().equals(userDetails.getId())) {
+            throw new UnauthorizedException(
+                    "You cannot cancel this ticket"
+            );
         }
 
         Event event = ticket.getEvent();
 
-        // update ticket status
+        // Check whether cancellation is allowed for this event
+        if (!event.isCancelable()) {
+            throw new UnauthorizedException(
+                    "Ticket cancellation is not allowed for this event"
+            );
+        }
+
+        // Ticket already used
+        if (ticket.getStatus() == TicketStatus.USED) {
+            throw new IllegalStateException(
+                    "Used ticket cannot be cancelled"
+            );
+        }
+
+        // Ticket already cancelled
+        if (ticket.getStatus() == TicketStatus.CANCELLED) {
+            throw new IllegalStateException(
+                    "Ticket already cancelled"
+            );
+        }
+
+        // Update ticket status
         ticket.setStatus(TicketStatus.CANCELLED);
 
-        // increase available tickets
-        event.setTicketsAvailable(event.getTicketsAvailable() + 1);
-
+        // Return the ticket to available inventory
+        event.setTicketsAvailable(
+                event.getTicketsAvailable() + 1
+        );
 
         ticketRepository.save(ticket);
         eventRepository.save(event);

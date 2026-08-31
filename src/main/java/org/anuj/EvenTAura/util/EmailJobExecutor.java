@@ -39,7 +39,7 @@ public class EmailJobExecutor {
     private String from;
 
     /**
-     * Checks for pending email jobs every second.
+     * Checks for pending email jobs every minute.
      */
     @Scheduled(fixedDelay = 60000)
     public void executeJobs() {

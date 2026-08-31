@@ -13,7 +13,7 @@ const form = document.getElementById("event-form");
 const alertBox = document.getElementById("alert-box");
 const ticketPriceInput = document.getElementById("ticketPrice");
 const totalTicketsInput = document.getElementById("totalTickets");
-const ticketsAvailableInput = document.getElementById("ticketsAvailable");
+const cancelableInput = document.getElementById("cancelable");
 const paymentQrContainer = document.getElementById("payment-qr-container");
 const eventModeInput = document.getElementById("eventMode");
 const cityInput = document.getElementById("city");
@@ -182,12 +182,7 @@ async function initPage() {
     // Setup listener on price change
     ticketPriceInput.addEventListener("input", togglePaymentQr);
 
-    // Setup capacity listeners (match ticketsAvailable to totalTickets when creating)
-    totalTicketsInput.addEventListener("input", () => {
-        if (!isEditMode) {
-            ticketsAvailableInput.value = totalTicketsInput.value;
-        }
-    });
+
 
     // Setup AI description generation
     bannerInput.addEventListener("change", updateGenerateDescriptionAvailability);
@@ -270,7 +265,7 @@ function populateForm(event) {
 
     ticketPriceInput.value = event.ticketPrice || 0;
     totalTicketsInput.value = event.totalTickets || 0;
-    ticketsAvailableInput.value = event.ticketsAvailable || 0;
+    cancelableInput.checked = !!event.cancelable;
 
     // Show image previews
     if (event.bannerUrl) {
@@ -302,7 +297,6 @@ function validateForm() {
     const location = document.getElementById("location").value.trim();
     const ticketPrice = parseFloat(ticketPriceInput.value || 0);
     const totalTickets = parseInt(totalTicketsInput.value || 0, 10);
-    const ticketsAvailable = parseInt(ticketsAvailableInput.value || 0, 10);
 
     if (!title) {
         showInputError(document.getElementById("title"), "Event title is required.");
@@ -336,10 +330,7 @@ function validateForm() {
         showInputError(totalTicketsInput, "Total tickets capacity must be at least 1.");
         isValid = false;
     }
-    if (isNaN(ticketsAvailable) || ticketsAvailable < 0 || ticketsAvailable > totalTickets) {
-        showInputError(ticketsAvailableInput, "Tickets available must be between 0 and total tickets capacity.");
-        isValid = false;
-    }
+
 
     // Dates integrity checks
     if (eventDateStr && lastRegDateStr) {
@@ -394,7 +385,7 @@ async function handleFormSubmit(e) {
     const participationType = document.getElementById("participationType").value;
     const ticketPrice = parseFloat(ticketPriceInput.value || 0);
     const totalTickets = parseInt(totalTicketsInput.value || 0, 10);
-    const ticketsAvailable = parseInt(ticketsAvailableInput.value || 0, 10);
+
 
     const formData = new FormData();
     formData.append("title", title);
@@ -409,7 +400,7 @@ async function handleFormSubmit(e) {
     formData.append("participationType", participationType);
     formData.append("ticketPrice", ticketPrice);
     formData.append("totalTickets", totalTickets);
-    formData.append("ticketsAvailable", ticketsAvailable);
+    formData.append("cancelable", cancelableInput.checked);
     formData.append("eventMode", eventMode);
 
     // Append files

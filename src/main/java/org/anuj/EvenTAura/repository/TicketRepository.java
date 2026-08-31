@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,4 +32,10 @@ AND t.status <> :status
     Page<Ticket> findByEvent(Event event, Pageable pageable);
     boolean existsByEventAndUser(Event event, User user);
     Optional<Ticket> findByEventAndUser(Event event, User user);
+    long countByEventAndStatusIn(
+            Event event,
+            Collection<TicketStatus> statuses
+    );
+
+
 }
