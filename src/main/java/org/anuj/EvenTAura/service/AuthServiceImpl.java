@@ -1,9 +1,11 @@
 package org.anuj.EvenTAura.service;
 
+import com.resend.Resend;
+import com.resend.services.emails.model.CreateEmailOptions;
+import com.resend.services.emails.model.CreateEmailResponse;
 import io.github.resilience4j.ratelimiter.RateLimiter;
 import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
 import io.jsonwebtoken.Claims;
-import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +16,6 @@ import org.anuj.EvenTAura.mapper.UserMapper;
 import org.anuj.EvenTAura.model.*;
 import org.anuj.EvenTAura.repository.*;
 import org.anuj.EvenTAura.util.JwtUtil;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -35,10 +36,10 @@ public class AuthServiceImpl implements AuthService{
     private final RefreshTokenRepository refreshRepository;
     private final UniversityRepository universityRepository;
     private final EmailOtpRepository otpRepository;
-    private final JavaMailSender mailSender;
+    private final Resend resend;
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
-    @Value("${app.mail.from}")
+    @Value("${resend.from}")
     private String from;
 
     private String generateOtp(){
@@ -79,26 +80,29 @@ public class AuthServiceImpl implements AuthService{
         </div>
         """.formatted(otp);
 
+        CreateEmailOptions params = CreateEmailOptions.builder()
+                .from(from)
+                .to(email)
+                .subject(subject)
+                .html(htmlBody)
+                .build();
+
         try {
-            // 1. Create a blank MimeMessage container
-            MimeMessage mimeMessage = mailSender.createMimeMessage();
 
-            // 2. Use MimeMessageHelper with HTML support enabled (true flag) and UTF-8 encoding
-            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+            CreateEmailResponse response = resend.emails().send(params);
 
-            helper.setTo(email);
-            helper.setSubject(subject);
-            helper.setFrom(from);
+            log.info(
+                    "Authentication mail send to {} at {}",
+                    email,
+                    LocalDateTime.now()
+            );
 
-            // 3. Set the text content, passing 'true' as the second parameter to enable HTML rendering
-            helper.setText(htmlBody, true);
+        } catch (Exception e) {
 
-            // 4. Send the fancy email
-            mailSender.send(mimeMessage);
-
-        } catch (Exception ex) {
-            log.error("Failed to send verification email to {}", email, ex);
-            throw new RuntimeException("Unable to send verification email.");
+            throw new RuntimeException(
+                    "Failed to send ticket confirmation email",
+                    e
+            );
         }
     }
 

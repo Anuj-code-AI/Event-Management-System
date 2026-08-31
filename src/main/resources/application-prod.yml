@@ -36,18 +36,6 @@ spring:
             client-secret: ${GOOGLE_CLIENT_SECRET}
             scope: email,profile
 
-  mail:
-    host: smtp.resend.com
-    port: 587
-    username: resend
-    password: ${RESEND_API_KEY}
-    protocol: smtp
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
 app:
   base-url: ${BASE_URL}
 
@@ -55,8 +43,6 @@ app:
     secure: ${COOKIE_SECURE}
     same-site: ${COOKIE_SITE}
 
-  mail:
-    from: ${EMAIL_FROM}
 
 cloudinary:
   cloud_name: ${IMAGE_CLOUD_NAME}
@@ -68,3 +54,7 @@ springdoc:
     enabled: ${API_DOC}
   swagger-ui:
     enabled: ${SWAGGER_UI}
+
+resend:
+  api-key: ${RESEND_API_KEY}
+  from: ${EMAIL_FROM}

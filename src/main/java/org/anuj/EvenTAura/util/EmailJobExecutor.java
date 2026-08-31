@@ -1,7 +1,8 @@
 package org.anuj.EvenTAura.util;
 
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
+import com.resend.Resend;
+import com.resend.services.emails.model.CreateEmailOptions;
+import com.resend.services.emails.model.CreateEmailResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.anuj.EvenTAura.model.EmailJob;
@@ -11,8 +12,6 @@ import org.anuj.EvenTAura.model.enums.JobStatus;
 import org.anuj.EvenTAura.repository.EmailJobRepository;
 import org.anuj.EvenTAura.repository.TicketRepository;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -27,7 +26,7 @@ public class EmailJobExecutor {
 
     private final EmailJobRepository emailJobRepository;
     private final TicketRepository ticketRepository;
-    private final JavaMailSender mailSender;
+    private final Resend resend;
 
     private static final DateTimeFormatter DATE_FORMAT =
             DateTimeFormatter.ofPattern("dd MMMM yyyy");
@@ -35,7 +34,7 @@ public class EmailJobExecutor {
     private static final DateTimeFormatter TIME_FORMAT =
             DateTimeFormatter.ofPattern("hh:mm a");
 
-    @Value("${app.mail.from}")
+    @Value("${resend.from}")
     private String from;
 
     /**
@@ -93,30 +92,38 @@ public class EmailJobExecutor {
         }
     }
 
-    private void sendTicketConfirmationEmail(Ticket ticket)
-            throws MessagingException {
+    private void sendTicketConfirmationEmail(Ticket ticket) {
 
         Event event = ticket.getEvent();
 
         String recipient = ticket.getUser().getEmail();
 
-        MimeMessage message = mailSender.createMimeMessage();
+        String html = buildTicketConfirmationEmail(ticket, event);
 
-        MimeMessageHelper helper =
-                new MimeMessageHelper(message, true, "UTF-8");
+        CreateEmailOptions params = CreateEmailOptions.builder()
+                .from(from)
+                .to(recipient)
+                .subject("Ticket Confirmed - " + event.getTitle())
+                .html(html)
+                .build();
 
-        helper.setTo(recipient);
-        helper.setFrom(from);
-        helper.setSubject(
-                "Ticket Confirmed - " + event.getTitle()
-        );
+        try {
 
-        helper.setText(
-                buildTicketConfirmationEmail(ticket, event),
-                true
-        );
+            CreateEmailResponse response = resend.emails().send(params);
 
-        mailSender.send(message);
+            log.info(
+                    "Email sent through Resend. Email ID: {}, Ticket ID: {}",
+                    response.getId(),
+                    ticket.getTicketId()
+            );
+
+        } catch (Exception e) {
+
+            throw new RuntimeException(
+                    "Failed to send ticket confirmation email",
+                    e
+            );
+        }
     }
 
     private String buildTicketConfirmationEmail(
