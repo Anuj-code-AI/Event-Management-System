@@ -1,11 +1,11 @@
 const ADMIN_API_BASE = "/api/v1/admin";
-const UNIVERSITY_PAGE_SIZE = 6;
-const USER_PAGE_SIZE = 10;
+const DEFAULT_UNIVERSITY_PAGE_SIZE = 10;
+const DEFAULT_USER_PAGE_SIZE = 10;
 
 const state = {
     activeTab: "universities",
-    universities: { page: 0, totalPages: 0, query: "" },
-    users: { page: 0, totalPages: 0, query: "" },
+    universities: { page: 0, totalPages: 0, query: "", size: DEFAULT_UNIVERSITY_PAGE_SIZE },
+    users: { page: 0, totalPages: 0, query: "", size: DEFAULT_USER_PAGE_SIZE },
     busy: false,
 };
 
@@ -63,16 +63,18 @@ async function loadUniversities(page = 0, query = state.universities.query) {
     const grid = document.getElementById("univ-grid");
     setStatus("univ", "loading"); grid.replaceChildren();
     state.universities.query = query;
+    const size = state.universities.size;
     try {
-        const params = new URLSearchParams({ page, size: UNIVERSITY_PAGE_SIZE });
+        const params = new URLSearchParams({ page, size });
         if (query) params.set("query", query);
         const data = await request(`/university?${params}`);
         const list = data.content || [];
         list.forEach((university) => grid.appendChild(renderUniversityCard(university)));
         setStatus("univ", list.length ? "none" : "empty");
-        state.universities.page = data.number || 0;
-        state.universities.totalPages = data.totalPages || 0;
-        updatePagination("univ", data, state.universities.page, state.universities.totalPages);
+        const meta = extractPageMeta(data, size, page, list.length);
+        state.universities.page = meta.number;
+        state.universities.totalPages = meta.totalPages;
+        updatePagination("univ", meta, list.length, size);
     } catch (error) { setStatus("univ", "error", `Could not load universities. ${error.message}`); }
 }
 
@@ -95,24 +97,49 @@ async function loadUsers(page = 0, query = state.users.query) {
     const body = document.getElementById("users-tbody");
     setStatus("users", "loading"); body.replaceChildren();
     state.users.query = query;
+    const size = state.users.size;
     try {
-        const params = new URLSearchParams({ page, size: USER_PAGE_SIZE });
+        const params = new URLSearchParams({ page, size });
         if (query) params.set("query", query);
         const data = await request(`/users?${params}`);
         const list = data.content || [];
         list.forEach((user) => body.appendChild(renderUserRow(user)));
         setStatus("users", list.length ? "none" : "empty");
-        state.users.page = data.number || 0;
-        state.users.totalPages = data.totalPages || 0;
-        updatePagination("users", data, state.users.page, state.users.totalPages);
+        const meta = extractPageMeta(data, size, page, list.length);
+        state.users.page = meta.number;
+        state.users.totalPages = meta.totalPages;
+        updatePagination("users", meta, list.length, size);
     } catch (error) { setStatus("users", "error", `Could not load users. ${error.message}`); }
 }
 
-function updatePagination(kind, data, page, totalPages) {
+// Spring Boot 3.1+/Spring Data 3.1+ serializes Page<T> with pagination metadata
+// nested under a "page" object (data.page.totalPages, data.page.number, etc.)
+// instead of flat top-level fields (data.totalPages, data.number). This reads
+// whichever shape the backend actually sends, with a computed fallback if
+// neither is present.
+function extractPageMeta(data, size, page, listLength) {
+    const meta = data && typeof data.page === "object" ? data.page : data || {};
+    let totalPages = typeof meta.totalPages === "number" && meta.totalPages > 0 ? meta.totalPages : undefined;
+    const totalElements = typeof meta.totalElements === "number" ? meta.totalElements : undefined;
+    const number = typeof meta.number === "number" ? meta.number : page;
+    if (totalPages === undefined) {
+        if (totalElements !== undefined && totalElements > 0) totalPages = Math.max(1, Math.ceil(totalElements / size));
+        else if (listLength === size) totalPages = page + 2; // unknown total, but this page is full: assume more exist
+        else totalPages = page + 1;
+    }
+    return { totalPages, totalElements, number };
+}
+
+function updatePagination(kind, meta, listLength, size) {
+    const { number: page, totalPages, totalElements } = meta;
     const pagination = document.getElementById(`${kind}-pagination`);
-    pagination.classList.toggle("hidden", totalPages <= 1);
-    if (totalPages <= 1) return;
-    document.getElementById(kind === "univ" ? "pagination-info" : "users-pagination-info").textContent = `Page ${page + 1} of ${totalPages} (${data.totalElements} total)`;
+    const showPagination = totalPages > 1 || listLength === size;
+    pagination.classList.toggle("hidden", !showPagination);
+    if (!showPagination) return;
+    const infoText = totalElements !== undefined
+        ? `Page ${page + 1} of ${totalPages} (${totalElements} total)`
+        : `Page ${page + 1} of ${totalPages}`;
+    document.getElementById(kind === "univ" ? "pagination-info" : "users-pagination-info").textContent = infoText;
     document.getElementById(kind === "univ" ? "prev-page-btn" : "users-prev-page-btn").disabled = page === 0;
     document.getElementById(kind === "univ" ? "next-page-btn" : "users-next-page-btn").disabled = page >= totalPages - 1;
 }
@@ -189,6 +216,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("next-page-btn").addEventListener("click", () => loadUniversities(state.universities.page + 1));
     document.getElementById("users-prev-page-btn").addEventListener("click", () => loadUsers(state.users.page - 1));
     document.getElementById("users-next-page-btn").addEventListener("click", () => loadUsers(state.users.page + 1));
+    document.getElementById("univ-page-size").addEventListener("change", (event) => { state.universities.size = Number(event.target.value); loadUniversities(0); });
+    document.getElementById("users-page-size").addEventListener("change", (event) => { state.users.size = Number(event.target.value); loadUsers(0); });
     let timer;
     const bindSearch = (id, tab) => document.getElementById(id).addEventListener("input", (event) => { clearTimeout(timer); const query = event.target.value.trim(); document.getElementById("universitySearch").value = query; timer = setTimeout(() => tab === "universities" ? loadUniversities(0, query) : loadUsers(0, query), 350); });
     bindSearch("univ-search-input", "universities"); bindSearch("user-search-input", "users");
