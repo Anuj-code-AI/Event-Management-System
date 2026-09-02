@@ -19,11 +19,11 @@
     <script>
         tailwind.config = {
             theme: { extend: {
-                colors: { ink: "#0B1526", "ink-soft": "#14213B", canvas: "#FFFFFF", "canvas-sunk": "#F5F7FA", "canvas-mid": "#EEF1F6", line: "#E2E6ED", "line-strong": "#CBD2DE", muted: "#5B6B85", "muted-dim": "#8894A8", action: "#2450E8", "action-hover": "#1A3FC4", "action-tint": "#EDF1FE", signal: "#0EA5A5", "signal-tint": "#E7F8F8", amber: "#B45309", danger: "#B42318" },
-                fontFamily: { display: ["Sora", "sans-serif"], body: ["Inter", "sans-serif"], mono: ["IBM Plex Mono", "monospace"] },
-                spacing: { "sidebar-w": "256px", "container-max": "1360px" },
-                borderRadius: { DEFAULT: "8px", lg: "10px", xl: "14px" }
-            }}
+                    colors: { ink: "#0B1526", "ink-soft": "#14213B", canvas: "#FFFFFF", "canvas-sunk": "#F5F7FA", "canvas-mid": "#EEF1F6", line: "#E2E6ED", "line-strong": "#CBD2DE", muted: "#5B6B85", "muted-dim": "#8894A8", action: "#2450E8", "action-hover": "#1A3FC4", "action-tint": "#EDF1FE", signal: "#0EA5A5", "signal-tint": "#E7F8F8", amber: "#B45309", danger: "#B42318" },
+                    fontFamily: { display: ["Sora", "sans-serif"], body: ["Inter", "sans-serif"], mono: ["IBM Plex Mono", "monospace"] },
+                    spacing: { "sidebar-w": "256px", "container-max": "1360px" },
+                    borderRadius: { DEFAULT: "8px", lg: "10px", xl: "14px" }
+                }}
         };
     </script>
     <style>
@@ -109,14 +109,24 @@
                 </div>
             </div>
 
-            <!-- Search -->
+            <!-- Search + page size -->
             <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div class="w-full sm:max-w-md">
                     <label class="relative block w-full">
                         <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-dim text-[20px]">search</span>
-                        <input id="responseSearch" type="search" placeholder="Search responses by name or email..." class="w-full rounded-lg border-line bg-canvas py-2 pl-10 pr-4 text-sm text-ink placeholder:text-muted focus:border-action focus:ring-action transition-all" />
+                        <input id="responseSearch" type="search" placeholder="Search all responses by name or email..." class="w-full rounded-lg border-line bg-canvas py-2 pl-10 pr-4 text-sm text-ink placeholder:text-muted focus:border-action focus:ring-action transition-all" />
                     </label>
                 </div>
+                <label class="flex items-center gap-2 text-sm text-muted whitespace-nowrap">
+                    Show
+                    <select id="responses-page-size" class="rounded-lg border-line bg-canvas py-2 pl-2 pr-7 text-sm focus:border-action focus:ring-action">
+                        <option value="5">5</option>
+                        <option value="10" selected>10</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                    per page
+                </label>
             </div>
 
             <!-- Responses Table -->
@@ -124,14 +134,23 @@
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse text-sm" id="responses-table">
                         <thead>
-                            <tr class="bg-canvas-sunk border-b border-line text-ink font-semibold uppercase tracking-wider text-[11px] eyebrow" id="responses-table-header">
-                                <!-- Populated dynamically -->
-                            </tr>
+                        <tr class="bg-canvas-sunk border-b border-line text-ink font-semibold uppercase tracking-wider text-[11px] eyebrow" id="responses-table-header">
+                            <!-- Populated dynamically -->
+                        </tr>
                         </thead>
                         <tbody id="responses-table-body" class="divide-y divide-line">
-                            <!-- Populated dynamically -->
+                        <!-- Populated dynamically -->
                         </tbody>
                     </table>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            <div id="responses-pagination" class="hidden flex items-center justify-between border-t border-line pt-4">
+                <span id="responses-pagination-info" class="font-mono text-xs text-muted"></span>
+                <div class="flex gap-2">
+                    <button id="responses-prev-page-btn" class="rounded-lg border border-line-strong bg-canvas px-3 py-2 text-sm font-medium text-ink disabled:opacity-40">Previous</button>
+                    <button id="responses-next-page-btn" class="rounded-lg border border-line-strong bg-canvas px-3 py-2 text-sm font-medium text-ink disabled:opacity-40">Next</button>
                 </div>
             </div>
 

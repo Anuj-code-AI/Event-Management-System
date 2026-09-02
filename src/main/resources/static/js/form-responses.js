@@ -10,11 +10,31 @@
 //   show uncaught exceptions unless you literally intercept and preventDefault
 //   every one, which this does, but a determined user opening devtools network
 //   tab will still see raw API responses. This is not a security boundary.
+// - PAGINATION NOTE: the original fetchResponses() never sent page/size query
+//   params at all, so it silently relied on whatever default the backend applies
+//   (page=0&size=10). That's why only 10 responses ever showed. Fixed below by
+//   actually sending page/size and reading back whatever pagination shape the
+//   backend returns.
+// - SEARCH: the backend controller (GET /custom-forms/{formId}/responses) accepts
+//   a `query` param and searches server-side across ALL submissions, not just the
+//   loaded page — confirmed from the actual controller signature. Search below
+//   sends that param and re-fetches from page 0 on every keystroke (debounced),
+//   same pattern as the admin users/universities search. It does NOT filter
+//   client-side anymore; that was a stopgap for when this wasn't confirmed.
 
 const API_CUSTOM_FORMS = "/api/v1/custom-forms";
+const DEFAULT_RESPONSES_PAGE_SIZE = 10;
+const SEARCH_DEBOUNCE_MS = 350;
+
 let formId = null;
 let submissionsList = [];
-let filteredList = [];
+
+const responsesState = {
+    page: 0,
+    size: DEFAULT_RESPONSES_PAGE_SIZE,
+    totalPages: 0,
+    query: "",
+};
 
 // ---------------------------------------------------------------------------
 // Global error containment
@@ -90,13 +110,19 @@ const initPage = withErrorHandling(async function initPage() {
 
     // Fetch form specifications
     await loadFormMetadata();
-    await fetchResponses();
+    await fetchResponses(0);
 
-    // Bind Search Input
+    // Bind Search Input — debounced, server-side (see file header note)
     const searchInput = document.getElementById("responseSearch");
     if (searchInput) {
+        let debounceTimer;
         searchInput.addEventListener("input", (e) => {
-            filterAndRender(e.target.value.toLowerCase().trim());
+            clearTimeout(debounceTimer);
+            const value = e.target.value.trim();
+            debounceTimer = setTimeout(() => {
+                responsesState.query = value;
+                fetchResponses(0);
+            }, SEARCH_DEBOUNCE_MS);
         });
     }
 
@@ -107,6 +133,22 @@ const initPage = withErrorHandling(async function initPage() {
             downloadResponsesCsv();
         });
     }
+
+    // Bind page size selector
+    const pageSizeSelect = document.getElementById("responses-page-size");
+    if (pageSizeSelect) {
+        pageSizeSelect.value = String(responsesState.size);
+        pageSizeSelect.addEventListener("change", (e) => {
+            responsesState.size = Number(e.target.value);
+            fetchResponses(0);
+        });
+    }
+
+    // Bind pagination buttons
+    const prevBtn = document.getElementById("responses-prev-page-btn");
+    const nextBtn = document.getElementById("responses-next-page-btn");
+    if (prevBtn) prevBtn.addEventListener("click", () => fetchResponses(responsesState.page - 1));
+    if (nextBtn) nextBtn.addEventListener("click", () => fetchResponses(responsesState.page + 1));
 }, "Failed to load this page. Please refresh and try again.");
 
 // ---------------------------------------------------------------------------
@@ -127,7 +169,7 @@ const loadFormMetadata = withErrorHandling(async function loadFormMetadata() {
     // block the rest of the page. Silent no-op is intentional, not an accident.
 }, "Failed to load form details.");
 
-const fetchResponses = withErrorHandling(async function fetchResponses() {
+const fetchResponses = withErrorHandling(async function fetchResponses(page = 0) {
     const token = localStorage.getItem("accessToken");
     const headerRow = document.getElementById("responses-table-header");
     const tableBody = document.getElementById("responses-table-body");
@@ -135,24 +177,68 @@ const fetchResponses = withErrorHandling(async function fetchResponses() {
     if (headerRow) headerRow.innerHTML = "";
     if (tableBody) tableBody.innerHTML = "";
 
-    const res = await fetch(`${API_CUSTOM_FORMS}/${formId}/responses`, {
+    const params = new URLSearchParams({ page, size: responsesState.size });
+    if (responsesState.query) params.set("query", responsesState.query);
+
+    const res = await fetch(`${API_CUSTOM_FORMS}/${formId}/responses?${params}`, {
         headers: { Authorization: `Bearer ${token}` }
     });
     const body = await res.json();
 
     if (res.ok && body.success) {
-        submissionsList = (body.data && body.data.content) || body.data || [];
-        filterAndRender("");
+        const data = body.data;
+        const list = (data && data.content) || (Array.isArray(data) ? data : []);
+        submissionsList = list;
+
+        const meta = extractPageMeta(data, responsesState.size, page, list.length);
+        responsesState.page = meta.number;
+        responsesState.totalPages = meta.totalPages;
+        updateResponsesPagination(meta, list.length, responsesState.size);
+
+        renderResponses();
     } else {
         throw new Error(body.message || "Failed to load responses");
     }
 }, "Failed to fetch registrations. Please try again.");
 
+// Same defensive read as the admin universities/users pages: Spring Boot
+// 3.1+/Spring Data 3.1+ nests pagination metadata under a "page" object
+// (data.page.totalPages, data.page.number) instead of flat top-level fields.
+// This checks both shapes, then falls back to a computed guess if neither is
+// present so Next doesn't silently disappear.
+function extractPageMeta(data, size, page, listLength) {
+    const meta = data && typeof data.page === "object" ? data.page : data || {};
+    let totalPages = typeof meta.totalPages === "number" && meta.totalPages > 0 ? meta.totalPages : undefined;
+    const totalElements = typeof meta.totalElements === "number" ? meta.totalElements : undefined;
+    const number = typeof meta.number === "number" ? meta.number : page;
+    if (totalPages === undefined) {
+        if (totalElements !== undefined && totalElements > 0) totalPages = Math.max(1, Math.ceil(totalElements / size));
+        else if (listLength === size) totalPages = page + 2; // unknown total, page came back full: assume more exist
+        else totalPages = page + 1;
+    }
+    return { totalPages, totalElements, number };
+}
+
+function updateResponsesPagination(meta, listLength, size) {
+    const { number: page, totalPages, totalElements } = meta;
+    const pagination = document.getElementById("responses-pagination");
+    const showPagination = totalPages > 1 || listLength === size;
+    pagination.classList.toggle("hidden", !showPagination);
+    if (!showPagination) return;
+
+    const infoText = totalElements !== undefined
+        ? `Page ${page + 1} of ${totalPages} (${totalElements} total)`
+        : `Page ${page + 1} of ${totalPages}`;
+    document.getElementById("responses-pagination-info").textContent = infoText;
+    document.getElementById("responses-prev-page-btn").disabled = page === 0;
+    document.getElementById("responses-next-page-btn").disabled = page >= totalPages - 1;
+}
+
 // ---------------------------------------------------------------------------
 // Rendering
 // ---------------------------------------------------------------------------
 
-function filterAndRender(query) {
+function renderResponses() {
     try {
         const headerRow = document.getElementById("responses-table-header");
         const tableBody = document.getElementById("responses-table-body");
@@ -162,17 +248,7 @@ function filterAndRender(query) {
         headerRow.innerHTML = "";
         tableBody.innerHTML = "";
 
-        if (query) {
-            filteredList = submissionsList.filter(s =>
-                (s.submittedBy && s.submittedBy.toLowerCase().includes(query)) ||
-                (s.email && s.email.toLowerCase().includes(query)) ||
-                (s.submissionCode && s.submissionCode.toLowerCase().includes(query))
-            );
-        } else {
-            filteredList = [...submissionsList];
-        }
-
-        if (filteredList.length === 0) {
+        if (submissionsList.length === 0) {
             table.classList.add("hidden");
             emptyMsg.classList.remove("hidden");
             return;
@@ -182,7 +258,7 @@ function filterAndRender(query) {
         emptyMsg.classList.add("hidden");
 
         // Dynamic headers based on first submission answers schema
-        const sampleAnswers = filteredList[0].answers || [];
+        const sampleAnswers = submissionsList[0].answers || [];
         let headersHtml = `
             <th class="p-3 text-[11px] eyebrow text-ink font-semibold">Submission Code</th>
             <th class="p-3 text-[11px] eyebrow text-ink font-semibold">Applicant</th>
@@ -196,7 +272,7 @@ function filterAndRender(query) {
         headerRow.innerHTML = headersHtml;
 
         // Render body rows
-        filteredList.forEach(sub => {
+        submissionsList.forEach(sub => {
             const subDate = new Date(sub.submittedAt).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
             let rowHtml = `
                 <tr class="hover:bg-canvas-sunk transition-colors">
@@ -229,7 +305,7 @@ function filterAndRender(query) {
             tableBody.insertAdjacentHTML("beforeend", rowHtml);
         });
     } catch (err) {
-        silentLog("filterAndRender", err);
+        silentLog("renderResponses", err);
         showToast("Failed to render responses.", "error");
     }
 }
