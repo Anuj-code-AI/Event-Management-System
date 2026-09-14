@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CustomFormSummaryResponse {
-    private Long id;
+    private String id;
     private String title;
     private String bannerUrl;
     private LocalDateTime registrationDeadLine;

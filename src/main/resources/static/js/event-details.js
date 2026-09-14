@@ -137,7 +137,7 @@ async function initPage() {
     const segments = window.location.pathname.split("/");
     eventId = segments.pop();
 
-    if (!eventId || isNaN(parseInt(eventId, 10))) {
+    if (!eventId ) {
         showLoading(false);
         contentSection.classList.add("hidden");
         errorBlock.classList.remove("hidden");

@@ -55,13 +55,13 @@ public class HostController {
     }
 
     @PatchMapping("/events/{id}/approve")
-    public ResponseEntity<ApiResponse<Void>> approveEvent(@PathVariable("id") Long eventId,Authentication authentication){
+    public ResponseEntity<ApiResponse<Void>> approveEvent(@PathVariable("id") String eventId,Authentication authentication){
         hostService.approveEvent(eventId,authentication);
         return ResponseEntity.ok(ApiResponse.success("Form approved successfully", null));
     }
 
     @PatchMapping("/events/{id}/reject")
-    public ResponseEntity<Void> rejectEvent(@PathVariable("id") Long eventId,Authentication authentication){
+    public ResponseEntity<Void> rejectEvent(@PathVariable("id") String eventId,Authentication authentication){
         hostService.rejectEvent(eventId,authentication);
         return ResponseEntity.noContent().build();
     }
@@ -83,14 +83,14 @@ public class HostController {
 
     // HOD Approves Form
     @PostMapping("/custom-forms/{formId}/approve")
-    public ResponseEntity<ApiResponse<Void>> approveForm(@PathVariable Long formId, Authentication authentication) {
+    public ResponseEntity<ApiResponse<Void>> approveForm(@PathVariable String formId, Authentication authentication) {
         customFormService.approveForm(formId, authentication);
         return ResponseEntity.ok(ApiResponse.success("Form approved successfully", null));
     }
 
     // HOD Rejects Form
     @PostMapping("/custom-forms/{formId}/reject")
-    public ResponseEntity<ApiResponse<Void>> rejectForm(@PathVariable Long formId, Authentication authentication) {
+    public ResponseEntity<ApiResponse<Void>> rejectForm(@PathVariable String formId, Authentication authentication) {
         customFormService.rejectForm(formId, authentication);
         return ResponseEntity.ok(ApiResponse.success("Form rejected successfully", null));
     }

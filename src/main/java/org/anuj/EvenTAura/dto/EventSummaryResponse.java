@@ -10,7 +10,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 public class EventSummaryResponse {
-    private Long eventId;
+    private String eventId;        // in mapper the eventId is being mapped by uniqueId
     private String title;
     private String location;
     private LocalDate lastRegistrationDate;

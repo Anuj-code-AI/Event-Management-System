@@ -101,12 +101,12 @@ const initPage = withErrorHandling(async function initPage() {
     const pathParts = window.location.pathname.split("/");
     const idParam = pathParts[pathParts.length - 1];
 
-    if (!idParam || isNaN(parseInt(idParam, 10))) {
+    if (!idParam ) {
         showToast("Invalid Form ID in path variable.", "error");
         return;
     }
 
-    formId = parseInt(idParam, 10);
+    formId = idParam;
 
     // Fetch form specifications
     await loadFormMetadata();

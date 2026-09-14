@@ -9,12 +9,12 @@ import org.springframework.security.core.Authentication;
 
 public interface EventService {
     EventResponse createEvent(EventRequest req, Authentication auth);
-    EventResponse updateEvent(Long eventId, EventUpdateRequest req, Authentication auth);
-    Void deleteEvent(Long eventId, Authentication auth);
-    Void cancelEvent(Long eventId, Authentication auth);
-    Void uncancelEvent(Long eventId, Authentication auth);
+    EventResponse updateEvent(String eventId, EventUpdateRequest req, Authentication auth);
+    Void deleteEvent(String eventId, Authentication auth);
+    Void cancelEvent(String eventId, Authentication auth);
+    Void uncancelEvent(String eventId, Authentication auth);
 
-    EventResponse getEvent(Long eventId);
+    EventResponse getEvent(String eventId);
     Page<EventSummaryResponse> getGlobalEvents(String query, int page, int size);
     Page<EventSummaryResponse> getUniversityEvents(int page, int size, String query, Authentication authentication);
     Page<EventSummaryResponse> getHostedEvents(int page,int size,Authentication auth);

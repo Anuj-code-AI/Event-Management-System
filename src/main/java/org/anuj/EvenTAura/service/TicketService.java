@@ -9,10 +9,10 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 public interface TicketService {
-    TicketResponse buyTicket(Long eventId, MultipartFile file, Authentication auth);
+    TicketResponse buyTicket(String eventId, MultipartFile file, Authentication auth);
     Page<TicketResponse> myTickets(int page, int size, Authentication auth);
 
-    List<Ticket> getTickets(Long eventId, Authentication auth);
+    List<Ticket> getTickets(String eventId, Authentication auth);
 
     TicketCheckResponse checkin(Long ticketId, Authentication auth);
     TicketCheckResponse verifyTicket(Long ticketCode, Authentication auth);
@@ -20,7 +20,7 @@ public interface TicketService {
     TicketCancelResponse cancelTicket(Long ticketId, Authentication auth);
     TicketResponse getMyTicket(Long ticketId, Authentication authentication);
 
-    Page<AudienceResponse> audienceList(int page,int size, Long eventId, Authentication authentication);
+    Page<AudienceResponse> audienceList(int page,int size, String eventId, Authentication authentication);
 
     void markPresent(Long ticketId, Authentication authentication);
 

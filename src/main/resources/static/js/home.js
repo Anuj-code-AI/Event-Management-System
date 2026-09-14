@@ -1,6 +1,8 @@
 const EVENTS_API = "/api/v1/events/public-events";
 const FORMS_API = "/api/v1/custom-forms/public-forms";
 const PAGE_SIZE = 9;
+const FORM_BANNER_PLACEHOLDER = "/images/banner-placeholder.png";
+const EVENT_BANNER_PLACEHOLDER = "/images/eventBanner-placeholder.png";
 
 const feeds = {
     events: { page: 0, last: false, loading: false, endpoint: EVENTS_API },
@@ -42,14 +44,15 @@ async function fetchPage(feedName, page) {
     return body.data || { content: [], last: true, number: page };
 }
 
-function imageStyle(url) {
-    return url ? `style="background-image:url('${escapeHtml(url).replace(/'/g, "%27")}')"` : "";
+function imageStyle(url, fallback) {
+    const safeUrl = url || fallback;
+    return `style="background-image:url('${escapeHtml(safeUrl).replace(/'/g, "%27")}')"`;
 }
 
 function eventCard(event) {
     const id = encodeURIComponent(event.eventId);
     return `<article class="group overflow-hidden border border-line bg-canvas transition hover:border-action/50 hover:shadow-[0_10px_28px_-18px_rgba(11,21,38,.38)]">
-        <a href="/event-details/${id}" class="event-image relative block h-36" ${imageStyle(event.bannerUrl)}>
+        <a href="/event-details/${id}" class="event-image relative block h-36" ${imageStyle(event.bannerUrl, EVENT_BANNER_PLACEHOLDER)}>
             <span class="absolute left-3 top-3 rounded bg-canvas/95 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-ink">${escapeHtml(event.category || "Event")}</span>
         </a>
         <div class="p-4"><a href="/event-details/${id}" class="font-display text-base font-semibold text-ink group-hover:text-action">${escapeHtml(event.title || "Untitled event")}</a>
@@ -60,9 +63,9 @@ function eventCard(event) {
 function formCard(form) {
     const id = encodeURIComponent(form.id);
     return `<article class="group overflow-hidden border border-line bg-canvas transition hover:border-signal/60 hover:shadow-[0_10px_28px_-18px_rgba(11,21,38,.38)]">
-        <a href="/formDetails?formId=${id}" class="event-image relative block h-36" ${imageStyle(form.bannerUrl)}><span class="absolute left-3 top-3 rounded bg-signal-tint px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-signal">Registration</span></a>
-        <div class="p-4"><a href="/formDetails?formId=${id}" class="font-display text-base font-semibold text-ink group-hover:text-signal">${escapeHtml(form.title || "Untitled form")}</a>
-            <p class="mt-3 text-sm text-muted"><i class="fa-regular fa-clock mr-2 w-3 text-muted-dim"></i>${escapeHtml(dateLabel(form.registrationDeadLine, "Closes"))}</p>
+        <a href="/form-details/${id}" class="event-image relative block h-36" ${imageStyle(form.bannerUrl, FORM_BANNER_PLACEHOLDER)}><span class="absolute left-3 top-3 rounded bg-signal-tint px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-signal">Registration</span></a>
+        <div class="p-4"><a href="/form-details/${id}" class="font-display text-base font-semibold text-ink group-hover:text-signal">${escapeHtml(form.title || "Untitled form")}</a>
+            <p class="mt-3 text-sm text-muted"><i class="fa-regular fa-clock mr-2 w-3 text-muted-dim"></i>${escapeHtml(dateLabel(form.registrationDeadline, "Closes"))}</p>
             <div class="mt-4 flex items-center justify-between border-t border-line pt-3"><span class="font-mono text-xs font-semibold text-ink">Open form</span><span class="text-[11px] font-medium text-signal">${escapeHtml(form.status || "ACTIVE")}</span></div></div></article>`;
 }
 

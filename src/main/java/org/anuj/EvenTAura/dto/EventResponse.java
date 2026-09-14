@@ -16,7 +16,7 @@ import org.anuj.EvenTAura.model.enums.ParticipationType;
 @NoArgsConstructor
 @AllArgsConstructor
 public class EventResponse {
-    private Long eventId;
+    private String eventId;    // in mapper the eventId is being mapped by uniqueId
     private String title;
     private String description;
     private String location;

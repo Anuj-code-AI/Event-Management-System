@@ -14,8 +14,8 @@ public interface HostService {
     void approveHost(Long hostId, Authentication authentication);
     void rejectHost(Long hostId, Authentication auth);
     List<HostApplication> pendingHost(Authentication authentication);
-    void approveEvent(Long eventId, Authentication authentication);
-    void rejectEvent(Long eventId, Authentication authentication);
+    void approveEvent(String eventId, Authentication authentication);
+    void rejectEvent(String eventId, Authentication authentication);
 
     List<EventSummaryResponse> pendingEvent(Authentication authentication);
     List<HostApplication> approvedHost(Authentication authentication);

@@ -73,7 +73,7 @@ public class CustomFormController {
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("@eventSecurity.isHostOrHOD(authentication)")
     public ResponseEntity<ApiResponse<CustomFormResponse>> updateCustomForm(
-            @PathVariable Long formId,
+            @PathVariable String formId,
             @RequestPart("request") UpdateCustomFormRequest request,
             @RequestPart(value = "banner", required = false) MultipartFile banner,
             @RequestPart(value = "paymentQr", required = false) MultipartFile paymentQr,
@@ -91,7 +91,7 @@ public class CustomFormController {
     // Delete custom form
     @DeleteMapping("/custom-forms/{formId}")
     @PreAuthorize("@eventSecurity.isHostOrHOD(authentication)")
-    public ResponseEntity<ApiResponse<Void>> deleteCustomForm(@PathVariable Long formId, Authentication authentication) {
+    public ResponseEntity<ApiResponse<Void>> deleteCustomForm(@PathVariable String formId, Authentication authentication) {
         customFormService.deleteCustomForm(formId, authentication);
         return ResponseEntity.ok(ApiResponse.success("Custom form deleted successfully", null));
     }
@@ -99,7 +99,7 @@ public class CustomFormController {
     // Cancel custom form
     @PatchMapping("/custom-forms/{formId}/cancel")
     @PreAuthorize("@eventSecurity.isHostOrHOD(authentication)")
-    public ResponseEntity<ApiResponse<Void>> cancelCustomForm(@PathVariable Long formId, Authentication authentication) {
+    public ResponseEntity<ApiResponse<Void>> cancelCustomForm(@PathVariable String formId, Authentication authentication) {
         customFormService.cancelCustomForm(formId, authentication);
         return ResponseEntity.ok(ApiResponse.success("Custom form deleted successfully", null));
     }
@@ -107,7 +107,7 @@ public class CustomFormController {
     // Restore custom form
     @PatchMapping("/custom-forms/{formId}/restore")
     @PreAuthorize("@eventSecurity.isHostOrHOD(authentication)")
-    public ResponseEntity<ApiResponse<Void>> restoreCustomForm(@PathVariable Long formId, Authentication authentication) {
+    public ResponseEntity<ApiResponse<Void>> restoreCustomForm(@PathVariable String formId, Authentication authentication) {
         customFormService.restoreCustomForm(formId, authentication);
         return ResponseEntity.ok(ApiResponse.success("Custom form deleted successfully", null));
     }
@@ -115,14 +115,14 @@ public class CustomFormController {
     // Accepting Responses
     @PatchMapping("/custom-forms/{formId}/accepting-responses")
     @PreAuthorize("@eventSecurity.isHostOrHOD(authentication)")
-    public ResponseEntity<ApiResponse<Void>> updateAcceptingResponses(@PathVariable Long formId,@RequestBody boolean acceptingResponses, Authentication authentication) {
+    public ResponseEntity<ApiResponse<Void>> updateAcceptingResponses(@PathVariable String formId, @RequestBody boolean acceptingResponses, Authentication authentication) {
         customFormService.updateAcceptingResponses(formId, acceptingResponses,authentication);
         return ResponseEntity.ok(ApiResponse.success("Custom form deleted successfully", null));
     }
 
     // Get form by id
     @GetMapping("/custom-forms/{formId}")
-    public ResponseEntity<ApiResponse<CustomFormResponse>> getCustomForm(@PathVariable Long formId) {
+    public ResponseEntity<ApiResponse<CustomFormResponse>> getCustomForm(@PathVariable String formId) {
         return ResponseEntity.ok(ApiResponse.success("Custom form structure loaded successfully", customFormService.getCustomForm(formId)));
     }
 
@@ -130,7 +130,7 @@ public class CustomFormController {
     @GetMapping("/custom-forms/{formId}/preview")
     @PreAuthorize("@eventSecurity.isHostOrHOD(authentication)")
     public ResponseEntity<ApiResponse<CustomFormResponse>> previewCustomForm(
-            @PathVariable Long formId,
+            @PathVariable String formId,
             Authentication authentication
     ) {
         return ResponseEntity.ok(
@@ -183,7 +183,7 @@ public class CustomFormController {
     // Submit answers to a custom form
     @PostMapping("/custom-forms/{formId}/submit")
     public ResponseEntity<ApiResponse<CustomFormSubmissionResponse>> submitCustomFormAnswers(
-            @PathVariable Long formId,
+            @PathVariable String formId,
             @RequestParam("answers") String answersJson,
             MultipartHttpServletRequest request,
             Authentication authentication
@@ -210,7 +210,7 @@ public class CustomFormController {
     @GetMapping("/custom-forms/{formId}/responses")
     @PreAuthorize("@eventSecurity.isHostOrHOD(authentication)")
     public ResponseEntity<ApiResponse<Page<CustomFormSubmissionResponse>>> getCustomFormSubmissions(
-            @PathVariable Long formId,
+            @PathVariable String formId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String query,
@@ -239,7 +239,7 @@ public class CustomFormController {
     @GetMapping("/{formId}/responses/{submissionId}")
     @PreAuthorize("@eventSecurity.isHostOrHOD(authentication)")
     public ResponseEntity<ApiResponse<CustomFormSubmissionResponse>> getCustomFormSubmissionById(
-            @PathVariable Long formId,
+            @PathVariable String formId,
             @PathVariable Long submissionId,
             Authentication authentication
     ) {
@@ -260,7 +260,7 @@ public class CustomFormController {
     @GetMapping("/custom-forms/{formId}/responses/export")
     @PreAuthorize("@eventSecurity.isHostOrHOD(authentication)")
     public ResponseEntity<byte[]> exportResponsesCsv(
-            @PathVariable Long formId,
+            @PathVariable String formId,
             Authentication authentication
     ) throws IOException {
         byte[] csvBytes = customFormService.exportCsv(formId, authentication);

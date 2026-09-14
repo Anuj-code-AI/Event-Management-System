@@ -111,14 +111,14 @@ public class HostServiceImpl implements HostService{
 
     @Override
     @Transactional
-    public void approveEvent(Long eventId, Authentication authentication) {
+    public void approveEvent(String eventId, Authentication authentication) {
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
         User hod = userRepository.findByUserId(userDetails.getId())
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
         if(!hod.getSystemRole().equals(SystemRole.HOD)){
             throw new AccessDeniedException("Restricted Feature");
         }
-        Event event = eventRepository.findById(eventId)
+        Event event = eventRepository.findByUniqueId(eventId)
                 .orElseThrow(()->new EventNotExistException("Event not found"));
         if(!event.getUniversity().equals(hod.getUniversity())){
             throw new AccessDeniedException(
@@ -130,14 +130,14 @@ public class HostServiceImpl implements HostService{
 
     @Override
     @Transactional
-    public void rejectEvent(Long eventId, Authentication authentication) {
+    public void rejectEvent(String eventId, Authentication authentication) {
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
         User hod = userRepository.findByUserId(userDetails.getId())
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
         if(!hod.getSystemRole().equals(SystemRole.HOD)){
             throw new AccessDeniedException("Restricted Feature");
         }
-        Event event = eventRepository.findById(eventId)
+        Event event = eventRepository.findByUniqueId(eventId)
                 .orElseThrow(()->new EventNotExistException("Event not found"));
         if(!event.getUniversity().equals(hod.getUniversity())){
             throw new AccessDeniedException(
@@ -158,7 +158,7 @@ public class HostServiceImpl implements HostService{
         List<Event> events = eventRepository.findByEventStatusAndUniversity(EventStatus.PENDING, hod.getUniversity());
         return events.stream()
                 .map(event -> new EventSummaryResponse(
-                        event.getEventId(),
+                        event.getUniqueId(),
                         event.getTitle(),
                         event.getLocation(),
                         event.getEventDate(),
@@ -209,7 +209,7 @@ public class HostServiceImpl implements HostService{
         );
         return events.stream()
                 .map(event -> new EventSummaryResponse(
-                        event.getEventId(),
+                        event.getUniqueId(),
                         event.getTitle(),
                         event.getLocation(),
                         event.getEventDate(),
@@ -233,7 +233,7 @@ public class HostServiceImpl implements HostService{
         List<Event> events = eventRepository.findByEventStatusAndUniversity(EventStatus.REJECTED, hod.getUniversity());
         return events.stream()
                 .map(event -> new EventSummaryResponse(
-                        event.getEventId(),
+                        event.getUniqueId(),
                         event.getTitle(),
                         event.getLocation(),
                         event.getEventDate(),

@@ -272,9 +272,9 @@ async function fetchSectionData() {
                 });
                 const body = await res.json();
                 if (res.ok && body.success && body.data) {
-                    formsList = body.data.content || [];
-                    formsTotalPages = body.data.totalPages || 1;
-                    formsTotalElements = body.data.totalElements || 0;
+                    formsList = body.data?.content || [];
+                    formsTotalPages = body.data?.page?.totalPages ?? 1;
+                    formsTotalElements = body.data?.page?.totalElements ?? 0;
                 } else {
                     throw new Error(body.message || "Failed to load custom forms");
                 }
@@ -313,19 +313,41 @@ async function updateStatsCards() {
 
     try {
         const [pEvents, aEvents, pForms, aForms, pHosts] = await Promise.all([
-            fetch(`${API_ADMIN}/events/pending`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json().catch(() => ({}))),
-            fetch(`${API_ADMIN}/events/approved`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json().catch(() => ({}))),
-            fetch(`${API_ADMIN}/admin/custom-forms?status=PENDING&page=0&size=1`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json().catch(() => ({}))),
-            fetch(`${API_ADMIN}/admin/custom-forms?status=APPROVED&page=0&size=1`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json().catch(() => ({}))),
-            fetch(`${API_ADMIN}/host/pending`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json().catch(() => ({})))
+            fetch(`${API_ADMIN}/events/pending`, {
+                headers: { Authorization: `Bearer ${token}` }
+            }).then(r => r.json().catch(() => ({}))),
+
+            fetch(`${API_ADMIN}/events/approved`, {
+                headers: { Authorization: `Bearer ${token}` }
+            }).then(r => r.json().catch(() => ({}))),
+
+            fetch(`${API_ADMIN}/custom-forms?status=PENDING&page=0&size=1`, {
+                headers: { Authorization: `Bearer ${token}` }
+            }).then(r => r.json().catch(() => ({}))),
+
+            fetch(`${API_ADMIN}/custom-forms?status=APPROVED&page=0&size=1`, {
+                headers: { Authorization: `Bearer ${token}` }
+            }).then(r => r.json().catch(() => ({}))),
+
+            fetch(`${API_ADMIN}/host/pending`, {
+                headers: { Authorization: `Bearer ${token}` }
+            }).then(r => r.json().catch(() => ({})))
         ]);
 
-        document.getElementById("stat-pending-events").textContent = (pEvents.data && pEvents.data.length) || 0;
-        document.getElementById("stat-approved-events").textContent = (aEvents.data && aEvents.data.length) || 0;
-        document.getElementById("stat-pending-forms").textContent = (pForms.data && pForms.data.totalElements) || 0;
-        document.getElementById("stat-approved-forms").textContent = (aForms.data && aForms.data.totalElements) || 0;
-        document.getElementById("stat-pending-hosts").textContent = (pHosts.data && pHosts.data.length) || 0;
-    } catch (e) {
+        document.getElementById("stat-pending-forms").textContent =
+            pForms.data?.page?.totalElements ?? 0;
+
+        document.getElementById("stat-approved-forms").textContent =
+            aForms.data?.page?.totalElements ?? 0;
+
+        document.getElementById("stat-pending-events").textContent =
+            (pEvents.data && pEvents.data.length) || 0;
+
+        document.getElementById("stat-approved-events").textContent =
+            (aEvents.data && aEvents.data.length) || 0;
+
+        document.getElementById("stat-pending-hosts").textContent =
+            (pHosts.data && pHosts.data.length) || 0;} catch (e) {
         console.error("Stats fetch error:", e);
     }
 }
@@ -484,10 +506,10 @@ function renderEventCard(event) {
     if (currentTab === "PENDING") {
         pendingActions = `
             <div class="flex gap-2 mb-2">
-                <button onclick="openApproveEventModal(${event.eventId}, '${escapeJs(event.title)}')" class="flex-1 bg-green-600 hover:bg-green-700 text-white text-[11px] font-semibold py-1.5 rounded flex items-center justify-center gap-0.5 shadow-sm">
+                <button onclick="openApproveEventModal('${escapeJs(event.eventId)}', '${escapeJs(event.title)}')" class="flex-1 bg-green-600 hover:bg-green-700 text-white text-[11px] font-semibold py-1.5 rounded flex items-center justify-center gap-0.5 shadow-sm">
                     <span class="material-symbols-outlined text-[14px]">check_circle</span> Approve
                 </button>
-                <button onclick="openRejectEventModal(${event.eventId}, '${escapeJs(event.title)}')" class="flex-1 bg-red-600 hover:bg-red-700 text-white text-[11px] font-semibold py-1.5 rounded flex items-center justify-center gap-0.5 shadow-sm">
+                <button onclick="openRejectEventModal('${escapeJs(event.eventId)}', '${escapeJs(event.title)}')" class="flex-1 bg-red-600 hover:bg-red-700 text-white text-[11px] font-semibold py-1.5 rounded flex items-center justify-center gap-0.5 shadow-sm">
                     <span class="material-symbols-outlined text-[14px]">cancel</span> Reject
                 </button>
             </div>
@@ -507,15 +529,15 @@ function renderEventCard(event) {
             </div>
             <div class="flex gap-1.5">
                 ${(event.eventStatus === 'CANCELLED' || event.cancelled) ? `
-                    <button onclick="openRestoreEventModal(${event.eventId}, '${escapeJs(event.title)}')" class="flex-1 border border-action/30 text-action text-[11px] font-semibold py-1.5 rounded flex items-center justify-center gap-0.5 hover:bg-action-tint">
+                    <button onclick="openRestoreEventModal('${escapeJs(event.eventId)}', '${escapeJs(event.title)}')" class="flex-1 border border-action/30 text-action text-[11px] font-semibold py-1.5 rounded flex items-center justify-center gap-0.5 hover:bg-action-tint">
                         <span class="material-symbols-outlined text-[14px]">restore</span> Restore
                     </button>
                 ` : `
-                    <button onclick="openCancelEventModal(${event.eventId}, '${escapeJs(event.title)}')" class="flex-1 border border-danger/30 text-danger text-[11px] font-semibold py-1.5 rounded flex items-center justify-center gap-0.5 hover:bg-red-50">
+                    <button onclick="openCancelEventModal('${escapeJs(event.eventId)}', '${escapeJs(event.title)}')" class="flex-1 border border-danger/30 text-danger text-[11px] font-semibold py-1.5 rounded flex items-center justify-center gap-0.5 hover:bg-red-50">
                         <span class="material-symbols-outlined text-[14px]">cancel</span> Cancel
                     </button>
                 `}
-                <button onclick="showAttendeesView(${event.eventId}, '${escapeJs(event.title)}')" class="flex-1 bg-action-tint text-action text-[11px] font-semibold py-1.5 rounded flex items-center justify-center gap-0.5 hover:bg-action/20">
+                <button onclick="showAttendeesView('${escapeJs(event.eventId)}', '${escapeJs(event.title)}')" class="flex-1 bg-action-tint text-action text-[11px] font-semibold py-1.5 rounded flex items-center justify-center gap-0.5 hover:bg-action/20">
                     <span class="material-symbols-outlined text-[14px]">group</span> Attendance
                 </button>
             </div>
@@ -564,10 +586,10 @@ function renderFormCard(form) {
     if (currentTab === "PENDING") {
         pendingActions = `
             <div class="flex gap-2 mb-2">
-                <button onclick="openApproveFormModal(${form.id}, '${escapeJs(form.title)}')" class="flex-1 bg-green-600 hover:bg-green-700 text-white text-[11px] font-semibold py-1.5 rounded flex items-center justify-center gap-0.5 shadow-sm">
+                <button onclick="openApproveFormModal('${escapeJs(form.id)}', '${escapeJs(form.title)}')" class="flex-1 bg-green-600 hover:bg-green-700 text-white text-[11px] font-semibold py-1.5 rounded flex items-center justify-center gap-0.5 shadow-sm">
                     <span class="material-symbols-outlined text-[14px]">check_circle</span> Approve
                 </button>
-                <button onclick="openRejectFormModal(${form.id}, '${escapeJs(form.title)}')" class="flex-1 bg-red-600 hover:bg-red-700 text-white text-[11px] font-semibold py-1.5 rounded flex items-center justify-center gap-0.5 shadow-sm">
+                <button onclick="openRejectFormModal('${escapeJs(form.id)}', '${escapeJs(form.title)}')" class="flex-1 bg-red-600 hover:bg-red-700 text-white text-[11px] font-semibold py-1.5 rounded flex items-center justify-center gap-0.5 shadow-sm">
                     <span class="material-symbols-outlined text-[14px]">cancel</span> Reject
                 </button>
             </div>
@@ -579,7 +601,7 @@ function renderFormCard(form) {
     if (form.status === "APPROVED" || form.status === "HOSTED" || currentTab === "HOSTED" || currentTab === "APPROVED") {
         const toggleLabel = isAccepting ? "Disable Submissions" : "Enable Submissions";
         hostedActions = `
-            <button onclick="toggleResponses(${form.id}, ${isAccepting})" class="w-full mb-2 bg-canvas-sunk border border-line hover:bg-canvas-mid text-ink text-[11px] font-semibold py-1.5 rounded flex items-center justify-center gap-0.5">
+            <button onclick="toggleResponses('${escapeJs(form.id)}', ${isAccepting})" class="w-full mb-2 bg-canvas-sunk border border-line hover:bg-canvas-mid text-ink text-[11px] font-semibold py-1.5 rounded flex items-center justify-center gap-0.5">
                 <span class="material-symbols-outlined text-[14px]">${isAccepting ? 'do_not_disturb_on' : 'check_circle'}</span> ${toggleLabel}
             </button>
         `;
@@ -599,11 +621,11 @@ function renderFormCard(form) {
             </div>
             <div class="flex gap-1.5">
                 ${form.status === 'CANCELLED' ? `
-                    <button onclick="openRestoreFormModal(${form.id}, '${escapeJs(form.title)}')" class="flex-1 border border-action/30 text-action text-[11px] font-semibold py-1.5 rounded flex items-center justify-center gap-0.5 hover:bg-action-tint">
+                    <button onclick="openRestoreFormModal('${escapeJs(form.id)}', '${escapeJs(form.title)}')" class="flex-1 border border-action/30 text-action text-[11px] font-semibold py-1.5 rounded flex items-center justify-center gap-0.5 hover:bg-action-tint">
                         <span class="material-symbols-outlined text-[14px]">restore</span> Restore
                     </button>
                 ` : `
-                    <button onclick="openCancelFormModal(${form.id}, '${escapeJs(form.title)}')" class="flex-1 border border-danger/30 text-danger text-[11px] font-semibold py-1.5 rounded flex items-center justify-center gap-0.5 hover:bg-red-50">
+                    <button onclick="openCancelFormModal('${escapeJs(form.id)}', '${escapeJs(form.title)}')" class="flex-1 border border-danger/30 text-danger text-[11px] font-semibold py-1.5 rounded flex items-center justify-center gap-0.5 hover:bg-red-50">
                         <span class="material-symbols-outlined text-[14px]">cancel</span> Cancel
                     </button>
                 `}

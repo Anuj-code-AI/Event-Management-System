@@ -77,7 +77,7 @@ public class EventServiceImpl implements EventService {
     @Override
     @Transactional
     public EventResponse updateEvent(
-            Long eventId,
+            String eventId,
             EventUpdateRequest req,
             Authentication authentication
     ) {
@@ -85,7 +85,7 @@ public class EventServiceImpl implements EventService {
         CustomUserDetails userDetails =
                 (CustomUserDetails) authentication.getPrincipal();
 
-        Event event = eventRepository.findById(eventId)
+        Event event = eventRepository.findByUniqueId(eventId)
                 .orElseThrow(() ->
                         new EventNotExistException("No event found with this id"));
 
@@ -127,11 +127,11 @@ public class EventServiceImpl implements EventService {
     // Delete event service
     @Override
     @Transactional
-    public Void deleteEvent(Long eventId, Authentication authentication) {
+    public Void deleteEvent(String eventId, Authentication authentication) {
 
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
-        Event event = eventRepository.findById(eventId)
+        Event event = eventRepository.findByUniqueId(eventId)
                 .orElseThrow(() -> new EventNotExistException("No event found with this id"));
 
         boolean isHOD = authentication.getAuthorities().stream()
@@ -150,7 +150,7 @@ public class EventServiceImpl implements EventService {
             }
         }
 
-        long ticketCount = ticketRepository.countByEventEventId(eventId);
+        long ticketCount = ticketRepository.countByEventEventId(event.getEventId());
 
         if (ticketCount > 0) {
             throw new RuntimeException("You cannot delete event instead cancel it");
@@ -163,11 +163,11 @@ public class EventServiceImpl implements EventService {
     // Cancel event service
     @Override
     @Transactional
-    public Void cancelEvent(Long eventId, Authentication authentication) {
+    public Void cancelEvent(String eventId, Authentication authentication) {
 
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
-        Event event = eventRepository.findById(eventId)
+        Event event = eventRepository.findByUniqueId(eventId)
                 .orElseThrow(() -> new EventNotExistException("No event found with this id"));
 
         boolean isHOD = authentication.getAuthorities().stream()
@@ -193,11 +193,11 @@ public class EventServiceImpl implements EventService {
     // Uncancel event service
     @Override
     @Transactional
-    public Void uncancelEvent(Long eventId, Authentication authentication) {
+    public Void uncancelEvent(String eventId, Authentication authentication) {
 
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
-        Event event = eventRepository.findById(eventId)
+        Event event = eventRepository.findByUniqueId(eventId)
                 .orElseThrow(() -> new EventNotExistException("No event found with this id"));
 
         boolean isHOD = authentication.getAuthorities().stream()
@@ -222,8 +222,8 @@ public class EventServiceImpl implements EventService {
 
     // Get full event details by event id
     @Override
-    public EventResponse getEvent(Long eventId) {
-        return EventMapper.toResponse(eventRepository.findById(eventId)
+    public EventResponse getEvent(String eventId) {
+        return EventMapper.toResponse(eventRepository.findByUniqueId(eventId)
                 .orElseThrow(() -> new EventNotExistException("Event Not Found")));
     }
 
@@ -259,7 +259,7 @@ public class EventServiceImpl implements EventService {
         }
 
         return events.map(event -> new EventSummaryResponse(
-                event.getEventId(),
+                event.getUniqueId(),
                 event.getTitle(),
                 event.getLocation(),
                 event.getLastRegistrationDate(),
@@ -302,7 +302,7 @@ public class EventServiceImpl implements EventService {
             );
         }
         return events.map(event -> new EventSummaryResponse(
-                event.getEventId(),
+                event.getUniqueId(),
                 event.getTitle(),
                 event.getLocation(),
                 event.getLastRegistrationDate(),
@@ -329,7 +329,7 @@ public class EventServiceImpl implements EventService {
         return eventRepository.findByUser(user, pageable)
                 .map(event -> {
                     return new EventSummaryResponse(
-                            event.getEventId(),
+                            event.getUniqueId(),
                             event.getTitle(),
                             event.getLocation(),
                             event.getLastRegistrationDate(),
@@ -358,7 +358,7 @@ public class EventServiceImpl implements EventService {
                         pageable
                 )
                 .map(event -> new EventSummaryResponse(
-                        event.getEventId(),
+                        event.getUniqueId(),
                         event.getTitle(),
                         event.getLocation(),
                         event.getLastRegistrationDate(),

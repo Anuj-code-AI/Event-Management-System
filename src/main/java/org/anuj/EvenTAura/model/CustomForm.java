@@ -11,6 +11,7 @@ import org.anuj.EvenTAura.model.enums.ParticipationType;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name = "custom_form")
@@ -23,6 +24,9 @@ public class CustomForm {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "unique_id", nullable = false, unique = true, length = 36)
+    private String uniqueId;
 
     @Column(nullable = false)
     private String title;
@@ -99,4 +103,10 @@ public class CustomForm {
         updatedAt = LocalDateTime.now();
     }
 
+    @PrePersist
+    public void generateUniqueId() {
+        if (uniqueId == null || uniqueId.isBlank()) {
+            uniqueId = UUID.randomUUID().toString();
+        }
+    }
 }

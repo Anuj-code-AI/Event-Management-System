@@ -11,6 +11,7 @@ import org.anuj.EvenTAura.model.enums.ParticipationType;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.UUID;
 
 @Entity
 @Table(name="event")
@@ -21,6 +22,9 @@ public class Event {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long eventId;
+
+    @Column(name = "unique_id", nullable = false, unique = true, length = 36)
+    private String uniqueId;
 
     private String title;
 
@@ -65,4 +69,11 @@ public class Event {
 
     @Version
     private Long version;
+
+    @PrePersist
+    public void generateUniqueId() {
+        if (uniqueId == null || uniqueId.isBlank()) {
+            uniqueId = UUID.randomUUID().toString();
+        }
+    }
 }

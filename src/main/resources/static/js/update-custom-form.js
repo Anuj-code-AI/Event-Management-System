@@ -92,7 +92,7 @@ async function initPage() {
     const urlParams = new URLSearchParams(window.location.search);
     const urlFormId = urlParams.get('formId');
 
-    if (!urlFormId || isNaN(parseInt(urlFormId))) {
+    if (!urlFormId) {
         showGlobalAlert("error", "Invalid custom form ID. Please go back and try again.");
         return;
     }
@@ -100,7 +100,7 @@ async function initPage() {
     // Bind add question button click
     document.getElementById("add-question-btn")?.addEventListener("click", addQuestion);
 
-    formId = parseInt(urlFormId);
+    formId = urlFormId;
     await loadExistingForm(formId);
 }
 

@@ -30,5 +30,6 @@ public interface EventRepository extends JpaRepository<Event,Long> {
             String title,
             Pageable pageable
     );
+    Optional<Event> findByUniqueId(String id);
 }
 

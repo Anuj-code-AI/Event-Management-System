@@ -29,7 +29,7 @@ public class TicketController {
     // buy ticket
     @PostMapping("/{eventId}/buy")
     public ResponseEntity<ApiResponse<TicketResponse>> buyTicket(
-            @PathVariable Long eventId,
+            @PathVariable String eventId,
             @RequestParam(value = "paymentScreenShot", required = false) MultipartFile file,
             Authentication auth
     ) {
@@ -52,7 +52,7 @@ public class TicketController {
 
     // Get all tickets of particular event
     @GetMapping("/{eventId}/events")
-    public ResponseEntity<ApiResponse<List<Ticket>>> getTickets(@PathVariable Long eventId,Authentication auth) {
+    public ResponseEntity<ApiResponse<List<Ticket>>> getTickets(@PathVariable String eventId,Authentication auth) {
         return ResponseEntity.ok(
                 ApiResponse.success("Tickets loaded successfully", ticketService.getTickets(eventId,auth))
         );
@@ -101,7 +101,7 @@ public class TicketController {
 
     @GetMapping("/{eventId}/audienceList")
     public ResponseEntity<ApiResponse<Page<AudienceResponse>>> audienceList(
-            @PathVariable Long eventId,
+            @PathVariable String eventId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             Authentication authentication

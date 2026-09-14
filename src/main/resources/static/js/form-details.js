@@ -56,12 +56,12 @@ async function initPage() {
     }
 
     // Fallback to query param
-    if (!idParam || isNaN(parseInt(idParam))) {
+    if (!idParam) {
         const urlParams = new URLSearchParams(window.location.search);
         idParam = urlParams.get("formId");
     }
 
-    if (!idParam || isNaN(parseInt(idParam))) {
+    if (!idParam) {
         showLoading(false);
         formContentSection.classList.add("hidden");
         formError.classList.remove("hidden");
@@ -69,7 +69,7 @@ async function initPage() {
         return;
     }
 
-    formId = parseInt(idParam);
+    formId = idParam;
     await loadFormSpecifications();
 }
 

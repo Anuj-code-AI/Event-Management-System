@@ -147,7 +147,7 @@ public class CustomFormServiceImpl implements CustomFormService {
     @Override
     @Transactional
     public CustomFormResponse updateCustomForm(
-            Long formId,
+            String formId,
             UpdateCustomFormRequest request,
             Authentication authentication
     ) {
@@ -281,7 +281,7 @@ public class CustomFormServiceImpl implements CustomFormService {
 
     @Override
     @Transactional(readOnly = true)
-    public CustomFormResponse getCustomForm(Long formId) {
+    public CustomFormResponse getCustomForm(String formId) {
         CustomForm customForm = getForm(formId);
         return CustomFormMapper.toResponse(customForm);
     }
@@ -289,7 +289,7 @@ public class CustomFormServiceImpl implements CustomFormService {
     @Override
     @Transactional(readOnly = true)
     public CustomFormResponse previewCustomForm(
-            Long formId,
+            String formId,
             Authentication authentication
     ) {
 
@@ -382,7 +382,7 @@ public class CustomFormServiceImpl implements CustomFormService {
     @Override
     @Transactional
     public CustomFormSubmissionResponse submitFormAnswers(
-            Long formId,
+            String formId,
             String answersJson,
             Map<String, MultipartFile> uploadedFiles,
             Authentication authentication
@@ -494,7 +494,7 @@ public class CustomFormServiceImpl implements CustomFormService {
     @Override
     @Transactional(readOnly = true)
     public Page<CustomFormSubmissionResponse> getSubmissions(
-            Long formId,
+            String formId,
             int page,
             int size,
             String query,
@@ -539,7 +539,7 @@ public class CustomFormServiceImpl implements CustomFormService {
     @Override
     @Transactional(readOnly = true)
     public CustomFormSubmissionResponse getSubmissionById(
-            Long formId,
+            String formId,
             Long submissionId,
             Authentication authentication
     ) {
@@ -584,7 +584,7 @@ public class CustomFormServiceImpl implements CustomFormService {
     @Override
     @Transactional(readOnly = true)
     public byte[] exportCsv(
-            Long formId,
+            String formId,
             Authentication authentication
     ) throws IOException {
 
@@ -690,7 +690,7 @@ public class CustomFormServiceImpl implements CustomFormService {
 
     @Override
     @Transactional
-    public void deleteCustomForm(Long formId, Authentication authentication) {
+    public void deleteCustomForm(String formId, Authentication authentication) {
         User user = getAuthenticatedUser(authentication);
         CustomForm customForm = getForm(formId);
         validateOwner(customForm, user);
@@ -699,7 +699,7 @@ public class CustomFormServiceImpl implements CustomFormService {
 
     @Override
     @Transactional
-    public void cancelCustomForm(Long formId, Authentication authentication) {
+    public void cancelCustomForm(String formId, Authentication authentication) {
         User user = getAuthenticatedUser(authentication);
         CustomForm form = getForm(formId);
         validateOwner(form, user);
@@ -715,7 +715,7 @@ public class CustomFormServiceImpl implements CustomFormService {
 
     @Override
     @Transactional
-    public void restoreCustomForm(Long formId, Authentication authentication) {
+    public void restoreCustomForm(String formId, Authentication authentication) {
         User user = getAuthenticatedUser(authentication);
         CustomForm form = getForm(formId);
         validateOwner(form, user);
@@ -737,7 +737,7 @@ public class CustomFormServiceImpl implements CustomFormService {
 
     @Override
     @Transactional
-    public void updateAcceptingResponses(Long formId, boolean acceptingResponses, Authentication authentication) {
+    public void updateAcceptingResponses(String formId, boolean acceptingResponses, Authentication authentication) {
         User user = getAuthenticatedUser(authentication);
         CustomForm form = getForm(formId);
         validateOwner(form, user);
@@ -814,7 +814,7 @@ public class CustomFormServiceImpl implements CustomFormService {
     }
     @Override
     @Transactional
-    public void approveForm(Long formId, Authentication authentication) {
+    public void approveForm(String formId, Authentication authentication) {
         User user = getAuthenticatedUser(authentication);
         CustomForm form = getForm(formId);
         validateOwner(form, user);
@@ -826,7 +826,7 @@ public class CustomFormServiceImpl implements CustomFormService {
 
     @Override
     @Transactional
-    public void rejectForm(Long formId, Authentication authentication) {
+    public void rejectForm(String formId, Authentication authentication) {
         User user = getAuthenticatedUser(authentication);
         CustomForm form = getForm(formId);
         validateOwner(form, user);
@@ -842,8 +842,8 @@ public class CustomFormServiceImpl implements CustomFormService {
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
     }
 
-    private CustomForm getForm(Long formId) {
-        return customFormRepository.findById(formId)
+    private CustomForm getForm(String formId) {
+        return customFormRepository.findByUniqueId(formId)
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Custom Form not found"));
     }

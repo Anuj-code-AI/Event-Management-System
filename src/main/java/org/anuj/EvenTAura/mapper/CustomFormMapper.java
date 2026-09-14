@@ -17,7 +17,7 @@ public final class CustomFormMapper {
     public static CustomFormResponse toResponse(CustomForm form) {
 
         return new CustomFormResponse(
-                form.getId(),
+                form.getUniqueId(),
                 form.getTitle(),
                 form.getDescription(),
                 form.getCreatedBy() != null
@@ -56,7 +56,7 @@ public final class CustomFormMapper {
     public static CustomFormSummaryResponse toSummaryResponse(CustomForm form) {
 
         return new CustomFormSummaryResponse(
-                form.getId(),
+                form.getUniqueId(),
                 form.getTitle(),
                 form.getBannerUrl(),
                 form.getRegistrationDeadline(),

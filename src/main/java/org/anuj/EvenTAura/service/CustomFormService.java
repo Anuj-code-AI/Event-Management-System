@@ -20,15 +20,15 @@ public interface CustomFormService {
     );
 
     CustomFormResponse updateCustomForm(
-            Long formId,
+            String formId,
             UpdateCustomFormRequest request,
             Authentication authentication
     );
 
-    CustomFormResponse getCustomForm(Long formId);
+    CustomFormResponse getCustomForm(String formId);
 
     CustomFormResponse previewCustomForm(
-            Long formId,
+            String formId,
             Authentication authentication
     );
 
@@ -52,14 +52,14 @@ public interface CustomFormService {
     );
 
     CustomFormSubmissionResponse submitFormAnswers(
-            Long formId,
+            String formId,
             String answersJson,
             Map<String, MultipartFile> uploadedFiles,
             Authentication authentication
     );
 
     Page<CustomFormSubmissionResponse> getSubmissions(
-            Long formId,
+            String formId,
             int page,
             int size,
             String query,
@@ -69,7 +69,7 @@ public interface CustomFormService {
     );
 
     CustomFormSubmissionResponse getSubmissionById(
-            Long formId,
+            String formId,
             Long submissionId,
             Authentication authentication
     );
@@ -81,27 +81,27 @@ public interface CustomFormService {
     );
 
     byte[] exportCsv(
-            Long formId,
+            String formId,
             Authentication authentication
     ) throws IOException;
 
     void deleteCustomForm(
-            Long formId,
+            String formId,
             Authentication authentication
     );
 
     void cancelCustomForm(
-            Long formId,
+            String formId,
             Authentication authentication
     );
 
     void restoreCustomForm(
-            Long formId,
+            String formId,
             Authentication authentication
     );
 
     void updateAcceptingResponses(
-            Long formId,
+            String formId,
             boolean acceptingResponses,
             Authentication authentication
     );
@@ -116,8 +116,8 @@ public interface CustomFormService {
             Authentication authentication
     );
 
-    void approveForm(Long formId, Authentication authentication);
+    void approveForm(String formId, Authentication authentication);
 
-    void rejectForm(Long formId, Authentication authentication);
+    void rejectForm(String formId, Authentication authentication);
 
 }

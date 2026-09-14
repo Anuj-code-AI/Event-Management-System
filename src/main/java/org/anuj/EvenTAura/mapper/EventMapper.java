@@ -1,5 +1,6 @@
 package org.anuj.EvenTAura.mapper;
 
+import lombok.RequiredArgsConstructor;
 import org.anuj.EvenTAura.dto.EventRequest;
 import org.anuj.EvenTAura.dto.EventResponse;
 import org.anuj.EvenTAura.dto.EventUpdateRequest;
@@ -7,6 +8,9 @@ import org.anuj.EvenTAura.model.Event;
 import org.anuj.EvenTAura.model.enums.EventStatus;
 import org.anuj.EvenTAura.model.User;
 
+import java.util.UUID;
+
+@RequiredArgsConstructor
 public class EventMapper {
 
     public static Event toEntity(EventRequest req, User user) {
@@ -38,7 +42,7 @@ public class EventMapper {
     public static EventResponse toResponse(Event event) {
 
         return new EventResponse(
-                event.getEventId(),
+                event.getUniqueId(),                    // in mapper the eventId is being mapped by uniqueId
                 event.getTitle(),
                 event.getDescription(),
                 event.getLocation(),

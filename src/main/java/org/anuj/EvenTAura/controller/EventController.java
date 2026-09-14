@@ -64,10 +64,11 @@ public class EventController {
     }
 
     // Update Event
+    // in mapper the id is being mapped by uniqueId
     @PatchMapping("/events/{eventId}")
     @PreAuthorize("@eventSecurity.isHostOrHOD(authentication)")
     public ResponseEntity<ApiResponse<EventResponse>> updateEvent(
-            @PathVariable Long eventId,
+            @PathVariable String eventId,
             @ModelAttribute EventUpdateRequest request,
             @RequestParam(value = "banner", required = false) MultipartFile banner,
             @RequestParam(value = "paymentQr", required = false) MultipartFile paymentQr,
@@ -85,27 +86,27 @@ public class EventController {
     // Delete Event
     @DeleteMapping("/events/{eventId}")
     @PreAuthorize("@eventSecurity.isHostOrHOD(authentication)")
-    public ResponseEntity<ApiResponse<Void>> deleteEvent(@PathVariable Long eventId,Authentication authentication) {
+    public ResponseEntity<ApiResponse<Void>> deleteEvent(@PathVariable String eventId,Authentication authentication) {
         return ResponseEntity.ok(ApiResponse.success("Event successfully deleted",eventService.deleteEvent(eventId,authentication)));
     }
 
     // Cancel Event
     @DeleteMapping("/events/{eventId}/cancel")
     @PreAuthorize("@eventSecurity.isHostOrHOD(authentication)")
-    public ResponseEntity<ApiResponse<Void>> cancelEvent(@PathVariable Long eventId,Authentication authentication) {
+    public ResponseEntity<ApiResponse<Void>> cancelEvent(@PathVariable String eventId,Authentication authentication) {
         return ResponseEntity.ok(ApiResponse.success("Event successfully cancelled",eventService.cancelEvent(eventId,authentication)));
     }
 
     // Uncancel Event
     @PostMapping("/events/{eventId}/restore")
     @PreAuthorize("@eventSecurity.isHostOrHOD(authentication)")
-    public ResponseEntity<ApiResponse<Void>> uncancelEvent(@PathVariable Long eventId, Authentication auth) {
+    public ResponseEntity<ApiResponse<Void>> uncancelEvent(@PathVariable String eventId, Authentication auth) {
         return ResponseEntity.ok(ApiResponse.success("Event reactivated successfully", eventService.uncancelEvent(eventId, auth)));
     }
 
     // Get event by id
     @GetMapping("/events/{eventId}")
-    public ResponseEntity<ApiResponse<EventResponse>> getEvent(@PathVariable Long eventId) {
+    public ResponseEntity<ApiResponse<EventResponse>> getEvent(@PathVariable String eventId) {
         return ResponseEntity.ok(ApiResponse.success("Event loaded successfully", eventService.getEvent(eventId)));
     }
 

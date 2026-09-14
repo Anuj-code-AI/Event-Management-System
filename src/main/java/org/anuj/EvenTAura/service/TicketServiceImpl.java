@@ -47,7 +47,7 @@ public class TicketServiceImpl implements TicketService{
     @Override
     @Transactional
     public TicketResponse buyTicket(
-            Long eventId,
+            String eventId,
             MultipartFile file,
             Authentication authentication
     ) {
@@ -61,7 +61,7 @@ public class TicketServiceImpl implements TicketService{
                         new UserNotFoundException("User not found"));
 
         // ================= EVENT =================
-        Event event = eventRepository.findById(eventId)
+        Event event = eventRepository.findByUniqueId(eventId)
                 .orElseThrow(() ->
                         new EventNotExistException("No event found with this id"));
 
@@ -194,9 +194,9 @@ public class TicketServiceImpl implements TicketService{
     }
 
     @Override
-    public List<Ticket> getTickets(Long eventId, Authentication authentication) {
+    public List<Ticket> getTickets(String eventId, Authentication authentication) {
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-        Event event = eventRepository.findById(eventId)
+        Event event = eventRepository.findByUniqueId(eventId)
                 .orElseThrow(()-> new EventNotExistException("No event found with this id"));
         boolean isHod = authentication.getAuthorities().stream()
                 .anyMatch(auth -> auth.getAuthority().equals("ROLE_HOD"));
@@ -406,14 +406,14 @@ public class TicketServiceImpl implements TicketService{
     }
 
     @Override
-    public Page<AudienceResponse> audienceList(int page, int size, Long eventId, Authentication authentication) {
+    public Page<AudienceResponse> audienceList(int page, int size, String eventId, Authentication authentication) {
 
         Sort sort = Sort.by("issuedAt").ascending(); // might not exist in Ticket btw
         Pageable pageable = PageRequest.of(page, size, sort);
 
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
-        Event event = eventRepository.findById(eventId)
+        Event event = eventRepository.findByUniqueId(eventId)
                 .orElseThrow(() -> new EventNotExistException("Event not found"));
 
         boolean isOwner = userDetails.getId().equals(event.getUser().getUserId());

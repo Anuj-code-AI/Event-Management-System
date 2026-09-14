@@ -16,7 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 public class CustomFormResponse {
 
-    private Long id;
+    private String id;
 
     private String title;
 

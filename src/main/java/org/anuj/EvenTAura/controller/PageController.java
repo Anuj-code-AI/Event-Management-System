@@ -113,17 +113,17 @@ public class PageController {
 
     // HOD dynamic action redirects
     @GetMapping("/update-event/{eventId}")
-    public String updateEventRedirect(@PathVariable Long eventId) {
+    public String updateEventRedirect(@PathVariable String eventId) {
         return "redirect:/request-event?id=" + eventId;
     }
 
     @GetMapping("/event-management/{eventId}")
-    public String eventManagementRedirect(@PathVariable Long eventId) {
+    public String eventManagementRedirect(@PathVariable String eventId) {
         return "redirect:/event-management?manageAttendance=" + eventId;
     }
 
     @GetMapping("/update-custom-form/{formId}")
-    public String updateCustomFormRedirect(@PathVariable Long formId) {
+    public String updateCustomFormRedirect(@PathVariable String formId) {
         return "redirect:/update-custom-form?formId=" + formId;
     }
 
