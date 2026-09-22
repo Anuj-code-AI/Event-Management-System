@@ -380,10 +380,9 @@ async function handleBookingSubmit(e) {
         const body = await res.json();
 
         if (res.ok && body.success) {
-            showAlert("success", "Ticket booked successfully! Redirecting...");
-            setTimeout(() => {
+            triggerPartyBombCelebration(() => {
                 window.location.href = "/tickets";
-            }, 1500);
+            });
         } else {
             showAlert("error", body.message || "Failed to book ticket. Please try again.");
             bookingBtn.disabled = false;
@@ -657,10 +656,10 @@ customAnswersForm.addEventListener("submit", async (e) => {
 
         const body = await res.json();
         if (res.ok && body.success) {
-            showCustomFormAlert("Registration submitted successfully! Redirecting...", "success");
-            setTimeout(() => {
+            closeCustomFormModal();
+            triggerPartyBombCelebration(() => {
                 window.location.href = "/tickets";
-            }, 1500);
+            });
         } else {
             showCustomFormAlert(body.message || "Failed to submit registration form. Please try again.");
             customFormSubmitBtn.disabled = false;
@@ -696,6 +695,477 @@ function showCustomFormAlert(msg, type = "error") {
         customFormAlert.className = "p-3 rounded text-xs font-semibold flex items-start gap-1.5 bg-red-50 border-red-200 text-danger mb-3";
         customFormAlert.innerHTML = `<span class="material-symbols-outlined text-[16px]">error</span> <span>${msg}</span>`;
     }
+}
+
+// ----------------------------------------------------
+// PARTY BOMB CELEBRATION & SCREEN SMASH ANIMATION
+// ----------------------------------------------------
+function triggerPartyBombCelebration(onComplete) {
+    if (document.getElementById("party-bomb-overlay")) {
+        if (typeof onComplete === "function") onComplete();
+        return;
+    }
+
+    // 1. Inject animation styles
+    const styleEl = document.createElement("style");
+    styleEl.id = "party-bomb-styles";
+    styleEl.textContent = `
+        @keyframes partyScreenShake {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            10% { transform: translate(-14px, -10px) rotate(-1.5deg); }
+            20% { transform: translate(14px, 10px) rotate(1.5deg); }
+            30% { transform: translate(-12px, 8px) rotate(-1deg); }
+            40% { transform: translate(12px, -8px) rotate(1deg); }
+            50% { transform: translate(-8px, -4px) rotate(-0.5deg); }
+            60% { transform: translate(8px, 4px) rotate(0.5deg); }
+            70% { transform: translate(-4px, 2px) rotate(0deg); }
+            85% { transform: translate(2px, -1px) rotate(0deg); }
+            100% { transform: translate(0, 0) rotate(0deg); }
+        }
+        .party-screen-shaking {
+            animation: partyScreenShake 0.75s cubic-bezier(0.36, 0.07, 0.19, 0.97) both !important;
+        }
+        .party-smash-wipe {
+            transition: transform 0.75s cubic-bezier(0.16, 1, 0.3, 1), filter 0.75s ease, opacity 0.75s ease !important;
+            transform: scale(1.08) translateY(24px) !important;
+            filter: blur(14px) brightness(1.8) contrast(1.2) !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+        @keyframes partyCardPop {
+            0% { transform: translate(-50%, -50%) scale(0.25) rotate(-10deg); opacity: 0; filter: drop-shadow(0 0 0 rgba(255,215,0,0)); }
+            50% { transform: translate(-50%, -50%) scale(1.06) rotate(1.5deg); opacity: 1; filter: drop-shadow(0 0 50px rgba(255,215,0,0.6)); }
+            70% { transform: translate(-50%, -50%) scale(0.97) rotate(-1deg); }
+            100% { transform: translate(-50%, -50%) scale(1) rotate(0deg); opacity: 1; filter: drop-shadow(0 20px 50px rgba(0,0,0,0.55)); }
+        }
+        @keyframes partyBadgePulse {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 8px rgba(36, 80, 232, 0.5)); }
+            50% { transform: scale(1.1); filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.85)); }
+        }
+        @keyframes partyProgressFill {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+        @keyframes partySpin {
+            to { transform: rotate(360deg); }
+        }
+    `;
+    document.head.appendChild(styleEl);
+
+    // 2. Create fullscreen overlay
+    const overlay = document.createElement("div");
+    overlay.id = "party-bomb-overlay";
+    overlay.style.cssText = "position:fixed;inset:0;width:100vw;height:100vh;z-index:999999;pointer-events:auto;overflow:hidden;background:rgba(11,21,38,0);transition:background 0.45s ease;";
+    document.body.appendChild(overlay);
+
+    // 3. Create canvas for bombs, shockwaves, and confetti
+    const canvas = document.createElement("canvas");
+    canvas.style.cssText = "position:absolute;inset:0;width:100%;height:100%;pointer-events:none;";
+    overlay.appendChild(canvas);
+
+    const ctx = canvas.getContext("2d");
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    let W = window.innerWidth;
+    let H = window.innerHeight;
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    ctx.scale(dpr, dpr);
+
+    // 4. Synthesized Audio (Web Audio API)
+    try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext) {
+            const actx = new AudioContext();
+            // Launch whistle
+            const oscL = actx.createOscillator();
+            const gainL = actx.createGain();
+            oscL.type = "sine";
+            oscL.frequency.setValueAtTime(220, actx.currentTime);
+            oscL.frequency.exponentialRampToValueAtTime(880, actx.currentTime + 0.42);
+            gainL.gain.setValueAtTime(0.06, actx.currentTime);
+            gainL.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + 0.44);
+            oscL.connect(gainL);
+            gainL.connect(actx.destination);
+            oscL.start();
+            oscL.stop(actx.currentTime + 0.45);
+
+            // Blast boom at 440ms
+            setTimeout(() => {
+                try {
+                    const oscB = actx.createOscillator();
+                    const gainB = actx.createGain();
+                    oscB.type = "triangle";
+                    oscB.frequency.setValueAtTime(150, actx.currentTime);
+                    oscB.frequency.exponentialRampToValueAtTime(35, actx.currentTime + 0.55);
+                    gainB.gain.setValueAtTime(0.3, actx.currentTime);
+                    gainB.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + 0.58);
+                    oscB.connect(gainB);
+                    gainB.connect(actx.destination);
+                    oscB.start();
+                    oscB.stop(actx.currentTime + 0.6);
+
+                    // Happy fanfare chime
+                    [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
+                        const o = actx.createOscillator();
+                        const g = actx.createGain();
+                        o.type = "sine";
+                        o.frequency.setValueAtTime(freq, actx.currentTime + idx * 0.08);
+                        g.gain.setValueAtTime(0.1, actx.currentTime + idx * 0.08);
+                        g.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + idx * 0.08 + 0.5);
+                        o.connect(g);
+                        g.connect(actx.destination);
+                        o.start(actx.currentTime + idx * 0.08);
+                        o.stop(actx.currentTime + idx * 0.08 + 0.55);
+                    });
+                } catch(e) {}
+            }, 440);
+        }
+    } catch (e) {}
+
+    // Target center for the smash
+    const targetX = W * 0.5;
+    const targetY = H * 0.45;
+
+    // 3 Bomb trajectories (Left, Right, Bottom-Center)
+    const bombs = [
+        {
+            startX: -40, startY: H * 0.9,
+            ctrlX: W * 0.2, ctrlY: H * 0.15,
+            endX: targetX, endY: targetY,
+            color: "#FF1361",
+            emoji: "💣"
+        },
+        {
+            startX: W + 40, startY: H * 0.9,
+            ctrlX: W * 0.8, ctrlY: H * 0.15,
+            endX: targetX, endY: targetY,
+            color: "#00F0FF",
+            emoji: "💣"
+        },
+        {
+            startX: targetX, startY: H + 50,
+            ctrlX: targetX, ctrlY: H * 0.7,
+            endX: targetX, endY: targetY,
+            color: "#FFD700",
+            emoji: "🎉"
+        }
+    ];
+
+    const trailSparks = [];
+    const confettiParticles = [];
+    const shockwaves = [];
+    const shatterLines = [];
+
+    const startTime = performance.now();
+    const launchDuration = 440; // ms
+    let exploded = false;
+
+    // Confetti palette
+    const colors = ["#FF1493", "#00FFFF", "#FFD700", "#FF4500", "#7B2CBF", "#00FF88", "#FF0055", "#FFFFFF", "#38B2AC"];
+
+    function explode() {
+        exploded = true;
+        overlay.style.background = "rgba(11, 21, 38, 0.78)";
+
+        // Screen shake
+        document.body.classList.add("party-screen-shaking");
+        setTimeout(() => document.body.classList.remove("party-screen-shaking"), 800);
+
+        // Smash and remove everything in the background with the bomb effect
+        const contentTargets = [
+            document.getElementById("details-content-section"),
+            document.querySelector("main"),
+            document.querySelector("header"),
+            document.querySelector("footer"),
+            document.getElementById("sidebar")
+        ];
+        contentTargets.forEach(el => {
+            if (el) el.classList.add("party-smash-wipe");
+        });
+
+        // Create expanding shockwave rings
+        shockwaves.push(
+            { x: targetX, y: targetY, r: 10, maxR: Math.max(W, H) * 0.95, lw: 24, color: "rgba(255, 230, 0, 0.95)", speed: 38 },
+            { x: targetX, y: targetY, r: 5, maxR: Math.max(W, H) * 0.8, lw: 16, color: "rgba(0, 240, 255, 0.88)", speed: 28 },
+            { x: targetX, y: targetY, r: 0, maxR: Math.max(W, H) * 0.65, lw: 12, color: "rgba(255, 20, 147, 0.82)", speed: 22 }
+        );
+
+        // Screen shatter crack rays
+        for (let i = 0; i < 22; i++) {
+            const angle = (i / 22) * Math.PI * 2 + (Math.random() - 0.5) * 0.35;
+            const length = Math.random() * (Math.max(W, H) * 0.65) + 140;
+            shatterLines.push({
+                x1: targetX,
+                y1: targetY,
+                x2: targetX + Math.cos(angle) * length,
+                y2: targetY + Math.sin(angle) * length,
+                alpha: 1,
+                color: i % 2 === 0 ? "#FFD700" : "#00FFFF"
+            });
+        }
+
+        // 380+ Confetti and party blast particles
+        for (let i = 0; i < 380; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const speed = Math.random() * 24 + 6;
+            const size = Math.random() * 12 + 6;
+            const shapes = ["rect", "circle", "star", "ribbon"];
+            confettiParticles.push({
+                x: targetX + (Math.random() - 0.5) * 30,
+                y: targetY + (Math.random() - 0.5) * 30,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed - Math.random() * 7,
+                size: size,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                shape: shapes[Math.floor(Math.random() * shapes.length)],
+                rotation: Math.random() * 360,
+                rotSpeed: (Math.random() - 0.5) * 16,
+                tilt: Math.random() * 10,
+                tiltAngle: Math.random() * Math.PI,
+                tiltSpeed: Math.random() * 0.12 + 0.05,
+                drag: Math.random() * 0.02 + 0.965,
+                gravity: 0.28,
+                alpha: 1
+            });
+        }
+
+        // Render Celebration Card in the blast center
+        const card = document.createElement("div");
+        card.id = "party-celebration-card";
+        card.style.cssText = `
+            position: absolute;
+            left: 50%;
+            top: 45%;
+            transform: translate(-50%, -50%);
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 2px solid rgba(255, 215, 0, 0.6);
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.7), 0 0 50px rgba(255, 215, 0, 0.4);
+            border-radius: 24px;
+            padding: 34px 44px;
+            text-align: center;
+            max-width: 90vw;
+            width: 440px;
+            animation: partyCardPop 0.65s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            pointer-events: auto;
+            color: #fff;
+        `;
+
+        const titleText = eventDetails && eventDetails.title ? eventDetails.title : "Event";
+
+        card.innerHTML = `
+            <div style="font-size: 54px; line-height: 1; margin-bottom: 12px; animation: partyBadgePulse 1.4s ease-in-out infinite;">🎉 💥 🎟️</div>
+            <div style="font-family: 'Sora', sans-serif; font-size: 28px; font-weight: 800; background: linear-gradient(135deg, #FFD700 0%, #FF3366 50%, #00F0FF 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -0.5px; text-transform: uppercase;">
+                Ticket Confirmed!
+            </div>
+            <div style="margin-top: 6px; font-size: 13px; color: #94A3B8; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 360px; margin-left: auto; margin-right: auto;">
+                ${titleText}
+            </div>
+            <p style="margin-top: 10px; font-size: 13px; color: rgba(255,255,255,0.9); line-height: 1.5;">
+                Your pass has been generated! Get ready for an unforgettable campus experience.
+            </p>
+            <div style="margin-top: 22px; display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.22); border-radius: 999px; padding: 7px 20px; font-size: 12px; font-weight: 600; color: #E2E8F0;">
+                <span class="material-symbols-outlined" style="font-size: 16px; animation: partySpin 1.2s linear infinite;">sync</span>
+                <span>Opening your ticket pass...</span>
+            </div>
+            <div style="margin-top: 16px; width: 100%; height: 4px; background: rgba(255,255,255,0.12); border-radius: 99px; overflow: hidden;">
+                <div style="height: 100%; background: linear-gradient(90deg, #FFD700, #FF1493, #00FFFF); border-radius: 99px; animation: partyProgressFill 1.8s ease-in-out forwards;"></div>
+            </div>
+        `;
+        overlay.appendChild(card);
+    }
+
+    // Animation Loop
+    function frame(now) {
+        const elapsed = now - startTime;
+        ctx.clearRect(0, 0, W, H);
+
+        // Phase 1: Rockets flying in from sides and bottom
+        if (elapsed < launchDuration) {
+            const p = elapsed / launchDuration;
+            const easeP = p * p * (3 - 2 * p); // smoothstep curve
+
+            bombs.forEach(bomb => {
+                // Quadratic Bezier interpolation
+                const oneMinusT = 1 - easeP;
+                const bx = oneMinusT * oneMinusT * bomb.startX + 2 * oneMinusT * easeP * bomb.ctrlX + easeP * easeP * bomb.endX;
+                const by = oneMinusT * oneMinusT * bomb.startY + 2 * oneMinusT * easeP * bomb.ctrlY + easeP * easeP * bomb.endY;
+
+                // Spawn sparkling trail
+                for (let k = 0; k < 5; k++) {
+                    trailSparks.push({
+                        x: bx + (Math.random() - 0.5) * 12,
+                        y: by + (Math.random() - 0.5) * 12,
+                        vx: (Math.random() - 0.5) * 3,
+                        vy: (Math.random() - 0.5) * 3 + 2,
+                        size: Math.random() * 4 + 2,
+                        color: Math.random() > 0.4 ? bomb.color : "#FFD700",
+                        alpha: 1
+                    });
+                }
+
+                // Draw Bomb Head / Glowing Sphere
+                ctx.save();
+                ctx.shadowColor = bomb.color;
+                ctx.shadowBlur = 24;
+
+                // Bomb circle body
+                ctx.beginPath();
+                ctx.arc(bx, by, 18, 0, Math.PI * 2);
+                ctx.fillStyle = "#1E293B";
+                ctx.fill();
+                ctx.lineWidth = 3;
+                ctx.strokeStyle = bomb.color;
+                ctx.stroke();
+
+                // Fuse spark
+                ctx.beginPath();
+                ctx.arc(bx + 12, by - 12, 6, 0, Math.PI * 2);
+                ctx.fillStyle = "#FFDD00";
+                ctx.shadowColor = "#FFDD00";
+                ctx.shadowBlur = 18;
+                ctx.fill();
+
+                // Emoji badge
+                ctx.font = "18px sans-serif";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText(bomb.emoji, bx, by);
+                ctx.restore();
+            });
+        } else if (!exploded) {
+            explode();
+        }
+
+        // Update & Render Trail Sparks
+        for (let i = trailSparks.length - 1; i >= 0; i--) {
+            const s = trailSparks[i];
+            s.x += s.vx;
+            s.y += s.vy;
+            s.alpha -= 0.035;
+            if (s.alpha <= 0) {
+                trailSparks.splice(i, 1);
+                continue;
+            }
+            ctx.save();
+            ctx.globalAlpha = s.alpha;
+            ctx.fillStyle = s.color;
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        }
+
+        // Phase 2: Shockwaves
+        if (exploded) {
+            for (let i = shockwaves.length - 1; i >= 0; i--) {
+                const sw = shockwaves[i];
+                sw.r += sw.speed;
+                sw.lw *= 0.94;
+                if (sw.r >= sw.maxR || sw.lw < 0.5) {
+                    shockwaves.splice(i, 1);
+                    continue;
+                }
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(sw.x, sw.y, sw.r, 0, Math.PI * 2);
+                ctx.strokeStyle = sw.color;
+                ctx.lineWidth = sw.lw;
+                ctx.shadowColor = sw.color;
+                ctx.shadowBlur = 20;
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            // Shatter Crack Lines
+            for (let i = shatterLines.length - 1; i >= 0; i--) {
+                const line = shatterLines[i];
+                line.alpha -= 0.03;
+                if (line.alpha <= 0) {
+                    shatterLines.splice(i, 1);
+                    continue;
+                }
+                ctx.save();
+                ctx.globalAlpha = line.alpha;
+                ctx.strokeStyle = line.color;
+                ctx.lineWidth = 3;
+                ctx.shadowColor = line.color;
+                ctx.shadowBlur = 14;
+                ctx.beginPath();
+                ctx.moveTo(line.x1, line.y1);
+                ctx.lineTo(line.x2, line.y2);
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            // Confetti Particles
+            for (let i = confettiParticles.length - 1; i >= 0; i--) {
+                const p = confettiParticles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vx *= p.drag;
+                p.vy = p.vy * p.drag + p.gravity;
+                p.rotation += p.rotSpeed;
+                p.tiltAngle += p.tiltSpeed;
+                p.x += Math.sin(p.tiltAngle) * 1.4; // festive flutter sway
+
+                if (elapsed > 1600) {
+                    p.alpha -= 0.015;
+                }
+
+                if (p.y > H + 40 || p.alpha <= 0) {
+                    confettiParticles.splice(i, 1);
+                    continue;
+                }
+
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, p.alpha);
+                ctx.translate(p.x, p.y);
+                ctx.rotate((p.rotation * Math.PI) / 180);
+                const tilt = Math.cos(p.tiltAngle);
+
+                ctx.fillStyle = p.color;
+                ctx.shadowColor = p.color;
+                ctx.shadowBlur = 6;
+
+                if (p.shape === "circle") {
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, p.size / 2, (p.size / 2) * Math.abs(tilt), 0, 0, Math.PI * 2);
+                    ctx.fill();
+                } else if (p.shape === "star") {
+                    ctx.beginPath();
+                    for (let s = 0; s < 5; s++) {
+                        ctx.lineTo(Math.cos(((18 + s * 72) * Math.PI) / 180) * p.size, -Math.sin(((18 + s * 72) * Math.PI) / 180) * p.size * Math.abs(tilt));
+                        ctx.lineTo(Math.cos(((54 + s * 72) * Math.PI) / 180) * (p.size / 2), -Math.sin(((54 + s * 72) * Math.PI) / 180) * (p.size / 2) * Math.abs(tilt));
+                    }
+                    ctx.closePath();
+                    ctx.fill();
+                } else {
+                    // Ribbon / rectangle strip with 3D tilt
+                    ctx.fillRect(-p.size / 2, (-p.size / 2) * tilt, p.size, (p.size * 0.5) * Math.abs(tilt));
+                }
+                ctx.restore();
+            }
+        }
+
+        // Phase 3: Final redirect at ~2300ms
+        if (elapsed < 2350) {
+            requestAnimationFrame(frame);
+        } else {
+            // Flash wipe out into redirect
+            overlay.style.transition = "opacity 0.35s ease";
+            overlay.style.opacity = "0";
+            setTimeout(() => {
+                if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+                if (typeof onComplete === "function") {
+                    onComplete();
+                }
+            }, 300);
+        }
+    }
+
+    requestAnimationFrame(frame);
 }
 
 // Run initialization
