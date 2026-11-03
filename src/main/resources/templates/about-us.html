@@ -13,6 +13,14 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>About Us | CampusHive</title>
+    <meta name="description" content="CampusHive is a campus event management platform for event discovery, custom registration forms, QR code ticketing and check-ins, and role-based access for students, hosts and HODs." />
+    <meta name="keywords" content="CampusHive, campus events, college event management, event registration, QR check-in, student events, hackathons, workshops, HOD, host" />
+    <meta name="author" content="Anuj Chourasiya" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="About CampusHive" />
+    <meta property="og:description" content="One platform to discover campus events, register with custom forms, get QR entry passes and check in instantly." />
+    <meta property="og:image" content="/images/logo.png" />
+    <meta name="twitter:card" content="summary" />
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
@@ -98,6 +106,74 @@
             </div>
         </section>
 
+        <!-- What is CampusHive -->
+        <section class="max-w-4xl mx-auto border border-line bg-canvas p-6 md:p-8 space-y-4">
+            <div>
+                <p class="eyebrow text-[11px] text-action">About The Platform</p>
+                <h2 class="mt-1 font-display text-xl font-bold text-ink">What is CampusHive?</h2>
+            </div>
+            <p class="text-sm leading-6 text-muted">
+                CampusHive is a web-based campus event management platform. It gives a college or university one place to publish events, collect registrations, issue entry passes, and record attendance, replacing scattered posters, group chats, and spreadsheets.
+            </p>
+            <p class="text-sm leading-6 text-muted">
+                It serves three kinds of users: <span class="font-semibold text-ink">students</span> who discover and register for events, <span class="font-semibold text-ink">hosts</span> (clubs, societies, and organizers) who create and run them, and <span class="font-semibold text-ink">HODs</span> who oversee events and access within their departments. Events can be open to the public or restricted to a specific campus.
+            </p>
+        </section>
+
+        <!-- How it works -->
+        <section class="max-w-4xl mx-auto border border-line bg-canvas p-6 md:p-8 space-y-6">
+            <div>
+                <p class="eyebrow text-[11px] text-action">Step By Step</p>
+                <h2 class="mt-1 font-display text-xl font-bold text-ink">How It Works</h2>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm text-muted">
+                <div class="space-y-2">
+                    <h4 class="font-semibold text-ink flex items-center gap-2"><span class="eyebrow text-action text-xs">01</span> Host Creates an Event</h4>
+                    <p>A host publishes an event with its details, schedule, and visibility (public or campus-only), and builds a custom registration form with text inputs, drop-downs, and file uploads.</p>
+                </div>
+                <div class="space-y-2">
+                    <h4 class="font-semibold text-ink flex items-center gap-2"><span class="eyebrow text-action text-xs">02</span> Students Discover Events</h4>
+                    <p>Events appear in a single unified feed. Students browse public and campus-restricted events and pick the ones that match their interests.</p>
+                </div>
+                <div class="space-y-2">
+                    <h4 class="font-semibold text-ink flex items-center gap-2"><span class="eyebrow text-action text-xs">03</span> Register and Get a Pass</h4>
+                    <p>Students fill in the host's form. Their answers are validated and stored securely, and a unique QR entry pass is generated for that registration.</p>
+                </div>
+                <div class="space-y-2">
+                    <h4 class="font-semibold text-ink flex items-center gap-2"><span class="eyebrow text-action text-xs">04</span> Scan and Check In</h4>
+                    <p>At the venue, hosts and HODs scan the QR pass from their browser. Attendance is marked instantly, with no separate app or hardware required.</p>
+                </div>
+            </div>
+            <p class="text-sm leading-6 text-muted border-t border-line pt-4">
+                <span class="font-semibold text-ink">Under the hood:</span> CampusHive is a server-rendered Java application built on Spring Boot, with Spring Security handling authentication and role-based authorization, MySQL for storage, and Thymeleaf with Tailwind CSS for the interface.
+            </p>
+        </section>
+
+        <!-- Platform Deep Dive & Features -->
+        <section class="max-w-4xl mx-auto space-y-6">
+            <div class="border border-line bg-canvas p-6 md:p-8 space-y-4">
+                <h3 class="font-display text-xl font-bold text-ink">Why CampusHive?</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm text-muted">
+                    <div class="space-y-2">
+                        <h4 class="font-semibold text-ink flex items-center gap-2"><span class="material-symbols-outlined text-action text-[20px]">explore</span> Centralized Discoverability</h4>
+                        <p>One unified feed showing all local public events and campus-restricted registrations. Students never have to browse dozens of Slack/WhatsApp groups again.</p>
+                    </div>
+                    <div class="space-y-2">
+                        <h4 class="font-semibold text-ink flex items-center gap-2"><span class="material-symbols-outlined text-action text-[20px]">assignment</span> Custom Registration Forms</h4>
+                        <p>Hosts can construct custom forms on the fly with custom inputs, drop-downs, and files, which are securely verified and stored in database schemas.</p>
+                    </div>
+                    <div class="space-y-2">
+                        <h4 class="font-semibold text-ink flex items-center gap-2"><span class="material-symbols-outlined text-action text-[20px]">qr_code_scanner</span> Easy QR Code Check-ins</h4>
+                        <p>Each registration generates an entry pass QR code. HODs and hosts can scan codes directly from their browsers to mark attendance instantly.</p>
+                    </div>
+                    <div class="space-y-2">
+                        <h4 class="font-semibold text-ink flex items-center gap-2"><span class="material-symbols-outlined text-action text-[20px]">verified_user</span> Multi-role Access Control</h4>
+                        <p>Integrated role management ensures HODs, hosts, and students have secure and customized access permissions across departments and campuses.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- Team Section Label -->
         <div class="max-w-4xl mx-auto">
             <p class="eyebrow text-[11px] text-action">The People Behind It</p>
@@ -140,7 +216,7 @@
 
                     <!-- Developer Links -->
                     <div class="flex flex-wrap justify-center md:justify-start gap-6 pt-4 border-t border-line text-sm">
-                        <a href="https://anuj-code-ai.github.io/anujchourasiya.github.io/" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 font-semibold text-action hover:text-action-hover">
+                        <a href="https://anuj-code-ai.github.io/" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 font-semibold text-action hover:text-action-hover">
                             <span class="material-symbols-outlined text-[20px]">language</span>
                             <span>Portfolio</span>
                         </a>
@@ -161,91 +237,19 @@
             </div>
         </section>
 
-        <!-- Profile Showcase Grid: Co-Founder -->
-        <section class="max-w-4xl mx-auto border border-line bg-canvas p-6 md:p-8 hover:shadow-[0_10px_28px_-18px_rgba(11,21,38,.38)] hover:border-action/30 transition-all duration-300">
-            <div class="flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-8">
-                <!-- Profile Avatar -->
-                <div class="shrink-0 w-40 h-40 rounded-full border-4 border-action-tint flex items-center justify-center overflow-hidden shadow-md hover:scale-[1.02] transition-transform duration-300 bg-canvas-sunk">
-                    <img src="/images/Salil.jpeg" alt="Salil Rao Narote Profile" class="w-full h-full object-cover" onerror="this.src='/images/logo.png'">
-                </div>
-
-                <!-- Co-Founder Details -->
-                <div class="flex-1 space-y-4 text-center md:text-left">
-                    <div class="space-y-1">
-                        <h2 class="font-display text-2xl font-bold text-ink">Salil Rao Narote</h2>
-                        <p class="eyebrow text-xs text-action font-semibold">Co-Founder, Marketing & Relations</p>
-                    </div>
-
-                    <p class="text-sm leading-6 text-muted">
-                        Salil leads marketing and relationship management for CampusHive, handling outreach to universities, hosts, and student communities to get the platform in front of the people who need it.
-                    </p>
-
-                    <p class="text-sm leading-6 text-muted">
-                        His focus is on building partnerships with campus organizers and HODs, growing CampusHive's presence across universities, and making sure early adopters have a smooth onboarding experience.
-                    </p>
-
-                    <!-- Focus Area Tags -->
-                    <div class="flex flex-wrap justify-center md:justify-start gap-2 pt-2">
-                        <span class="bg-canvas-sunk text-ink border border-line text-xs px-3 py-1 rounded-full font-medium">Marketing</span>
-                        <span class="bg-canvas-sunk text-ink border border-line text-xs px-3 py-1 rounded-full font-medium">Public Relations</span>
-                        <span class="bg-canvas-sunk text-ink border border-line text-xs px-3 py-1 rounded-full font-medium">Campus Outreach</span>
-                        <span class="bg-canvas-sunk text-ink border border-line text-xs px-3 py-1 rounded-full font-medium">Partnerships</span>
-                        <span class="bg-canvas-sunk text-ink border border-line text-xs px-3 py-1 rounded-full font-medium">Community Building</span>
-                    </div>
-
-                    <!-- Co-Founder Links -->
-                    <div class="flex flex-wrap justify-center md:justify-start gap-6 pt-4 border-t border-line text-sm">
-                        <a href="https://www.linkedin.com/in/salil-rao-narote-b6852b301/" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 font-semibold text-action hover:text-action-hover">
-                            <i class="fa-brands fa-linkedin text-[18px]"></i>
-                            <span>LinkedIn</span>
-                        </a>
-                        <a href="https://www.instagram.com/salill_rao?igsi=MXhwZzNyM3Zwa20xag%3D%3D&utm_source=qr" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 font-semibold text-muted hover:text-action">
-                            <i class="fa-brands fa-instagram text-[18px]"></i>
-                            <span>Instagram</span>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Platform Deep Dive & Features -->
-        <section class="max-w-4xl mx-auto space-y-6">
-            <div class="border border-line bg-canvas p-6 md:p-8 space-y-4">
-                <h3 class="font-display text-xl font-bold text-ink">Why CampusHive?</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm text-muted">
-                    <div class="space-y-2">
-                        <h4 class="font-semibold text-ink flex items-center gap-2"><span class="material-symbols-outlined text-action text-[20px]">explore</span> Centralized Discoverability</h4>
-                        <p>One unified feed showing all local public events and campus-restricted registrations. Students never have to browse dozens of Slack/WhatsApp groups again.</p>
-                    </div>
-                    <div class="space-y-2">
-                        <h4 class="font-semibold text-ink flex items-center gap-2"><span class="material-symbols-outlined text-action text-[20px]">assignment</span> Custom Registration Forms</h4>
-                        <p>Hosts can construct custom forms on the fly with custom inputs, drop-downs, and files, which are securely verified and stored in database schemas.</p>
-                    </div>
-                    <div class="space-y-2">
-                        <h4 class="font-semibold text-ink flex items-center gap-2"><span class="material-symbols-outlined text-action text-[20px]">qr_code_scanner</span> Easy QR Code Check-ins</h4>
-                        <p>Each registration generates an entry pass QR code. HODs and hosts can scan codes directly from their browsers to mark attendance instantly.</p>
-                    </div>
-                    <div class="space-y-2">
-                        <h4 class="font-semibold text-ink flex items-center gap-2"><span class="material-symbols-outlined text-action text-[20px]">verified_user</span> Multi-role Access Control</h4>
-                        <p>Integrated role management ensures HODs, hosts, and students have secure and customized access permissions across departments and campuses.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
         <!-- Impact Statistics Section -->
         <section class="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div class="border border-line bg-canvas p-6 text-center rounded-lg">
-                <p class="font-display text-3xl font-bold text-action">100+</p>
-                <p class="text-xs text-muted eyebrow mt-1">Universities Supported</p>
+                <p class="font-display text-3xl font-bold text-action">3</p>
+                <p class="text-xs text-muted eyebrow mt-1">User Roles: Students, Hosts, HODs</p>
             </div>
             <div class="border border-line bg-canvas p-6 text-center rounded-lg">
-                <p class="font-display text-3xl font-bold text-action">10K+</p>
-                <p class="text-xs text-muted eyebrow mt-1">Active Students</p>
+                <p class="font-display text-3xl font-bold text-action">2</p>
+                <p class="text-xs text-muted eyebrow mt-1">Event Visibility Modes: Public & Campus-only</p>
             </div>
             <div class="border border-line bg-canvas p-6 text-center rounded-lg">
-                <p class="font-display text-3xl font-bold text-action">100%</p>
-                <p class="text-xs text-muted eyebrow mt-1">Reliable Entry Verification</p>
+                <p class="font-display text-3xl font-bold text-action">1</p>
+                <p class="text-xs text-muted eyebrow mt-1">Unique QR Pass Per Registration</p>
             </div>
         </section>
     </main>
